@@ -73,7 +73,7 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
   it changes only at release time.
 - Versions start at 0.1.0: the name holds no older release; a version is
   published only once.
-- `ingots` is pinned to a minor version (`>=0.32.1,<0.33`): before 1.0 a minor
+- `ingots` is pinned to a minor version (`>=0.32.2,<0.33`): before 1.0 a minor
   version of the framework may break its addons. Moving on to the next one
   is a change of its own, with a news fragment.
 - Flat layout: the package is `ingot_auth/` at the root. The wheel must be

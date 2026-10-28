@@ -1,16 +1,11 @@
 """The attribute: a typed value of a profile."""
 
-__all__ = ("AuthAttr", "AuthAttrType", "AuthValue")
+__all__ = ("AuthAttr", "AuthAttrType")
 
-import datetime
-import decimal
 import enum
 from dataclasses import dataclass
 
 from ingot_auth.registry import AuthItem
-
-type AuthValue = bool | int | decimal.Decimal | datetime.datetime | str
-"""A value of an attribute: a scalar, one of :class:`AuthAttrType`."""
 
 
 class AuthAttrType(enum.StrEnum):

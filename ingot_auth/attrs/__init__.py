@@ -5,7 +5,6 @@ __all__ = (
     "AuthAttrType",
     "AuthAttrs",
     "AuthMemoryAttrsStorage",
-    "AuthValue",
     "BaseAuthAttrsStorage",
 )
 
@@ -18,7 +17,7 @@ from .commands import (
     AuthListAttrsCommand,
     AuthRenameAttrCommand,
 )
-from .items import AuthAttr, AuthAttrType, AuthValue
+from .items import AuthAttr, AuthAttrType
 from .operations import AuthCreateAttr, AuthDeleteAttr, AuthListAttrs, AuthRenameAttr
 from .storage import AuthMemoryAttrsStorage, BaseAuthAttrsStorage
 
