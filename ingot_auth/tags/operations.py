@@ -1,6 +1,12 @@
 """The operations of the tags."""
 
-__all__ = ("AuthCreateTag", "AuthDeleteTag", "AuthListTags", "AuthRenameTag")
+__all__ = (
+    "AuthCreateTag",
+    "AuthDeleteTag",
+    "AuthListTags",
+    "AuthRenameTag",
+    "BaseAuthTagsOperation",
+)
 
 import typing as t
 
@@ -8,9 +14,12 @@ from ingots.defaults.operations import Permissions
 
 from ingot_auth.permissions import AuthPermissions
 from ingot_auth.registry.operations import (
+    AuthDeleteItemParameters,
+    AuthRenameItemParameters,
     BaseAuthCreateItem,
     BaseAuthDeleteItem,
     BaseAuthListItems,
+    BaseAuthRegistryOperation,
     BaseAuthRenameItem,
 )
 
@@ -21,8 +30,11 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthCreateTag(BaseAuthCreateItem[AuthTag]):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+class BaseAuthTagsOperation[ParametersType, ResultType](
+    BaseAuthRegistryOperation[AuthTag, ParametersType, ResultType]
+):
+    """An operation of the tags: works with their storage."""
+
     project: "AuthProject"
 
     @t.override
@@ -30,28 +42,28 @@ class AuthCreateTag(BaseAuthCreateItem[AuthTag]):
         return self.project.auth.storage.tags
 
 
-class AuthListTags(BaseAuthListItems[AuthTag]):
+class AuthCreateTag(
+    BaseAuthCreateItem[AuthTag], BaseAuthTagsOperation[AuthTag, AuthTag]
+):
+    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+
+
+class AuthListTags(
+    BaseAuthListItems[AuthTag],
+    BaseAuthTagsOperation[None, tuple[AuthTag, ...]],
+):
     PERMISSIONS = Permissions(AuthPermissions.READ_REGISTRY)
-    project: "AuthProject"
-
-    @t.override
-    def _get_storage(self) -> BaseAuthTagsStorage:
-        return self.project.auth.storage.tags
 
 
-class AuthRenameTag(BaseAuthRenameItem[AuthTag]):
+class AuthRenameTag(
+    BaseAuthRenameItem[AuthTag],
+    BaseAuthTagsOperation[AuthRenameItemParameters, AuthTag],
+):
     PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
-    project: "AuthProject"
-
-    @t.override
-    def _get_storage(self) -> BaseAuthTagsStorage:
-        return self.project.auth.storage.tags
 
 
-class AuthDeleteTag(BaseAuthDeleteItem[AuthTag]):
+class AuthDeleteTag(
+    BaseAuthDeleteItem[AuthTag],
+    BaseAuthTagsOperation[AuthDeleteItemParameters, None],
+):
     PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
-    project: "AuthProject"
-
-    @t.override
-    def _get_storage(self) -> BaseAuthTagsStorage:
-        return self.project.auth.storage.tags
