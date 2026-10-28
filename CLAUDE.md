@@ -19,7 +19,11 @@ their CLI names from `cli_name`. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in, the storage and the transport plug
 in. The core holds the facades; their implementations are in `contrib/`
 (`contrib/storages/<backend>/`), each under its own extra when it needs
-more than the core. `python -m ingot_auth` runs the addon on its own
+more than the core. A contrib gives the class of the slot it fills
+(`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
+application composes. What a backend chooses (a client, the names of its
+collections) is a `ClassVar` changed by subclassing, not a config; the
+configs of the environment belong to the infrastructure addon. `python -m ingot_auth` runs the addon on its own
 (prefix `INGOT`) with the storage in memory. A library (ADR 0003), Python >= 3.14, part of the
 [ak-ingots](https://github.com/ak-ingots) ecosystem; the meta repository
 `ingots-libs` holds the ecosystem-wide decisions in `docs/adr/`.

@@ -6,9 +6,20 @@ storage is in memory, so what a command stores is gone with it.
 import sys
 
 from ingots.defaults.logging import configure_startup_logging
+from ingots.puer import Slot
 from ingots.puer.cli import CommandRunner
 
-from .contrib.storages.memory import AuthMemoryProject
+from .auth import AuthUnit
+from .contrib.storages.memory import AuthMemoryStorage
+from .project import AuthProject
+
+
+class AuthMemoryUnit(AuthUnit):
+    storage = Slot(AuthMemoryStorage)
+
+
+class AuthMemoryProject(AuthProject):
+    auth = Slot(AuthMemoryUnit)
 
 
 def main() -> None:
