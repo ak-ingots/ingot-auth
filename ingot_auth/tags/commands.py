@@ -36,7 +36,7 @@ class AuthCreateTagCommand(BaseAuthCreateItemCommand[AuthTag]):
         return AuthTag(id=namespace.registry_id, name=namespace.registry_name)
 
     @t.override
-    def _get_create(self) -> "BoundFactory[AuthCreateTag]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateTag]":
         return self.project.auth.tags.op_create
 
 
@@ -45,7 +45,7 @@ class AuthListTagsCommand(BaseAuthListItemsCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_list(self) -> "BoundFactory[AuthListTags]":
+    def _get_operation(self) -> "BoundFactory[AuthListTags]":
         return self.project.auth.tags.op_list
 
 
@@ -54,7 +54,7 @@ class AuthRenameTagCommand(BaseAuthRenameItemCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_rename(self) -> "BoundFactory[AuthRenameTag]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameTag]":
         return self.project.auth.tags.op_rename
 
 
@@ -63,5 +63,5 @@ class AuthDeleteTagCommand(BaseAuthDeleteItemCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_delete(self) -> "BoundFactory[AuthDeleteTag]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteTag]":
         return self.project.auth.tags.op_delete

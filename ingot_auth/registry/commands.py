@@ -37,23 +37,23 @@ class AuthRenameItemCliArgs:
     name: str
 
 
-class BaseAuthRegistryCommand[ItemType: AuthItem](BaseCommand):
+class BaseAuthRegistryCommand[ItemType: AuthItem, ParametersType, ResultType](
+    BaseCommand
+):
     """
-    A command of a registry: runs one of its operations as the root and
-    prints the items, one a line, as :meth:`_format_item` gives them.
+    A command of a registry: runs its operation, which a subclass gives in
+    :meth:`_get_operation`, as the root and prints the items, one a line,
+    as :meth:`_format_item` gives them.
     """
 
     project: "Project"
 
     @t.final
-    async def run_operation[ParametersType, ResultType](
-        self,
-        factory: "BoundFactory[BaseOperation[ParametersType, ResultType]]",
-        parameters: ParametersType,
-    ) -> ResultType:
-        """Runs an operation of the registry as the root."""
+    async def run_operation(self, parameters: ParametersType) -> ResultType:
+        """Runs the operation of the command as the root."""
         operations = self.project.operations
         metadata = operations.create_metadata(ROOT_CALLER)
+        factory = self._get_operation()
         return await operations.runner.run(factory, parameters, metadata)
 
     @t.final
@@ -62,12 +62,21 @@ class BaseAuthRegistryCommand[ItemType: AuthItem](BaseCommand):
         for item in items:
             print(self._format_item(item))
 
+    @abc.abstractmethod
+    def _get_operation(
+        self,
+    ) -> "BoundFactory[BaseOperation[ParametersType, ResultType]]":
+        """The operation of the command: ``self.project.auth.tags.op_list``."""
+        raise NotImplementedError(f"{type(self).__qualname__}._get_operation")
+
     def _format_item(self, item: ItemType) -> str:
         """An item on its line: its id and its name."""
         return f"{item.id}\t{item.name}"
 
 
-class BaseAuthCreateItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[ItemType]):
+class BaseAuthCreateItemCommand[ItemType: AuthItem](
+    BaseAuthRegistryCommand[ItemType, ItemType, ItemType]
+):
     """
     Creates an item: a subclass adds the options of its items and builds
     them from the namespace as its CLI arguments.
@@ -85,14 +94,12 @@ class BaseAuthCreateItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[Item
 
     @t.override
     async def _run(self) -> None:
-        self.print_items(await self.run_operation(self._get_create(), self.cli_args))
-
-    @abc.abstractmethod
-    def _get_create(self) -> "BoundFactory[BaseOperation[ItemType, ItemType]]":
-        raise NotImplementedError(f"{type(self).__qualname__}._get_create")
+        self.print_items(await self.run_operation(self.cli_args))
 
 
-class BaseAuthListItemsCommand[ItemType: AuthItem](BaseAuthRegistryCommand[ItemType]):
+class BaseAuthListItemsCommand[ItemType: AuthItem](
+    BaseAuthRegistryCommand[ItemType, None, tuple[ItemType, ...]]
+):
     """Prints the items, by id."""
 
     cli_name = "list"
@@ -100,16 +107,12 @@ class BaseAuthListItemsCommand[ItemType: AuthItem](BaseAuthRegistryCommand[ItemT
 
     @t.override
     async def _run(self) -> None:
-        self.print_items(*await self.run_operation(self._get_list(), None))
-
-    @abc.abstractmethod
-    def _get_list(
-        self,
-    ) -> "BoundFactory[BaseOperation[None, tuple[ItemType, ...]]]":
-        raise NotImplementedError(f"{type(self).__qualname__}._get_list")
+        self.print_items(*await self.run_operation(None))
 
 
-class BaseAuthRenameItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[ItemType]):
+class BaseAuthRenameItemCommand[ItemType: AuthItem](
+    BaseAuthRegistryCommand[ItemType, AuthRenameItemParameters, ItemType]
+):
     """Gives an item a new name."""
 
     cli_name = "rename"
@@ -132,16 +135,12 @@ class BaseAuthRenameItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[Item
         parameters = AuthRenameItemParameters(
             id=self.cli_args.id, name=self.cli_args.name
         )
-        self.print_items(await self.run_operation(self._get_rename(), parameters))
-
-    @abc.abstractmethod
-    def _get_rename(
-        self,
-    ) -> "BoundFactory[BaseOperation[AuthRenameItemParameters, ItemType]]":
-        raise NotImplementedError(f"{type(self).__qualname__}._get_rename")
+        self.print_items(await self.run_operation(parameters))
 
 
-class BaseAuthDeleteItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[ItemType]):
+class BaseAuthDeleteItemCommand[ItemType: AuthItem](
+    BaseAuthRegistryCommand[ItemType, AuthDeleteItemParameters, None]
+):
     """Deletes an item; its id is never given again."""
 
     cli_name = "delete"
@@ -161,10 +160,4 @@ class BaseAuthDeleteItemCommand[ItemType: AuthItem](BaseAuthRegistryCommand[Item
     @t.override
     async def _run(self) -> None:
         parameters = AuthDeleteItemParameters(id=self.cli_args.id)
-        await self.run_operation(self._get_delete(), parameters)
-
-    @abc.abstractmethod
-    def _get_delete(
-        self,
-    ) -> "BoundFactory[BaseOperation[AuthDeleteItemParameters, None]]":
-        raise NotImplementedError(f"{type(self).__qualname__}._get_delete")
+        await self.run_operation(parameters)

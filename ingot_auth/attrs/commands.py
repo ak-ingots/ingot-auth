@@ -18,6 +18,11 @@ from ingot_auth.registry.commands import (
     BaseAuthRenameItemCommand,
 )
 
+from ingot_auth.registry.operations import (
+    AuthDeleteItemParameters,
+    AuthRenameItemParameters,
+)
+
 from .items import AuthAttr, AuthAttrType
 from .operations import AuthCreateAttr, AuthDeleteAttr, AuthListAttrs, AuthRenameAttr
 
@@ -27,7 +32,9 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class BaseAuthAttrsCommand(BaseAuthRegistryCommand[AuthAttr]):
+class BaseAuthAttrsCommand[ParametersType, ResultType](
+    BaseAuthRegistryCommand[AuthAttr, ParametersType, ResultType]
+):
     """A command of the attributes: prints an attribute with its type."""
 
     project: "AuthProject"
@@ -37,7 +44,9 @@ class BaseAuthAttrsCommand(BaseAuthRegistryCommand[AuthAttr]):
         return f"{super()._format_item(item)}\t{item.type}"
 
 
-class AuthCreateAttrCommand(BaseAuthCreateItemCommand[AuthAttr], BaseAuthAttrsCommand):
+class AuthCreateAttrCommand(
+    BaseAuthCreateItemCommand[AuthAttr], BaseAuthAttrsCommand[AuthAttr, AuthAttr]
+):
     cli_description = "Creates an attribute."
 
     @t.override
@@ -62,29 +71,38 @@ class AuthCreateAttrCommand(BaseAuthCreateItemCommand[AuthAttr], BaseAuthAttrsCo
         )
 
     @t.override
-    def _get_create(self) -> "BoundFactory[AuthCreateAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateAttr]":
         return self.project.auth.attrs.op_create
 
 
-class AuthListAttrsCommand(BaseAuthListItemsCommand[AuthAttr], BaseAuthAttrsCommand):
+class AuthListAttrsCommand(
+    BaseAuthListItemsCommand[AuthAttr],
+    BaseAuthAttrsCommand[None, tuple[AuthAttr, ...]],
+):
     cli_description = "Prints the attributes."
 
     @t.override
-    def _get_list(self) -> "BoundFactory[AuthListAttrs]":
+    def _get_operation(self) -> "BoundFactory[AuthListAttrs]":
         return self.project.auth.attrs.op_list
 
 
-class AuthRenameAttrCommand(BaseAuthRenameItemCommand[AuthAttr], BaseAuthAttrsCommand):
+class AuthRenameAttrCommand(
+    BaseAuthRenameItemCommand[AuthAttr],
+    BaseAuthAttrsCommand[AuthRenameItemParameters, AuthAttr],
+):
     cli_description = "Gives an attribute a new name; its type stays."
 
     @t.override
-    def _get_rename(self) -> "BoundFactory[AuthRenameAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameAttr]":
         return self.project.auth.attrs.op_rename
 
 
-class AuthDeleteAttrCommand(BaseAuthDeleteItemCommand[AuthAttr], BaseAuthAttrsCommand):
+class AuthDeleteAttrCommand(
+    BaseAuthDeleteItemCommand[AuthAttr],
+    BaseAuthAttrsCommand[AuthDeleteItemParameters, None],
+):
     cli_description = "Deletes an attribute; its id is never given again."
 
     @t.override
-    def _get_delete(self) -> "BoundFactory[AuthDeleteAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteAttr]":
         return self.project.auth.attrs.op_delete
