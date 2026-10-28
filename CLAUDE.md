@@ -10,12 +10,17 @@ the sign-up, the sign-in and the sessions of the users of an application.
 `AuthProject` (`project.py`) takes the addon's `AuthSettings` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
-the auth of the project, empty for now); a unit lives in the `__init__.py`
-of its package, as in `ingots.defaults`, and a class takes the prefix
-`Auth`, so that an application imports it under its own name. The goal of
-the core: assume no details, as far as it goes; the methods of sign-in, the
-storage and the transport plug in. `python -m ingot_auth` runs the addon on
-its own (prefix `INGOT`). A library (ADR 0003), Python >= 3.14, part of the
+the auth of the project: the registries `tags/` and `attrs/` on the shared
+`registry/`, and the storage `storage/`, abstract); a unit lives in the
+`__init__.py` of its package, as in `ingots.defaults`, and a class takes the
+prefix `Auth`, so that an application imports it under its own name. A unit
+names its operations `op_*` and its commands `cmd_*`, the commands taking
+their CLI names from `cli_name`. The goal of the core: assume no details, as
+far as it goes; the methods of sign-in, the storage and the transport plug
+in. The core holds the facades; their implementations are in `contrib/`
+(`contrib/storages/<backend>/`), each under its own extra when it needs
+more than the core. `python -m ingot_auth` runs the addon on its own
+(prefix `INGOT`) with the storage in memory. A library (ADR 0003), Python >= 3.14, part of the
 [ak-ingots](https://github.com/ak-ingots) ecosystem; the meta repository
 `ingots-libs` holds the ecosystem-wide decisions in `docs/adr/`.
 

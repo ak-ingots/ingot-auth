@@ -13,7 +13,7 @@ from ingots.defaults.operations import (
 )
 from ingots.puer.cli import CommandRunner
 
-from ingot_auth.__main__ import AuthMemoryProject
+from ingot_auth.contrib.storages.memory import AuthMemoryProject
 from ingot_auth.attrs import AuthAttr, AuthAttrType
 from ingot_auth.registry import (
     AuthItemConflictError,

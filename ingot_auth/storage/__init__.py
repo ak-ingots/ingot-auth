@@ -1,14 +1,14 @@
 """
 The storage of the auth: a facade, one storage a registry, which a backend
-implements; :class:`AuthMemoryStorage` keeps everything in memory.
+in ``ingot_auth.contrib.storages`` implements.
 """
 
-__all__ = ("AuthMemoryStorage", "AuthStorage")
+__all__ = ("AuthStorage",)
 
 from ingots.puer import Slot, Unit
 
-from ingot_auth.attrs import AuthMemoryAttrsStorage, BaseAuthAttrsStorage
-from ingot_auth.tags import AuthMemoryTagsStorage, BaseAuthTagsStorage
+from ingot_auth.attrs import BaseAuthAttrsStorage
+from ingot_auth.tags import BaseAuthTagsStorage
 
 
 class AuthStorage(Unit):
@@ -21,10 +21,3 @@ class AuthStorage(Unit):
     # one is an open question of ingots
     tags = Slot(BaseAuthTagsStorage)  # type: ignore[type-abstract]
     attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
-
-
-class AuthMemoryStorage(AuthStorage):
-    """The storage in memory: for the tests and the addon run on its own."""
-
-    tags = Slot(AuthMemoryTagsStorage)
-    attrs = Slot(AuthMemoryAttrsStorage)

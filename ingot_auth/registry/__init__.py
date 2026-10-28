@@ -9,11 +9,10 @@ __all__ = (
     "AuthItem",
     "AuthItemConflictError",
     "AuthItemNotFoundError",
-    "AuthMemoryRegistryStorage",
     "AuthRegistryError",
     "BaseAuthRegistryStorage",
 )
 
 from .errors import AuthItemConflictError, AuthItemNotFoundError, AuthRegistryError
 from .items import AuthItem
-from .storage import AuthMemoryRegistryStorage, BaseAuthRegistryStorage
+from .storage import BaseAuthRegistryStorage

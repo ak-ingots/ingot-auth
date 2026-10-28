@@ -1,12 +1,12 @@
 """The auth unit: the sign-up, the sign-in and the sessions of the project."""
 
-__all__ = ("AuthMemoryUnit", "AuthUnit")
+__all__ = ("AuthUnit",)
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
 from ingot_auth.attrs import AuthAttrs
-from ingot_auth.storage import AuthMemoryStorage, AuthStorage
+from ingot_auth.storage import AuthStorage
 from ingot_auth.tags import AuthTags
 
 
@@ -24,9 +24,3 @@ class AuthUnit(CliUnit):
     storage = Slot(AuthStorage)
     tags = Slot(AuthTags)
     attrs = Slot(AuthAttrs)
-
-
-class AuthMemoryUnit(AuthUnit):
-    """The auth with the storage in memory."""
-
-    storage = Slot(AuthMemoryStorage)
