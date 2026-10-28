@@ -3,8 +3,8 @@ revision = 5
 requires-python = ">=3.14"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'linux'",
-    "python_full_version < '3.15' and sys_platform == 'linux'",
     "python_full_version >= '3.15' and sys_platform == 'darwin'",
+    "python_full_version < '3.15' and sys_platform == 'linux'",
     "python_full_version < '3.15' and sys_platform == 'darwin'",
 ]
 supported-markers = [
@@ -353,7 +353,7 @@ doc = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ingots", specifier = ">=0.32.1,<0.33" }]
+requires-dist = [{ name = "ingots", specifier = ">=0.32.2,<0.33" }]
 
 [package.metadata.requires-dev]
 changelog = [{ name = "towncrier" }]
@@ -373,11 +373,11 @@ doc = [
 
 [[package]]
 name = "ingots"
-version = "0.32.1"
+version = "0.32.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5b/2f/9edf9966866ec7bfc2290484daebe36c549cce99540eebbbd3b991117084/ingots-0.32.1.tar.gz", hash = "sha256:42d7fa3ede7510fd567fdace5bb67294a4275d653f32ec8b7e271f8ae7432170", size = 39148, upload-time = "2026-10-26T22:19:51.053Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e6/8b/05b31af6dab16230c0bb1ff2fb2931d18279ca226dd3a67801ceef5bc6b6/ingots-0.32.2.tar.gz", hash = "sha256:41e2a9d1d30c92ecf2a641009331b4948250d2cde1c99591dac1195d6b89b6cb", size = 39397, upload-time = "2026-10-28T13:55:09.255Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/ad/0e0ffa1095e0cddc45815b170f10dca5f4bc999b21efb6878ce092b839e6/ingots-0.32.1-py3-none-any.whl", hash = "sha256:92b32d32d5e1a1a5ee9e7f8fb5b3630a3a3f52dcba7e327bea14dbbc18a9cfd5", size = 57807, upload-time = "2026-10-26T22:19:49.497Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/cb/8552c1c95e7a4cec985224ead2bffca84b73689688acc49ceacd31c8e51f/ingots-0.32.2-py3-none-any.whl", hash = "sha256:19a934bc5c354f037c7dbc607ec0ad3a77c94962878555eee3b9439e8af2d458", size = 58095, upload-time = "2026-10-28T13:55:08.067Z" },
 ]
 
 [[package]]
