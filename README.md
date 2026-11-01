@@ -8,9 +8,6 @@
 The sign-up, the sign-in and the sessions of the users of Ingots
 applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 
-**Status:** pre-alpha: the skeleton of the addon, its
-project, settings, logging and an empty `auth` unit.
-
 ## For Consumers
 
 ### Install
