@@ -8,8 +8,8 @@
 The sign-up, the sign-in and the sessions of the users of Ingots
 applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 
-**Status:** pre-alpha: the skeleton of the addon, its
-project, settings, logging and an empty `auth` unit.
+**Status:** pre-alpha: the registries of the tags and the attributes of the
+profiles, their metadata for the consumers, and all of it over gRPC.
 
 ## For Consumers
 
