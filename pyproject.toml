@@ -24,6 +24,7 @@ dependencies = ["ingots>=0.32.2,<0.33"]
 
 [project.optional-dependencies]
 grpcio = ["ingot-grpcio>=0.11.0,<0.12"]
+pymongo = ["ingot-pymongo>=0.12.0,<0.13"]
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
@@ -51,6 +52,7 @@ dev = [
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
     "ingot-grpcio>=0.11.0,<0.12",
+    "ingot-pymongo>=0.12.0,<0.13",
     "mypy",
     "mypy-protobuf>=5.1.0",
     "types-grpcio>=1.84.0.20261021",

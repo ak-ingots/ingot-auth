@@ -1,0 +1,15 @@
+# The MongoDB of the tests of the storage: `make integration`, `coverage` and
+# `installed-test` start it, run the tests against it and stop it.
+services:
+  mongodb:
+    image: mongo:9
+    ports:
+      - "127.0.0.1:${INGOT_AUTH_TEST_PORT:-27118}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ingot
+      MONGO_INITDB_ROOT_PASSWORD: ingot
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

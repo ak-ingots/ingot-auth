@@ -17,7 +17,7 @@ DOC_OUT := docs/build
 PYTHONS ?= 3.14 3.15
 
 # The extras the wheel is tested with: every integration.
-EXTRAS ?= grpcio
+EXTRAS ?= grpcio,pymongo
 
 # What `cl-check` compares the branch with.
 AGAINST ?= origin/main
@@ -46,10 +46,21 @@ lint:  ## black --check, flake8, mypy --strict
 test:  ## unittest on the working tree
 	uv run python -m unittest discover -s tests -t .
 
+# The storage in MongoDB is tested on a real server: the targets below start the
+# one of docker-compose.yml, and need Docker. Without it `make test` skips them.
+WITH_MONGODB := trap 'docker compose down --volumes --timeout 1' EXIT; \
+	docker compose up --detach --wait --quiet-pull; \
+	export INGOT_AUTH_TEST_PORT=$${INGOT_AUTH_TEST_PORT:-27118};
+
 .PHONY: coverage
-coverage:  ## unittest on the working tree under coverage; fails below 99%
-	uv run coverage run -m unittest discover -s tests -t .
-	uv run coverage report
+coverage:  ## unittest on the working tree under coverage, with MongoDB; fails below 99%
+	@$(WITH_MONGODB) \
+	uv run coverage run -m unittest discover -s tests -t . && uv run coverage report
+
+.PHONY: integration
+integration:  ## tests.test_mongodb_storage against the MongoDB of docker-compose.yml
+	@$(WITH_MONGODB) \
+	uv run python -m unittest -v tests.test_mongodb_storage
 
 # ADR 0003: the tests run against the built wheel, installed into a fresh
 # virtualenv, from a copy of tests/ outside the repository, so the package can
@@ -64,14 +75,15 @@ wheel-test: all  ## unittest on the built wheel, once per interpreter in PYTHONS
 .PHONY: installed-test
 installed-test:
 	@test -n "$(WHEEL)" || { echo "WHEEL=path/to.whl is required"; exit 1; }
-	@for py in $(PYTHONS); do \
+	@$(WITH_MONGODB) \
+	for py in $(PYTHONS); do \
 		echo "== $(notdir $(WHEEL)) on Python $$py"; \
 		tmp=$$(mktemp -d); \
-		trap 'rm -rf "$$tmp"' EXIT; \
 		uv venv --quiet --python $$py "$$tmp/venv"; \
 		uv pip install --quiet --python "$$tmp/venv/bin/python" "$(WHEEL)[$(EXTRAS)]"; \
 		cp -r tests README.md "$$tmp/"; \
-		(cd "$$tmp" && INGOT_AUTH_WHEEL_TEST=1 venv/bin/python -m unittest discover -s tests -t .); \
+		(cd "$$tmp" && INGOT_AUTH_WHEEL_TEST=1 venv/bin/python -m unittest discover -s tests -t .) \
+			|| { rm -rf "$$tmp"; exit 1; }; \
 		rm -rf "$$tmp"; \
 	done
 
