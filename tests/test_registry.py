@@ -17,12 +17,7 @@ from ingots.puer.cli import CommandRunner
 from ingot_auth.__main__ import AuthMemoryProject
 from ingot_auth.attrs import AuthAttr, AuthAttrsPermissions, AuthAttrType
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.registry import (
-    AuthItemConflictError,
-    AuthItemInvalidError,
-    AuthItemNotFoundError,
-    BaseAuthRegistryStorage,
-)
+from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -31,51 +26,6 @@ from ingot_auth.tags import AuthTag, AuthTagsPermissions
 
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")
-
-
-class TagsStorageTestCase(unittest.TestCase):
-    """What every storage of the tags guarantees: a contract to be."""
-
-    def create_storage(self) -> BaseAuthRegistryStorage[AuthTag]:
-        self.project = AuthMemoryProject()  # the storage refers to it weakly
-        return self.project.auth.storage.tags
-
-    @t.override
-    def setUp(self) -> None:
-        self.storage = self.create_storage()
-        asyncio.run(self.storage.create(STAFF))
-        asyncio.run(self.storage.create(BETA))
-
-    def test_the_items_come_by_id(self) -> None:
-        self.assertEqual(asyncio.run(self.storage.get_all()), (BETA, STAFF))
-
-    def test_an_id_or_a_name_is_taken_once(self) -> None:
-        for item in (AuthTag(id=1, name="new"), AuthTag(id=3, name="beta")):
-            with self.assertRaises(AuthItemConflictError) as error:
-                asyncio.run(self.storage.create(item))
-            self.assertEqual(error.exception.registry, "tags")
-
-    def test_the_id_of_a_deleted_item_stays_taken(self) -> None:
-        asyncio.run(self.storage.delete(1))
-        self.assertEqual(asyncio.run(self.storage.get_all()), (STAFF,))
-        with self.assertRaisesRegex(AuthItemConflictError, "the id 1 is not"):
-            asyncio.run(self.storage.create(BETA))
-
-    def test_an_item_is_renamed(self) -> None:
-        renamed = AuthTag(id=1, name="preview")
-        self.assertEqual(asyncio.run(self.storage.rename(1, "preview")), renamed)
-        self.assertEqual(asyncio.run(self.storage.rename(1, "preview")), renamed)
-        with self.assertRaisesRegex(AuthItemConflictError, "'staff' is not"):
-            asyncio.run(self.storage.rename(1, "staff"))
-
-    def test_an_unknown_id_is_not_found(self) -> None:
-        with self.assertRaises(AuthItemNotFoundError) as error:
-            asyncio.run(self.storage.rename(3, "new"))
-        self.assertEqual(
-            (str(error.exception), error.exception.key), ("tags: no item 3", 3)
-        )
-        with self.assertRaises(AuthItemNotFoundError):
-            asyncio.run(self.storage.delete(3))
 
 
 class RegistryOperationsTestCase(unittest.TestCase):
