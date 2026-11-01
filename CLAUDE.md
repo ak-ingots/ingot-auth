@@ -26,8 +26,8 @@ proto` generates the code, committed, and makes its imports relative. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
-application composes. What a backend chooses (a client, the names of its
-collections) is a `ClassVar` changed by subclassing, not a config; the
+application composes. What a backend chooses is changed by subclassing, not a config: a client by a
+hook, the names of its collections by a `ClassVar`; the
 configs of the environment belong to the infrastructure addon. `testing/contracts/` holds the guarantees of the addon as tests a consumer runs (ADR 0005),
 `python -m ingot_auth` runs the addon on its own
 (prefix `INGOT`) with the storage in memory. A library (ADR 0003), Python >= 3.14, part of the
@@ -43,7 +43,8 @@ provides the environments and interpreters.
 make check        # what CI runs: lint, test, coverage, wheel-test, doc, cl-check
 make lint         # black --check, flake8, mypy --strict
 make test         # unittest on the working tree
-make coverage     # the same under coverage; fails below 99%
+make coverage     # the same under coverage, with MongoDB; fails below 99%
+make integration  # the storage in MongoDB against docker-compose.yml
 make wheel-test   # unittest on the built wheel, PYTHONS="3.14 3.15"
 make format       # black
 make doc          # apidoc, then Sphinx; warnings are errors
