@@ -28,7 +28,8 @@ operations has its permissions in a `permissions.py` of its own, the enum
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
 application composes. What a backend chooses (a client, the names of its
 collections) is a `ClassVar` changed by subclassing, not a config; the
-configs of the environment belong to the infrastructure addon. `python -m ingot_auth` runs the addon on its own
+configs of the environment belong to the infrastructure addon. `testing/contracts/` holds the guarantees of the addon as tests a consumer runs (ADR 0005),
+`python -m ingot_auth` runs the addon on its own
 (prefix `INGOT`) with the storage in memory. A library (ADR 0003), Python >= 3.14, part of the
 [ak-ingots](https://github.com/ak-ingots) ecosystem; the meta repository
 `ingots-libs` holds the ecosystem-wide decisions in `docs/adr/`.
