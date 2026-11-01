@@ -12,7 +12,6 @@ import typing as t
 
 from ingots.defaults.operations import Permissions
 
-from ingot_auth.permissions import AuthPermissions
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -24,6 +23,7 @@ from ingot_auth.registry.operations import (
 )
 
 from .items import AuthAttr
+from .permissions import AuthAttrsPermissions
 from .storage import BaseAuthAttrsStorage
 
 if t.TYPE_CHECKING:
@@ -45,25 +45,25 @@ class BaseAuthAttrsOperation[ParametersType, ResultType](
 class AuthCreateAttr(
     BaseAuthCreateItem[AuthAttr], BaseAuthAttrsOperation[AuthAttr, AuthAttr]
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_CREATE)
 
 
 class AuthListAttrs(
     BaseAuthListItems[AuthAttr],
     BaseAuthAttrsOperation[None, tuple[AuthAttr, ...]],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.READ_REGISTRY)
+    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_READ)
 
 
 class AuthRenameAttr(
     BaseAuthRenameItem[AuthAttr],
     BaseAuthAttrsOperation[AuthRenameItemParameters, AuthAttr],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_UPDATE)
 
 
 class AuthDeleteAttr(
     BaseAuthDeleteItem[AuthAttr],
     BaseAuthAttrsOperation[AuthDeleteItemParameters, None],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_DELETE)

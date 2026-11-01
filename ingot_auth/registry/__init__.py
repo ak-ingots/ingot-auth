@@ -8,11 +8,17 @@ attributes of the sessions will be one.
 __all__ = (
     "AuthItem",
     "AuthItemConflictError",
+    "AuthItemInvalidError",
     "AuthItemNotFoundError",
     "AuthRegistryError",
     "BaseAuthRegistryStorage",
 )
 
-from .errors import AuthItemConflictError, AuthItemNotFoundError, AuthRegistryError
+from .errors import (
+    AuthItemConflictError,
+    AuthItemInvalidError,
+    AuthItemNotFoundError,
+    AuthRegistryError,
+)
 from .items import AuthItem
 from .storage import BaseAuthRegistryStorage

@@ -4,6 +4,7 @@ __all__ = (
     "AuthAttr",
     "AuthAttrType",
     "AuthAttrs",
+    "AuthAttrsPermissions",
     "BaseAuthAttrsStorage",
 )
 
@@ -18,6 +19,7 @@ from .commands import (
 )
 from .items import AuthAttr, AuthAttrType
 from .operations import AuthCreateAttr, AuthDeleteAttr, AuthListAttrs, AuthRenameAttr
+from .permissions import AuthAttrsPermissions
 from .storage import BaseAuthAttrsStorage
 
 
