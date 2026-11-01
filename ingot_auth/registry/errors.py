@@ -1,6 +1,11 @@
 """The errors of the registries."""
 
-__all__ = ("AuthItemConflictError", "AuthItemNotFoundError", "AuthRegistryError")
+__all__ = (
+    "AuthItemConflictError",
+    "AuthItemInvalidError",
+    "AuthItemNotFoundError",
+    "AuthRegistryError",
+)
 
 import typing as t
 
@@ -28,17 +33,38 @@ class AuthRegistryError(Exception):
 
 
 class AuthItemConflictError(AuthRegistryError):
-    """An id or a name is taken, or not acceptable."""
+    """An id or a name is taken."""
 
     @classmethod
     def for_id(cls, registry: str, item_id: int) -> t.Self:
-        """The id is taken, or was, or is not positive."""
+        """The id is taken, or was."""
         return cls(f"{registry}: the id {item_id} is not available", registry, item_id)
 
     @classmethod
     def for_name(cls, registry: str, name: str) -> t.Self:
-        """The name is taken, or not acceptable."""
+        """The name is taken."""
         return cls(f"{registry}: the name {name!r} is not available", registry, name)
+
+
+class AuthItemInvalidError(AuthRegistryError):
+    """An id, a name or a type is not acceptable, whatever the registry holds."""
+
+    @classmethod
+    def for_id(cls, registry: str, item_id: int) -> t.Self:
+        """The id is not positive."""
+        return cls(f"{registry}: the id {item_id} is not positive", registry, item_id)
+
+    @classmethod
+    def for_name(cls, registry: str, name: str) -> t.Self:
+        """The name does not match the pattern of the names."""
+        return cls(f"{registry}: the name {name!r} is not acceptable", registry, name)
+
+    @classmethod
+    def for_type(cls, registry: str, item_type: int | str) -> t.Self:
+        """The type is not given, or not known."""
+        return cls(
+            f"{registry}: the type {item_type!r} is not acceptable", registry, item_type
+        )
 
 
 class AuthItemNotFoundError(AuthRegistryError):

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package ingot_auth.metadata.v1;
+
+// The registries as the consumers read them: a client asks for them before
+// signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+service Metadata {
+  // Requires PERMISSION_CAN_READ.
+  rpc Get(GetMetadataRequest) returns (GetMetadataResponse);
+}
+
+// The bits of the domain `auth.metadata` the RPCs require: an aid for a client
+// building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_READ = 1;
+}
+
+enum AttrType {
+  ATTR_TYPE_UNSPECIFIED = 0;
+  ATTR_TYPE_BOOL = 1;
+  ATTR_TYPE_INT = 2;
+  ATTR_TYPE_DECIMAL = 3;
+  ATTR_TYPE_DATETIME = 4;
+  ATTR_TYPE_STR = 5;
+}
+
+message Tag {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message Attr {
+  uint32 id = 1;
+  string name = 2;
+  AttrType type = 3;
+}
+
+message GetMetadataRequest {}
+
+message GetMetadataResponse {
+  repeated Tag tags = 1;
+  repeated Attr attrs = 2;
+}

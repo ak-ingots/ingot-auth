@@ -11,15 +11,20 @@ the sign-up, the sign-in and the sessions of the users of an application.
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
 the auth of the project: the registries `tags/` and `attrs/` on the shared
-`registry/`, and the storage `storage/`, abstract); a unit lives in the
+`registry/`, their `metadata/` for the consumers, and the storage `storage/`,
+abstract); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
 their CLI names from `cli_name`. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in, the storage and the transport plug
 in. The core holds the facades; their implementations are in `contrib/`
-(`contrib/storages/<backend>/`), each under its own extra when it needs
-more than the core. A contrib gives the class of the slot it fills
+(`contrib/storages/<backend>/`, `contrib/transports/<addon>/`), each under
+its own extra when it needs more than the core. `contrib/transports/grpcio/`
+keeps its contract in `proto/ingot_auth/v1/`, named and shaped by ADR 0009: `make
+proto` generates the code, committed, and makes its imports relative. A set of
+operations has its permissions in a `permissions.py` of its own, the enum
+`Permission` of its contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
 application composes. What a backend chooses (a client, the names of its
 collections) is a `ClassVar` changed by subclassing, not a config; the

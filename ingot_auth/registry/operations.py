@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata
 
-from .errors import AuthItemConflictError
+from .errors import AuthItemInvalidError
 from .items import AuthItem
 from .storage import BaseAuthRegistryStorage
 
@@ -53,7 +53,7 @@ class BaseAuthRegistryOperation[ItemType: AuthItem, ParametersType, ResultType](
 
     def _check_name(self, name: str) -> None:
         if not self.NAME_PATTERN.fullmatch(name):
-            raise AuthItemConflictError.for_name(self._get_storage().REGISTRY, name)
+            raise AuthItemInvalidError.for_name(self._get_storage().REGISTRY, name)
 
 
 class BaseAuthCreateItem[ItemType: AuthItem](
@@ -65,7 +65,7 @@ class BaseAuthCreateItem[ItemType: AuthItem](
     async def _run(self, parameters: ItemType, metadata: OperationMetadata) -> ItemType:
         storage = self._get_storage()
         if parameters.id < 1:
-            raise AuthItemConflictError.for_id(storage.REGISTRY, parameters.id)
+            raise AuthItemInvalidError.for_id(storage.REGISTRY, parameters.id)
         self._check_name(parameters.name)
         await storage.create(parameters)
         return parameters

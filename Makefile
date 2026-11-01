@@ -16,6 +16,9 @@ DOC_OUT := docs/build
 # matrix in .github/workflows/ci.yml.
 PYTHONS ?= 3.14 3.15
 
+# The extras the wheel is tested with: every integration.
+EXTRAS ?= grpcio
+
 # What `cl-check` compares the branch with.
 AGAINST ?= origin/main
 
@@ -66,11 +69,24 @@ installed-test:
 		tmp=$$(mktemp -d); \
 		trap 'rm -rf "$$tmp"' EXIT; \
 		uv venv --quiet --python $$py "$$tmp/venv"; \
-		uv pip install --quiet --python "$$tmp/venv/bin/python" "$(WHEEL)"; \
+		uv pip install --quiet --python "$$tmp/venv/bin/python" "$(WHEEL)[$(EXTRAS)]"; \
 		cp -r tests README.md "$$tmp/"; \
 		(cd "$$tmp" && INGOT_AUTH_WHEEL_TEST=1 venv/bin/python -m unittest discover -s tests -t .); \
 		rm -rf "$$tmp"; \
 	done
+
+# The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
+# stubs of mypy-protobuf, committed next to them. The names of the contract are
+# what its consumers see, ingot_auth/v1/*.proto, not where this package holds
+# them, so the imports of the generated code are made relative.
+PROTO := ingot_auth/contrib/transports/grpcio/proto
+.PHONY: proto
+proto:  ## Generate the code of the .proto files
+	uv run python -m grpc_tools.protoc -I $(PROTO) --python_out=$(PROTO) \
+		--grpc_python_out=$(PROTO) --mypy_out=$(PROTO) --mypy_grpc_out=$(PROTO) \
+		$(PROTO)/ingot_auth/v1/*.proto
+	sed -i 's/^from ingot_auth\.v1 import /from . import /' \
+		$(PROTO)/ingot_auth/v1/*_pb2*.py $(PROTO)/ingot_auth/v1/*_pb2*.pyi
 
 .PHONY: format
 format:  ## Format code with black
@@ -85,7 +101,7 @@ format:  ## Format code with black
 apidoc:  ## Regenerate the API reference stubs in docs/modules/
 	rm -rf docs/modules
 	uv run --group doc sphinx-apidoc --separate --force --no-toc --module-first \
-		--ext-viewcode --output-dir=docs/modules ingot_auth
+		--ext-viewcode --output-dir=docs/modules ingot_auth "*_pb2*"
 
 .PHONY: doc
 doc: apidoc  ## Build the HTML documentation into docs/build/, warnings are errors
@@ -136,4 +152,4 @@ help:  ## Show this help
 		/^##@ / {printf "\n%s\n", substr($$0, 5); next} \
 		/^[a-z][a-zA-Z0-9_-]*:.*## / {printf "  %-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: PYTHONS, AGAINST, VERSION, DOC_HOST, DOC_PORT"
+	@echo "Variables: PYTHONS, EXTRAS, AGAINST, VERSION, DOC_HOST, DOC_PORT"

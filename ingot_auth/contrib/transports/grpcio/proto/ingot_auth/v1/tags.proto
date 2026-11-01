@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package ingot_auth.tags.v1;
+
+// The tags of the profiles, as their administrator manages them.
+service Tags {
+  // Requires PERMISSION_CAN_CREATE.
+  rpc Create(CreateTagRequest) returns (CreateTagResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc List(ListTagsRequest) returns (ListTagsResponse);
+  // Requires PERMISSION_CAN_UPDATE.
+  rpc Rename(RenameTagRequest) returns (RenameTagResponse);
+  // Requires PERMISSION_CAN_DELETE.
+  rpc Delete(DeleteTagRequest) returns (DeleteTagResponse);
+}
+
+// The bits of the domain `auth.tags` the RPCs require: an aid for a client
+// building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_CREATE = 1;
+  PERMISSION_CAN_READ = 2;
+  PERMISSION_CAN_UPDATE = 4;
+  PERMISSION_CAN_DELETE = 8;
+}
+
+message Tag {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message CreateTagRequest {
+  Tag tag = 1;
+}
+
+message CreateTagResponse {
+  Tag tag = 1;
+}
+
+message ListTagsRequest {}
+
+message ListTagsResponse {
+  repeated Tag tags = 1;
+}
+
+message RenameTagRequest {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message RenameTagResponse {
+  Tag tag = 1;
+}
+
+message DeleteTagRequest {
+  uint32 id = 1;
+}
+
+message DeleteTagResponse {}

@@ -12,7 +12,6 @@ import typing as t
 
 from ingots.defaults.operations import Permissions
 
-from ingot_auth.permissions import AuthPermissions
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -24,6 +23,7 @@ from ingot_auth.registry.operations import (
 )
 
 from .items import AuthTag
+from .permissions import AuthTagsPermissions
 from .storage import BaseAuthTagsStorage
 
 if t.TYPE_CHECKING:
@@ -45,25 +45,25 @@ class BaseAuthTagsOperation[ParametersType, ResultType](
 class AuthCreateTag(
     BaseAuthCreateItem[AuthTag], BaseAuthTagsOperation[AuthTag, AuthTag]
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_CREATE)
 
 
 class AuthListTags(
     BaseAuthListItems[AuthTag],
     BaseAuthTagsOperation[None, tuple[AuthTag, ...]],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.READ_REGISTRY)
+    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_READ)
 
 
 class AuthRenameTag(
     BaseAuthRenameItem[AuthTag],
     BaseAuthTagsOperation[AuthRenameItemParameters, AuthTag],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_UPDATE)
 
 
 class AuthDeleteTag(
     BaseAuthDeleteItem[AuthTag],
     BaseAuthTagsOperation[AuthDeleteItemParameters, None],
 ):
-    PERMISSIONS = Permissions(AuthPermissions.MANAGE_REGISTRY)
+    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_DELETE)

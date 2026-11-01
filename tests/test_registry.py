@@ -10,13 +10,16 @@ from ingots.defaults.operations import (
     ANONYMOUS_CALLER,
     ROOT_CALLER,
     OperationPermissionsError,
+    Permissions,
 )
 from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject
-from ingot_auth.attrs import AuthAttr, AuthAttrType
+from ingot_auth.attrs import AuthAttr, AuthAttrsPermissions, AuthAttrType
+from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.registry import (
     AuthItemConflictError,
+    AuthItemInvalidError,
     AuthItemNotFoundError,
     BaseAuthRegistryStorage,
 )
@@ -24,7 +27,7 @@ from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.tags import AuthTag
+from ingot_auth.tags import AuthTag, AuthTagsPermissions
 
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")
@@ -113,10 +116,10 @@ class RegistryOperationsTestCase(unittest.TestCase):
     def test_wrong_ids_and_names_are_refused(self) -> None:
         tags = self.project.auth.tags
         for tag in (AuthTag(id=0, name="beta"), AuthTag(id=1, name="Beta")):
-            with self.assertRaises(AuthItemConflictError):
+            with self.assertRaises(AuthItemInvalidError):
                 asyncio.run(self.runner.run(tags.op_create, tag, self.metadata))
         parameters = AuthRenameItemParameters(id=1, name="two words")
-        with self.assertRaises(AuthItemConflictError):
+        with self.assertRaises(AuthItemInvalidError):
             asyncio.run(self.runner.run(tags.op_rename, parameters, self.metadata))
 
     def test_a_caller_needs_the_permissions(self) -> None:
@@ -124,6 +127,21 @@ class RegistryOperationsTestCase(unittest.TestCase):
         run = self.runner.run(self.project.auth.tags.op_list, None, metadata)
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(run)
+
+    def test_every_operation_requires_its_permission(self) -> None:
+        tags, attrs = self.project.auth.tags, self.project.auth.attrs
+        for factory, flag in (
+            (tags.op_create, AuthTagsPermissions.CAN_CREATE),
+            (tags.op_list, AuthTagsPermissions.CAN_READ),
+            (tags.op_rename, AuthTagsPermissions.CAN_UPDATE),
+            (tags.op_delete, AuthTagsPermissions.CAN_DELETE),
+            (attrs.op_create, AuthAttrsPermissions.CAN_CREATE),
+            (attrs.op_list, AuthAttrsPermissions.CAN_READ),
+            (attrs.op_rename, AuthAttrsPermissions.CAN_UPDATE),
+            (attrs.op_delete, AuthAttrsPermissions.CAN_DELETE),
+            (self.project.auth.metadata.op_get, AuthMetadataPermissions.CAN_READ),
+        ):
+            self.assertEqual(factory.cls.PERMISSIONS, Permissions(flag))
 
 
 class RegistryCommandsTestCase(unittest.TestCase):
