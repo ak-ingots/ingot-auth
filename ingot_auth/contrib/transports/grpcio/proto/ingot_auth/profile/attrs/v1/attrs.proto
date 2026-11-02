@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package ingot_auth.profile.attrs.v1;
+
+// The attributes of the profiles, as their administrator manages them.
+service Attrs {
+  // Requires PERMISSION_CAN_CREATE.
+  rpc Create(CreateAttrRequest) returns (CreateAttrResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc List(ListAttrsRequest) returns (ListAttrsResponse);
+  // Requires PERMISSION_CAN_UPDATE.
+  rpc Rename(RenameAttrRequest) returns (RenameAttrResponse);
+  // Requires PERMISSION_CAN_DELETE.
+  rpc Delete(DeleteAttrRequest) returns (DeleteAttrResponse);
+}
+
+// The bits of the domain `auth.profile.attrs` the RPCs require: an aid for a
+// client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_CREATE = 1;
+  PERMISSION_CAN_READ = 2;
+  PERMISSION_CAN_UPDATE = 4;
+  PERMISSION_CAN_DELETE = 8;
+}
+
+enum AttrType {
+  ATTR_TYPE_UNSPECIFIED = 0;
+  ATTR_TYPE_BOOL = 1;
+  ATTR_TYPE_INT = 2;
+  ATTR_TYPE_DECIMAL = 3;
+  ATTR_TYPE_DATETIME = 4;
+  ATTR_TYPE_STR = 5;
+}
+
+message Attr {
+  uint32 id = 1;
+  string name = 2;
+  AttrType type = 3;
+}
+
+message CreateAttrRequest {
+  Attr attr = 1;
+}
+
+message CreateAttrResponse {
+  Attr attr = 1;
+}
+
+message ListAttrsRequest {}
+
+message ListAttrsResponse {
+  repeated Attr attrs = 1;
+}
+
+message RenameAttrRequest {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message RenameAttrResponse {
+  Attr attr = 1;
+}
+
+message DeleteAttrRequest {
+  uint32 id = 1;
+}
+
+message DeleteAttrResponse {}

@@ -5,27 +5,24 @@ __all__ = ("AuthUnit",)
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
-from ingot_auth.attrs import AuthAttrs
 from ingot_auth.metadata import AuthMetadataUnit
-from ingot_auth.session_attrs import AuthSessionAttrs
+from ingot_auth.profile import AuthProfileUnit
+from ingot_auth.session import AuthSessionUnit
 from ingot_auth.storage import AuthStorage
-from ingot_auth.tags import AuthTags
 
 
 class AuthUnit(CliUnit):
     """
-    The auth of the project: the registries of the tags and the attributes
-    of the profiles, their metadata, the registry of the attributes of the
-    sessions, and the storage, abstract here: the project declares it
-    with a backend in a subclass. The sign-up, the sign-in, the profiles and
-    the sessions come as its slots.
+    The auth of the project: the profiles and the sessions, each with its
+    registries, the metadata, and the storage, abstract here: the project
+    declares it with a backend in a subclass. The sign-up, the sign-in and
+    the sessions themselves come as its slots.
     """
 
     cli_name = "auth"
     cli_description = "The auth of the users."
 
     storage = Slot(AuthStorage)
-    tags = Slot(AuthTags)
-    attrs = Slot(AuthAttrs)
-    session_attrs = Slot(AuthSessionAttrs)
+    profile = Slot(AuthProfileUnit)
+    session = Slot(AuthSessionUnit)
     metadata = Slot(AuthMetadataUnit)

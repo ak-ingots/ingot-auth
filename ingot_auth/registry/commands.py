@@ -66,7 +66,7 @@ class BaseAuthRegistryCommand[ItemType: AuthItem, ParametersType, ResultType](
     def _get_operation(
         self,
     ) -> "BoundFactory[BaseOperation[ParametersType, ResultType]]":
-        """The operation of the command: ``self.project.auth.tags.op_list``."""
+        """The operation of the command: ``self.project.auth.profile.tags.op_list``."""
         raise NotImplementedError(f"{type(self).__qualname__}._get_operation")
 
     def _format_item(self, item: ItemType) -> str:

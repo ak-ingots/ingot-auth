@@ -10,10 +10,11 @@ the sign-up, the sign-in and the sessions of the users of an application.
 `AuthProject` (`project.py`) takes the addon's `AuthSettings` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
-the auth of the project: the registries `tags/` and `attrs/` of the profiles
-and `session_attrs/` of the sessions, each attribute of a session with its
-source, on the shared `registry/`, the `metadata/` for the consumers, and the
-storage `storage/`, abstract); a unit lives in the
+the auth of the project: the units `profile/`, with the registries `tags/`
+and `attrs/`, and `session/`, with the registry `attrs/`, each attribute of a
+session with its source, all on the shared `registry/`; the `metadata/` for
+the consumers, and the storage `storage/`, abstract, a unit for each of
+them); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
@@ -21,8 +22,11 @@ their CLI names from `cli_name`. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in, the storage and the transport plug
 in. The core holds the facades; their implementations are in `contrib/`
 (`contrib/storages/<backend>/`, `contrib/transports/<addon>/`), each under
-its own extra when it needs more than the core. `contrib/transports/grpcio/`
-keeps its contract in `proto/ingot_auth/v1/`, named and shaped by ADR 0009: `make
+its own extra when it needs more than the core. A contrib is laid out by the
+subdomains of the core, `profile/`, `session/`, as the core is.
+`contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
+ADRs 0009 and 0011: a file per service, its path mirroring its package,
+`ingot_auth/profile/tags/v1/tags.proto` for `ingot_auth.profile.tags.v1`; `make
 proto` generates the code, committed, and makes its imports relative. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills

@@ -7,8 +7,10 @@ chooses: the client by a hook, the names of the database and the collection.
 
 __all__ = (
     "AuthMongoDbAttrsStorage",
+    "AuthMongoDbProfileStorage",
     "AuthMongoDbRegistryStorage",
     "AuthMongoDbSessionAttrsStorage",
+    "AuthMongoDbSessionStorage",
     "AuthMongoDbStorage",
     "AuthMongoDbTagsStorage",
 )
@@ -17,15 +19,17 @@ from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
 
-from .attrs import AuthMongoDbAttrsStorage
+from .profile import (
+    AuthMongoDbAttrsStorage,
+    AuthMongoDbProfileStorage,
+    AuthMongoDbTagsStorage,
+)
 from .registry import AuthMongoDbRegistryStorage
-from .session_attrs import AuthMongoDbSessionAttrsStorage
-from .tags import AuthMongoDbTagsStorage
+from .session import AuthMongoDbSessionAttrsStorage, AuthMongoDbSessionStorage
 
 
 class AuthMongoDbStorage(AuthStorage):
     """The storage of the auth in MongoDB."""
 
-    tags = Slot(AuthMongoDbTagsStorage)
-    attrs = Slot(AuthMongoDbAttrsStorage)
-    session_attrs = Slot(AuthMongoDbSessionAttrsStorage)
+    profile = Slot(AuthMongoDbProfileStorage)
+    session = Slot(AuthMongoDbSessionStorage)

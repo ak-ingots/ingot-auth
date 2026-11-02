@@ -1,11 +1,12 @@
 """
-The registries: what the profiles may hold, declared by the administrator.
-An item has an explicit id, the same in every environment and never reused,
-and a name for people. The tags and the attributes are registries; the
-attributes of the sessions will be one.
+The registries: what the profiles and the sessions may hold, declared by the
+administrator. An item has an explicit id, the same in every environment and
+never reused, and a name for people: the tags and the attributes of the
+profiles, the attributes of the sessions.
 """
 
 __all__ = (
+    "AuthAttrType",
     "AuthItem",
     "AuthItemConflictError",
     "AuthItemInvalidError",
@@ -20,5 +21,5 @@ from .errors import (
     AuthItemNotFoundError,
     AuthRegistryError,
 )
-from .items import AuthItem
+from .items import AuthAttrType, AuthItem
 from .storage import BaseAuthRegistryStorage

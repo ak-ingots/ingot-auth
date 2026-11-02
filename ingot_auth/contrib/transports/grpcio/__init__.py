@@ -1,7 +1,8 @@
 """
-The auth over gRPC, with the extra ``grpcio``: a service per entity, each in a
-binding of its own, so that a server serves the ones it should; a public server
-the metadata, an internal one the administration too::
+The auth over gRPC, with the extra ``grpcio``, laid out by the subdomains of the
+auth, ``profile``, ``session`` and ``metadata``: a service per registry, each
+in a binding of its own, so that a server serves the ones it should; a public
+server the metadata, an internal one the administration too::
 
     class AppGrpcServer(AuthGrpcMetadataBinding, DefaultGrpcServer):
         pass
@@ -21,52 +22,31 @@ __all__ = (
     "AuthGrpcErrors",
     "AuthGrpcMetadataBinding",
     "AuthGrpcMetadataServicer",
+    "AuthGrpcProfileBinding",
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
+    "AuthGrpcSessionBinding",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
     "BaseAuthGrpcServicer",
 )
 
-from ingot_grpcio.grpc.services import GrpcService
-
+from .base import BaseAuthGrpcServicer
 from .errors import AuthGrpcErrors
-from .proto.ingot_auth.v1 import (
-    attrs_pb2_grpc,
-    metadata_pb2_grpc,
-    session_attrs_pb2_grpc,
-    tags_pb2_grpc,
-)
-from .servicers import (
+from .metadata import AuthGrpcMetadataBinding, AuthGrpcMetadataServicer
+from .profile import (
+    AuthGrpcAttrsBinding,
     AuthGrpcAttrsServicer,
-    AuthGrpcMetadataServicer,
-    AuthGrpcSessionAttrsServicer,
+    AuthGrpcProfileBinding,
+    AuthGrpcTagsBinding,
     AuthGrpcTagsServicer,
-    BaseAuthGrpcServicer,
+)
+from .session import (
+    AuthGrpcSessionAttrsBinding,
+    AuthGrpcSessionAttrsServicer,
+    AuthGrpcSessionBinding,
 )
 
 
-class AuthGrpcMetadataBinding:
-    auth_metadata = GrpcService(
-        metadata_pb2_grpc.MetadataStub, AuthGrpcMetadataServicer
-    )
-
-
-class AuthGrpcTagsBinding:
-    auth_tags = GrpcService(tags_pb2_grpc.TagsStub, AuthGrpcTagsServicer)
-
-
-class AuthGrpcAttrsBinding:
-    auth_attrs = GrpcService(attrs_pb2_grpc.AttrsStub, AuthGrpcAttrsServicer)
-
-
-class AuthGrpcSessionAttrsBinding:
-    auth_session_attrs = GrpcService(
-        session_attrs_pb2_grpc.SessionAttrsStub, AuthGrpcSessionAttrsServicer
-    )
-
-
-class AuthGrpcAdminBinding(
-    AuthGrpcTagsBinding, AuthGrpcAttrsBinding, AuthGrpcSessionAttrsBinding
-):
+class AuthGrpcAdminBinding(AuthGrpcProfileBinding, AuthGrpcSessionBinding):
     pass

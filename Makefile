@@ -89,16 +89,17 @@ installed-test:
 
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
 # stubs of mypy-protobuf, committed next to them. The names of the contract are
-# what its consumers see, ingot_auth/v1/*.proto, not where this package holds
-# them, so the imports of the generated code are made relative.
+# what its consumers see, ingot_auth/<path>/v<N>/<service>.proto mirroring
+# their packages, not where this package holds them, so the imports of the
+# generated code, each of a file next to it, are made relative.
 PROTO := ingot_auth/contrib/transports/grpcio/proto
 .PHONY: proto
 proto:  ## Generate the code of the .proto files
-	uv run python -m grpc_tools.protoc -I $(PROTO) --python_out=$(PROTO) \
-		--grpc_python_out=$(PROTO) --mypy_out=$(PROTO) --mypy_grpc_out=$(PROTO) \
-		$(PROTO)/ingot_auth/v1/*.proto
-	sed -i 's/^from ingot_auth\.v1 import /from . import /' \
-		$(PROTO)/ingot_auth/v1/*_pb2*.py $(PROTO)/ingot_auth/v1/*_pb2*.pyi
+	cd $(PROTO) && uv run python -m grpc_tools.protoc -I . --python_out=. \
+		--grpc_python_out=. --mypy_out=. --mypy_grpc_out=. \
+		$$(find ingot_auth -name '*.proto')
+	find $(PROTO)/ingot_auth -name '*_pb2*.py*' -exec sed -i \
+		's/^from ingot_auth\.\([a-z0-9_]*\.\)*v[0-9]* import /from . import /' {} +
 
 .PHONY: format
 format:  ## Format code with black

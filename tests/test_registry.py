@@ -15,19 +15,19 @@ from ingots.defaults.operations import (
 from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject
-from ingot_auth.attrs import AuthAttr, AuthAttrsPermissions, AuthAttrType
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.registry import AuthItemInvalidError
+from ingot_auth.profile.attrs import AuthAttr, AuthAttrsPermissions
+from ingot_auth.profile.tags import AuthTag, AuthTagsPermissions
+from ingot_auth.registry import AuthAttrType, AuthItemInvalidError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.session_attrs import (
+from ingot_auth.session.attrs import (
     AuthSessionAttr,
     AuthSessionAttrSource,
     AuthSessionAttrsPermissions,
 )
-from ingot_auth.tags import AuthTag, AuthTagsPermissions
 
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")
@@ -43,7 +43,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
 
     def test_the_tags_are_created_listed_renamed_deleted(self) -> None:
-        tags = self.project.auth.tags
+        tags = self.project.auth.profile.tags
 
         async def run() -> tuple[AuthTag, ...]:
             await self.runner.run(tags.op_create, STAFF, self.metadata)
@@ -58,7 +58,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
         self.assertEqual(asyncio.run(run()), (AuthTag(id=2, name="team"),))
 
     def test_an_attr_keeps_its_type_when_renamed(self) -> None:
-        attrs = self.project.auth.attrs
+        attrs = self.project.auth.profile.attrs
         title = AuthAttr(id=1, name="title/en", type=AuthAttrType.STR)
 
         async def run() -> AuthAttr:
@@ -69,7 +69,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
         self.assertEqual(asyncio.run(run()).type, AuthAttrType.STR)
 
     def test_a_session_attr_keeps_its_type_and_source_when_renamed(self) -> None:
-        session_attrs = self.project.auth.session_attrs
+        session_attrs = self.project.auth.session.attrs
         ip = AuthSessionAttr(
             id=1,
             name="ip",
@@ -91,7 +91,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
         )
 
     def test_wrong_ids_and_names_are_refused(self) -> None:
-        tags = self.project.auth.tags
+        tags = self.project.auth.profile.tags
         for tag in (AuthTag(id=0, name="beta"), AuthTag(id=1, name="Beta")):
             with self.assertRaises(AuthItemInvalidError):
                 asyncio.run(self.runner.run(tags.op_create, tag, self.metadata))
@@ -101,13 +101,13 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
     def test_a_caller_needs_the_permissions(self) -> None:
         metadata = self.project.operations.create_metadata(ANONYMOUS_CALLER)
-        run = self.runner.run(self.project.auth.tags.op_list, None, metadata)
+        run = self.runner.run(self.project.auth.profile.tags.op_list, None, metadata)
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(run)
 
     def test_every_operation_requires_its_permission(self) -> None:
-        tags, attrs = self.project.auth.tags, self.project.auth.attrs
-        session_attrs = self.project.auth.session_attrs
+        tags, attrs = self.project.auth.profile.tags, self.project.auth.profile.attrs
+        session_attrs = self.project.auth.session.attrs
         for factory, flag in (
             (tags.op_create, AuthTagsPermissions.CAN_CREATE),
             (tags.op_list, AuthTagsPermissions.CAN_READ),
@@ -143,12 +143,15 @@ class RegistryCommandsTestCase(unittest.TestCase):
 
     def test_the_commands_print_the_items(self) -> None:
         self.assertEqual(
-            self.run_project("auth", "tags", "create", "--id", "1", "--name", "beta"),
+            self.run_project(
+                "auth", "profile", "tags", "create", "--id", "1", "--name", "beta"
+            ),
             "1\tbeta\n",
         )
         self.assertEqual(
             self.run_project(
                 "auth",
+                "profile",
                 "attrs",
                 "create",
                 "--id",
@@ -163,7 +166,8 @@ class RegistryCommandsTestCase(unittest.TestCase):
         self.assertEqual(
             self.run_project(
                 "auth",
-                "session-attrs",
+                "session",
+                "attrs",
                 "create",
                 "--id",
                 "1",
@@ -178,8 +182,12 @@ class RegistryCommandsTestCase(unittest.TestCase):
         )
 
     def test_the_storage_in_memory_is_gone_with_the_command(self) -> None:
-        for registry in ("tags", "attrs", "session-attrs"):
-            self.assertEqual(self.run_project("auth", registry, "list"), "")
+        for unit, registry in (
+            ("profile", "tags"),
+            ("profile", "attrs"),
+            ("session", "attrs"),
+        ):
+            self.assertEqual(self.run_project("auth", unit, registry, "list"), "")
             for argv in (
                 ["rename", "--id", "1", "--name", "x"],
                 ["delete", "--id", "1"],
@@ -187,6 +195,13 @@ class RegistryCommandsTestCase(unittest.TestCase):
                 with self.assertLogs("ingots.puer.runner", "ERROR"):
                     code = CommandRunner(
                         AuthMemoryProject,
-                        ["--config", "IS_PRINT_CONFIGS=off", "auth", registry, *argv],
+                        [
+                            "--config",
+                            "IS_PRINT_CONFIGS=off",
+                            "auth",
+                            unit,
+                            registry,
+                            *argv,
+                        ],
                     ).run()
                 self.assertEqual(code, 1)

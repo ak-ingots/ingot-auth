@@ -20,7 +20,6 @@ from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
-from ingot_auth.attrs import AuthAttrsPermissions, AuthAttrType
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
@@ -32,22 +31,36 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcSessionAttrsServicer,
     AuthGrpcTagsServicer,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.v1 import (
-    attrs_pb2,
-    attrs_pb2_grpc,
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.metadata.v1 import (
     metadata_pb2,
     metadata_pb2_grpc,
-    session_attrs_pb2,
-    session_attrs_pb2_grpc,
-    tags_pb2,
-    tags_pb2_grpc,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profile.attrs.v1 import (
+    attrs_pb2 as profile_attrs_pb2,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profile.attrs.v1 import (
+    attrs_pb2_grpc as profile_attrs_pb2_grpc,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profile.tags.v1 import (
+    tags_pb2 as profile_tags_pb2,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profile.tags.v1 import (
+    tags_pb2_grpc as profile_tags_pb2_grpc,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.session.attrs.v1 import (
+    attrs_pb2 as session_attrs_pb2,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.session.attrs.v1 import (
+    attrs_pb2_grpc as session_attrs_pb2_grpc,
 )
 from ingot_auth.logging import AuthLogging
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.session_attrs import AuthSessionAttrSource, AuthSessionAttrsPermissions
+from ingot_auth.profile.attrs import AuthAttrsPermissions
+from ingot_auth.profile.tags import AuthTagsPermissions
+from ingot_auth.registry import AuthAttrType
+from ingot_auth.session.attrs import AuthSessionAttrSource, AuthSessionAttrsPermissions
 from ingot_auth.settings import AuthSettings
 from ingot_auth.settings.configs import AuthConfigs
-from ingot_auth.tags import AuthTagsPermissions
 
 ADMIN: t.Final = Caller(
     uid="admin",
@@ -75,10 +88,10 @@ class SessionAttrsServicer(AdminCaller, AuthGrpcSessionAttrsServicer):
 
 
 class TstAdminBinding:
-    auth_tags = GrpcService(tags_pb2_grpc.TagsStub, TagsServicer)
-    auth_attrs = GrpcService(attrs_pb2_grpc.AttrsStub, AttrsServicer)
+    auth_profile_tags = GrpcService(profile_tags_pb2_grpc.TagsStub, TagsServicer)
+    auth_profile_attrs = GrpcService(profile_attrs_pb2_grpc.AttrsStub, AttrsServicer)
     auth_session_attrs = GrpcService(
-        session_attrs_pb2_grpc.SessionAttrsStub, SessionAttrsServicer
+        session_attrs_pb2_grpc.AttrsStub, SessionAttrsServicer
     )
 
 
@@ -215,12 +228,16 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_metadata_gives_the_registries(self) -> None:
         client = await self.connect()
-        await client.auth_tags.Create(
-            tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=1, name="beta"))
+        await client.auth_profile_tags.Create(
+            profile_tags_pb2.CreateTagRequest(
+                tag=profile_tags_pb2.Tag(id=1, name="beta")
+            )
         )
-        await client.auth_attrs.Create(
-            attrs_pb2.CreateAttrRequest(
-                attr=attrs_pb2.Attr(id=7, name="title/en", type=attrs_pb2.ATTR_TYPE_STR)
+        await client.auth_profile_attrs.Create(
+            profile_attrs_pb2.CreateAttrRequest(
+                attr=profile_attrs_pb2.Attr(
+                    id=7, name="title/en", type=profile_attrs_pb2.ATTR_TYPE_STR
+                )
             )
         )
         reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
@@ -231,91 +248,104 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_tags_are_managed(self) -> None:
-        tags = (await self.connect()).auth_tags
-        beta = tags_pb2.Tag(id=1, name="beta")
+        tags = (await self.connect()).auth_profile_tags
+        beta = profile_tags_pb2.Tag(id=1, name="beta")
         self.assertEqual(
-            (await tags.Create(tags_pb2.CreateTagRequest(tag=beta))).tag, beta
+            (await tags.Create(profile_tags_pb2.CreateTagRequest(tag=beta))).tag, beta
         )
-        preview = tags_pb2.Tag(id=1, name="preview")
+        preview = profile_tags_pb2.Tag(id=1, name="preview")
         self.assertEqual(
-            (await tags.Rename(tags_pb2.RenameTagRequest(id=1, name="preview"))).tag,
+            (
+                await tags.Rename(
+                    profile_tags_pb2.RenameTagRequest(id=1, name="preview")
+                )
+            ).tag,
             preview,
         )
-        reply = await tags.List(tags_pb2.ListTagsRequest())
+        reply = await tags.List(profile_tags_pb2.ListTagsRequest())
         self.assertEqual(list(reply.tags), [preview])
-        await tags.Delete(tags_pb2.DeleteTagRequest(id=1))
-        self.assertEqual(len((await tags.List(tags_pb2.ListTagsRequest())).tags), 0)
+        await tags.Delete(profile_tags_pb2.DeleteTagRequest(id=1))
+        self.assertEqual(
+            len((await tags.List(profile_tags_pb2.ListTagsRequest())).tags), 0
+        )
 
     async def test_the_attrs_are_managed(self) -> None:
-        attrs = (await self.connect()).auth_attrs
-        attr = attrs_pb2.Attr(id=1, name="phone", type=attrs_pb2.ATTR_TYPE_STR)
-        self.assertEqual(
-            (await attrs.Create(attrs_pb2.CreateAttrRequest(attr=attr))).attr, attr
+        attrs = (await self.connect()).auth_profile_attrs
+        attr = profile_attrs_pb2.Attr(
+            id=1, name="phone", type=profile_attrs_pb2.ATTR_TYPE_STR
         )
-        renamed = attrs_pb2.Attr(id=1, name="mobile", type=attrs_pb2.ATTR_TYPE_STR)
         self.assertEqual(
-            (await attrs.Rename(attrs_pb2.RenameAttrRequest(id=1, name="mobile"))).attr,
+            (await attrs.Create(profile_attrs_pb2.CreateAttrRequest(attr=attr))).attr,
+            attr,
+        )
+        renamed = profile_attrs_pb2.Attr(
+            id=1, name="mobile", type=profile_attrs_pb2.ATTR_TYPE_STR
+        )
+        self.assertEqual(
+            (
+                await attrs.Rename(
+                    profile_attrs_pb2.RenameAttrRequest(id=1, name="mobile")
+                )
+            ).attr,
             renamed,
         )
-        reply = await attrs.List(attrs_pb2.ListAttrsRequest())
+        reply = await attrs.List(profile_attrs_pb2.ListAttrsRequest())
         self.assertEqual(list(reply.attrs), [renamed])
-        await attrs.Delete(attrs_pb2.DeleteAttrRequest(id=1))
-        self.assertEqual(len((await attrs.List(attrs_pb2.ListAttrsRequest())).attrs), 0)
+        await attrs.Delete(profile_attrs_pb2.DeleteAttrRequest(id=1))
+        self.assertEqual(
+            len((await attrs.List(profile_attrs_pb2.ListAttrsRequest())).attrs), 0
+        )
 
     async def test_the_session_attrs_are_managed(self) -> None:
         session_attrs = (await self.connect()).auth_session_attrs
-        ip = session_attrs_pb2.SessionAttr(
+        ip = session_attrs_pb2.Attr(
             id=1,
             name="ip",
             type=session_attrs_pb2.ATTR_TYPE_STR,
-            source=session_attrs_pb2.SESSION_ATTR_SOURCE_TRANSPORT,
+            source=session_attrs_pb2.ATTR_SOURCE_TRANSPORT,
         )
         created = await session_attrs.Create(
-            session_attrs_pb2.CreateSessionAttrRequest(session_attr=ip)
+            session_attrs_pb2.CreateAttrRequest(attr=ip)
         )
-        self.assertEqual(created.session_attr, ip)
-        renamed = session_attrs_pb2.SessionAttr()
+        self.assertEqual(created.attr, ip)
+        renamed = session_attrs_pb2.Attr()
         renamed.CopyFrom(ip)
         renamed.name = "peer/ip"
         reply = await session_attrs.Rename(
-            session_attrs_pb2.RenameSessionAttrRequest(id=1, name="peer/ip")
+            session_attrs_pb2.RenameAttrRequest(id=1, name="peer/ip")
         )
-        self.assertEqual(reply.session_attr, renamed)
-        listed = await session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest())
-        self.assertEqual(list(listed.session_attrs), [renamed])
-        await session_attrs.Delete(session_attrs_pb2.DeleteSessionAttrRequest(id=1))
-        listed = await session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest())
-        self.assertEqual(len(listed.session_attrs), 0)
+        self.assertEqual(reply.attr, renamed)
+        listed = await session_attrs.List(session_attrs_pb2.ListAttrsRequest())
+        self.assertEqual(list(listed.attrs), [renamed])
+        await session_attrs.Delete(session_attrs_pb2.DeleteAttrRequest(id=1))
+        listed = await session_attrs.List(session_attrs_pb2.ListAttrsRequest())
+        self.assertEqual(len(listed.attrs), 0)
 
     async def test_every_source_of_the_session_attrs_has_a_message(self) -> None:
-        expected = {
-            f"SESSION_ATTR_SOURCE_{item.name}" for item in AuthSessionAttrSource
-        }
-        names = set(session_attrs_pb2.SessionAttrSource.keys())
-        self.assertEqual(expected, names - {"SESSION_ATTR_SOURCE_UNSPECIFIED"})
+        expected = {f"ATTR_SOURCE_{item.name}" for item in AuthSessionAttrSource}
+        names = set(session_attrs_pb2.AttrSource.keys())
+        self.assertEqual(expected, names - {"ATTR_SOURCE_UNSPECIFIED"})
 
     async def test_a_session_attr_needs_a_type_and_a_source(self) -> None:
         session_attrs = (await self.connect()).auth_session_attrs
         for attr_type, source, key in (
             (
                 session_attrs_pb2.ATTR_TYPE_UNSPECIFIED,
-                session_attrs_pb2.SESSION_ATTR_SOURCE_CLIENT,
+                session_attrs_pb2.ATTR_SOURCE_CLIENT,
                 "0",
             ),
             (
                 session_attrs_pb2.ATTR_TYPE_STR,
-                session_attrs_pb2.SESSION_ATTR_SOURCE_UNSPECIFIED,
+                session_attrs_pb2.ATTR_SOURCE_UNSPECIFIED,
                 "0",
             ),
         ):
-            session_attr = session_attrs_pb2.SessionAttr(
+            session_attr = session_attrs_pb2.Attr(
                 id=1, name="device", type=attr_type, source=source
             )
             with self.assertRaises(GrpcError) as error:
                 await session_attrs.Create(
-                    session_attrs_pb2.CreateSessionAttrRequest(
-                        session_attr=session_attr
-                    )
+                    session_attrs_pb2.CreateAttrRequest(attr=session_attr)
                 )
             self.assertEqual(
                 (
@@ -326,7 +356,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 (
                     grpc.StatusCode.INVALID_ARGUMENT,
                     "ITEM_INVALID",
-                    {"registry": "session_attrs", "key": key},
+                    {"registry": "session.attrs", "key": key},
                 ),
             )
 
@@ -334,7 +364,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         expected = {f"ATTR_TYPE_{item.name}" for item in AuthAttrType}
         for attr_type in (
             metadata_pb2.AttrType,
-            attrs_pb2.AttrType,
+            profile_attrs_pb2.AttrType,
             session_attrs_pb2.AttrType,
         ):
             names = set(attr_type.keys()) - {"ATTR_TYPE_UNSPECIFIED"}
@@ -342,8 +372,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_permissions_of_the_contract_are_those_of_the_auth(self) -> None:
         for flags, permission in (
-            (AuthTagsPermissions, tags_pb2.Permission),
-            (AuthAttrsPermissions, attrs_pb2.Permission),
+            (AuthTagsPermissions, profile_tags_pb2.Permission),
+            (AuthAttrsPermissions, profile_attrs_pb2.Permission),
             (AuthSessionAttrsPermissions, session_attrs_pb2.Permission),
             (AuthMetadataPermissions, metadata_pb2.Permission),
         ):
@@ -358,16 +388,17 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_a_public_export_holds_the_metadata_alone(self) -> None:
         exported = build_descriptor_set([AuthGrpcMetadataBinding.auth_metadata])
         self.assertEqual(
-            [file.name for file in exported.file], ["ingot_auth/v1/metadata.proto"]
+            [file.name for file in exported.file],
+            ["ingot_auth/metadata/v1/metadata.proto"],
         )
 
     async def test_an_attr_needs_a_type(self) -> None:
-        attrs = (await self.connect()).auth_attrs
+        attrs = (await self.connect()).auth_profile_attrs
         with self.assertRaises(GrpcError) as error:
             await attrs.Create(
-                attrs_pb2.CreateAttrRequest(
-                    attr=attrs_pb2.Attr(
-                        id=1, name="phone", type=attrs_pb2.ATTR_TYPE_UNSPECIFIED
+                profile_attrs_pb2.CreateAttrRequest(
+                    attr=profile_attrs_pb2.Attr(
+                        id=1, name="phone", type=profile_attrs_pb2.ATTR_TYPE_UNSPECIFIED
                     )
                 )
             )
@@ -375,14 +406,18 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(error.exception.reason, "ITEM_INVALID")
 
     async def test_the_errors_of_the_registries_have_their_statuses(self) -> None:
-        tags = (await self.connect()).auth_tags
+        tags = (await self.connect()).auth_profile_tags
         await tags.Create(
-            tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=1, name="beta"))
+            profile_tags_pb2.CreateTagRequest(
+                tag=profile_tags_pb2.Tag(id=1, name="beta")
+            )
         )
         for call, code, reason, key in (
             (
                 tags.Create(
-                    tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=1, name="staff"))
+                    profile_tags_pb2.CreateTagRequest(
+                        tag=profile_tags_pb2.Tag(id=1, name="staff")
+                    )
                 ),
                 grpc.StatusCode.ALREADY_EXISTS,
                 "ITEM_CONFLICT",
@@ -390,14 +425,16 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             (
                 tags.Create(
-                    tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=2, name="Staff"))
+                    profile_tags_pb2.CreateTagRequest(
+                        tag=profile_tags_pb2.Tag(id=2, name="Staff")
+                    )
                 ),
                 grpc.StatusCode.INVALID_ARGUMENT,
                 "ITEM_INVALID",
                 "Staff",
             ),
             (
-                tags.Delete(tags_pb2.DeleteTagRequest(id=3)),
+                tags.Delete(profile_tags_pb2.DeleteTagRequest(id=3)),
                 grpc.StatusCode.NOT_FOUND,
                 "ITEM_NOT_FOUND",
                 "3",
@@ -412,18 +449,20 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     error.exception.reason,
                     error.exception.metadata,
                 ),
-                (code, "ingot-auth", reason, {"registry": "tags", "key": key}),
+                (code, "ingot-auth", reason, {"registry": "profile.tags", "key": key}),
             )
 
     async def test_the_administration_refuses_who_it_cannot_tell(self) -> None:
         client = await self.connect(TstAnonymousProject)
         for call in (
-            client.auth_tags.List(tags_pb2.ListTagsRequest()),
-            client.auth_tags.Create(
-                tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=1, name="beta"))
+            client.auth_profile_tags.List(profile_tags_pb2.ListTagsRequest()),
+            client.auth_profile_tags.Create(
+                profile_tags_pb2.CreateTagRequest(
+                    tag=profile_tags_pb2.Tag(id=1, name="beta")
+                )
             ),
-            client.auth_attrs.List(attrs_pb2.ListAttrsRequest()),
-            client.auth_session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest()),
+            client.auth_profile_attrs.List(profile_attrs_pb2.ListAttrsRequest()),
+            client.auth_session_attrs.List(session_attrs_pb2.ListAttrsRequest()),
         ):
             with self.assertRaises(GrpcError) as error:
                 await call
