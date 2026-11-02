@@ -4,12 +4,14 @@ the code, the answer repeats it. The core sends no mail: an application
 extends :class:`BaseAuthEmailMethod` with the sending, by the mail of its
 own, and declares it as a slot of its methods,
 ``email = Slot(AppEmailMethod)``. The email of a sign-up is checked by the
-preset of the policies ``preset_sign_up_email``, empty unless an application
-binds policies to it.
+preset of the policies of the method, its slot ``preset_sign_up_email``,
+empty unless an application binds policies to it in its subclass.
 """
 
 __all__ = (
     "AuthEmailChallenge",
+    "AuthEmailSignUpContext",
+    "AuthEmailSignUpPreset",
     "AuthEmailStart",
     "AuthEmailState",
     "BaseAuthEmailMethod",
@@ -23,6 +25,8 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
+from ingots.puer import Slot
+
 from ingot_auth.methods import (
     AuthChallenge,
     AuthMethodRefusedError,
@@ -31,6 +35,9 @@ from ingot_auth.methods import (
     BaseAuthMethod,
 )
 from ingot_auth.profile.identities import AuthIdentityNotFoundError
+
+from .contexts import AuthEmailSignUpContext
+from .presets import AuthEmailSignUpPreset
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -73,11 +80,14 @@ class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
 
     CODE_LENGTH: t.ClassVar[int] = 6
 
+    preset_sign_up_email = Slot(AuthEmailSignUpPreset)
+
     @t.override
     async def _start_sign_up(self, parameters: AuthEmailStart) -> AuthStep:
         email = self._normalize_email(parameters.email)
-        policies = self.project.auth.policies
-        await self._check_value("email", policies.preset_sign_up_email, email)
+        await self._check(
+            "email", self.preset_sign_up_email, AuthEmailSignUpContext(email)
+        )
         return await self._send(email)
 
     @t.override

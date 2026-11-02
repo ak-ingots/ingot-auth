@@ -15,11 +15,13 @@ and `attrs/`, and `session/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `metadata/` for
 the consumers, by the subdomains, of the sessions what is the client's; the
-methods of signing up and in `methods/`, slots of `AuthMethods`, in steps kept
-by attempts, a hook to start each flow they take, their secrets kept in
-`profile/secrets/`; the `policies/`, rules a value is checked against, each
-taking a part of a context by its protocol, and their presets, binding them
-by class with their configs, by a hook, for a context with those parts; the `sign_up/` flow; the storage `storage/`, with the
+methods of signing up and in `methods/`, units in slots of `AuthMethods`, in
+steps kept by attempts, a hook to start each flow they take, their secrets
+kept in `profile/secrets/`, their presets of the policies their slots
+`preset_<flow>_<field>`, each of a class and a context of its own, the
+context made by the method; the `policies/`, rules a value is checked
+against, each taking a part of a context by its protocol, bound to a preset
+by class with a config; the `sign_up/` flow; the storage `storage/`, with the
 transactions of a backend over all its storages, and the cache `cache/`,
 abstract, a unit a subdomain); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the

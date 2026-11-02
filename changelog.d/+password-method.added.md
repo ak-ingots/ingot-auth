@@ -2,5 +2,6 @@ The method of a nickname and a password, `AuthPasswordMethod` in
 `ingot_auth.contrib.methods.password`: the nickname and the password
 normalized, the password kept as its hash by scrypt of the standard
 library and verified on a sign-in, an unknown nickname against a dummy
-hash; any nickname and password are taken so far. A method knows its
-name, `get_name()`.
+hash. Its presets check the nickname and the password of a sign-up, the
+context of the password giving its nickname too, `AuthHasNickname`, for a
+policy of both. A method knows its name, `get_name()`.

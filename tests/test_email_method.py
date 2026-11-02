@@ -8,6 +8,8 @@ from ingots.puer import Project, Slot
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.contrib.methods.email import (
     AuthEmailChallenge,
+    AuthEmailSignUpContext,
+    AuthEmailSignUpPreset,
     AuthEmailStart,
     AuthEmailState,
     BaseAuthEmailMethod,
@@ -22,10 +24,7 @@ from ingot_auth.methods import (
 from ingot_auth.policies import (
     AuthLengthConfig,
     AuthLengthPolicy,
-    AuthPolicies,
     AuthPolicyBinding,
-    AuthValueContext,
-    AuthValuePolicyPreset,
 )
 from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
@@ -41,8 +40,20 @@ SIGNING_UP: t.Final = Caller(
 )
 
 
+class EmailPreset(AuthEmailSignUpPreset):
+    @t.override
+    def _get_bindings(
+        self,
+    ) -> dict[str, AuthPolicyBinding[AuthEmailSignUpContext, t.Any]]:
+        bindings = super()._get_bindings()
+        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(max=20))
+        return bindings
+
+
 class TstEmailMethod(BaseAuthEmailMethod):
     """Keeps the mail it sends, for the tests to read."""
+
+    preset_sign_up_email = Slot(EmailPreset)
 
     def __init__(self, project: Project) -> None:
         super().__init__(project)
@@ -53,25 +64,12 @@ class TstEmailMethod(BaseAuthEmailMethod):
         self.sent.append((email, code))
 
 
-class EmailPreset(AuthValuePolicyPreset):
-    @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(max=20))
-        return bindings
-
-
 class TstMethods(AuthMethods):
     email = Slot(TstEmailMethod)
 
 
-class TstPolicies(AuthPolicies):
-    preset_sign_up_email = Slot(EmailPreset)
-
-
 class TstAuth(AuthMemoryUnit):
     methods = Slot(TstMethods)
-    policies = Slot(TstPolicies)
 
 
 class TstProject(AuthMemoryProject):

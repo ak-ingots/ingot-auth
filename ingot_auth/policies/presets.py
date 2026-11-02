@@ -1,13 +1,12 @@
 """The presets of the policies."""
 
-__all__ = ("AuthPolicyPreset", "AuthValuePolicyPreset")
+__all__ = ("AuthPolicyPreset",)
 
 import types
 import typing as t
 
 from ingots.puer import Entity
 
-from .contexts import AuthValueContext
 from .errors import AuthPolicyViolationError
 
 if t.TYPE_CHECKING:
@@ -32,8 +31,8 @@ class AuthPolicyPreset[ContextType](Entity):
             bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=5))
             return bindings
 
-    A preset is a slot ``preset_<flow>_<value>`` of :class:`AuthPolicies`, its
-    class a subclass of that of the slot it replaces, of the same context.
+    A preset is a slot ``preset_<flow>_<field>`` of the method it checks a
+    field of, its class a subclass of that of the slot it replaces.
     """
 
     project: "AuthProject"
@@ -60,7 +59,3 @@ class AuthPolicyPreset[ContextType](Entity):
     def _get_bindings(self) -> "dict[str, AuthPolicyBinding[ContextType, t.Any]]":
         """The bindings by their names, a new dict on every call."""
         return {}
-
-
-class AuthValuePolicyPreset(AuthPolicyPreset[AuthValueContext]):
-    """The preset of a value alone, a nickname, a password, binding nothing."""

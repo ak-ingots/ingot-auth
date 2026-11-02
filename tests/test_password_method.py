@@ -6,7 +6,15 @@ from ingots.defaults.operations import Caller, Permissions
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
-from ingot_auth.contrib.methods.password import AuthPasswordMethod, AuthPasswordStart
+from ingot_auth.contrib.methods.password import (
+    AuthHasNickname,
+    AuthNicknameSignUpContext,
+    AuthNicknameSignUpPreset,
+    AuthPasswordMethod,
+    AuthPasswordSignUpContext,
+    AuthPasswordSignUpPreset,
+    AuthPasswordStart,
+)
 from ingot_auth.contrib.methods.password.scrypt import hash_password, verify_password
 from ingot_auth.methods import (
     AuthMethodInvalidError,
@@ -18,12 +26,12 @@ from ingot_auth.policies import (
     AuthChars,
     AuthCharsConfig,
     AuthCharsPolicy,
+    AuthHasValue,
     AuthLengthConfig,
     AuthLengthPolicy,
     AuthPolicies,
     AuthPolicyBinding,
-    AuthValueContext,
-    AuthValuePolicyPreset,
+    BaseAuthPolicy,
 )
 from ingot_auth.sign_up import (
     AuthSignedUp,
@@ -57,9 +65,11 @@ class TstProject(AuthMemoryProject):
     auth = Slot(TstAuth)
 
 
-class NicknamePreset(AuthValuePolicyPreset):
+class NicknamePreset(AuthNicknameSignUpPreset):
     @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
+    def _get_bindings(
+        self,
+    ) -> dict[str, AuthPolicyBinding[AuthNicknameSignUpContext, t.Any]]:
         bindings = super()._get_bindings()
         bindings["chars"] = AuthCharsPolicy.bind(
             AuthCharsConfig(allowed=AuthChars.LETTERS | AuthChars.DIGITS)
@@ -67,20 +77,45 @@ class NicknamePreset(AuthValuePolicyPreset):
         return bindings
 
 
-class PasswordPreset(AuthValuePolicyPreset):
+class HasPasswordAndNickname(AuthHasValue, AuthHasNickname, t.Protocol):
+    pass
+
+
+class NotNicknamePolicy(BaseAuthPolicy[HasPasswordAndNickname, None]):
+    """A policy of an application, of a part the method gives."""
+
     @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
+    async def _accepts(self, context: HasPasswordAndNickname, config: None) -> bool:
+        nickname = await context.get_nickname()
+        return nickname not in await context.get_value()
+
+
+class PasswordPreset(AuthPasswordSignUpPreset):
+    @t.override
+    def _get_bindings(
+        self,
+    ) -> dict[str, AuthPolicyBinding[AuthPasswordSignUpContext, t.Any]]:
         bindings = super()._get_bindings()
         bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=8))
+        bindings["nickname"] = NotNicknamePolicy.bind(None)
         return bindings
 
 
 class TstPolicies(AuthPolicies):
+    not_nickname = Slot(NotNicknamePolicy)
+
+
+class PolicedPasswordMethod(TstPasswordMethod):
     preset_sign_up_nickname = Slot(NicknamePreset)
     preset_sign_up_password = Slot(PasswordPreset)
 
 
+class PolicedMethods(TstMethods):
+    password = Slot(PolicedPasswordMethod)
+
+
 class TstPoliciesAuth(TstAuth):
+    methods = Slot(PolicedMethods)
     policies = Slot(TstPolicies)
 
 
@@ -196,6 +231,7 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         for nickname, password, field, binding in (
             ("al ice", "correct horse", "nickname", "chars"),
             ("alice", "short", "password", "length"),
+            ("alice", "alice-in-wonderland", "password", "nickname"),
         ):
             with self.subTest(nickname=nickname, password=password):
                 with self.assertRaises(AuthMethodInvalidError) as error:
@@ -221,6 +257,12 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             await method.start_sign_in(start), AuthVerified(subject="alice")
         )
+
+    async def test_a_context_gives_its_parts_and_shows_none(self) -> None:
+        context = AuthPasswordSignUpContext("correct horse", "alice")
+        self.assertEqual(await context.get_value(), "correct horse")
+        self.assertEqual(await context.get_nickname(), "alice")
+        self.assertNotIn("correct horse", repr(context))
 
     def test_the_password_is_not_in_the_repr(self) -> None:
         start = AuthPasswordStart(nickname="alice", password="correct horse")

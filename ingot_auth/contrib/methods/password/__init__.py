@@ -2,18 +2,29 @@
 The method of a nickname and a password, of one step: an application declares
 it as a slot of its methods, ``password = Slot(AuthPasswordMethod)``. The
 nickname and the password of a sign-up are checked by the presets of the
-policies ``preset_sign_up_nickname`` and ``preset_sign_up_password``, empty
-unless an application binds policies to them. The password is kept as its
+policies of the method, its slots ``preset_sign_up_nickname`` and
+``preset_sign_up_password``, empty unless an application binds policies to
+them in a subclass of the method. The password is kept as its
 hash, a secret of the nickname, by scrypt of the standard library; how it
 hashes is changed by subclassing.
 """
 
-__all__ = ("AuthPasswordMethod", "AuthPasswordStart")
+__all__ = (
+    "AuthHasNickname",
+    "AuthNicknameSignUpContext",
+    "AuthNicknameSignUpPreset",
+    "AuthPasswordMethod",
+    "AuthPasswordSignUpContext",
+    "AuthPasswordSignUpPreset",
+    "AuthPasswordStart",
+)
 
 import asyncio
 import typing as t
 import unicodedata
 from dataclasses import dataclass, field
+
+from ingots.puer import Slot
 
 from ingot_auth.methods import (
     AuthMethodRefusedError,
@@ -23,6 +34,12 @@ from ingot_auth.methods import (
 )
 from ingot_auth.profile.secrets import AuthSecretNotFoundError
 
+from .contexts import (
+    AuthHasNickname,
+    AuthNicknameSignUpContext,
+    AuthPasswordSignUpContext,
+)
+from .presets import AuthNicknameSignUpPreset, AuthPasswordSignUpPreset
 from .scrypt import hash_password, verify_password
 
 
@@ -52,15 +69,25 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
     SCRYPT_R: t.ClassVar[int] = 8
     SCRYPT_P: t.ClassVar[int] = 1
 
+    preset_sign_up_nickname = Slot(AuthNicknameSignUpPreset)
+    preset_sign_up_password = Slot(AuthPasswordSignUpPreset)
+
     _dummy_secret: str
 
     @t.override
     async def _start_sign_up(self, parameters: AuthPasswordStart) -> AuthStep:
         nickname = self._normalize_nickname(parameters.nickname)
         password = self._normalize_password(parameters.password)
-        policies = self.project.auth.policies
-        await self._check_value("nickname", policies.preset_sign_up_nickname, nickname)
-        await self._check_value("password", policies.preset_sign_up_password, password)
+        await self._check(
+            "nickname",
+            self.preset_sign_up_nickname,
+            AuthNicknameSignUpContext(nickname),
+        )
+        await self._check(
+            "password",
+            self.preset_sign_up_password,
+            AuthPasswordSignUpContext(password, nickname),
+        )
         secret = await asyncio.to_thread(self._hash, password)
         return AuthVerified(subject=nickname, secret=secret)
 
