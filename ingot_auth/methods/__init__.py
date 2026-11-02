@@ -13,6 +13,7 @@ __all__ = (
     "AuthAttemptNotFoundError",
     "AuthChallenge",
     "AuthMethodError",
+    "AuthMethodInvalidError",
     "AuthMethodNotFoundError",
     "AuthMethodRefusedError",
     "AuthMethodUnsupportedError",
@@ -32,6 +33,7 @@ from .base import BaseAuthMethod
 from .errors import (
     AuthAttemptNotFoundError,
     AuthMethodError,
+    AuthMethodInvalidError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
     AuthMethodUnsupportedError,

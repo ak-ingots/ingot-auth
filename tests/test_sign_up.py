@@ -16,6 +16,7 @@ from ingot_auth.contrib.caches.memory import AuthMemoryAttemptsCache
 from ingot_auth.methods import (
     AuthAttempt,
     AuthAttemptNotFoundError,
+    AuthMethodInvalidError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
     AuthMethods,
@@ -274,6 +275,10 @@ class ErrorsTestCase(unittest.TestCase):
         for error, message in (
             (AuthMethodNotFoundError.for_name("x"), "no method 'x'"),
             (AuthMethodRefusedError.create(), "the method refuses"),
+            (
+                AuthMethodInvalidError.for_field("password", "length"),
+                "the password breaks the policy of 'length'",
+            ),
             (
                 AuthMethodUnsupportedError.for_flow("sign_in"),
                 "the method takes no sign_in",

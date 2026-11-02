@@ -134,6 +134,7 @@ class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
     :raises AuthItemNotFoundError, AuthItemInvalidError: a value is not one
         of an attribute of the client, or not of its type.
     :raises AuthMethodUnsupportedError: the method signs no one up.
+    :raises AuthMethodInvalidError: it breaks a policy of the method.
     :raises AuthMethodRefusedError: the method refuses what it starts with.
     :raises AuthIdentityConflictError: the subject is bound already.
     """

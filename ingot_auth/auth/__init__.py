@@ -8,6 +8,7 @@ from ingots.puer.cli import CliUnit
 from ingot_auth.cache import AuthCache
 from ingot_auth.metadata import AuthMetadataUnit
 from ingot_auth.methods import AuthMethods
+from ingot_auth.policies import AuthPolicies
 from ingot_auth.profile import AuthProfileUnit
 from ingot_auth.session import AuthSessionUnit
 from ingot_auth.sign_up import AuthSignUpUnit
@@ -17,7 +18,8 @@ from ingot_auth.storage import AuthStorage
 class AuthUnit(CliUnit):
     """
     The auth of the project: the profiles and the sessions, each with its
-    registries, the methods, none here, the sign-up, the metadata, and the
+    registries, the methods, none here, the policies of what a user types
+    and their presets, the sign-up, the metadata, and the
     storage and the cache, abstract here: the project declares them with a
     backend in a subclass. The sign-in and the sessions themselves come as
     its slots.
@@ -31,6 +33,7 @@ class AuthUnit(CliUnit):
     storage = Slot(AuthStorage)  # type: ignore[type-abstract]
     cache = Slot(AuthCache)
     methods = Slot(AuthMethods)
+    policies = Slot(AuthPolicies)
     profile = Slot(AuthProfileUnit)
     session = Slot(AuthSessionUnit)
     sign_up = Slot(AuthSignUpUnit)

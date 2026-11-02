@@ -9,9 +9,21 @@ from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.contrib.methods.password import AuthPasswordMethod, AuthPasswordStart
 from ingot_auth.contrib.methods.password.scrypt import hash_password, verify_password
 from ingot_auth.methods import (
+    AuthMethodInvalidError,
     AuthMethodRefusedError,
     AuthMethods,
     AuthVerified,
+)
+from ingot_auth.policies import (
+    AuthChars,
+    AuthCharsConfig,
+    AuthCharsPolicy,
+    AuthLengthConfig,
+    AuthLengthPolicy,
+    AuthPolicies,
+    AuthPolicyBinding,
+    AuthValueContext,
+    AuthValuePolicyPreset,
 )
 from ingot_auth.sign_up import (
     AuthSignedUp,
@@ -43,6 +55,37 @@ class TstAuth(AuthMemoryUnit):
 
 class TstProject(AuthMemoryProject):
     auth = Slot(TstAuth)
+
+
+class NicknamePreset(AuthValuePolicyPreset):
+    @t.override
+    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
+        bindings = super()._get_bindings()
+        bindings["chars"] = AuthCharsPolicy.bind(
+            AuthCharsConfig(allowed=AuthChars.LETTERS | AuthChars.DIGITS)
+        )
+        return bindings
+
+
+class PasswordPreset(AuthValuePolicyPreset):
+    @t.override
+    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
+        bindings = super()._get_bindings()
+        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=8))
+        return bindings
+
+
+class TstPolicies(AuthPolicies):
+    preset_sign_up_nickname = Slot(NicknamePreset)
+    preset_sign_up_password = Slot(PasswordPreset)
+
+
+class TstPoliciesAuth(TstAuth):
+    policies = Slot(TstPolicies)
+
+
+class TstPoliciesProject(TstProject):
+    auth = Slot(TstPoliciesAuth)
 
 
 class TstCostlierMethods(TstMethods):
@@ -141,10 +184,30 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         secrets = {call.args[2] for call in verify.call_args_list}
         self.assertEqual(len(secrets), 1)
 
-    async def test_any_nickname_and_password_sign_up_so_far(self) -> None:
+    async def test_the_presets_of_the_core_take_any_nickname_and_password(
+        self,
+    ) -> None:
         for nickname, password in (("a", ""), ("al ice", "x" * 1000)):
             with self.subTest(nickname=nickname, password=password):
                 await self.sign_up(nickname, password)
+
+    async def test_a_sign_up_keeps_the_presets_of_the_application(self) -> None:
+        self.project = TstPoliciesProject()
+        for nickname, password, field, binding in (
+            ("al ice", "correct horse", "nickname", "chars"),
+            ("alice", "short", "password", "length"),
+        ):
+            with self.subTest(nickname=nickname, password=password):
+                with self.assertRaises(AuthMethodInvalidError) as error:
+                    await self.sign_up(nickname, password)
+                self.assertEqual(error.exception.field, field)
+                self.assertEqual(error.exception.binding, binding)
+        await self.sign_up("Ａlice", "correct horse")
+
+    async def test_a_value_is_checked_normalized(self) -> None:
+        self.project = TstPoliciesProject()
+        # eight characters once normalized, the ligature of two
+        await self.sign_up("alice", "\ufb01ve-six")
 
     async def test_a_hash_of_other_parameters_is_verified(self) -> None:
         await self.sign_up("alice", "correct horse")
