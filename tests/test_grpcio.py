@@ -234,7 +234,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_metadata_is_public_by_default(self) -> None:
         client = await self.connect(TstAnonymousProject)
         reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
-        self.assertEqual((list(reply.tags), list(reply.attrs)), ([], []))
+        self.assertEqual(
+            reply,
+            metadata_pb2.GetMetadataResponse(
+                profile=metadata_pb2.Profile(), session=metadata_pb2.Session()
+            ),
+        )
 
     async def test_a_servicer_may_close_the_metadata(self) -> None:
         client = await self.connect(TstClosedProject)
@@ -256,11 +261,60 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 )
             )
         )
+        for attr_id, name, source in (
+            (1, "device", session_attrs_pb2.ATTR_SOURCE_CLIENT),
+            (2, "ip", session_attrs_pb2.ATTR_SOURCE_TRANSPORT),
+        ):
+            await client.auth_session_attrs.Create(
+                session_attrs_pb2.CreateAttrRequest(
+                    attr=session_attrs_pb2.Attr(
+                        id=attr_id,
+                        name=name,
+                        type=session_attrs_pb2.ATTR_TYPE_STR,
+                        source=source,
+                    )
+                )
+            )
+        presets = client.auth_session_presets
+        await presets.Create(
+            presets_pb2.CreatePresetRequest(
+                preset=presets_pb2.Preset(id=1, name="sign_in")
+            )
+        )
+        for attr_id in (1, 2):
+            await presets.Bind(
+                presets_pb2.BindAttrRequest(
+                    binding=presets_pb2.Binding(
+                        preset_id=1, attr_id=attr_id, required=True
+                    )
+                )
+            )
         reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
-        self.assertEqual(list(reply.tags), [metadata_pb2.Tag(id=1, name="beta")])
         self.assertEqual(
-            list(reply.attrs),
-            [metadata_pb2.Attr(id=7, name="title/en", type=metadata_pb2.ATTR_TYPE_STR)],
+            reply.profile,
+            metadata_pb2.Profile(
+                tags=[metadata_pb2.Profile.Tag(id=1, name="beta")],
+                attrs=[
+                    metadata_pb2.Profile.Attr(
+                        id=7, name="title/en", type=metadata_pb2.ATTR_TYPE_STR
+                    )
+                ],
+            ),
+        )
+        # the transport gives the IP: neither it nor its binding is the client's
+        self.assertEqual(
+            reply.session,
+            metadata_pb2.Session(
+                attrs=[
+                    metadata_pb2.Session.Attr(
+                        id=1, name="device", type=metadata_pb2.ATTR_TYPE_STR
+                    )
+                ],
+                presets=[metadata_pb2.Session.Preset(id=1, name="sign_in")],
+                bindings=[
+                    metadata_pb2.Session.Binding(preset_id=1, attr_id=1, required=True)
+                ],
+            ),
         )
 
     async def test_the_tags_are_managed(self) -> None:

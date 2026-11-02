@@ -61,51 +61,171 @@ ATTR_TYPE_STR: AttrType.ValueType  # 5
 Global___AttrType: _TypeAlias = AttrType  # noqa: Y015
 
 @_typing.final
-class Tag(_message.Message):
+class Profile(_message.Message):
+    """The registries of the profiles: the ids a profile holds, with their names."""
+
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
-    NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
-    name: _builtins.str
+    @_typing.final
+    class Tag(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ID_FIELD_NUMBER: _builtins.int
+        NAME_FIELD_NUMBER: _builtins.int
+        id: _builtins.int
+        name: _builtins.str
+        def __init__(
+            self,
+            *,
+            id: _builtins.int = ...,
+            name: _builtins.str = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    @_typing.final
+    class Attr(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ID_FIELD_NUMBER: _builtins.int
+        NAME_FIELD_NUMBER: _builtins.int
+        TYPE_FIELD_NUMBER: _builtins.int
+        id: _builtins.int
+        name: _builtins.str
+        type: Global___AttrType.ValueType
+        def __init__(
+            self,
+            *,
+            id: _builtins.int = ...,
+            name: _builtins.str = ...,
+            type: Global___AttrType.ValueType = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name", "type", b"type"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    TAGS_FIELD_NUMBER: _builtins.int
+    ATTRS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def tags(self) -> _containers.RepeatedCompositeFieldContainer[Global___Profile.Tag]: ...
+    @_builtins.property
+    def attrs(self) -> _containers.RepeatedCompositeFieldContainer[Global___Profile.Attr]: ...
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
-        name: _builtins.str = ...,
+        tags: _abc.Iterable[Global___Profile.Tag] | None = ...,
+        attrs: _abc.Iterable[Global___Profile.Attr] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attrs", b"attrs", "tags", b"tags"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
-Global___Tag: _TypeAlias = Tag  # noqa: Y015
+Global___Profile: _TypeAlias = Profile  # noqa: Y015
 
 @_typing.final
-class Attr(_message.Message):
+class Session(_message.Message):
+    """What a client gives of a session: the attributes it is the source of, the
+    presets, and their bindings to those attributes, flat lists linked by ids.
+    """
+
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
-    NAME_FIELD_NUMBER: _builtins.int
-    TYPE_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
-    name: _builtins.str
-    type: Global___AttrType.ValueType
+    @_typing.final
+    class Attr(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ID_FIELD_NUMBER: _builtins.int
+        NAME_FIELD_NUMBER: _builtins.int
+        TYPE_FIELD_NUMBER: _builtins.int
+        id: _builtins.int
+        name: _builtins.str
+        type: Global___AttrType.ValueType
+        def __init__(
+            self,
+            *,
+            id: _builtins.int = ...,
+            name: _builtins.str = ...,
+            type: Global___AttrType.ValueType = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name", "type", b"type"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    @_typing.final
+    class Preset(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        ID_FIELD_NUMBER: _builtins.int
+        NAME_FIELD_NUMBER: _builtins.int
+        id: _builtins.int
+        name: _builtins.str
+        def __init__(
+            self,
+            *,
+            id: _builtins.int = ...,
+            name: _builtins.str = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    @_typing.final
+    class Binding(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        PRESET_ID_FIELD_NUMBER: _builtins.int
+        ATTR_ID_FIELD_NUMBER: _builtins.int
+        REQUIRED_FIELD_NUMBER: _builtins.int
+        preset_id: _builtins.int
+        attr_id: _builtins.int
+        required: _builtins.bool
+        def __init__(
+            self,
+            *,
+            preset_id: _builtins.int = ...,
+            attr_id: _builtins.int = ...,
+            required: _builtins.bool = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_id", b"attr_id", "preset_id", b"preset_id", "required", b"required"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    ATTRS_FIELD_NUMBER: _builtins.int
+    PRESETS_FIELD_NUMBER: _builtins.int
+    BINDINGS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def attrs(self) -> _containers.RepeatedCompositeFieldContainer[Global___Session.Attr]: ...
+    @_builtins.property
+    def presets(self) -> _containers.RepeatedCompositeFieldContainer[Global___Session.Preset]: ...
+    @_builtins.property
+    def bindings(self) -> _containers.RepeatedCompositeFieldContainer[Global___Session.Binding]: ...
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
-        name: _builtins.str = ...,
-        type: Global___AttrType.ValueType = ...,
+        attrs: _abc.Iterable[Global___Session.Attr] | None = ...,
+        presets: _abc.Iterable[Global___Session.Preset] | None = ...,
+        bindings: _abc.Iterable[Global___Session.Binding] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name", "type", b"type"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attrs", b"attrs", "bindings", b"bindings", "presets", b"presets"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
-Global___Attr: _TypeAlias = Attr  # noqa: Y015
+Global___Session: _TypeAlias = Session  # noqa: Y015
 
 @_typing.final
 class GetMetadataRequest(_message.Message):
@@ -126,21 +246,21 @@ Global___GetMetadataRequest: _TypeAlias = GetMetadataRequest  # noqa: Y015
 class GetMetadataResponse(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    TAGS_FIELD_NUMBER: _builtins.int
-    ATTRS_FIELD_NUMBER: _builtins.int
+    PROFILE_FIELD_NUMBER: _builtins.int
+    SESSION_FIELD_NUMBER: _builtins.int
     @_builtins.property
-    def tags(self) -> _containers.RepeatedCompositeFieldContainer[Global___Tag]: ...
+    def profile(self) -> Global___Profile: ...
     @_builtins.property
-    def attrs(self) -> _containers.RepeatedCompositeFieldContainer[Global___Attr]: ...
+    def session(self) -> Global___Session: ...
     def __init__(
         self,
         *,
-        tags: _abc.Iterable[Global___Tag] | None = ...,
-        attrs: _abc.Iterable[Global___Attr] | None = ...,
+        profile: Global___Profile | None = ...,
+        session: Global___Session | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["profile", b"profile", "session", b"session"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attrs", b"attrs", "tags", b"tags"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["profile", b"profile", "session", b"session"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

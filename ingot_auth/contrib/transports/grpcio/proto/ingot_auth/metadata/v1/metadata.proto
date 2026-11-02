@@ -25,20 +25,51 @@ enum AttrType {
   ATTR_TYPE_STR = 5;
 }
 
-message Tag {
-  uint32 id = 1;
-  string name = 2;
+// The registries of the profiles: the ids a profile holds, with their names.
+message Profile {
+  message Tag {
+    uint32 id = 1;
+    string name = 2;
+  }
+
+  message Attr {
+    uint32 id = 1;
+    string name = 2;
+    AttrType type = 3;
+  }
+
+  repeated Tag tags = 1;
+  repeated Attr attrs = 2;
 }
 
-message Attr {
-  uint32 id = 1;
-  string name = 2;
-  AttrType type = 3;
+// What a client gives of a session: the attributes it is the source of, the
+// presets, and their bindings to those attributes, flat lists linked by ids.
+message Session {
+  message Attr {
+    uint32 id = 1;
+    string name = 2;
+    AttrType type = 3;
+  }
+
+  message Preset {
+    uint32 id = 1;
+    string name = 2;
+  }
+
+  message Binding {
+    uint32 preset_id = 1;
+    uint32 attr_id = 2;
+    bool required = 3;
+  }
+
+  repeated Attr attrs = 1;
+  repeated Preset presets = 2;
+  repeated Binding bindings = 3;
 }
 
 message GetMetadataRequest {}
 
 message GetMetadataResponse {
-  repeated Tag tags = 1;
-  repeated Attr attrs = 2;
+  Profile profile = 1;
+  Session session = 2;
 }

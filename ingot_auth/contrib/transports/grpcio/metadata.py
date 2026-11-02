@@ -8,9 +8,11 @@ import typing as t
 from ingot_grpcio.grpc.services import GrpcService
 from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
 
-from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.profile.attrs import AuthAttr
-from ingot_auth.profile.tags import AuthTag
+from ingot_auth.metadata import (
+    AuthMetadataPermissions,
+    AuthProfileMetadata,
+    AuthSessionMetadata,
+)
 from ingot_auth.registry import AuthAttrType
 
 from .base import BaseAuthGrpcServicer, Context
@@ -42,8 +44,8 @@ class AuthGrpcMetadataServicer(
             self.project.auth.metadata.op_get, None, context
         )
         return metadata_pb2.GetMetadataResponse(
-            tags=map(build_tag_message, metadata.tags),
-            attrs=map(build_attr_message, metadata.attrs),
+            profile=build_profile_message(metadata.profile),
+            session=build_session_message(metadata.session),
         )
 
     @t.override
@@ -59,11 +61,40 @@ class AuthGrpcMetadataBinding:
     )
 
 
-def build_tag_message(tag: AuthTag) -> metadata_pb2.Tag:
-    """Internal: the message of a tag."""
-    return metadata_pb2.Tag(id=tag.id, name=tag.name)
+def build_profile_message(profile: AuthProfileMetadata) -> metadata_pb2.Profile:
+    """Internal: the message of the metadata of the profiles."""
+    return metadata_pb2.Profile(
+        tags=(
+            metadata_pb2.Profile.Tag(id=tag.id, name=tag.name) for tag in profile.tags
+        ),
+        attrs=(
+            metadata_pb2.Profile.Attr(
+                id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type]
+            )
+            for attr in profile.attrs
+        ),
+    )
 
 
-def build_attr_message(attr: AuthAttr) -> metadata_pb2.Attr:
-    """Internal: the message of an attribute."""
-    return metadata_pb2.Attr(id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type])
+def build_session_message(session: AuthSessionMetadata) -> metadata_pb2.Session:
+    """Internal: the message of the metadata of the sessions."""
+    return metadata_pb2.Session(
+        attrs=(
+            metadata_pb2.Session.Attr(
+                id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type]
+            )
+            for attr in session.attrs
+        ),
+        presets=(
+            metadata_pb2.Session.Preset(id=preset.id, name=preset.name)
+            for preset in session.presets
+        ),
+        bindings=(
+            metadata_pb2.Session.Binding(
+                preset_id=binding.preset_id,
+                attr_id=binding.attr_id,
+                required=binding.required,
+            )
+            for binding in session.bindings
+        ),
+    )
