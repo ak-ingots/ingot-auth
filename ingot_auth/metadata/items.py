@@ -4,8 +4,8 @@ __all__ = ("AuthMetadata",)
 
 from dataclasses import dataclass
 
-from ingot_auth.attrs import AuthAttr
-from ingot_auth.tags import AuthTag
+from ingot_auth.profile.attrs import AuthAttr
+from ingot_auth.profile.tags import AuthTag
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

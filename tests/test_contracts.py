@@ -3,12 +3,12 @@
 import unittest
 
 from ingot_auth.__main__ import AuthMemoryProject
+from ingot_auth.project import AuthProject
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
     AuthSessionAttrsStorageContract,
     AuthTagsStorageContract,
 )
-from ingot_auth.project import AuthProject
 
 
 class MemoryStorageMixin:

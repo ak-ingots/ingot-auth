@@ -1,15 +1,15 @@
 """
-The storage of the auth: a facade, one storage a registry, which a backend
-in ``ingot_auth.contrib.storages`` implements.
+The storage of the auth: a facade, a unit for the profiles and one for the
+sessions, one storage a registry, which a backend in
+``ingot_auth.contrib.storages`` implements.
 """
 
 __all__ = ("AuthStorage",)
 
 from ingots.puer import Slot, Unit
 
-from ingot_auth.attrs import BaseAuthAttrsStorage
-from ingot_auth.session_attrs import BaseAuthSessionAttrsStorage
-from ingot_auth.tags import BaseAuthTagsStorage
+from ingot_auth.profile import AuthProfileStorage
+from ingot_auth.session import AuthSessionStorage
 
 
 class AuthStorage(Unit):
@@ -18,8 +18,5 @@ class AuthStorage(Unit):
     it with its own, and the project declares it in the slot of the auth.
     """
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
-    tags = Slot(BaseAuthTagsStorage)  # type: ignore[type-abstract]
-    attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
-    session_attrs = Slot(BaseAuthSessionAttrsStorage)  # type: ignore[type-abstract]
+    profile = Slot(AuthProfileStorage)
+    session = Slot(AuthSessionStorage)

@@ -24,5 +24,6 @@ class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
     async def _run(self, parameters: None, metadata: OperationMetadata) -> AuthMetadata:
         storage = self.project.auth.storage
         return AuthMetadata(
-            tags=await storage.tags.get_all(), attrs=await storage.attrs.get_all()
+            tags=await storage.profile.tags.get_all(),
+            attrs=await storage.profile.attrs.get_all(),
         )

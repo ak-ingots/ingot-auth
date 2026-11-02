@@ -6,8 +6,10 @@ its auth: ``storage = Slot(AuthMemoryStorage)``.
 
 __all__ = (
     "AuthMemoryAttrsStorage",
+    "AuthMemoryProfileStorage",
     "AuthMemoryRegistryStorage",
     "AuthMemorySessionAttrsStorage",
+    "AuthMemorySessionStorage",
     "AuthMemoryStorage",
     "AuthMemoryTagsStorage",
 )
@@ -16,15 +18,17 @@ from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
 
-from .attrs import AuthMemoryAttrsStorage
+from .profile import (
+    AuthMemoryAttrsStorage,
+    AuthMemoryProfileStorage,
+    AuthMemoryTagsStorage,
+)
 from .registry import AuthMemoryRegistryStorage
-from .session_attrs import AuthMemorySessionAttrsStorage
-from .tags import AuthMemoryTagsStorage
+from .session import AuthMemorySessionAttrsStorage, AuthMemorySessionStorage
 
 
 class AuthMemoryStorage(AuthStorage):
     """The storage of the auth in memory."""
 
-    tags = Slot(AuthMemoryTagsStorage)
-    attrs = Slot(AuthMemoryAttrsStorage)
-    session_attrs = Slot(AuthMemorySessionAttrsStorage)
+    profile = Slot(AuthMemoryProfileStorage)
+    session = Slot(AuthMemorySessionStorage)
