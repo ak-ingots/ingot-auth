@@ -53,6 +53,7 @@ class AuthPolicies(Unit):
     policy_chars = Slot(AuthCharsPolicy)
     preset_sign_up_nickname = Slot(AuthValuePolicyPreset)
     preset_sign_up_password = Slot(AuthValuePolicyPreset)
+    preset_sign_up_email = Slot(AuthValuePolicyPreset)
 
     @t.final
     def find[PolicyType: BaseAuthPolicy[t.Any, t.Any]](
