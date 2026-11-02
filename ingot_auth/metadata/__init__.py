@@ -5,11 +5,13 @@ __all__ = (
     "AuthMetadata",
     "AuthMetadataPermissions",
     "AuthMetadataUnit",
+    "AuthProfileMetadata",
+    "AuthSessionMetadata",
 )
 
 from ingots.puer import Factory, Unit
 
-from .items import AuthMetadata
+from .items import AuthMetadata, AuthProfileMetadata, AuthSessionMetadata
 from .operations import AuthGetMetadata
 from .permissions import AuthMetadataPermissions
 
