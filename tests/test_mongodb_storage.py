@@ -24,6 +24,7 @@ from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.tags import AuthTag
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
+    AuthSessionAttrsStorageContract,
     AuthTagsStorageContract,
 )
 
@@ -102,5 +103,12 @@ class MongoDbTagsStorageTestCase(
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbAttrsStorageTestCase(
     ServerMixin, AuthAttrsStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbSessionAttrsStorageTestCase(
+    ServerMixin, AuthSessionAttrsStorageContract, unittest.IsolatedAsyncioTestCase
 ):
     pass

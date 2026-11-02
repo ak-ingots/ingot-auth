@@ -10,6 +10,14 @@ runtime. A test case takes a contract and tells what to run it on::
             ...
 """
 
-__all__ = ("AuthAttrsStorageContract", "AuthTagsStorageContract")
+__all__ = (
+    "AuthAttrsStorageContract",
+    "AuthSessionAttrsStorageContract",
+    "AuthTagsStorageContract",
+)
 
-from .storage import AuthAttrsStorageContract, AuthTagsStorageContract
+from .storage import (
+    AuthAttrsStorageContract,
+    AuthSessionAttrsStorageContract,
+    AuthTagsStorageContract,
+)

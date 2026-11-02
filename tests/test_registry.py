@@ -22,6 +22,11 @@ from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
+from ingot_auth.session_attrs import (
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+    AuthSessionAttrsPermissions,
+)
 from ingot_auth.tags import AuthTag, AuthTagsPermissions
 
 BETA: t.Final = AuthTag(id=1, name="beta")
@@ -63,6 +68,28 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
         self.assertEqual(asyncio.run(run()).type, AuthAttrType.STR)
 
+    def test_a_session_attr_keeps_its_type_and_source_when_renamed(self) -> None:
+        session_attrs = self.project.auth.session_attrs
+        ip = AuthSessionAttr(
+            id=1,
+            name="ip",
+            type=AuthAttrType.STR,
+            source=AuthSessionAttrSource.TRANSPORT,
+        )
+
+        async def run() -> AuthSessionAttr:
+            await self.runner.run(session_attrs.op_create, ip, self.metadata)
+            parameters = AuthRenameItemParameters(id=1, name="peer/ip")
+            return await self.runner.run(
+                session_attrs.op_rename, parameters, self.metadata
+            )
+
+        renamed = asyncio.run(run())
+        self.assertEqual(
+            (renamed.type, renamed.source),
+            (AuthAttrType.STR, AuthSessionAttrSource.TRANSPORT),
+        )
+
     def test_wrong_ids_and_names_are_refused(self) -> None:
         tags = self.project.auth.tags
         for tag in (AuthTag(id=0, name="beta"), AuthTag(id=1, name="Beta")):
@@ -80,6 +107,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
     def test_every_operation_requires_its_permission(self) -> None:
         tags, attrs = self.project.auth.tags, self.project.auth.attrs
+        session_attrs = self.project.auth.session_attrs
         for factory, flag in (
             (tags.op_create, AuthTagsPermissions.CAN_CREATE),
             (tags.op_list, AuthTagsPermissions.CAN_READ),
@@ -89,6 +117,10 @@ class RegistryOperationsTestCase(unittest.TestCase):
             (attrs.op_list, AuthAttrsPermissions.CAN_READ),
             (attrs.op_rename, AuthAttrsPermissions.CAN_UPDATE),
             (attrs.op_delete, AuthAttrsPermissions.CAN_DELETE),
+            (session_attrs.op_create, AuthSessionAttrsPermissions.CAN_CREATE),
+            (session_attrs.op_list, AuthSessionAttrsPermissions.CAN_READ),
+            (session_attrs.op_rename, AuthSessionAttrsPermissions.CAN_RENAME),
+            (session_attrs.op_delete, AuthSessionAttrsPermissions.CAN_DELETE),
             (self.project.auth.metadata.op_get, AuthMetadataPermissions.CAN_READ),
         ):
             self.assertEqual(factory.cls.PERMISSIONS, Permissions(flag))
@@ -128,9 +160,25 @@ class RegistryCommandsTestCase(unittest.TestCase):
             ),
             "1\tphone\tstr\n",
         )
+        self.assertEqual(
+            self.run_project(
+                "auth",
+                "session-attrs",
+                "create",
+                "--id",
+                "1",
+                "--name",
+                "ip",
+                "--type",
+                "str",
+                "--source",
+                "transport",
+            ),
+            "1\tip\tstr\ttransport\n",
+        )
 
     def test_the_storage_in_memory_is_gone_with_the_command(self) -> None:
-        for registry in ("tags", "attrs"):
+        for registry in ("tags", "attrs", "session-attrs"):
             self.assertEqual(self.run_project("auth", registry, "list"), "")
             for argv in (
                 ["rename", "--id", "1", "--name", "x"],

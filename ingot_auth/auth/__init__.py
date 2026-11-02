@@ -7,14 +7,16 @@ from ingots.puer.cli import CliUnit
 
 from ingot_auth.attrs import AuthAttrs
 from ingot_auth.metadata import AuthMetadataUnit
+from ingot_auth.session_attrs import AuthSessionAttrs
 from ingot_auth.storage import AuthStorage
 from ingot_auth.tags import AuthTags
 
 
 class AuthUnit(CliUnit):
     """
-    The auth of the project: the registries of the tags and the attributes,
-    their metadata, and the storage, abstract here: the project declares it
+    The auth of the project: the registries of the tags and the attributes
+    of the profiles, their metadata, the registry of the attributes of the
+    sessions, and the storage, abstract here: the project declares it
     with a backend in a subclass. The sign-up, the sign-in, the profiles and
     the sessions come as its slots.
     """
@@ -25,4 +27,5 @@ class AuthUnit(CliUnit):
     storage = Slot(AuthStorage)
     tags = Slot(AuthTags)
     attrs = Slot(AuthAttrs)
+    session_attrs = Slot(AuthSessionAttrs)
     metadata = Slot(AuthMetadataUnit)
