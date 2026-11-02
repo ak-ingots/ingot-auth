@@ -6,7 +6,6 @@ protocol, and a preset the context made of the parts its policies take.
 __all__ = ("AuthHasValue", "AuthValueContext")
 
 import typing as t
-from dataclasses import dataclass
 
 
 class AuthHasValue(t.Protocol):
@@ -15,11 +14,17 @@ class AuthHasValue(t.Protocol):
     async def get_value(self) -> str: ...
 
 
-@dataclass(frozen=True, slots=True)
 class AuthValueContext:
-    """The context of a value alone: a nickname, a password signing up."""
+    """
+    The context of a value alone: a nickname, a password signing up. A
+    context gives its parts by the methods of its protocols only, its data
+    private: none of it in its ``repr``.
+    """
 
-    value: str
+    __slots__ = ("_value",)
+
+    def __init__(self, value: str) -> None:
+        self._value = value
 
     async def get_value(self) -> str:
-        return self.value
+        return self._value

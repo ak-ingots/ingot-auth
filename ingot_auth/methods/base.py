@@ -4,9 +4,9 @@ __all__ = ("BaseAuthMethod",)
 
 import typing as t
 
-from ingots.puer import Entity
+from ingots.puer import Unit
 
-from ingot_auth.policies import AuthPolicyViolationError, AuthValueContext
+from ingot_auth.policies import AuthPolicyViolationError
 
 from .errors import (
     AuthMethodInvalidError,
@@ -20,7 +20,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
+class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     """
     A method of signing up and in: a password, a provider, a code by mail. It
     verifies who it is in steps, each ending with an :class:`AuthChallenge`,
@@ -30,7 +30,10 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
     its own, as a password is checked against its rules on a sign-up and
     against its hash on a sign-in; the answers go on from the state alone.
 
-    A method is a slot of :class:`AuthMethods`, its name the path of the slot.
+    A method is a unit: its presets of the policies are its slots
+    ``preset_<flow>_<field>``, each of a class and a context of its own, the
+    context made by the method on the step that checks it. A method is a slot
+    of :class:`AuthMethods`, its name the path of the slot.
     """
 
     project: "AuthProject"
@@ -83,16 +86,16 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
         raise AuthMethodRefusedError.create()
 
     @t.final
-    async def _check_value(
-        self, field: str, preset: "AuthPolicyPreset[AuthValueContext]", value: str
+    async def _check[ContextType](
+        self, field: str, preset: "AuthPolicyPreset[ContextType]", context: ContextType
     ) -> None:
         """
-        Checks a value a client gave, normalized, by its preset of the
-        policies, a reach of the subclasses.
+        Checks a field a client gave by its preset of the policies, in the
+        context the method made for it, a reach of the subclasses.
 
         :raises AuthMethodInvalidError: it breaks a policy, of the field.
         """
         try:
-            await preset.check(AuthValueContext(value))
+            await preset.check(context)
         except AuthPolicyViolationError as error:
             raise AuthMethodInvalidError.for_field(field, error.binding) from error

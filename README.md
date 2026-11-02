@@ -43,9 +43,10 @@ class AppMethods(AuthMethods):
 ```
 
 the nickname and the password of a sign-up checked by the presets of the
-policies `preset_sign_up_nickname` and `preset_sign_up_password`, empty
-unless the application binds policies to them in its `AuthPolicies`, the
-parameters of its hash, scrypt, changed by subclassing. An email and a code
+policies of the method, its slots `preset_sign_up_nickname` and
+`preset_sign_up_password`, empty unless the application binds policies to
+them in a subclass of the method, the parameters of its hash, scrypt,
+changed by subclassing too. An email and a code
 sent to it comes too, of two steps, the sending of the code the
 application's:
 
@@ -63,7 +64,7 @@ class AppMethods(AuthMethods):
     email = Slot(AppEmailMethod)
 ```
 
-its email checked on a sign-up by the preset `preset_sign_up_email`.
+its email checked on a sign-up by its preset `preset_sign_up_email`.
 
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and
