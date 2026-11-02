@@ -11,15 +11,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from ingot_auth.profile.identities import AuthIdentityError
-
-
-class AuthSecretNotFoundError(AuthIdentityError):
-    """The subject has no secret of the method."""
-
-    @classmethod
-    def for_method(cls, method: str) -> t.Self:
-        return cls(f"{method}: the subject has no secret", method)
+from .errors import AuthSecretNotFoundError
 
 
 class BaseAuthSecretsStorage(Entity):

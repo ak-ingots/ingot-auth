@@ -17,6 +17,12 @@ from dataclasses import dataclass
 
 from ingots.puer import Entity
 
+from .errors import (
+    AuthIdentityConflictError,
+    AuthIdentityError,
+    AuthIdentityNotFoundError,
+)
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthIdentity:
@@ -25,37 +31,6 @@ class AuthIdentity:
     method: str
     subject: str
     uid: str
-
-
-class AuthIdentityError(Exception):
-    """
-    An error of an identity. ``args`` are the message and the method, not the
-    subject, an email or a phone that has no place in the logs.
-    """
-
-    @property
-    def method(self) -> str:
-        return t.cast(str, self.args[1])
-
-    @t.override
-    def __str__(self) -> str:
-        return str(self.args[0])
-
-
-class AuthIdentityConflictError(AuthIdentityError):
-    """The subject is bound already."""
-
-    @classmethod
-    def for_method(cls, method: str) -> t.Self:
-        return cls(f"{method}: the subject is bound already", method)
-
-
-class AuthIdentityNotFoundError(AuthIdentityError):
-    """The subject is bound to no profile."""
-
-    @classmethod
-    def for_method(cls, method: str) -> t.Self:
-        return cls(f"{method}: the subject is not bound", method)
 
 
 class BaseAuthIdentitiesStorage(Entity):

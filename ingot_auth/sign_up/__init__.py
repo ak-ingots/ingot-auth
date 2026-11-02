@@ -22,6 +22,7 @@ __all__ = (
 
 from ingots.puer import Factory, Unit
 
+from .errors import AuthSignUpRecordNotFoundError
 from .items import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
@@ -33,7 +34,6 @@ from .items import (
 from .operations import AuthAnswerSignUp, AuthStartSignUp
 from .permissions import AuthSignUpPermissions
 from .storage import (
-    AuthSignUpRecordNotFoundError,
     AuthSignUpStorage,
     BaseAuthSignUpRecordsStorage,
 )
