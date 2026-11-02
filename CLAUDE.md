@@ -115,6 +115,8 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
   an addon too: hooks start with an underscore and are overridden, not
   called; a protected member is touched only by its class, its subclasses
   and its own package.
+- The errors of a package live in its `errors.py`, apart from the entity
+  they are of, and the package exports them as before.
 
 ## Design
 
