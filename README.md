@@ -12,7 +12,7 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers; stored in memory or in MongoDB, and all of it
 over gRPC; the sign-up by pluggable methods in steps, a nickname and a
-password the first, in memory so far; the policies of what a user types,
+password, and an email and a code sent to it, in memory so far; the policies of what a user types,
 bound to their presets.
 
 ## For Consumers
@@ -45,7 +45,25 @@ class AppMethods(AuthMethods):
 the nickname and the password of a sign-up checked by the presets of the
 policies `preset_sign_up_nickname` and `preset_sign_up_password`, empty
 unless the application binds policies to them in its `AuthPolicies`, the
-parameters of its hash, scrypt, changed by subclassing.
+parameters of its hash, scrypt, changed by subclassing. An email and a code
+sent to it comes too, of two steps, the sending of the code the
+application's:
+
+```python
+from ingot_auth.contrib.methods.email import BaseAuthEmailMethod
+
+
+class AppEmailMethod(BaseAuthEmailMethod):
+    @t.override
+    async def _send_code(self, email: str, code: str) -> None:
+        ...  # by the mail of the application
+
+
+class AppMethods(AuthMethods):
+    email = Slot(AppEmailMethod)
+```
+
+its email checked on a sign-up by the preset `preset_sign_up_email`.
 
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and

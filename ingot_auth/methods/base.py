@@ -6,10 +6,17 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .errors import AuthMethodRefusedError, AuthMethodUnsupportedError
+from ingot_auth.policies import AuthPolicyViolationError, AuthValueContext
+
+from .errors import (
+    AuthMethodInvalidError,
+    AuthMethodRefusedError,
+    AuthMethodUnsupportedError,
+)
 from .steps import AuthStep
 
 if t.TYPE_CHECKING:
+    from ingot_auth.policies import AuthPolicyPreset
     from ingot_auth.project import AuthProject
 
 
@@ -74,3 +81,18 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
     async def _answer(self, state: StateType, answer: AnswerType) -> AuthStep:
         """A method of one step asks for nothing, so it takes no answer."""
         raise AuthMethodRefusedError.create()
+
+    @t.final
+    async def _check_value(
+        self, field: str, preset: "AuthPolicyPreset[AuthValueContext]", value: str
+    ) -> None:
+        """
+        Checks a value a client gave, normalized, by its preset of the
+        policies, a reach of the subclasses.
+
+        :raises AuthMethodInvalidError: it breaks a policy, of the field.
+        """
+        try:
+            await preset.check(AuthValueContext(value))
+        except AuthPolicyViolationError as error:
+            raise AuthMethodInvalidError.for_field(field, error.binding) from error
