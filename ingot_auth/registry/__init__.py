@@ -6,7 +6,9 @@ profiles, the attributes of the sessions.
 """
 
 __all__ = (
+    "ATTR_VALUE_TYPES",
     "AuthAttrType",
+    "AuthAttrValue",
     "AuthItem",
     "AuthItemConflictError",
     "AuthItemInvalidError",
@@ -21,5 +23,5 @@ from .errors import (
     AuthItemNotFoundError,
     AuthRegistryError,
 )
-from .items import AuthAttrType, AuthItem
+from .items import ATTR_VALUE_TYPES, AuthAttrType, AuthAttrValue, AuthItem
 from .storage import BaseAuthRegistryStorage

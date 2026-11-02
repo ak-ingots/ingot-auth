@@ -1,7 +1,7 @@
 """
-The storage of the auth: a facade, a unit for the profiles and one for the
-sessions, one storage a registry, which a backend in
-``ingot_auth.contrib.storages`` implements.
+The storage of the auth: a facade, a unit a subdomain, the profiles, the
+sessions, the sign-up, which a backend in ``ingot_auth.contrib.storages``
+implements.
 """
 
 __all__ = ("AuthStorage",)
@@ -10,6 +10,7 @@ from ingots.puer import Slot, Unit
 
 from ingot_auth.profile import AuthProfileStorage
 from ingot_auth.session import AuthSessionStorage
+from ingot_auth.sign_up import AuthSignUpStorage
 
 
 class AuthStorage(Unit):
@@ -20,3 +21,4 @@ class AuthStorage(Unit):
 
     profile = Slot(AuthProfileStorage)
     session = Slot(AuthSessionStorage)
+    sign_up = Slot(AuthSignUpStorage)

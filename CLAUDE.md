@@ -14,8 +14,10 @@ the auth of the project: the units `profile/`, with the registries `tags/`
 and `attrs/`, and `session/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `metadata/` for
-the consumers, by the subdomains, of the sessions what is the client's, and the storage `storage/`, abstract, a unit for each of
-them); a unit lives in the
+the consumers, by the subdomains, of the sessions what is the client's; the
+methods of signing up and in `methods/`, slots of `AuthMethods`, in steps kept
+by attempts; the `sign_up/` flow; the storage `storage/` and the cache
+`cache/`, abstract, a unit a subdomain); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking

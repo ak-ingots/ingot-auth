@@ -1,6 +1,6 @@
 """
 The profiles: the registries of what they hold, the tags and the attributes,
-and their storage. What else is of the profiles comes here too.
+the profiles themselves with their identities, and their storage.
 """
 
 __all__ = ("AuthProfileStorage", "AuthProfileUnit")
