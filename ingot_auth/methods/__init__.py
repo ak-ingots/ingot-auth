@@ -15,6 +15,7 @@ __all__ = (
     "AuthMethodError",
     "AuthMethodNotFoundError",
     "AuthMethodRefusedError",
+    "AuthMethodUnsupportedError",
     "AuthMethods",
     "AuthStep",
     "AuthVerified",
@@ -33,6 +34,7 @@ from .errors import (
     AuthMethodError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
+    AuthMethodUnsupportedError,
 )
 from .steps import AuthChallenge, AuthStep, AuthVerified
 
@@ -51,8 +53,6 @@ class AuthMethods(Unit):
         :raises AuthMethodNotFoundError: no slot of a method has the name.
         """
         try:
-            # mypy refuses an abstract class where a type is expected
-            kind = t.cast(type[BaseAuthMethod[t.Any, t.Any, t.Any]], BaseAuthMethod)
-            return self.slots_find_entity(name, kind)
+            return self.slots_find_entity(name, BaseAuthMethod)
         except LookupError:
             raise AuthMethodNotFoundError.for_name(name) from None

@@ -21,10 +21,13 @@ class AuthChallenge[ChallengeType, StateType]:
 class AuthVerified:
     """
     The method has verified who it is: ``subject`` is the one of the method,
-    an id of the provider, an email, unique within the method.
+    an id of the provider, an email, unique within the method. On a sign-up,
+    ``secret`` is what the method keeps to verify the subject on a sign-in,
+    the hash of a password, say: the profile is created with it.
     """
 
     subject: str
+    secret: str | None = None
 
 
 AuthStep: t.TypeAlias = AuthChallenge[t.Any, t.Any] | AuthVerified

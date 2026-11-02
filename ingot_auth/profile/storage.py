@@ -7,13 +7,14 @@ from ingots.puer import Slot, Unit
 from .attrs import BaseAuthAttrsStorage
 from .identities import BaseAuthIdentitiesStorage
 from .profiles import BaseAuthProfilesStorage
+from .secrets import BaseAuthSecretsStorage
 from .tags import BaseAuthTagsStorage
 
 
 class AuthProfileStorage(Unit):
     """
-    The storage of the profiles: the registries, the profiles and their
-    identities, each abstract.
+    The storage of the profiles: the registries, the profiles, their
+    identities and the secrets of these, each abstract.
     """
 
     # mypy refuses an abstract class where a type is expected: a slot of
@@ -22,3 +23,4 @@ class AuthProfileStorage(Unit):
     attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
     profiles = Slot(BaseAuthProfilesStorage)  # type: ignore[type-abstract]
     identities = Slot(BaseAuthIdentitiesStorage)  # type: ignore[type-abstract]
+    secrets = Slot(BaseAuthSecretsStorage)  # type: ignore[type-abstract]

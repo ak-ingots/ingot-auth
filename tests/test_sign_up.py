@@ -19,6 +19,7 @@ from ingot_auth.methods import (
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
     AuthMethods,
+    AuthMethodUnsupportedError,
     AuthStep,
     AuthVerified,
     BaseAuthMethod,
@@ -28,6 +29,7 @@ from ingot_auth.profile.identities import (
     AuthIdentityNotFoundError,
 )
 from ingot_auth.profile.profiles import AuthProfileNotFoundError
+from ingot_auth.profile.secrets import AuthSecretNotFoundError
 from ingot_auth.registry import (
     AuthAttrType,
     AuthItemInvalidError,
@@ -54,13 +56,18 @@ SIGNING_UP: t.Final = Caller(
 
 class OneStepMethod(BaseAuthMethod[str, str, None]):
     @t.override
-    async def _start(self, parameters: str) -> AuthStep:
+    async def _start_sign_up(self, parameters: str) -> AuthStep:
         return AuthVerified(subject=parameters)
+
+
+class NoFlowMethod(BaseAuthMethod[str, str, None]):
+    pass
 
 
 class TstMethods(AuthMethods):
     testing = Slot(AuthTestingMethod)
     one_step = Slot(OneStepMethod)
+    no_flow = Slot(NoFlowMethod)
 
 
 class TstAuth(AuthMemoryUnit):
@@ -145,6 +152,35 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AuthAttemptNotFoundError):
             await self.answer(challenge.attempt_id, "1234")
 
+    async def test_the_secret_of_the_method_is_kept(self) -> None:
+        secrets = self.project.auth.storage.profile.secrets
+        await self.start(AuthTestingStart(subject="a", secret="hash-a"))
+        challenge = await self.start(
+            AuthTestingStart(subject="b", code="1234", secret="hash-b")
+        )
+        assert isinstance(challenge, AuthSignUpChallenge)
+        await self.answer(challenge.attempt_id, "1234")
+        self.assertEqual(await secrets.get("testing", "a"), "hash-a")
+        self.assertEqual(await secrets.get("testing", "b"), "hash-b")
+
+    async def test_no_secret_is_kept_for_a_method_giving_none(self) -> None:
+        await self.start(AuthTestingStart(subject="a"))
+        with self.assertRaises(AuthSecretNotFoundError):
+            await self.project.auth.storage.profile.secrets.get("testing", "a")
+
+    async def test_a_method_signs_up_only_if_it_takes_the_flow(self) -> None:
+        with self.assertRaises(AuthMethodUnsupportedError) as error:
+            await self.start("a", method="no_flow")
+        self.assertEqual(error.exception.flow, "sign_up")
+        with self.assertRaises(AuthMethodUnsupportedError) as error:
+            await self.project.auth.methods.get("no_flow").start_sign_in("a")
+        self.assertEqual(error.exception.flow, "sign_in")
+
+    async def test_the_testing_method_signs_in_as_it_signs_up(self) -> None:
+        method = self.project.auth.methods.get("testing")
+        step = await method.start_sign_in(AuthTestingStart(subject="a", secret="h"))
+        self.assertEqual(step, AuthVerified(subject="a", secret="h"))
+
     async def test_a_refused_answer_keeps_the_attempt_until_the_limit(self) -> None:
         challenge = await self.start(AuthTestingStart(subject="a", code="1234"))
         assert isinstance(challenge, AuthSignUpChallenge)
@@ -195,7 +231,9 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         profiles = type(self.project.auth.storage.profile.profiles)
         with mock.patch.object(profiles, "_create", side_effect=OSError):
             with self.assertRaises(OSError):
-                await self.start(AuthTestingStart(subject="a@b.c"))
+                await self.start(AuthTestingStart(subject="a@b.c", secret="hash"))
+        with self.assertRaises(AuthSecretNotFoundError):
+            await self.project.auth.storage.profile.secrets.get("testing", "a@b.c")
         result = await self.start(AuthTestingStart(subject="a@b.c"))
         self.assertIsInstance(result, AuthSignedUp)
 
@@ -236,6 +274,14 @@ class ErrorsTestCase(unittest.TestCase):
         for error, message in (
             (AuthMethodNotFoundError.for_name("x"), "no method 'x'"),
             (AuthMethodRefusedError.create(), "the method refuses"),
+            (
+                AuthMethodUnsupportedError.for_flow("sign_in"),
+                "the method takes no sign_in",
+            ),
+            (
+                AuthSecretNotFoundError.for_method("password"),
+                "password: the subject has no secret",
+            ),
             (AuthAttemptNotFoundError.create(), "no such attempt"),
             (
                 AuthIdentityConflictError.for_method("mail"),

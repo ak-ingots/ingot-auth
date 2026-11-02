@@ -5,6 +5,7 @@ __all__ = (
     "AuthMemoryIdentitiesStorage",
     "AuthMemoryProfileStorage",
     "AuthMemoryProfilesStorage",
+    "AuthMemorySecretsStorage",
     "AuthMemoryTagsStorage",
 )
 
@@ -15,6 +16,7 @@ from ingot_auth.profile import AuthProfileStorage
 from .attrs import AuthMemoryAttrsStorage
 from .identities import AuthMemoryIdentitiesStorage
 from .profiles import AuthMemoryProfilesStorage
+from .secrets import AuthMemorySecretsStorage
 from .tags import AuthMemoryTagsStorage
 
 
@@ -25,3 +27,4 @@ class AuthMemoryProfileStorage(AuthProfileStorage):
     attrs = Slot(AuthMemoryAttrsStorage)
     profiles = Slot(AuthMemoryProfilesStorage)
     identities = Slot(AuthMemoryIdentitiesStorage)
+    secrets = Slot(AuthMemorySecretsStorage)

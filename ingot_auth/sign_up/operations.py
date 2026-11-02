@@ -16,6 +16,7 @@ from ingot_auth.methods import (
     AuthChallenge,
     AuthMethodRefusedError,
     AuthStep,
+    AuthVerified,
 )
 from ingot_auth.profile.identities import AuthIdentity
 from ingot_auth.profile.profiles import AuthProfile
@@ -75,28 +76,36 @@ class BaseAuthSignUpOperation[ParametersType](
             )
             await self.project.auth.cache.attempts.put(attempt)
             return AuthSignUpChallenge(attempt_id=attempt.id, challenge=step.challenge)
-        return await self.complete(method, step.subject, values)
+        return await self.complete(method, step, values)
 
     @t.final
     async def complete(
-        self, method: str, subject: str, values: "Mapping[int, AuthAttrValue]"
+        self,
+        method: str,
+        verified: AuthVerified,
+        values: "Mapping[int, AuthAttrValue]",
     ) -> AuthSignedUp:
         """
         Ends the sign-up, in one transaction of the storage: binds the
-        subject to a new profile, creates it and keeps the record. The binding
-        goes first, so of two sign-ups of one subject only one goes on.
+        subject to a new profile, keeps its secret if the method gave one,
+        creates the profile and keeps the record. The binding goes first, so
+        of two sign-ups of one subject only one goes on.
 
         :raises AuthIdentityConflictError: the subject is bound already.
         """
         storage = self.project.auth.storage
         uid = self._create_uid()
         now = self._get_now()
-        identity = AuthIdentity(method=method, subject=subject, uid=uid)
+        identity = AuthIdentity(method=method, subject=verified.subject, uid=uid)
         record = AuthSignUpRecord(
             uid=uid, method=method, signed_up_at=now, values=values
         )
         async with storage.transaction():
             await storage.profile.identities.create(identity)
+            if verified.secret is not None:
+                await storage.profile.secrets.put(
+                    method, verified.subject, verified.secret
+                )
             await storage.profile.profiles.create(AuthProfile(uid=uid, created_at=now))
             await storage.sign_up.records.add(record)
         return AuthSignedUp(uid=uid)
@@ -124,6 +133,7 @@ class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
     :raises AuthMethodNotFoundError: no method has the name.
     :raises AuthItemNotFoundError, AuthItemInvalidError: a value is not one
         of an attribute of the client, or not of its type.
+    :raises AuthMethodUnsupportedError: the method signs no one up.
     :raises AuthMethodRefusedError: the method refuses what it starts with.
     :raises AuthIdentityConflictError: the subject is bound already.
     """
@@ -135,7 +145,7 @@ class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
         method = self.project.auth.methods.get(parameters.method)
         attrs = await self.project.auth.storage.session.attrs.get_all()
         check_client_values(attrs, parameters.values)
-        step = await method.start(parameters.parameters)
+        step = await method.start_sign_up(parameters.parameters)
         return await self.proceed(parameters.method, step, parameters.values)
 
 
