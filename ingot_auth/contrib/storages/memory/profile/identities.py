@@ -11,11 +11,13 @@ from ingot_auth.profile.identities import (
     BaseAuthIdentitiesStorage,
 )
 
+from ..state import AuthMemoryStateMixin
+
 if t.TYPE_CHECKING:
     from ingots.puer import Project
 
 
-class AuthMemoryIdentitiesStorage(BaseAuthIdentitiesStorage):
+class AuthMemoryIdentitiesStorage(AuthMemoryStateMixin, BaseAuthIdentitiesStorage):
     """The identities in memory, by the method and the subject."""
 
     def __init__(self, project: "Project") -> None:

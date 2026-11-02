@@ -16,6 +16,8 @@ __all__ = (
     "AuthMongoDbTagsStorage",
 )
 
+import typing as t
+
 from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
@@ -32,9 +34,57 @@ from .session import (
     AuthMongoDbSessionStorage,
 )
 
+if t.TYPE_CHECKING:
+    from ingot_pymongo import MongoDbProject
+    from ingot_pymongo.mongodb.clients import BaseMongoDbClient
+    from pymongo.asynchronous.client_session import AsyncClientSession
+
 
 class AuthMongoDbStorage(AuthStorage):
-    """The storage of the auth in MongoDB."""
+    """
+    The storage of the auth in MongoDB. A transaction is one of a session of
+    the client of :meth:`_get_client`, which the registries pass to their
+    queries: MongoDB takes transactions on a replica set only, of one node
+    for the tests. A transaction may fail on a conflict with another, with
+    the label ``TransientTransactionError``: retrying it is for the caller.
+    """
+
+    project: "MongoDbProject"
 
     profile = Slot(AuthMongoDbProfileStorage)
     session = Slot(AuthMongoDbSessionStorage)
+
+    @t.override
+    async def _begin(self) -> object:
+        # a transaction sees the collections there were when it began: those
+        # the registries create on their first use are created before it
+        for path, slot in type(self).slots_walk():
+            if issubclass(slot.cls, AuthMongoDbRegistryStorage):
+                registry = self.slots_find_entity(path)
+                await t.cast(
+                    AuthMongoDbRegistryStorage[t.Any], registry
+                )._get_collection()
+        client = await self._get_client()
+        session = client.client.start_session()
+        await session.start_transaction()
+        return session
+
+    @t.override
+    async def _commit(self, transaction: object) -> None:
+        session = t.cast("AsyncClientSession", transaction)
+        try:
+            await session.commit_transaction()
+        finally:
+            await session.end_session()
+
+    @t.override
+    async def _rollback(self, transaction: object) -> None:
+        session = t.cast("AsyncClientSession", transaction)
+        try:
+            await session.abort_transaction()
+        finally:
+            await session.end_session()
+
+    def _get_client(self) -> "BaseMongoDbClient":
+        """The client of the transactions, that of the registries by default."""
+        return self.project.mongodb.clients.default

@@ -26,7 +26,9 @@ class AuthUnit(CliUnit):
     cli_name = "auth"
     cli_description = "The auth of the users."
 
-    storage = Slot(AuthStorage)
+    # mypy refuses an abstract class where a type is expected: a slot of
+    # one is an open question of ingots
+    storage = Slot(AuthStorage)  # type: ignore[type-abstract]
     cache = Slot(AuthCache)
     methods = Slot(AuthMethods)
     profile = Slot(AuthProfileUnit)

@@ -44,6 +44,7 @@ from ingot_auth.sign_up import (
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
+from ingot_auth.storage import AuthTransactionError
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
 
 SIGNING_UP: t.Final = Caller(
@@ -190,6 +191,14 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AuthIdentityConflictError):
             await self.start(AuthTestingStart(subject="a@b.c"))
 
+    async def test_a_sign_up_failing_midway_leaves_nothing(self) -> None:
+        profiles = type(self.project.auth.storage.profile.profiles)
+        with mock.patch.object(profiles, "_create", side_effect=OSError):
+            with self.assertRaises(OSError):
+                await self.start(AuthTestingStart(subject="a@b.c"))
+        result = await self.start(AuthTestingStart(subject="a@b.c"))
+        self.assertIsInstance(result, AuthSignedUp)
+
     async def test_an_unknown_method_is_not_found(self) -> None:
         with self.assertRaises(AuthMethodNotFoundError) as error:
             await self.start("a", method="password")
@@ -238,5 +247,6 @@ class ErrorsTestCase(unittest.TestCase):
             ),
             (AuthProfileNotFoundError.for_uid("a1"), "no profile 'a1'"),
             (AuthSignUpRecordNotFoundError.for_uid("a1"), "no sign-up of 'a1'"),
+            (AuthTransactionError.for_not_begun(), "no transaction is begun"),
         ):
             self.assertEqual(str(error), message)

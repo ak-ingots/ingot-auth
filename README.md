@@ -29,6 +29,11 @@ among the bases of its own, as the
 [addon guide](https://github.com/ak-ingots/ingots/blob/main/docs/defaults/addon.md)
 of Ingots shows.
 
+The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
+belongs together in one transaction, the end of a sign-up for one, and
+MongoDB takes transactions on a replica set only: run a replica set, of one
+node if that is all there is.
+
 ### Configs
 
 Set as environment variables with the prefix of the project
@@ -37,6 +42,8 @@ Set as environment variables with the prefix of the project
 | Name | Default | Meaning |
 |---|---|---|
 | `AUTH_LOGGING_LEVEL` | `INFO` | the level of the logger of the addon, `ingot_auth` |
+| `AUTH_ATTEMPT_TTL` | `600` | the seconds an attempt of a sign-up waits for an answer |
+| `AUTH_ATTEMPT_MAX_FAILURES` | `5` | the answers refused before an attempt is over |
 
 ## Development
 
