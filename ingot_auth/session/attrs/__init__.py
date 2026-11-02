@@ -9,6 +9,7 @@ __all__ = (
     "AuthSessionAttrs",
     "AuthSessionAttrsPermissions",
     "BaseAuthSessionAttrsStorage",
+    "check_client_values",
 )
 
 from ingots.puer import Factory, Slot
@@ -29,6 +30,7 @@ from .operations import (
 )
 from .permissions import AuthSessionAttrsPermissions
 from .storage import BaseAuthSessionAttrsStorage
+from .values import check_client_values
 
 
 class AuthSessionAttrs(CliUnit):

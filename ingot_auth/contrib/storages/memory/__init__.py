@@ -6,11 +6,15 @@ its auth: ``storage = Slot(AuthMemoryStorage)``.
 
 __all__ = (
     "AuthMemoryAttrsStorage",
+    "AuthMemoryIdentitiesStorage",
     "AuthMemoryProfileStorage",
+    "AuthMemoryProfilesStorage",
     "AuthMemoryRegistryStorage",
     "AuthMemorySessionAttrsStorage",
     "AuthMemorySessionPresetsStorage",
     "AuthMemorySessionStorage",
+    "AuthMemorySignUpRecordsStorage",
+    "AuthMemorySignUpStorage",
     "AuthMemoryStorage",
     "AuthMemoryTagsStorage",
 )
@@ -21,6 +25,8 @@ from ingot_auth.storage import AuthStorage
 
 from .profile import (
     AuthMemoryAttrsStorage,
+    AuthMemoryIdentitiesStorage,
+    AuthMemoryProfilesStorage,
     AuthMemoryProfileStorage,
     AuthMemoryTagsStorage,
 )
@@ -30,6 +36,7 @@ from .session import (
     AuthMemorySessionPresetsStorage,
     AuthMemorySessionStorage,
 )
+from .sign_up import AuthMemorySignUpRecordsStorage, AuthMemorySignUpStorage
 
 
 class AuthMemoryStorage(AuthStorage):
@@ -37,3 +44,4 @@ class AuthMemoryStorage(AuthStorage):
 
     profile = Slot(AuthMemoryProfileStorage)
     session = Slot(AuthMemorySessionStorage)
+    sign_up = Slot(AuthMemorySignUpStorage)

@@ -11,7 +11,7 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers; stored in memory or in MongoDB, and all of it
-over gRPC.
+over gRPC; the sign-up by pluggable methods in steps, in memory so far.
 
 ## For Consumers
 

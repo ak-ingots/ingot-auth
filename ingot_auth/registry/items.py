@@ -1,8 +1,11 @@
 """The items of the registries: what tags and attributes are declared with."""
 
-__all__ = ("AuthAttrType", "AuthItem")
+__all__ = ("ATTR_VALUE_TYPES", "AuthAttrType", "AuthAttrValue", "AuthItem")
 
+import datetime
+import decimal
 import enum
+import typing as t
 from dataclasses import dataclass
 
 
@@ -14,6 +17,19 @@ class AuthAttrType(enum.StrEnum):
     DECIMAL = "decimal"
     DATETIME = "datetime"
     STR = "str"
+
+
+AuthAttrValue: t.TypeAlias = bool | int | decimal.Decimal | datetime.datetime | str
+"""A value of an attribute: of one of the types of :class:`AuthAttrType`."""
+
+# the class of the values of each type: exactly, a bool is not an int here
+ATTR_VALUE_TYPES: t.Final[dict[AuthAttrType, type]] = {
+    AuthAttrType.BOOL: bool,
+    AuthAttrType.INT: int,
+    AuthAttrType.DECIMAL: decimal.Decimal,
+    AuthAttrType.DATETIME: datetime.datetime,
+    AuthAttrType.STR: str,
+}
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

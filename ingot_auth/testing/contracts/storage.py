@@ -11,7 +11,6 @@ import abc
 import asyncio
 import dataclasses
 import typing as t
-import unittest
 
 from ingot_auth.profile.attrs import AuthAttr
 from ingot_auth.profile.tags import AuthTag
@@ -30,15 +29,13 @@ from ingot_auth.session.presets import (
     BaseAuthSessionPresetsStorage,
 )
 
+from .base import BaseAuthContract
+
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
-    TestCase: t.TypeAlias = unittest.IsolatedAsyncioTestCase
-else:
-    TestCase = abc.ABC
 
-
-class BaseAuthRegistryStorageContract[ItemType: AuthItem](TestCase):
+class BaseAuthRegistryStorageContract[ItemType: AuthItem](BaseAuthContract):
     """
     A registry of a storage: a subclass tells which, a test case on what. Only
     what the storage promises is checked: the operations validate the items,
@@ -47,18 +44,9 @@ class BaseAuthRegistryStorageContract[ItemType: AuthItem](TestCase):
 
     REGISTRY: t.ClassVar[str]
 
-    @abc.abstractmethod
-    async def create_project(self) -> "AuthProject":
-        """
-        The project to run on, its storage empty. The test case cleans up what
-        it needs to, with ``addAsyncCleanup()``.
-        """
-        raise NotImplementedError(f"{type(self).__qualname__}.create_project")
-
     @t.override
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.project = await self.create_project()
         self.storage = self._get_storage(self.project)
 
     async def test_it_is_empty_at_first(self) -> None:

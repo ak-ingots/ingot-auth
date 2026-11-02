@@ -5,9 +5,13 @@ import unittest
 from ingot_auth.__main__ import AuthMemoryProject
 from ingot_auth.project import AuthProject
 from ingot_auth.testing.contracts import (
+    AuthAttemptsCacheContract,
     AuthAttrsStorageContract,
+    AuthIdentitiesStorageContract,
+    AuthProfilesStorageContract,
     AuthSessionAttrsStorageContract,
     AuthSessionPresetsStorageContract,
+    AuthSignUpRecordsStorageContract,
     AuthTagsStorageContract,
 )
 
@@ -41,5 +45,35 @@ class MemorySessionPresetsStorageTestCase(
     MemoryStorageMixin,
     AuthSessionPresetsStorageContract,
     unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemoryProfilesStorageTestCase(
+    MemoryStorageMixin,
+    AuthProfilesStorageContract,
+    unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemoryIdentitiesStorageTestCase(
+    MemoryStorageMixin,
+    AuthIdentitiesStorageContract,
+    unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemorySignUpRecordsStorageTestCase(
+    MemoryStorageMixin,
+    AuthSignUpRecordsStorageContract,
+    unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemoryAttemptsCacheTestCase(
+    MemoryStorageMixin, AuthAttemptsCacheContract, unittest.IsolatedAsyncioTestCase
 ):
     pass
