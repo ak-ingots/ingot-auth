@@ -10,9 +10,10 @@ the sign-up, the sign-in and the sessions of the users of an application.
 `AuthProject` (`project.py`) takes the addon's `AuthSettings` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
-the auth of the project: the registries `tags/` and `attrs/` on the shared
-`registry/`, their `metadata/` for the consumers, and the storage `storage/`,
-abstract); a unit lives in the
+the auth of the project: the registries `tags/` and `attrs/` of the profiles
+and `session_attrs/` of the sessions, each attribute of a session with its
+source, on the shared `registry/`, the `metadata/` for the consumers, and the
+storage `storage/`, abstract); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking

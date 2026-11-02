@@ -8,6 +8,7 @@ __all__ = ("AuthStorage",)
 from ingots.puer import Slot, Unit
 
 from ingot_auth.attrs import BaseAuthAttrsStorage
+from ingot_auth.session_attrs import BaseAuthSessionAttrsStorage
 from ingot_auth.tags import BaseAuthTagsStorage
 
 
@@ -21,3 +22,4 @@ class AuthStorage(Unit):
     # one is an open question of ingots
     tags = Slot(BaseAuthTagsStorage)  # type: ignore[type-abstract]
     attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
+    session_attrs = Slot(BaseAuthSessionAttrsStorage)  # type: ignore[type-abstract]

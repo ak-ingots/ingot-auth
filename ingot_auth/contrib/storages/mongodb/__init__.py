@@ -8,6 +8,7 @@ chooses: the client by a hook, the names of the database and the collection.
 __all__ = (
     "AuthMongoDbAttrsStorage",
     "AuthMongoDbRegistryStorage",
+    "AuthMongoDbSessionAttrsStorage",
     "AuthMongoDbStorage",
     "AuthMongoDbTagsStorage",
 )
@@ -18,6 +19,7 @@ from ingot_auth.storage import AuthStorage
 
 from .attrs import AuthMongoDbAttrsStorage
 from .registry import AuthMongoDbRegistryStorage
+from .session_attrs import AuthMongoDbSessionAttrsStorage
 from .tags import AuthMongoDbTagsStorage
 
 
@@ -26,3 +28,4 @@ class AuthMongoDbStorage(AuthStorage):
 
     tags = Slot(AuthMongoDbTagsStorage)
     attrs = Slot(AuthMongoDbAttrsStorage)
+    session_attrs = Slot(AuthMongoDbSessionAttrsStorage)

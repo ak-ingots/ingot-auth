@@ -29,6 +29,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcErrors,
     AuthGrpcMetadataBinding,
     AuthGrpcMetadataServicer,
+    AuthGrpcSessionAttrsServicer,
     AuthGrpcTagsServicer,
 )
 from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.v1 import (
@@ -36,18 +37,23 @@ from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.v1 import (
     attrs_pb2_grpc,
     metadata_pb2,
     metadata_pb2_grpc,
+    session_attrs_pb2,
+    session_attrs_pb2_grpc,
     tags_pb2,
     tags_pb2_grpc,
 )
 from ingot_auth.logging import AuthLogging
 from ingot_auth.metadata import AuthMetadataPermissions
+from ingot_auth.session_attrs import AuthSessionAttrSource, AuthSessionAttrsPermissions
 from ingot_auth.settings import AuthSettings
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.tags import AuthTagsPermissions
 
 ADMIN: t.Final = Caller(
     uid="admin",
-    permissions=Permissions(*AuthTagsPermissions, *AuthAttrsPermissions),
+    permissions=Permissions(
+        *AuthTagsPermissions, *AuthAttrsPermissions, *AuthSessionAttrsPermissions
+    ),
 )
 
 
@@ -64,9 +70,16 @@ class AttrsServicer(AdminCaller, AuthGrpcAttrsServicer):
     pass
 
 
+class SessionAttrsServicer(AdminCaller, AuthGrpcSessionAttrsServicer):
+    pass
+
+
 class TstAdminBinding:
     auth_tags = GrpcService(tags_pb2_grpc.TagsStub, TagsServicer)
     auth_attrs = GrpcService(attrs_pb2_grpc.AttrsStub, AttrsServicer)
+    auth_session_attrs = GrpcService(
+        session_attrs_pb2_grpc.SessionAttrsStub, SessionAttrsServicer
+    )
 
 
 class TstAnonymousServer(
@@ -249,9 +262,81 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await attrs.Delete(attrs_pb2.DeleteAttrRequest(id=1))
         self.assertEqual(len((await attrs.List(attrs_pb2.ListAttrsRequest())).attrs), 0)
 
+    async def test_the_session_attrs_are_managed(self) -> None:
+        session_attrs = (await self.connect()).auth_session_attrs
+        ip = session_attrs_pb2.SessionAttr(
+            id=1,
+            name="ip",
+            type=session_attrs_pb2.ATTR_TYPE_STR,
+            source=session_attrs_pb2.SESSION_ATTR_SOURCE_TRANSPORT,
+        )
+        created = await session_attrs.Create(
+            session_attrs_pb2.CreateSessionAttrRequest(session_attr=ip)
+        )
+        self.assertEqual(created.session_attr, ip)
+        renamed = session_attrs_pb2.SessionAttr()
+        renamed.CopyFrom(ip)
+        renamed.name = "peer/ip"
+        reply = await session_attrs.Rename(
+            session_attrs_pb2.RenameSessionAttrRequest(id=1, name="peer/ip")
+        )
+        self.assertEqual(reply.session_attr, renamed)
+        listed = await session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest())
+        self.assertEqual(list(listed.session_attrs), [renamed])
+        await session_attrs.Delete(session_attrs_pb2.DeleteSessionAttrRequest(id=1))
+        listed = await session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest())
+        self.assertEqual(len(listed.session_attrs), 0)
+
+    async def test_every_source_of_the_session_attrs_has_a_message(self) -> None:
+        expected = {
+            f"SESSION_ATTR_SOURCE_{item.name}" for item in AuthSessionAttrSource
+        }
+        names = set(session_attrs_pb2.SessionAttrSource.keys())
+        self.assertEqual(expected, names - {"SESSION_ATTR_SOURCE_UNSPECIFIED"})
+
+    async def test_a_session_attr_needs_a_type_and_a_source(self) -> None:
+        session_attrs = (await self.connect()).auth_session_attrs
+        for attr_type, source, key in (
+            (
+                session_attrs_pb2.ATTR_TYPE_UNSPECIFIED,
+                session_attrs_pb2.SESSION_ATTR_SOURCE_CLIENT,
+                "0",
+            ),
+            (
+                session_attrs_pb2.ATTR_TYPE_STR,
+                session_attrs_pb2.SESSION_ATTR_SOURCE_UNSPECIFIED,
+                "0",
+            ),
+        ):
+            session_attr = session_attrs_pb2.SessionAttr(
+                id=1, name="device", type=attr_type, source=source
+            )
+            with self.assertRaises(GrpcError) as error:
+                await session_attrs.Create(
+                    session_attrs_pb2.CreateSessionAttrRequest(
+                        session_attr=session_attr
+                    )
+                )
+            self.assertEqual(
+                (
+                    error.exception.code,
+                    error.exception.reason,
+                    error.exception.metadata,
+                ),
+                (
+                    grpc.StatusCode.INVALID_ARGUMENT,
+                    "ITEM_INVALID",
+                    {"registry": "session_attrs", "key": key},
+                ),
+            )
+
     async def test_every_type_of_the_attrs_has_a_message(self) -> None:
         expected = {f"ATTR_TYPE_{item.name}" for item in AuthAttrType}
-        for attr_type in (metadata_pb2.AttrType, attrs_pb2.AttrType):
+        for attr_type in (
+            metadata_pb2.AttrType,
+            attrs_pb2.AttrType,
+            session_attrs_pb2.AttrType,
+        ):
             names = set(attr_type.keys()) - {"ATTR_TYPE_UNSPECIFIED"}
             self.assertEqual(expected, names)
 
@@ -259,6 +344,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         for flags, permission in (
             (AuthTagsPermissions, tags_pb2.Permission),
             (AuthAttrsPermissions, attrs_pb2.Permission),
+            (AuthSessionAttrsPermissions, session_attrs_pb2.Permission),
             (AuthMetadataPermissions, metadata_pb2.Permission),
         ):
             expected = {
@@ -337,6 +423,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 tags_pb2.CreateTagRequest(tag=tags_pb2.Tag(id=1, name="beta"))
             ),
             client.auth_attrs.List(attrs_pb2.ListAttrsRequest()),
+            client.auth_session_attrs.List(session_attrs_pb2.ListSessionAttrsRequest()),
         ):
             with self.assertRaises(GrpcError) as error:
                 await call

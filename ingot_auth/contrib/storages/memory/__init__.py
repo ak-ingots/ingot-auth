@@ -7,6 +7,7 @@ its auth: ``storage = Slot(AuthMemoryStorage)``.
 __all__ = (
     "AuthMemoryAttrsStorage",
     "AuthMemoryRegistryStorage",
+    "AuthMemorySessionAttrsStorage",
     "AuthMemoryStorage",
     "AuthMemoryTagsStorage",
 )
@@ -17,6 +18,7 @@ from ingot_auth.storage import AuthStorage
 
 from .attrs import AuthMemoryAttrsStorage
 from .registry import AuthMemoryRegistryStorage
+from .session_attrs import AuthMemorySessionAttrsStorage
 from .tags import AuthMemoryTagsStorage
 
 
@@ -25,3 +27,4 @@ class AuthMemoryStorage(AuthStorage):
 
     tags = Slot(AuthMemoryTagsStorage)
     attrs = Slot(AuthMemoryAttrsStorage)
+    session_attrs = Slot(AuthMemorySessionAttrsStorage)

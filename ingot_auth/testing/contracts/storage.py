@@ -1,6 +1,10 @@
 """The contract of a storage: what a backend guarantees, whatever it runs on."""
 
-__all__ = ("AuthAttrsStorageContract", "AuthTagsStorageContract")
+__all__ = (
+    "AuthAttrsStorageContract",
+    "AuthSessionAttrsStorageContract",
+    "AuthTagsStorageContract",
+)
 
 import abc
 import asyncio
@@ -15,6 +19,7 @@ from ingot_auth.registry import (
     AuthRegistryError,
     BaseAuthRegistryStorage,
 )
+from ingot_auth.session_attrs import AuthSessionAttr, AuthSessionAttrSource
 from ingot_auth.tags import AuthTag
 
 if t.TYPE_CHECKING:
@@ -205,3 +210,58 @@ class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
     @t.override
     def _create_item(self, item_id: int, name: str) -> AuthAttr:
         return AuthAttr(id=item_id, name=name, type=AuthAttrType.STR)
+
+
+class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessionAttr]):
+    """The attributes of the sessions of a storage: each keeps its type and source."""
+
+    REGISTRY: t.ClassVar[str] = "session_attrs"
+
+    async def test_every_type_and_source_is_given_as_created(self) -> None:
+        pairs = [
+            (item_type, source)
+            for item_type in AuthAttrType
+            for source in AuthSessionAttrSource
+        ]
+        session_attrs = tuple(
+            AuthSessionAttr(
+                id=item_id,
+                name=f"{item_type.value}_{source.value}",
+                type=item_type,
+                source=source,
+            )
+            for item_id, (item_type, source) in enumerate(pairs, start=1)
+        )
+        for session_attr in session_attrs:
+            await self.storage.create(session_attr)
+        self.assertEqual(await self.storage.get_all(), session_attrs)
+
+    async def test_a_rename_keeps_the_type_and_the_source(self) -> None:
+        session_attr = AuthSessionAttr(
+            id=1,
+            name="ip",
+            type=AuthAttrType.STR,
+            source=AuthSessionAttrSource.TRANSPORT,
+        )
+        await self.storage.create(session_attr)
+        renamed = await self.storage.rename(1, "peer/ip")
+        self.assertEqual(
+            (renamed.type, renamed.source),
+            (AuthAttrType.STR, AuthSessionAttrSource.TRANSPORT),
+        )
+        self.assertEqual(await self.storage.get_all(), (renamed,))
+
+    @t.override
+    def _get_storage(
+        self, project: "AuthProject"
+    ) -> BaseAuthRegistryStorage[AuthSessionAttr]:
+        return project.auth.storage.session_attrs
+
+    @t.override
+    def _create_item(self, item_id: int, name: str) -> AuthSessionAttr:
+        return AuthSessionAttr(
+            id=item_id,
+            name=name,
+            type=AuthAttrType.STR,
+            source=AuthSessionAttrSource.CLIENT,
+        )

@@ -9,7 +9,8 @@ The sign-up, the sign-in and the sessions of the users of Ingots
 applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 
 **Status:** pre-alpha: the registries of the tags and the attributes of the
-profiles, their metadata for the consumers, and all of it over gRPC.
+profiles, with their metadata for the consumers, and of the attributes of the
+sessions; stored in memory or in MongoDB, and all of it over gRPC.
 
 ## For Consumers
 

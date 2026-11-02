@@ -5,6 +5,7 @@ import unittest
 from ingot_auth.__main__ import AuthMemoryProject
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
+    AuthSessionAttrsStorageContract,
     AuthTagsStorageContract,
 )
 from ingot_auth.project import AuthProject
@@ -23,5 +24,13 @@ class MemoryTagsStorageTestCase(
 
 class MemoryAttrsStorageTestCase(
     MemoryStorageMixin, AuthAttrsStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+class MemorySessionAttrsStorageTestCase(
+    MemoryStorageMixin,
+    AuthSessionAttrsStorageContract,
+    unittest.IsolatedAsyncioTestCase,
 ):
     pass

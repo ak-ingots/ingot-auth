@@ -3,6 +3,7 @@
 __all__ = (
     "AuthGrpcAttrsServicer",
     "AuthGrpcMetadataServicer",
+    "AuthGrpcSessionAttrsServicer",
     "AuthGrpcTagsServicer",
     "BaseAuthGrpcServicer",
 )
@@ -10,4 +11,5 @@ __all__ = (
 from .attrs import AuthGrpcAttrsServicer
 from .base import BaseAuthGrpcServicer
 from .metadata import AuthGrpcMetadataServicer
+from .session_attrs import AuthGrpcSessionAttrsServicer
 from .tags import AuthGrpcTagsServicer

@@ -21,6 +21,8 @@ __all__ = (
     "AuthGrpcErrors",
     "AuthGrpcMetadataBinding",
     "AuthGrpcMetadataServicer",
+    "AuthGrpcSessionAttrsBinding",
+    "AuthGrpcSessionAttrsServicer",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
     "BaseAuthGrpcServicer",
@@ -29,10 +31,16 @@ __all__ = (
 from ingot_grpcio.grpc.services import GrpcService
 
 from .errors import AuthGrpcErrors
-from .proto.ingot_auth.v1 import attrs_pb2_grpc, metadata_pb2_grpc, tags_pb2_grpc
+from .proto.ingot_auth.v1 import (
+    attrs_pb2_grpc,
+    metadata_pb2_grpc,
+    session_attrs_pb2_grpc,
+    tags_pb2_grpc,
+)
 from .servicers import (
     AuthGrpcAttrsServicer,
     AuthGrpcMetadataServicer,
+    AuthGrpcSessionAttrsServicer,
     AuthGrpcTagsServicer,
     BaseAuthGrpcServicer,
 )
@@ -52,5 +60,13 @@ class AuthGrpcAttrsBinding:
     auth_attrs = GrpcService(attrs_pb2_grpc.AttrsStub, AuthGrpcAttrsServicer)
 
 
-class AuthGrpcAdminBinding(AuthGrpcTagsBinding, AuthGrpcAttrsBinding):
+class AuthGrpcSessionAttrsBinding:
+    auth_session_attrs = GrpcService(
+        session_attrs_pb2_grpc.SessionAttrsStub, AuthGrpcSessionAttrsServicer
+    )
+
+
+class AuthGrpcAdminBinding(
+    AuthGrpcTagsBinding, AuthGrpcAttrsBinding, AuthGrpcSessionAttrsBinding
+):
     pass

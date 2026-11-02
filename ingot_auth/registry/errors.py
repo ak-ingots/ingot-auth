@@ -47,7 +47,10 @@ class AuthItemConflictError(AuthRegistryError):
 
 
 class AuthItemInvalidError(AuthRegistryError):
-    """An id, a name or a type is not acceptable, whatever the registry holds."""
+    """
+    An id, a name, a type or a source is not acceptable, whatever the registry
+    holds.
+    """
 
     @classmethod
     def for_id(cls, registry: str, item_id: int) -> t.Self:
@@ -64,6 +67,13 @@ class AuthItemInvalidError(AuthRegistryError):
         """The type is not given, or not known."""
         return cls(
             f"{registry}: the type {item_type!r} is not acceptable", registry, item_type
+        )
+
+    @classmethod
+    def for_source(cls, registry: str, source: int | str) -> t.Self:
+        """The source is not given, or not known."""
+        return cls(
+            f"{registry}: the source {source!r} is not acceptable", registry, source
         )
 
 
