@@ -3,6 +3,7 @@
 __all__ = (
     "AuthAttemptNotFoundError",
     "AuthMethodError",
+    "AuthMethodInvalidError",
     "AuthMethodNotFoundError",
     "AuthMethodRefusedError",
     "AuthMethodUnsupportedError",
@@ -44,6 +45,26 @@ class AuthMethodRefusedError(AuthMethodError):
     @classmethod
     def create(cls) -> t.Self:
         return cls("the method refuses")
+
+
+class AuthMethodInvalidError(AuthMethodError):
+    """
+    What a client starts a sign-up with breaks a policy of the method, a
+    password too short, say: the field and the binding of the policy broken
+    are named, the value is not.
+    """
+
+    @classmethod
+    def for_field(cls, field: str, binding: str) -> t.Self:
+        return cls(f"the {field} breaks the policy of {binding!r}", field, binding)
+
+    @property
+    def field(self) -> str:
+        return t.cast(str, self.args[1])
+
+    @property
+    def binding(self) -> str:
+        return t.cast(str, self.args[2])
 
 
 class AuthMethodUnsupportedError(AuthMethodError):

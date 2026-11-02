@@ -39,6 +39,7 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
         The first step of a sign-up, on what the client starts with.
 
         :raises AuthMethodUnsupportedError: the method signs no one up.
+        :raises AuthMethodInvalidError: it breaks a policy of the method.
         :raises AuthMethodRefusedError: the method does not accept it.
         """
         return await self._start_sign_up(parameters)

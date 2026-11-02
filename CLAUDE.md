@@ -17,7 +17,9 @@ many, all on the shared `registry/`; the `metadata/` for
 the consumers, by the subdomains, of the sessions what is the client's; the
 methods of signing up and in `methods/`, slots of `AuthMethods`, in steps kept
 by attempts, a hook to start each flow they take, their secrets kept in
-`profile/secrets/`; the `sign_up/` flow; the storage `storage/`, with the
+`profile/secrets/`; the `policies/`, rules a value is checked against, each
+taking a part of a context by its protocol, and their presets, binding them
+by class with their configs, by a hook, for a context with those parts; the `sign_up/` flow; the storage `storage/`, with the
 transactions of a backend over all its storages, and the cache `cache/`,
 abstract, a unit a subdomain); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the

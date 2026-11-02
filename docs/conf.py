@@ -37,6 +37,10 @@ autodoc_member_order = "bysource"
 # Document each object once, at its definition site: an automodule on a
 # package __init__ otherwise re-documents the names it re-exports in __all__.
 autodoc_default_options = {"ignore-module-all": True}
+# A bare `type[...]` in a signature finds the fields `type` of the attributes
+# as well as the builtin, and the builtin is meant: such an ambiguity only
+# is not a warning.
+suppress_warnings = ["ref.python"]
 
 # The framework's API, for the addon's references to it.
 intersphinx_mapping = {

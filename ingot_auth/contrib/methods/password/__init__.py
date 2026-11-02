@@ -1,8 +1,11 @@
 """
 The method of a nickname and a password, of one step: an application declares
 it as a slot of its methods, ``password = Slot(AuthPasswordMethod)``. The
-password is kept as its hash, a secret of the nickname, by scrypt of the
-standard library; how it hashes is changed by subclassing.
+nickname and the password of a sign-up are checked by the presets of the
+policies ``preset_sign_up_nickname`` and ``preset_sign_up_password``, empty
+unless an application binds policies to them. The password is kept as its
+hash, a secret of the nickname, by scrypt of the standard library; how it
+hashes is changed by subclassing.
 """
 
 __all__ = ("AuthPasswordMethod", "AuthPasswordStart")
@@ -13,10 +16,16 @@ import unicodedata
 from dataclasses import dataclass, field
 
 from ingot_auth.methods import (
+    AuthMethodInvalidError,
     AuthMethodRefusedError,
     AuthStep,
     AuthVerified,
     BaseAuthMethod,
+)
+from ingot_auth.policies import (
+    AuthPolicyPreset,
+    AuthPolicyViolationError,
+    AuthValueContext,
 )
 from ingot_auth.profile.secrets import AuthSecretNotFoundError
 
@@ -35,9 +44,9 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
     """
     A nickname and a password. Both are normalized first, to NFKC, the
     nickname to its case-folded form too, so that ``Alice`` is ``alice``: the
-    subject is the nickname normalized. A sign-up gives the hash of the
-    password as the secret, taking any nickname and password so far; a
-    sign-in verifies the password against it. A nickname with no secret is
+    subject is the nickname normalized. A sign-up checks them by their
+    presets of the policies and gives the hash of the password as the
+    secret; a sign-in verifies the password against it. A nickname with no secret is
     verified against a hash of nothing all the same, so that the time of the
     refusal tells nothing of it.
 
@@ -55,6 +64,9 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
     async def _start_sign_up(self, parameters: AuthPasswordStart) -> AuthStep:
         nickname = self._normalize_nickname(parameters.nickname)
         password = self._normalize_password(parameters.password)
+        policies = self.project.auth.policies
+        await self._check("nickname", policies.preset_sign_up_nickname, nickname)
+        await self._check("password", policies.preset_sign_up_password, password)
         secret = await asyncio.to_thread(self._hash, password)
         return AuthVerified(subject=nickname, secret=secret)
 
@@ -72,6 +84,15 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
         if not await asyncio.to_thread(self._verify, password, secret):
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=nickname)
+
+    @t.final
+    async def _check(
+        self, field: str, preset: AuthPolicyPreset[AuthValueContext], value: str
+    ) -> None:
+        try:
+            await preset.check(AuthValueContext(value))
+        except AuthPolicyViolationError as error:
+            raise AuthMethodInvalidError.for_field(field, error.binding) from error
 
     def _normalize_nickname(self, nickname: str) -> str:
         return unicodedata.normalize("NFKC", nickname).casefold()
