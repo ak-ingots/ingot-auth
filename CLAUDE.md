@@ -16,8 +16,9 @@ a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `metadata/` for
 the consumers, by the subdomains, of the sessions what is the client's; the
 methods of signing up and in `methods/`, slots of `AuthMethods`, in steps kept
-by attempts; the `sign_up/` flow; the storage `storage/` and the cache
-`cache/`, abstract, a unit a subdomain); a unit lives in the
+by attempts; the `sign_up/` flow; the storage `storage/`, with the
+transactions of a backend over all its storages, and the cache `cache/`,
+abstract, a unit a subdomain); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
@@ -52,7 +53,7 @@ make check        # what CI runs: lint, test, coverage, wheel-test, doc, cl-chec
 make lint         # black --check, flake8, mypy --strict
 make test         # unittest on the working tree
 make coverage     # the same under coverage, with MongoDB; fails below 99%
-make integration  # the storage in MongoDB against docker-compose.yml
+make integration  # the storage in MongoDB against docker-compose.yml, a replica set
 make wheel-test   # unittest on the built wheel, PYTHONS="3.14 3.15"
 make format       # black
 make doc          # apidoc, then Sphinx; warnings are errors

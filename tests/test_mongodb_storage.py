@@ -26,6 +26,7 @@ from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
     AuthSessionAttrsStorageContract,
     AuthSessionPresetsStorageContract,
+    AuthStorageTransactionsContract,
     AuthTagsStorageContract,
 )
 
@@ -74,8 +75,6 @@ class ServerMixin(TestCase):
                 {
                     "INGOT_MONGODB_DEFAULT_HOST": "127.0.0.1",
                     "INGOT_MONGODB_DEFAULT_PORT": str(PORT),
-                    "INGOT_MONGODB_DEFAULT_USER": "ingot",
-                    "INGOT_MONGODB_DEFAULT_PASSWORD": "ingot",
                     "INGOT_MONGODB_DEFAULT_SERVER_SELECTION_TIMEOUT": "5",
                     "INGOT_IS_PRINT_CONFIGS": "off",
                 },
@@ -118,5 +117,12 @@ class MongoDbSessionAttrsStorageTestCase(
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSessionPresetsStorageTestCase(
     ServerMixin, AuthSessionPresetsStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbStorageTransactionsTestCase(
+    ServerMixin, AuthStorageTransactionsContract, unittest.IsolatedAsyncioTestCase
 ):
     pass

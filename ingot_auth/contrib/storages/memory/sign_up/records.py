@@ -10,11 +10,15 @@ from ingot_auth.sign_up import (
     BaseAuthSignUpRecordsStorage,
 )
 
+from ..state import AuthMemoryStateMixin
+
 if t.TYPE_CHECKING:
     from ingots.puer import Project
 
 
-class AuthMemorySignUpRecordsStorage(BaseAuthSignUpRecordsStorage):
+class AuthMemorySignUpRecordsStorage(
+    AuthMemoryStateMixin, BaseAuthSignUpRecordsStorage
+):
     """The records of the sign-ups in memory."""
 
     def __init__(self, project: "Project") -> None:

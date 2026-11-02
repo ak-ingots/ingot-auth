@@ -12,11 +12,15 @@ from ingot_auth.registry import (
     BaseAuthRegistryStorage,
 )
 
+from .state import AuthMemoryStateMixin
+
 if t.TYPE_CHECKING:
     from ingots.puer import Project
 
 
-class AuthMemoryRegistryStorage[ItemType: AuthItem](BaseAuthRegistryStorage[ItemType]):
+class AuthMemoryRegistryStorage[ItemType: AuthItem](
+    AuthMemoryStateMixin, BaseAuthRegistryStorage[ItemType]
+):
     """
     A registry in memory, for the tests and the addon run on its own: gone
     with the project.

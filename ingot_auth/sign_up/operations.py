@@ -82,21 +82,23 @@ class BaseAuthSignUpOperation[ParametersType](
         self, method: str, subject: str, values: "Mapping[int, AuthAttrValue]"
     ) -> AuthSignedUp:
         """
-        Ends the sign-up: binds the subject to a new profile, creates it and
-        keeps the record. The binding goes first, so of two sign-ups of one
-        subject only one goes on.
+        Ends the sign-up, in one transaction of the storage: binds the
+        subject to a new profile, creates it and keeps the record. The binding
+        goes first, so of two sign-ups of one subject only one goes on.
 
         :raises AuthIdentityConflictError: the subject is bound already.
         """
         storage = self.project.auth.storage
         uid = self._create_uid()
-        identity = AuthIdentity(method=method, subject=subject, uid=uid)
-        await storage.profile.identities.create(identity)
         now = self._get_now()
-        await storage.profile.profiles.create(AuthProfile(uid=uid, created_at=now))
-        await storage.sign_up.records.add(
-            AuthSignUpRecord(uid=uid, method=method, signed_up_at=now, values=values)
+        identity = AuthIdentity(method=method, subject=subject, uid=uid)
+        record = AuthSignUpRecord(
+            uid=uid, method=method, signed_up_at=now, values=values
         )
+        async with storage.transaction():
+            await storage.profile.identities.create(identity)
+            await storage.profile.profiles.create(AuthProfile(uid=uid, created_at=now))
+            await storage.sign_up.records.add(record)
         return AuthSignedUp(uid=uid)
 
     def _create_uid(self) -> str:
