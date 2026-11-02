@@ -9,6 +9,9 @@ from ingots.puer import Entity
 from .errors import AuthMethodRefusedError, AuthMethodUnsupportedError
 from .steps import AuthStep
 
+if t.TYPE_CHECKING:
+    from ingot_auth.project import AuthProject
+
 
 class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
     """
@@ -22,6 +25,13 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Entity):
 
     A method is a slot of :class:`AuthMethods`, its name the path of the slot.
     """
+
+    project: "AuthProject"
+
+    @t.final
+    def get_name(self) -> str:
+        """The name of the method: the path of its slot in the methods."""
+        return self.project.auth.methods.slots_find_path(self)
 
     @t.final
     async def start_sign_up(self, parameters: StartType) -> AuthStep:

@@ -11,7 +11,8 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers; stored in memory or in MongoDB, and all of it
-over gRPC; the sign-up by pluggable methods in steps, in memory so far.
+over gRPC; the sign-up by pluggable methods in steps, a nickname and a
+password the first, in memory so far.
 
 ## For Consumers
 
@@ -28,6 +29,19 @@ addon's settings, logging and `auth` unit, or takes the classes of the addon
 among the bases of its own, as the
 [addon guide](https://github.com/ak-ingots/ingots/blob/main/docs/defaults/addon.md)
 of Ingots shows.
+
+The methods of signing up and in are slots of the methods of the auth,
+named by their slots: a nickname and a password comes with the addon,
+
+```python
+from ingot_auth.contrib.methods.password import AuthPasswordMethod
+
+
+class AppMethods(AuthMethods):
+    password = Slot(AuthPasswordMethod)
+```
+
+the parameters of its hash, scrypt, changed by subclassing.
 
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and

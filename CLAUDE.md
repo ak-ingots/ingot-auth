@@ -26,7 +26,8 @@ names its operations `op_*` and its commands `cmd_*`, the commands taking
 their CLI names from `cli_name`. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in, the storage and the transport plug
 in. The core holds the facades; their implementations are in `contrib/`
-(`contrib/storages/<backend>/`, `contrib/transports/<addon>/`), each under
+(`contrib/storages/<backend>/`, `contrib/transports/<addon>/`,
+`contrib/methods/<method>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profile/`, `session/`, as the core is.
 `contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
