@@ -29,6 +29,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcMetadataBinding,
     AuthGrpcMetadataServicer,
     AuthGrpcSessionAttrsServicer,
+    AuthGrpcSessionPresetsServicer,
     AuthGrpcTagsServicer,
 )
 from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.metadata.v1 import (
@@ -53,19 +54,27 @@ from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.session.attrs.v1 impo
 from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.session.attrs.v1 import (
     attrs_pb2_grpc as session_attrs_pb2_grpc,
 )
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.session.presets.v1 import (
+    presets_pb2,
+    presets_pb2_grpc,
+)
 from ingot_auth.logging import AuthLogging
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.profile.attrs import AuthAttrsPermissions
 from ingot_auth.profile.tags import AuthTagsPermissions
 from ingot_auth.registry import AuthAttrType
 from ingot_auth.session.attrs import AuthSessionAttrSource, AuthSessionAttrsPermissions
+from ingot_auth.session.presets import AuthSessionPresetsPermissions
 from ingot_auth.settings import AuthSettings
 from ingot_auth.settings.configs import AuthConfigs
 
 ADMIN: t.Final = Caller(
     uid="admin",
     permissions=Permissions(
-        *AuthTagsPermissions, *AuthAttrsPermissions, *AuthSessionAttrsPermissions
+        *AuthTagsPermissions,
+        *AuthAttrsPermissions,
+        *AuthSessionAttrsPermissions,
+        *AuthSessionPresetsPermissions,
     ),
 )
 
@@ -87,11 +96,18 @@ class SessionAttrsServicer(AdminCaller, AuthGrpcSessionAttrsServicer):
     pass
 
 
+class SessionPresetsServicer(AdminCaller, AuthGrpcSessionPresetsServicer):
+    pass
+
+
 class TstAdminBinding:
     auth_profile_tags = GrpcService(profile_tags_pb2_grpc.TagsStub, TagsServicer)
     auth_profile_attrs = GrpcService(profile_attrs_pb2_grpc.AttrsStub, AttrsServicer)
     auth_session_attrs = GrpcService(
         session_attrs_pb2_grpc.AttrsStub, SessionAttrsServicer
+    )
+    auth_session_presets = GrpcService(
+        presets_pb2_grpc.PresetsStub, SessionPresetsServicer
     )
 
 
@@ -321,6 +337,55 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         listed = await session_attrs.List(session_attrs_pb2.ListAttrsRequest())
         self.assertEqual(len(listed.attrs), 0)
 
+    async def test_the_session_presets_are_managed(self) -> None:
+        client = await self.connect()
+        await client.auth_session_attrs.Create(
+            session_attrs_pb2.CreateAttrRequest(
+                attr=session_attrs_pb2.Attr(
+                    id=1,
+                    name="device",
+                    type=session_attrs_pb2.ATTR_TYPE_STR,
+                    source=session_attrs_pb2.ATTR_SOURCE_CLIENT,
+                )
+            )
+        )
+        presets = client.auth_session_presets
+        preset = presets_pb2.Preset(id=1, name="sign_in")
+        created = await presets.Create(presets_pb2.CreatePresetRequest(preset=preset))
+        self.assertEqual(created.preset, preset)
+        renamed = await presets.Rename(
+            presets_pb2.RenamePresetRequest(id=1, name="sign_up")
+        )
+        self.assertEqual(renamed.preset, presets_pb2.Preset(id=1, name="sign_up"))
+        listed = await presets.List(presets_pb2.ListPresetsRequest())
+        self.assertEqual(list(listed.presets), [renamed.preset])
+        binding = presets_pb2.Binding(preset_id=1, attr_id=1, required=True)
+        bound = await presets.Bind(presets_pb2.BindAttrRequest(binding=binding))
+        self.assertEqual(bound.binding, binding)
+        bindings = await presets.ListBindings(presets_pb2.ListBindingsRequest())
+        self.assertEqual(list(bindings.bindings), [binding])
+        await presets.Unbind(presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=1))
+        bindings = await presets.ListBindings(presets_pb2.ListBindingsRequest())
+        self.assertEqual(len(bindings.bindings), 0)
+        await presets.Delete(presets_pb2.DeletePresetRequest(id=1))
+        listed = await presets.List(presets_pb2.ListPresetsRequest())
+        self.assertEqual(len(listed.presets), 0)
+
+    async def test_an_attr_not_bound_is_not_found(self) -> None:
+        presets = (await self.connect()).auth_session_presets
+        await presets.Create(
+            presets_pb2.CreatePresetRequest(preset=presets_pb2.Preset(id=1, name="a"))
+        )
+        with self.assertRaises(GrpcError) as error:
+            await presets.Unbind(presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=2))
+        self.assertEqual(
+            (error.exception.code, error.exception.metadata),
+            (
+                grpc.StatusCode.NOT_FOUND,
+                {"registry": "session.presets", "key": "1:2"},
+            ),
+        )
+
     async def test_every_source_of_the_session_attrs_has_a_message(self) -> None:
         expected = {f"ATTR_SOURCE_{item.name}" for item in AuthSessionAttrSource}
         names = set(session_attrs_pb2.AttrSource.keys())
@@ -375,6 +440,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthTagsPermissions, profile_tags_pb2.Permission),
             (AuthAttrsPermissions, profile_attrs_pb2.Permission),
             (AuthSessionAttrsPermissions, session_attrs_pb2.Permission),
+            (AuthSessionPresetsPermissions, presets_pb2.Permission),
             (AuthMetadataPermissions, metadata_pb2.Permission),
         ):
             expected = {
@@ -463,6 +529,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             client.auth_profile_attrs.List(profile_attrs_pb2.ListAttrsRequest()),
             client.auth_session_attrs.List(session_attrs_pb2.ListAttrsRequest()),
+            client.auth_session_presets.ListBindings(presets_pb2.ListBindingsRequest()),
         ):
             with self.assertRaises(GrpcError) as error:
                 await call

@@ -78,9 +78,15 @@ class AuthItemInvalidError(AuthRegistryError):
 
 
 class AuthItemNotFoundError(AuthRegistryError):
-    """No item has the id."""
+    """No item has the id, or an item is not bound to another."""
 
     @classmethod
     def for_id(cls, registry: str, item_id: int) -> t.Self:
         """No item has ``item_id``."""
         return cls(f"{registry}: no item {item_id}", registry, item_id)
+
+    @classmethod
+    def for_binding(cls, registry: str, item_id: int, bound_id: int) -> t.Self:
+        """The item ``item_id`` is not bound to ``bound_id``; the key is both."""
+        key = f"{item_id}:{bound_id}"
+        return cls(f"{registry}: no binding {key}", registry, key)

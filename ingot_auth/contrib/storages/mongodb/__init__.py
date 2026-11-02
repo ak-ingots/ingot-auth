@@ -10,6 +10,7 @@ __all__ = (
     "AuthMongoDbProfileStorage",
     "AuthMongoDbRegistryStorage",
     "AuthMongoDbSessionAttrsStorage",
+    "AuthMongoDbSessionPresetsStorage",
     "AuthMongoDbSessionStorage",
     "AuthMongoDbStorage",
     "AuthMongoDbTagsStorage",
@@ -25,7 +26,11 @@ from .profile import (
     AuthMongoDbTagsStorage,
 )
 from .registry import AuthMongoDbRegistryStorage
-from .session import AuthMongoDbSessionAttrsStorage, AuthMongoDbSessionStorage
+from .session import (
+    AuthMongoDbSessionAttrsStorage,
+    AuthMongoDbSessionPresetsStorage,
+    AuthMongoDbSessionStorage,
+)
 
 
 class AuthMongoDbStorage(AuthStorage):

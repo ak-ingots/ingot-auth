@@ -12,13 +12,24 @@ from ingots.defaults.operations import (
     OperationPermissionsError,
     Permissions,
 )
+from ingots.puer import Project, Slot
 from ingots.puer.cli import CommandRunner
 
-from ingot_auth.__main__ import AuthMemoryProject
+from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
+from ingot_auth.contrib.storages.memory import (
+    AuthMemorySessionAttrsStorage,
+    AuthMemorySessionPresetsStorage,
+    AuthMemorySessionStorage,
+    AuthMemoryStorage,
+)
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.profile.attrs import AuthAttr, AuthAttrsPermissions
 from ingot_auth.profile.tags import AuthTag, AuthTagsPermissions
-from ingot_auth.registry import AuthAttrType, AuthItemInvalidError
+from ingot_auth.registry import (
+    AuthAttrType,
+    AuthItemInvalidError,
+    AuthItemNotFoundError,
+)
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -28,9 +39,50 @@ from ingot_auth.session.attrs import (
     AuthSessionAttrSource,
     AuthSessionAttrsPermissions,
 )
+from ingot_auth.session.presets import (
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    AuthSessionPresetsPermissions,
+)
+from ingot_auth.session.presets.operations import AuthUnbindSessionAttrParameters
 
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")
+IP: t.Final = AuthSessionAttr(
+    id=1, name="ip", type=AuthAttrType.STR, source=AuthSessionAttrSource.TRANSPORT
+)
+SIGN_IN: t.Final = AuthSessionPreset(id=1, name="sign_in")
+
+
+class SeededSessionAttrsStorage(AuthMemorySessionAttrsStorage):
+    def __init__(self, project: Project) -> None:
+        super().__init__(project)
+        self._items[IP.id] = IP
+        self._taken_ids.add(IP.id)
+
+
+class SeededSessionPresetsStorage(AuthMemorySessionPresetsStorage):
+    def __init__(self, project: Project) -> None:
+        super().__init__(project)
+        self._items[SIGN_IN.id] = SIGN_IN
+        self._taken_ids.add(SIGN_IN.id)
+
+
+class SeededSessionStorage(AuthMemorySessionStorage):
+    attrs = Slot(SeededSessionAttrsStorage)
+    presets = Slot(SeededSessionPresetsStorage)
+
+
+class SeededStorage(AuthMemoryStorage):
+    session = Slot(SeededSessionStorage)
+
+
+class SeededUnit(AuthMemoryUnit):
+    storage = Slot(SeededStorage)
+
+
+class SeededProject(AuthMemoryProject):
+    auth = Slot(SeededUnit)
 
 
 class RegistryOperationsTestCase(unittest.TestCase):
@@ -90,6 +142,59 @@ class RegistryOperationsTestCase(unittest.TestCase):
             (AuthAttrType.STR, AuthSessionAttrSource.TRANSPORT),
         )
 
+    def test_an_attr_is_bound_to_a_preset_and_unbound(self) -> None:
+        presets = self.project.auth.session.presets
+        required = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+
+        async def run() -> tuple[AuthSessionPresetBinding, ...]:
+            await self.runner.run(
+                self.project.auth.session.attrs.op_create, IP, self.metadata
+            )
+            await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
+            optional = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=False)
+            bound = await self.runner.run(presets.op_bind, optional, self.metadata)
+            self.assertEqual(bound, optional)
+            await self.runner.run(presets.op_bind, required, self.metadata)
+            bindings = await self.runner.run(
+                presets.op_list_bindings, None, self.metadata
+            )
+            self.assertEqual(bindings, (required,))
+            parameters = AuthUnbindSessionAttrParameters(preset_id=1, attr_id=1)
+            await self.runner.run(presets.op_unbind, parameters, self.metadata)
+            return await self.runner.run(presets.op_list_bindings, None, self.metadata)
+
+        self.assertEqual(asyncio.run(run()), ())
+
+    def test_only_an_attr_there_is_bound(self) -> None:
+        presets = self.project.auth.session.presets
+        binding = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+
+        async def run() -> None:
+            await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
+            await self.runner.run(presets.op_bind, binding, self.metadata)
+
+        with self.assertRaises(AuthItemNotFoundError) as error:
+            asyncio.run(run())
+        self.assertEqual(
+            (error.exception.registry, error.exception.key), ("session.attrs", 1)
+        )
+
+    def test_a_deleted_attr_is_gone_from_the_presets(self) -> None:
+        attrs = self.project.auth.session.attrs
+        presets = self.project.auth.session.presets
+        binding = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+
+        async def run() -> tuple[AuthSessionPresetBinding, ...]:
+            await self.runner.run(attrs.op_create, IP, self.metadata)
+            await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
+            await self.runner.run(presets.op_bind, binding, self.metadata)
+            await self.runner.run(
+                attrs.op_delete, AuthDeleteItemParameters(id=1), self.metadata
+            )
+            return await self.runner.run(presets.op_list_bindings, None, self.metadata)
+
+        self.assertEqual(asyncio.run(run()), ())
+
     def test_wrong_ids_and_names_are_refused(self) -> None:
         tags = self.project.auth.profile.tags
         for tag in (AuthTag(id=0, name="beta"), AuthTag(id=1, name="Beta")):
@@ -108,6 +213,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
     def test_every_operation_requires_its_permission(self) -> None:
         tags, attrs = self.project.auth.profile.tags, self.project.auth.profile.attrs
         session_attrs = self.project.auth.session.attrs
+        presets = self.project.auth.session.presets
         for factory, flag in (
             (tags.op_create, AuthTagsPermissions.CAN_CREATE),
             (tags.op_list, AuthTagsPermissions.CAN_READ),
@@ -121,6 +227,13 @@ class RegistryOperationsTestCase(unittest.TestCase):
             (session_attrs.op_list, AuthSessionAttrsPermissions.CAN_READ),
             (session_attrs.op_rename, AuthSessionAttrsPermissions.CAN_RENAME),
             (session_attrs.op_delete, AuthSessionAttrsPermissions.CAN_DELETE),
+            (presets.op_create, AuthSessionPresetsPermissions.CAN_CREATE),
+            (presets.op_list, AuthSessionPresetsPermissions.CAN_READ),
+            (presets.op_rename, AuthSessionPresetsPermissions.CAN_RENAME),
+            (presets.op_delete, AuthSessionPresetsPermissions.CAN_DELETE),
+            (presets.op_bind, AuthSessionPresetsPermissions.CAN_BIND),
+            (presets.op_unbind, AuthSessionPresetsPermissions.CAN_UNBIND),
+            (presets.op_list_bindings, AuthSessionPresetsPermissions.CAN_READ),
             (self.project.auth.metadata.op_get, AuthMetadataPermissions.CAN_READ),
         ):
             self.assertEqual(factory.cls.PERMISSIONS, Permissions(flag))
@@ -132,11 +245,13 @@ class RegistryCommandsTestCase(unittest.TestCase):
         self.enterContext(mock.patch.dict(os.environ, clear=True))
         self.enterContext(mock.patch("logging.config.dictConfig"))
 
-    def run_project(self, *argv: str) -> str:
+    def run_project(
+        self, *argv: str, project_cls: type[AuthMemoryProject] = AuthMemoryProject
+    ) -> str:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = CommandRunner(
-                AuthMemoryProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
+                project_cls, ["--config", "IS_PRINT_CONFIGS=off", *argv]
             ).run()
         self.assertEqual(code, 0)
         return out.getvalue()
@@ -181,11 +296,49 @@ class RegistryCommandsTestCase(unittest.TestCase):
             "1\tip\tstr\ttransport\n",
         )
 
+    def test_the_commands_of_the_presets_print_the_bindings(self) -> None:
+        presets = ("auth", "session", "presets")
+        self.assertEqual(
+            self.run_project(*presets, "create", "--id", "2", "--name", "sign_up"),
+            "2\tsign_up\n",
+        )
+        for flags, requirement in (([], "optional"), (["--required"], "required")):
+            self.assertEqual(
+                self.run_project(
+                    *presets,
+                    "bind",
+                    "--preset",
+                    "1",
+                    "--attr",
+                    "1",
+                    *flags,
+                    project_cls=SeededProject,
+                ),
+                f"1\t1\t{requirement}\n",
+            )
+        self.assertEqual(self.run_project(*presets, "bindings"), "")
+        with self.assertLogs("ingots.puer.runner", "ERROR"):
+            code = CommandRunner(
+                SeededProject,
+                [
+                    "--config",
+                    "IS_PRINT_CONFIGS=off",
+                    *presets,
+                    "unbind",
+                    "--preset",
+                    "1",
+                    "--attr",
+                    "1",
+                ],
+            ).run()
+        self.assertEqual(code, 1)
+
     def test_the_storage_in_memory_is_gone_with_the_command(self) -> None:
         for unit, registry in (
             ("profile", "tags"),
             ("profile", "attrs"),
             ("session", "attrs"),
+            ("session", "presets"),
         ):
             self.assertEqual(self.run_project("auth", unit, registry, "list"), "")
             for argv in (

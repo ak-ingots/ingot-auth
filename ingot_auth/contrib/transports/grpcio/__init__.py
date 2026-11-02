@@ -26,6 +26,8 @@ __all__ = (
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
     "AuthGrpcSessionBinding",
+    "AuthGrpcSessionPresetsBinding",
+    "AuthGrpcSessionPresetsServicer",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
     "BaseAuthGrpcServicer",
@@ -45,6 +47,8 @@ from .session import (
     AuthGrpcSessionAttrsBinding,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionBinding,
+    AuthGrpcSessionPresetsBinding,
+    AuthGrpcSessionPresetsServicer,
 )
 
 
