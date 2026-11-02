@@ -13,11 +13,13 @@ runtime. A test case takes a contract and tells what to run it on::
 __all__ = (
     "AuthAttrsStorageContract",
     "AuthSessionAttrsStorageContract",
+    "AuthSessionPresetsStorageContract",
     "AuthTagsStorageContract",
 )
 
 from .storage import (
     AuthAttrsStorageContract,
     AuthSessionAttrsStorageContract,
+    AuthSessionPresetsStorageContract,
     AuthTagsStorageContract,
 )

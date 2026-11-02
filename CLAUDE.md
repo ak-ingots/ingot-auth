@@ -11,8 +11,9 @@ the sign-up, the sign-in and the sessions of the users of an application.
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
 the auth of the project: the units `profile/`, with the registries `tags/`
-and `attrs/`, and `session/`, with the registry `attrs/`, each attribute of a
-session with its source, all on the shared `registry/`; the `metadata/` for
+and `attrs/`, and `session/`, with the registries `attrs/`, each attribute of
+a session with its source, and `presets/`, bound to the attributes many to
+many, all on the shared `registry/`; the `metadata/` for
 the consumers, and the storage `storage/`, abstract, a unit for each of
 them); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the

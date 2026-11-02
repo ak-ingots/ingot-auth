@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package ingot_auth.session.presets.v1;
+
+// The presets of the sessions with their bindings, as their administrator
+// manages them.
+service Presets {
+  // Requires PERMISSION_CAN_CREATE.
+  rpc Create(CreatePresetRequest) returns (CreatePresetResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc List(ListPresetsRequest) returns (ListPresetsResponse);
+  // Requires PERMISSION_CAN_RENAME.
+  rpc Rename(RenamePresetRequest) returns (RenamePresetResponse);
+  // Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it.
+  rpc Delete(DeletePresetRequest) returns (DeletePresetResponse);
+  // Requires PERMISSION_CAN_BIND; binding again tells the requirement anew.
+  rpc Bind(BindAttrRequest) returns (BindAttrResponse);
+  // Requires PERMISSION_CAN_UNBIND.
+  rpc Unbind(UnbindAttrRequest) returns (UnbindAttrResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc ListBindings(ListBindingsRequest) returns (ListBindingsResponse);
+}
+
+// The bits of the domain `auth.session.presets` the RPCs require: an aid for
+// a client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_CREATE = 1;
+  PERMISSION_CAN_READ = 2;
+  PERMISSION_CAN_RENAME = 4;
+  PERMISSION_CAN_DELETE = 8;
+  PERMISSION_CAN_BIND = 16;
+  PERMISSION_CAN_UNBIND = 32;
+}
+
+message Preset {
+  uint32 id = 1;
+  string name = 2;
+}
+
+// An attribute of the sessions bound to a preset, many to many.
+message Binding {
+  uint32 preset_id = 1;
+  uint32 attr_id = 2;
+  bool required = 3;
+}
+
+message CreatePresetRequest {
+  Preset preset = 1;
+}
+
+message CreatePresetResponse {
+  Preset preset = 1;
+}
+
+message ListPresetsRequest {}
+
+message ListPresetsResponse {
+  repeated Preset presets = 1;
+}
+
+message RenamePresetRequest {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message RenamePresetResponse {
+  Preset preset = 1;
+}
+
+message DeletePresetRequest {
+  uint32 id = 1;
+}
+
+message DeletePresetResponse {}
+
+message BindAttrRequest {
+  Binding binding = 1;
+}
+
+message BindAttrResponse {
+  Binding binding = 1;
+}
+
+message UnbindAttrRequest {
+  uint32 preset_id = 1;
+  uint32 attr_id = 2;
+}
+
+message UnbindAttrResponse {}
+
+message ListBindingsRequest {}
+
+message ListBindingsResponse {
+  repeated Binding bindings = 1;
+}

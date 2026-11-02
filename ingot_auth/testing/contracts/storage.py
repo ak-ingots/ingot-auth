@@ -3,11 +3,13 @@
 __all__ = (
     "AuthAttrsStorageContract",
     "AuthSessionAttrsStorageContract",
+    "AuthSessionPresetsStorageContract",
     "AuthTagsStorageContract",
 )
 
 import abc
 import asyncio
+import dataclasses
 import typing as t
 import unittest
 
@@ -22,6 +24,11 @@ from ingot_auth.registry import (
     BaseAuthRegistryStorage,
 )
 from ingot_auth.session.attrs import AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.session.presets import (
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    BaseAuthSessionPresetsStorage,
+)
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -266,3 +273,96 @@ class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessio
             type=AuthAttrType.STR,
             source=AuthSessionAttrSource.CLIENT,
         )
+
+
+class AuthSessionPresetsStorageContract(
+    BaseAuthRegistryStorageContract[AuthSessionPreset]
+):
+    """
+    The presets of the sessions of a storage, with their bindings: any
+    attribute id is bound, the operations look whether it is there.
+    """
+
+    REGISTRY: t.ClassVar[str] = "session.presets"
+
+    storage: BaseAuthSessionPresetsStorage
+
+    async def test_there_are_no_bindings_at_first(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        self.assertEqual(await self.storage.get_bindings(), ())
+
+    async def test_the_bindings_come_by_the_preset_then_the_attr(self) -> None:
+        for item_id, name in ((2, "sign_up"), (1, "sign_in")):
+            await self.storage.create(self._create_item(item_id, name))
+        bindings = (
+            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True),
+            AuthSessionPresetBinding(preset_id=1, attr_id=7, required=False),
+            AuthSessionPresetBinding(preset_id=2, attr_id=3, required=False),
+        )
+        for binding in reversed(bindings):
+            await self.storage.bind(binding)
+        self.assertEqual(await self.storage.get_bindings(), bindings)
+
+    async def test_binding_again_tells_the_requirement_anew(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        for required in (False, True):
+            binding = AuthSessionPresetBinding(
+                preset_id=1, attr_id=3, required=required
+            )
+            await self.storage.bind(binding)
+        self.assertEqual(await self.storage.get_bindings(), (binding,))
+
+    async def test_an_unbound_attr_is_gone(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        kept = AuthSessionPresetBinding(preset_id=1, attr_id=7, required=False)
+        await self.storage.bind(kept)
+        await self.storage.bind(
+            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+        )
+        await self.storage.unbind(1, 3)
+        self.assertEqual(await self.storage.get_bindings(), (kept,))
+
+    async def test_an_attr_not_bound_is_not_found(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        with self.assertRaises(AuthItemNotFoundError) as error:
+            await self.storage.unbind(1, 3)
+        self._assert_error(error.exception, "1:3")
+
+    async def test_a_preset_not_there_is_not_found(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        await self.storage.delete(1)
+        binding = AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+        for preset_id in (1, 2):
+            for call in (
+                self.storage.bind(dataclasses.replace(binding, preset_id=preset_id)),
+                self.storage.unbind(preset_id, 3),
+            ):
+                with self.assertRaises(AuthItemNotFoundError) as error:
+                    await call
+                self._assert_error(error.exception, preset_id)
+
+    async def test_the_bindings_go_with_their_preset(self) -> None:
+        for item_id, name in ((1, "sign_in"), (2, "sign_up")):
+            await self.storage.create(self._create_item(item_id, name))
+        kept = AuthSessionPresetBinding(preset_id=2, attr_id=3, required=True)
+        await self.storage.bind(
+            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+        )
+        await self.storage.bind(kept)
+        await self.storage.delete(1)
+        self.assertEqual(await self.storage.get_bindings(), (kept,))
+
+    async def test_a_rename_keeps_the_bindings(self) -> None:
+        await self.storage.create(self._create_item(1, "sign_in"))
+        binding = AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+        await self.storage.bind(binding)
+        await self.storage.rename(1, "sign_in/apple")
+        self.assertEqual(await self.storage.get_bindings(), (binding,))
+
+    @t.override
+    def _get_storage(self, project: "AuthProject") -> BaseAuthSessionPresetsStorage:
+        return project.auth.storage.session.presets
+
+    @t.override
+    def _create_item(self, item_id: int, name: str) -> AuthSessionPreset:
+        return AuthSessionPreset(id=item_id, name=name)

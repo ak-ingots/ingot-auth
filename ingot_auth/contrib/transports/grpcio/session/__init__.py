@@ -4,12 +4,16 @@ __all__ = (
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
     "AuthGrpcSessionBinding",
+    "AuthGrpcSessionPresetsBinding",
+    "AuthGrpcSessionPresetsServicer",
 )
 
 from ingot_grpcio.grpc.services import GrpcService
 
 from ..proto.ingot_auth.session.attrs.v1 import attrs_pb2_grpc
+from ..proto.ingot_auth.session.presets.v1 import presets_pb2_grpc
 from .attrs import AuthGrpcSessionAttrsServicer
+from .presets import AuthGrpcSessionPresetsServicer
 
 
 class AuthGrpcSessionAttrsBinding:
@@ -18,5 +22,13 @@ class AuthGrpcSessionAttrsBinding:
     )
 
 
-class AuthGrpcSessionBinding(AuthGrpcSessionAttrsBinding):
+class AuthGrpcSessionPresetsBinding:
+    auth_session_presets = GrpcService(
+        presets_pb2_grpc.PresetsStub, AuthGrpcSessionPresetsServicer
+    )
+
+
+class AuthGrpcSessionBinding(
+    AuthGrpcSessionAttrsBinding, AuthGrpcSessionPresetsBinding
+):
     pass
