@@ -5,6 +5,7 @@ __all__ = (
     "AuthMethodError",
     "AuthMethodNotFoundError",
     "AuthMethodRefusedError",
+    "AuthMethodUnsupportedError",
 )
 
 import typing as t
@@ -43,6 +44,18 @@ class AuthMethodRefusedError(AuthMethodError):
     @classmethod
     def create(cls) -> t.Self:
         return cls("the method refuses")
+
+
+class AuthMethodUnsupportedError(AuthMethodError):
+    """The method takes no part in the flow: a password signs no one out."""
+
+    @classmethod
+    def for_flow(cls, flow: str) -> t.Self:
+        return cls(f"the method takes no {flow}", flow)
+
+    @property
+    def flow(self) -> str:
+        return t.cast(str, self.args[1])
 
 
 class AuthAttemptNotFoundError(AuthMethodError):

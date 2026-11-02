@@ -10,6 +10,7 @@ __all__ = (
     "AuthMemoryProfileStorage",
     "AuthMemoryProfilesStorage",
     "AuthMemoryRegistryStorage",
+    "AuthMemorySecretsStorage",
     "AuthMemorySessionAttrsStorage",
     "AuthMemorySessionPresetsStorage",
     "AuthMemorySessionStorage",
@@ -31,6 +32,7 @@ from .profile import (
     AuthMemoryIdentitiesStorage,
     AuthMemoryProfilesStorage,
     AuthMemoryProfileStorage,
+    AuthMemorySecretsStorage,
     AuthMemoryTagsStorage,
 )
 from .registry import AuthMemoryRegistryStorage

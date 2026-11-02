@@ -1,6 +1,13 @@
-"""The contracts of the storage of the profiles themselves and their identities."""
+"""
+The contracts of the storage of the profiles themselves, their identities and
+the secrets of these.
+"""
 
-__all__ = ("AuthIdentitiesStorageContract", "AuthProfilesStorageContract")
+__all__ = (
+    "AuthIdentitiesStorageContract",
+    "AuthProfilesStorageContract",
+    "AuthSecretsStorageContract",
+)
 
 import asyncio
 import datetime
@@ -16,6 +23,7 @@ from ingot_auth.profile.profiles import (
     AuthProfileConflictError,
     AuthProfileNotFoundError,
 )
+from ingot_auth.profile.secrets import AuthSecretNotFoundError
 
 from .base import BaseAuthContract
 
@@ -84,3 +92,30 @@ class AuthIdentitiesStorageContract(BaseAuthContract):
         )
         conflicts = [r for r in results if isinstance(r, AuthIdentityConflictError)]
         self.assertEqual(len(conflicts), 1, results)
+
+
+class AuthSecretsStorageContract(BaseAuthContract):
+    """The secrets of a storage."""
+
+    async def test_a_secret_is_given_as_put(self) -> None:
+        secrets = self.project.auth.storage.profile.secrets
+        await secrets.put("password", "alice", "hash-1")
+        await secrets.put("password", "bob", "hash-2")
+        await secrets.put("pin", "alice", "hash-3")
+        self.assertEqual(await secrets.get("password", "alice"), "hash-1")
+        self.assertEqual(await secrets.get("password", "bob"), "hash-2")
+        self.assertEqual(await secrets.get("pin", "alice"), "hash-3")
+
+    async def test_a_secret_put_again_replaces_the_old(self) -> None:
+        secrets = self.project.auth.storage.profile.secrets
+        await secrets.put("password", "alice", "hash-1")
+        await secrets.put("password", "alice", "hash-2")
+        self.assertEqual(await secrets.get("password", "alice"), "hash-2")
+
+    async def test_a_subject_with_no_secret_is_not_found(self) -> None:
+        secrets = self.project.auth.storage.profile.secrets
+        await secrets.put("password", "alice", "hash-1")
+        for method, subject in (("password", "bob"), ("pin", "alice")):
+            with self.assertRaises(AuthSecretNotFoundError) as error:
+                await secrets.get(method, subject)
+            self.assertEqual(error.exception.method, method)
