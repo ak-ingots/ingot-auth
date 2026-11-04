@@ -1,20 +1,20 @@
 """
 The method of an email and a code sent to it, of two steps: the start sends
 the code, the answer repeats it. The core sends no mail: an application
-extends :class:`BaseAuthEmailMethod` with the sending, by the mail of its
+extends :class:`BaseAuthEmailCodeMethod` with the sending, by the mail of its
 own, and declares it as a slot of its methods,
-``email = Slot(AppEmailMethod)``. The email of a sign-up is checked by the
+``email_code = Slot(AppEmailCodeMethod)``. The email of a sign-up is checked by the
 preset of the policies of the method, its slot ``preset_sign_up_email``,
 empty unless an application binds policies to it in its subclass.
 """
 
 __all__ = (
-    "AuthEmailChallenge",
+    "AuthEmailCodeChallenge",
+    "AuthEmailCodeStart",
+    "AuthEmailCodeState",
     "AuthEmailSignUpContext",
     "AuthEmailSignUpPreset",
-    "AuthEmailStart",
-    "AuthEmailState",
-    "BaseAuthEmailMethod",
+    "BaseAuthEmailCodeMethod",
 )
 
 import abc
@@ -41,21 +41,21 @@ from .presets import AuthEmailSignUpPreset
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AuthEmailStart:
+class AuthEmailCodeStart:
     """What a sign-up and a sign-in start with: an email."""
 
     email: str
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AuthEmailChallenge:
+class AuthEmailCodeChallenge:
     """The code is sent: the client answers with it, of ``length`` digits."""
 
     length: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AuthEmailState:
+class AuthEmailCodeState:
     """
     What the server keeps till the answer: the email and the digest of the
     code, not the code, for the cache may be read by more than the server.
@@ -65,7 +65,9 @@ class AuthEmailState:
     digest: str = field(repr=False)
 
 
-class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
+class BaseAuthEmailCodeMethod(
+    BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeState]
+):
     """
     An email and a code of :attr:`CODE_LENGTH` digits sent to it by
     :meth:`_send_code`, the hook an application implements. The email is
@@ -83,7 +85,7 @@ class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
     preset_sign_up_email = Slot(AuthEmailSignUpPreset)
 
     @t.override
-    async def _start_sign_up(self, parameters: AuthEmailStart) -> AuthStep:
+    async def _start_sign_up(self, parameters: AuthEmailCodeStart) -> AuthStep:
         email = self._normalize_email(parameters.email)
         await self._check(
             "email", self.preset_sign_up_email, AuthEmailSignUpContext(email)
@@ -91,7 +93,7 @@ class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
         return await self._send(email)
 
     @t.override
-    async def _start_sign_in(self, parameters: AuthEmailStart) -> AuthStep:
+    async def _start_sign_in(self, parameters: AuthEmailCodeStart) -> AuthStep:
         email = self._normalize_email(parameters.email)
         identities = self.project.auth.storage.profile.identities
         try:
@@ -101,7 +103,7 @@ class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
         return await self._send(email)
 
     @t.override
-    async def _answer(self, state: AuthEmailState, answer: str) -> AuthStep:
+    async def _answer(self, state: AuthEmailCodeState, answer: str) -> AuthStep:
         if not hmac.compare_digest(self._digest(answer), state.digest):
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=state.email)
@@ -126,9 +128,9 @@ class BaseAuthEmailMethod(BaseAuthMethod[AuthEmailStart, str, AuthEmailState]):
 
     @t.final
     def _ask(self, email: str, code: str) -> AuthStep:
-        state = AuthEmailState(email=email, digest=self._digest(code))
+        state = AuthEmailCodeState(email=email, digest=self._digest(code))
         return AuthChallenge(
-            challenge=AuthEmailChallenge(length=self.CODE_LENGTH), state=state
+            challenge=AuthEmailCodeChallenge(length=self.CODE_LENGTH), state=state
         )
 
     @t.final

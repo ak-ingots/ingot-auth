@@ -1,6 +1,6 @@
 """
 The method of a nickname and a password, of one step: an application declares
-it as a slot of its methods, ``password = Slot(AuthPasswordMethod)``. The
+it as a slot of its methods, ``nickname = Slot(AuthNicknameMethod)``. The
 nickname and the password of a sign-up are checked by the presets of the
 policies of the method, its slots ``preset_sign_up_nickname`` and
 ``preset_sign_up_password``, empty unless an application binds policies to
@@ -11,12 +11,12 @@ hashes is changed by subclassing.
 
 __all__ = (
     "AuthHasNickname",
+    "AuthNicknameMethod",
     "AuthNicknameSignUpContext",
     "AuthNicknameSignUpPreset",
-    "AuthPasswordMethod",
+    "AuthNicknameStart",
     "AuthPasswordSignUpContext",
     "AuthPasswordSignUpPreset",
-    "AuthPasswordStart",
 )
 
 import asyncio
@@ -44,14 +44,14 @@ from .scrypt import hash_password, verify_password
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class AuthPasswordStart:
+class AuthNicknameStart:
     """What a sign-up and a sign-in start with: a nickname and its password."""
 
     nickname: str
     password: str = field(repr=False)
 
 
-class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
+class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     """
     A nickname and a password. Both are normalized first, to NFKC, the
     nickname to its case-folded form too, so that ``Alice`` is ``alice``: the
@@ -75,7 +75,7 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
     _dummy_secret: str
 
     @t.override
-    async def _start_sign_up(self, parameters: AuthPasswordStart) -> AuthStep:
+    async def _start_sign_up(self, parameters: AuthNicknameStart) -> AuthStep:
         nickname = self._normalize_nickname(parameters.nickname)
         password = self._normalize_password(parameters.password)
         await self._check(
@@ -92,7 +92,7 @@ class AuthPasswordMethod(BaseAuthMethod[AuthPasswordStart, None, None]):
         return AuthVerified(subject=nickname, secret=secret)
 
     @t.override
-    async def _start_sign_in(self, parameters: AuthPasswordStart) -> AuthStep:
+    async def _start_sign_in(self, parameters: AuthNicknameStart) -> AuthStep:
         nickname = self._normalize_nickname(parameters.nickname)
         password = self._normalize_password(parameters.password)
         secrets = self.project.auth.storage.profile.secrets

@@ -1,4 +1,4 @@
-"""The contexts of the presets of the method of an email."""
+"""The contexts of the presets of the method of an email and a code."""
 
 __all__ = ("AuthEmailSignUpContext",)
 

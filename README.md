@@ -32,14 +32,15 @@ among the bases of its own, as the
 of Ingots shows.
 
 The methods of signing up and in are slots of the methods of the auth,
-named by their slots: a nickname and a password comes with the addon,
+named by their slots. The addon comes with a catalogue of them, none bound
+until the application declares its slot: a nickname and a password,
 
 ```python
-from ingot_auth.contrib.methods.password import AuthPasswordMethod
+from ingot_auth.methods.nickname import AuthNicknameMethod
 
 
 class AppMethods(AuthMethods):
-    password = Slot(AuthPasswordMethod)
+    nickname = Slot(AuthNicknameMethod)
 ```
 
 the nickname and the password of a sign-up checked by the presets of the
@@ -51,17 +52,17 @@ sent to it comes too, of two steps, the sending of the code the
 application's:
 
 ```python
-from ingot_auth.contrib.methods.email import BaseAuthEmailMethod
+from ingot_auth.methods.email_code import BaseAuthEmailCodeMethod
 
 
-class AppEmailMethod(BaseAuthEmailMethod):
+class AppEmailCodeMethod(BaseAuthEmailCodeMethod):
     @t.override
     async def _send_code(self, email: str, code: str) -> None:
         ...  # by the mail of the application
 
 
 class AppMethods(AuthMethods):
-    email = Slot(AppEmailMethod)
+    email_code = Slot(AppEmailCodeMethod)
 ```
 
 its email checked on a sign-up by its preset `preset_sign_up_email`.

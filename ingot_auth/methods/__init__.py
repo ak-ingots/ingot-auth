@@ -1,11 +1,13 @@
 """
 The methods of signing up and in, and the frame they run in: a method
 verifies in steps, a challenge asking for an answer or the verified subject,
-and an attempt keeps a flow between its steps. The core assumes no method:
-an application declares those it takes as slots of :class:`AuthMethods`::
+and an attempt keeps a flow between its steps. The core binds no method: its
+methods, one subpackage each, ``nickname`` and ``email_code``, are a
+catalogue an application takes from, declaring those it takes as slots of
+:class:`AuthMethods`::
 
     class AppMethods(AuthMethods):
-        password = Slot(AppPasswordMethod)
+        nickname = Slot(AuthNicknameMethod)
 """
 
 __all__ = (

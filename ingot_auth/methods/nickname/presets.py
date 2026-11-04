@@ -1,4 +1,4 @@
-"""The presets of the policies of the method of a password."""
+"""The presets of the policies of the method of a nickname and a password."""
 
 __all__ = ("AuthNicknameSignUpPreset", "AuthPasswordSignUpPreset")
 

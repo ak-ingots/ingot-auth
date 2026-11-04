@@ -15,7 +15,9 @@ and `attrs/`, and `session/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `metadata/` for
 the consumers, by the subdomains, of the sessions what is the client's; the
-methods of signing up and in `methods/`, units in slots of `AuthMethods`, in
+methods of signing up and in `methods/`, units in slots of `AuthMethods`, a
+catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
+none bound until an application declares its slot, in
 steps kept by attempts, a hook to start each flow they take, their secrets
 kept in `profile/secrets/`, their presets of the policies their slots
 `preset_<flow>_<field>`, each of a class and a context of its own, the
@@ -28,10 +30,10 @@ abstract, a unit a subdomain); a unit lives in the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
 their CLI names from `cli_name`. The goal of the core: assume no details, as
-far as it goes; the methods of sign-in, the storage and the transport plug
-in. The core holds the facades; their implementations are in `contrib/`
-(`contrib/storages/<backend>/`, `contrib/transports/<addon>/`,
-`contrib/methods/<method>/`), each under
+far as it goes; the methods of sign-in are bound by the application, the
+storage and the transport plug in. The core holds the facades; their
+implementations are in `contrib/` (`contrib/storages/<backend>/`,
+`contrib/transports/<addon>/`, `contrib/caches/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profile/`, `session/`, as the core is.
 `contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
