@@ -6,13 +6,13 @@ from ingots.defaults.operations import Caller, Permissions
 from ingots.puer import Project, Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
-from ingot_auth.contrib.methods.email import (
-    AuthEmailChallenge,
+from ingot_auth.methods.email_code import (
+    AuthEmailCodeChallenge,
     AuthEmailSignUpContext,
     AuthEmailSignUpPreset,
-    AuthEmailStart,
-    AuthEmailState,
-    BaseAuthEmailMethod,
+    AuthEmailCodeStart,
+    AuthEmailCodeState,
+    BaseAuthEmailCodeMethod,
 )
 from ingot_auth.methods import (
     AuthChallenge,
@@ -50,7 +50,7 @@ class EmailPreset(AuthEmailSignUpPreset):
         return bindings
 
 
-class TstEmailMethod(BaseAuthEmailMethod):
+class TstEmailCodeMethod(BaseAuthEmailCodeMethod):
     """Keeps the mail it sends, for the tests to read."""
 
     preset_sign_up_email = Slot(EmailPreset)
@@ -65,7 +65,7 @@ class TstEmailMethod(BaseAuthEmailMethod):
 
 
 class TstMethods(AuthMethods):
-    email = Slot(TstEmailMethod)
+    email_code = Slot(TstEmailCodeMethod)
 
 
 class TstAuth(AuthMemoryUnit):
@@ -76,12 +76,12 @@ class TstProject(AuthMemoryProject):
     auth = Slot(TstAuth)
 
 
-class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
+class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
     project: TstProject
 
     @property
-    def method(self) -> TstEmailMethod:
-        return self.project.auth.methods.email
+    def method(self) -> TstEmailCodeMethod:
+        return self.project.auth.methods.email_code
 
     @t.override
     async def asyncSetUp(self) -> None:
@@ -92,7 +92,7 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def start(self, email: str) -> AuthSignUpChallenge:
         start = AuthStartSignUpParameters(
-            method="email", parameters=AuthEmailStart(email=email)
+            method="email_code", parameters=AuthEmailCodeStart(email=email)
         )
         result = await self.project.operations.runner.run(
             self.project.auth.sign_up.op_start, start, self.metadata
@@ -114,7 +114,7 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_sign_up_sends_a_code_and_takes_it_back(self) -> None:
         challenge = await self.start("alice@example.com")
-        self.assertEqual(challenge.challenge, AuthEmailChallenge(length=6))
+        self.assertEqual(challenge.challenge, AuthEmailCodeChallenge(length=6))
         [(email, code)] = self.method.sent
         self.assertEqual(email, "alice@example.com")
         self.assertRegex(code, r"^\d{6}$")
@@ -122,7 +122,7 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(result, AuthSignedUp)
         identities = self.project.auth.storage.profile.identities
         self.assertEqual(
-            await identities.find_uid("email", "alice@example.com"), result.uid
+            await identities.find_uid("email_code", "alice@example.com"), result.uid
         )
 
     async def test_a_wrong_code_is_refused(self) -> None:
@@ -139,7 +139,7 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("  Alice@Example.COM ")
         self.assertEqual(self.method.sent[-1][0], "alice@example.com")
         identities = self.project.auth.storage.profile.identities
-        await identities.find_uid("email", "alice@example.com")
+        await identities.find_uid("email_code", "alice@example.com")
 
     async def test_a_sign_up_keeps_the_preset_of_the_email(self) -> None:
         with self.assertRaises(AuthMethodInvalidError) as error:
@@ -150,16 +150,16 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("al@b.c")
 
     async def test_the_state_keeps_no_code(self) -> None:
-        step = await self.method.start_sign_up(AuthEmailStart(email="al@b.c"))
+        step = await self.method.start_sign_up(AuthEmailCodeStart(email="al@b.c"))
         assert isinstance(step, AuthChallenge)
-        state = t.cast(AuthEmailState, step.state)
+        state = t.cast(AuthEmailCodeState, step.state)
         code = self.method.sent[-1][1]
         self.assertNotIn(code, (state.email, state.digest))
         self.assertNotIn(state.digest, repr(state))
 
     async def test_a_bound_email_signs_in_by_its_code(self) -> None:
         await self.sign_up("al@b.c")
-        step = await self.method.start_sign_in(AuthEmailStart(email="AL@b.c"))
+        step = await self.method.start_sign_in(AuthEmailCodeStart(email="AL@b.c"))
         assert isinstance(step, AuthChallenge)
         code = self.method.sent[-1][1]
         self.assertEqual(
@@ -167,15 +167,15 @@ class EmailMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_an_unbound_email_is_asked_alike_but_sent_nothing(self) -> None:
-        step = await self.method.start_sign_in(AuthEmailStart(email="al@b.c"))
+        step = await self.method.start_sign_in(AuthEmailCodeStart(email="al@b.c"))
         assert isinstance(step, AuthChallenge)
-        self.assertEqual(step.challenge, AuthEmailChallenge(length=6))
+        self.assertEqual(step.challenge, AuthEmailCodeChallenge(length=6))
         self.assertEqual(self.method.sent, [])
         for code in ("000000", "123456"):
             with self.assertRaises(AuthMethodRefusedError):
                 await self.method.answer(step.state, code)
 
     def test_a_code_is_of_its_length(self) -> None:
-        with mock.patch.object(TstEmailMethod, "CODE_LENGTH", 4):
+        with mock.patch.object(TstEmailCodeMethod, "CODE_LENGTH", 4):
             with mock.patch("secrets.randbelow", return_value=7):
                 self.assertEqual(self.method._create_code(), "0007")

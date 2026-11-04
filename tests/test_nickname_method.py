@@ -6,16 +6,16 @@ from ingots.defaults.operations import Caller, Permissions
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
-from ingot_auth.contrib.methods.password import (
+from ingot_auth.methods.nickname import (
     AuthHasNickname,
     AuthNicknameSignUpContext,
     AuthNicknameSignUpPreset,
-    AuthPasswordMethod,
+    AuthNicknameMethod,
     AuthPasswordSignUpContext,
     AuthPasswordSignUpPreset,
-    AuthPasswordStart,
+    AuthNicknameStart,
 )
-from ingot_auth.contrib.methods.password.scrypt import hash_password, verify_password
+from ingot_auth.methods.nickname.scrypt import hash_password, verify_password
 from ingot_auth.methods import (
     AuthMethodInvalidError,
     AuthMethodRefusedError,
@@ -44,17 +44,17 @@ SIGNING_UP: t.Final = Caller(
 )
 
 
-class TstPasswordMethod(AuthPasswordMethod):
+class TstNicknameMethod(AuthNicknameMethod):
     # cheap for the tests
     SCRYPT_LOG_N = 4
 
 
-class TstCostlierPasswordMethod(TstPasswordMethod):
+class TstCostlierNicknameMethod(TstNicknameMethod):
     SCRYPT_LOG_N = 5
 
 
 class TstMethods(AuthMethods):
-    password = Slot(TstPasswordMethod)
+    nickname = Slot(TstNicknameMethod)
 
 
 class TstAuth(AuthMemoryUnit):
@@ -105,13 +105,13 @@ class TstPolicies(AuthPolicies):
     not_nickname = Slot(NotNicknamePolicy)
 
 
-class PolicedPasswordMethod(TstPasswordMethod):
+class PolicedNicknameMethod(TstNicknameMethod):
     preset_sign_up_nickname = Slot(NicknamePreset)
     preset_sign_up_password = Slot(PasswordPreset)
 
 
 class PolicedMethods(TstMethods):
-    password = Slot(PolicedPasswordMethod)
+    nickname = Slot(PolicedNicknameMethod)
 
 
 class TstPoliciesAuth(TstAuth):
@@ -124,7 +124,7 @@ class TstPoliciesProject(TstProject):
 
 
 class TstCostlierMethods(TstMethods):
-    password = Slot(TstCostlierPasswordMethod)
+    nickname = Slot(TstCostlierNicknameMethod)
 
 
 class TstCostlierAuth(TstAuth):
@@ -135,12 +135,12 @@ class TstCostlierProject(TstProject):
     auth = Slot(TstCostlierAuth)
 
 
-class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
+class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
     project: TstProject
 
     @property
-    def method(self) -> AuthPasswordMethod:
-        return t.cast(AuthPasswordMethod, self.project.auth.methods.get("password"))
+    def method(self) -> AuthNicknameMethod:
+        return t.cast(AuthNicknameMethod, self.project.auth.methods.get("nickname"))
 
     @t.override
     async def asyncSetUp(self) -> None:
@@ -150,8 +150,8 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def sign_up(self, nickname: str, password: str) -> AuthSignedUp:
         start = AuthStartSignUpParameters(
-            method="password",
-            parameters=AuthPasswordStart(nickname=nickname, password=password),
+            method="nickname",
+            parameters=AuthNicknameStart(nickname=nickname, password=password),
         )
         metadata = self.project.operations.create_metadata(SIGNING_UP)
         result = await self.project.operations.runner.run(
@@ -161,17 +161,17 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         return result
 
     async def sign_in(self, nickname: str, password: str) -> object:
-        start = AuthPasswordStart(nickname=nickname, password=password)
+        start = AuthNicknameStart(nickname=nickname, password=password)
         return await self.method.start_sign_in(start)
 
     async def test_the_method_is_named_by_its_slot(self) -> None:
-        self.assertEqual(self.method.get_name(), "password")
+        self.assertEqual(self.method.get_name(), "nickname")
 
     async def test_a_signed_up_nickname_signs_in_with_its_password(self) -> None:
         result = await self.sign_up("alice", "correct horse")
         storage = self.project.auth.storage
         self.assertEqual(
-            await storage.profile.identities.find_uid("password", "alice"),
+            await storage.profile.identities.find_uid("nickname", "alice"),
             result.uid,
         )
         self.assertEqual(
@@ -181,7 +181,7 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_password_is_kept_as_its_hash(self) -> None:
         await self.sign_up("alice", "correct horse")
         secret = await self.project.auth.storage.profile.secrets.get(
-            "password", "alice"
+            "nickname", "alice"
         )
         self.assertTrue(secret.startswith("$scrypt$ln=4,r=8,p=1$"), secret)
         self.assertNotIn("correct horse", secret)
@@ -210,7 +210,7 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_unknown_nickname_is_verified_against_a_dummy(self) -> None:
         with mock.patch.object(
-            TstPasswordMethod, "_verify", autospec=True, return_value=True
+            TstNicknameMethod, "_verify", autospec=True, return_value=True
         ) as verify:
             for _ in range(2):
                 with self.assertRaises(AuthMethodRefusedError):
@@ -249,11 +249,11 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("alice", "correct horse")
         costlier = TstCostlierProject()
         secret = await self.project.auth.storage.profile.secrets.get(
-            "password", "alice"
+            "nickname", "alice"
         )
-        await costlier.auth.storage.profile.secrets.put("password", "alice", secret)
-        method = costlier.auth.methods.get("password")
-        start = AuthPasswordStart(nickname="alice", password="correct horse")
+        await costlier.auth.storage.profile.secrets.put("nickname", "alice", secret)
+        method = costlier.auth.methods.get("nickname")
+        start = AuthNicknameStart(nickname="alice", password="correct horse")
         self.assertEqual(
             await method.start_sign_in(start), AuthVerified(subject="alice")
         )
@@ -265,7 +265,7 @@ class PasswordMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("correct horse", repr(context))
 
     def test_the_password_is_not_in_the_repr(self) -> None:
-        start = AuthPasswordStart(nickname="alice", password="correct horse")
+        start = AuthNicknameStart(nickname="alice", password="correct horse")
         self.assertNotIn("correct horse", repr(start))
 
 

@@ -1,4 +1,4 @@
-"""The presets of the policies of the method of an email."""
+"""The presets of the policies of the method of an email and a code."""
 
 __all__ = ("AuthEmailSignUpPreset",)
 

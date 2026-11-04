@@ -1,7 +1,7 @@
 """
-The contexts of the presets of the method of a password: each of a step of a
-flow, with all the parts the method gives on it, so that a policy taking any
-of them binds to its preset with no other context.
+The contexts of the presets of the method of a nickname and a password:
+each of a step of a flow, with all the parts the method gives on it, so that
+a policy taking any of them binds to its preset with no other context.
 """
 
 __all__ = (
