@@ -10,8 +10,8 @@ the sign-up, the sign-in and the sessions of the users of an application.
 `AuthProject` (`project.py`) takes the addon's `AuthSettings` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
-the auth of the project: the units `profile/`, with the registries `tags/`
-and `attrs/`, and `session/`, with the registries `attrs/`, each attribute of
+the auth of the project: the units `profiles/`, with the registries `tags/`
+and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `metadata/` for
 the consumers, by the subdomains, of the sessions what is the client's; the
@@ -19,7 +19,7 @@ methods of signing up and in `methods/`, units in slots of `AuthMethods`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
 steps kept by attempts, a hook to start each flow they take, their secrets
-kept in `profile/secrets/`, their presets of the policies their slots
+kept in `profiles/secrets/`, their presets of the policies their slots
 `preset_<flow>_<field>`, each of a class and a context of its own, the
 context made by the method; the `policies/`, rules a value is checked
 against, each taking a part of a context by its protocol, bound to a preset
@@ -35,10 +35,10 @@ storage and the transport plug in. The core holds the facades; their
 implementations are in `contrib/` (`contrib/storages/<backend>/`,
 `contrib/transports/<addon>/`, `contrib/caches/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
-subdomains of the core, `profile/`, `session/`, as the core is.
+subdomains of the core, `profiles/`, `sessions/`, as the core is.
 `contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
 ADRs 0009 and 0011: a file per service, its path mirroring its package,
-`ingot_auth/profile/tags/v1/tags.proto` for `ingot_auth.profile.tags.v1`; `make
+`ingot_auth/profiles/tags/v1/tags.proto` for `ingot_auth.profiles.tags.v1`; `make
 proto` generates the code, committed, and makes its imports relative. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills

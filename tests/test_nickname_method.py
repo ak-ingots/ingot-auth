@@ -171,7 +171,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         result = await self.sign_up("alice", "correct horse")
         storage = self.project.auth.storage
         self.assertEqual(
-            await storage.profile.identities.find_uid("nickname", "alice"),
+            await storage.profiles.identities.find_uid("nickname", "alice"),
             result.uid,
         )
         self.assertEqual(
@@ -180,7 +180,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_password_is_kept_as_its_hash(self) -> None:
         await self.sign_up("alice", "correct horse")
-        secret = await self.project.auth.storage.profile.secrets.get(
+        secret = await self.project.auth.storage.profiles.secrets.get(
             "nickname", "alice"
         )
         self.assertTrue(secret.startswith("$scrypt$ln=4,r=8,p=1$"), secret)
@@ -248,10 +248,10 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_a_hash_of_other_parameters_is_verified(self) -> None:
         await self.sign_up("alice", "correct horse")
         costlier = TstCostlierProject()
-        secret = await self.project.auth.storage.profile.secrets.get(
+        secret = await self.project.auth.storage.profiles.secrets.get(
             "nickname", "alice"
         )
-        await costlier.auth.storage.profile.secrets.put("nickname", "alice", secret)
+        await costlier.auth.storage.profiles.secrets.put("nickname", "alice", secret)
         method = costlier.auth.methods.get("nickname")
         start = AuthNicknameStart(nickname="alice", password="correct horse")
         self.assertEqual(

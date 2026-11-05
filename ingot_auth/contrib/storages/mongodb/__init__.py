@@ -7,11 +7,11 @@ chooses: the client by a hook, the names of the database and the collection.
 
 __all__ = (
     "AuthMongoDbAttrsStorage",
-    "AuthMongoDbProfileStorage",
+    "AuthMongoDbProfilesStorage",
     "AuthMongoDbRegistryStorage",
     "AuthMongoDbSessionAttrsStorage",
     "AuthMongoDbSessionPresetsStorage",
-    "AuthMongoDbSessionStorage",
+    "AuthMongoDbSessionsStorage",
     "AuthMongoDbStorage",
     "AuthMongoDbTagsStorage",
 )
@@ -22,16 +22,16 @@ from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
 
-from .profile import (
+from .profiles import (
     AuthMongoDbAttrsStorage,
-    AuthMongoDbProfileStorage,
+    AuthMongoDbProfilesStorage,
     AuthMongoDbTagsStorage,
 )
 from .registry import AuthMongoDbRegistryStorage
-from .session import (
+from .sessions import (
     AuthMongoDbSessionAttrsStorage,
     AuthMongoDbSessionPresetsStorage,
-    AuthMongoDbSessionStorage,
+    AuthMongoDbSessionsStorage,
 )
 
 if t.TYPE_CHECKING:
@@ -51,8 +51,9 @@ class AuthMongoDbStorage(AuthStorage):
 
     project: "MongoDbProject"
 
-    profile = Slot(AuthMongoDbProfileStorage)
-    session = Slot(AuthMongoDbSessionStorage)
+    # abstract still: the profiles themselves are not in MongoDB yet
+    profiles = Slot(AuthMongoDbProfilesStorage)  # type: ignore[type-abstract]
+    sessions = Slot(AuthMongoDbSessionsStorage)
 
     @t.override
     async def _begin(self) -> object:

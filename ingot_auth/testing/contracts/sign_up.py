@@ -7,7 +7,7 @@ import decimal
 from ingot_auth.sign_up import AuthSignUpRecord, AuthSignUpRecordNotFoundError
 
 from .base import BaseAuthContract
-from .profile import NOW
+from .profiles import NOW
 
 
 class AuthSignUpRecordsStorageContract(BaseAuthContract):

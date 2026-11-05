@@ -32,7 +32,7 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profile.secrets import AuthSecretNotFoundError
+from ingot_auth.profiles.secrets import AuthSecretNotFoundError
 
 from .contexts import (
     AuthHasNickname,
@@ -95,7 +95,7 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     async def _start_sign_in(self, parameters: AuthNicknameStart) -> AuthStep:
         nickname = self._normalize_nickname(parameters.nickname)
         password = self._normalize_password(parameters.password)
-        secrets = self.project.auth.storage.profile.secrets
+        secrets = self.project.auth.storage.profiles.secrets
         try:
             secret = await secrets.get(self.get_name(), nickname)
         except AuthSecretNotFoundError:

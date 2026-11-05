@@ -12,8 +12,8 @@ import asyncio
 import dataclasses
 import typing as t
 
-from ingot_auth.profile.attrs import AuthAttr
-from ingot_auth.profile.tags import AuthTag
+from ingot_auth.profiles.attrs import AuthAttr
+from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.registry import (
     AuthAttrType,
     AuthItem,
@@ -22,8 +22,8 @@ from ingot_auth.registry import (
     AuthRegistryError,
     BaseAuthRegistryStorage,
 )
-from ingot_auth.session.attrs import AuthSessionAttr, AuthSessionAttrSource
-from ingot_auth.session.presets import (
+from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.sessions.presets import (
     AuthSessionPreset,
     AuthSessionPresetBinding,
     BaseAuthSessionPresetsStorage,
@@ -167,11 +167,11 @@ class BaseAuthRegistryStorageContract[ItemType: AuthItem](BaseAuthContract):
 class AuthTagsStorageContract(BaseAuthRegistryStorageContract[AuthTag]):
     """The tags of a storage."""
 
-    REGISTRY: t.ClassVar[str] = "profile.tags"
+    REGISTRY: t.ClassVar[str] = "profiles.tags"
 
     @t.override
     def _get_storage(self, project: "AuthProject") -> BaseAuthRegistryStorage[AuthTag]:
-        return project.auth.storage.profile.tags
+        return project.auth.storage.profiles.tags
 
     @t.override
     def _create_item(self, item_id: int, name: str) -> AuthTag:
@@ -181,7 +181,7 @@ class AuthTagsStorageContract(BaseAuthRegistryStorageContract[AuthTag]):
 class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
     """The attributes of a storage: each keeps its type."""
 
-    REGISTRY: t.ClassVar[str] = "profile.attrs"
+    REGISTRY: t.ClassVar[str] = "profiles.attrs"
 
     async def test_every_type_is_given_as_created(self) -> None:
         attrs = tuple(
@@ -201,7 +201,7 @@ class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
 
     @t.override
     def _get_storage(self, project: "AuthProject") -> BaseAuthRegistryStorage[AuthAttr]:
-        return project.auth.storage.profile.attrs
+        return project.auth.storage.profiles.attrs
 
     @t.override
     def _create_item(self, item_id: int, name: str) -> AuthAttr:
@@ -211,7 +211,7 @@ class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
 class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessionAttr]):
     """The attributes of the sessions of a storage: each keeps its type and source."""
 
-    REGISTRY: t.ClassVar[str] = "session.attrs"
+    REGISTRY: t.ClassVar[str] = "sessions.attrs"
 
     async def test_every_type_and_source_is_given_as_created(self) -> None:
         pairs = [
@@ -251,7 +251,7 @@ class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessio
     def _get_storage(
         self, project: "AuthProject"
     ) -> BaseAuthRegistryStorage[AuthSessionAttr]:
-        return project.auth.storage.session.attrs
+        return project.auth.storage.sessions.attrs
 
     @t.override
     def _create_item(self, item_id: int, name: str) -> AuthSessionAttr:
@@ -271,7 +271,7 @@ class AuthSessionPresetsStorageContract(
     attribute id is bound, the operations look whether it is there.
     """
 
-    REGISTRY: t.ClassVar[str] = "session.presets"
+    REGISTRY: t.ClassVar[str] = "sessions.presets"
 
     storage: BaseAuthSessionPresetsStorage
 
@@ -349,7 +349,7 @@ class AuthSessionPresetsStorageContract(
 
     @t.override
     def _get_storage(self, project: "AuthProject") -> BaseAuthSessionPresetsStorage:
-        return project.auth.storage.session.presets
+        return project.auth.storage.sessions.presets
 
     @t.override
     def _create_item(self, item_id: int, name: str) -> AuthSessionPreset:

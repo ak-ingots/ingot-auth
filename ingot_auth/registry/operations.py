@@ -38,7 +38,7 @@ class BaseAuthRegistryOperation[ItemType: AuthItem, ParametersType, ResultType](
 ):
     """
     An operation of a registry: a subclass gives the storage of its own,
-    ``self.project.auth.storage.profile.tags`` for instance. Names are a word or
+    ``self.project.auth.storage.profiles.tags`` for instance. Names are a word or
     words joined by ``/`` (``title/en``), in lower case: another
     :attr:`NAME_PATTERN` changes that.
     """

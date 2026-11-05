@@ -24,7 +24,7 @@ __all__ = (
 )
 
 from .cache import AuthAttemptsCacheContract
-from .profile import (
+from .profiles import (
     AuthIdentitiesStorageContract,
     AuthProfilesStorageContract,
     AuthSecretsStorageContract,

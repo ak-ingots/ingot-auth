@@ -7,13 +7,12 @@ its auth: ``storage = Slot(AuthMemoryStorage)``.
 __all__ = (
     "AuthMemoryAttrsStorage",
     "AuthMemoryIdentitiesStorage",
-    "AuthMemoryProfileStorage",
     "AuthMemoryProfilesStorage",
     "AuthMemoryRegistryStorage",
     "AuthMemorySecretsStorage",
     "AuthMemorySessionAttrsStorage",
     "AuthMemorySessionPresetsStorage",
-    "AuthMemorySessionStorage",
+    "AuthMemorySessionsStorage",
     "AuthMemorySignUpRecordsStorage",
     "AuthMemorySignUpStorage",
     "AuthMemoryStateMixin",
@@ -27,19 +26,18 @@ from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
 
-from .profile import (
+from .profiles import (
     AuthMemoryAttrsStorage,
     AuthMemoryIdentitiesStorage,
     AuthMemoryProfilesStorage,
-    AuthMemoryProfileStorage,
     AuthMemorySecretsStorage,
     AuthMemoryTagsStorage,
 )
 from .registry import AuthMemoryRegistryStorage
-from .session import (
+from .sessions import (
     AuthMemorySessionAttrsStorage,
     AuthMemorySessionPresetsStorage,
-    AuthMemorySessionStorage,
+    AuthMemorySessionsStorage,
 )
 from .sign_up import AuthMemorySignUpRecordsStorage, AuthMemorySignUpStorage
 from .state import AuthMemoryStateMixin
@@ -56,8 +54,8 @@ class AuthMemoryStorage(AuthStorage):
     too. For the tests and a project of one task at a time.
     """
 
-    profile = Slot(AuthMemoryProfileStorage)
-    session = Slot(AuthMemorySessionStorage)
+    profiles = Slot(AuthMemoryProfilesStorage)
+    sessions = Slot(AuthMemorySessionsStorage)
     sign_up = Slot(AuthMemorySignUpStorage)
 
     @t.override

@@ -9,8 +9,8 @@ from ingot_auth.cache import AuthCache
 from ingot_auth.metadata import AuthMetadataUnit
 from ingot_auth.methods import AuthMethods
 from ingot_auth.policies import AuthPolicies
-from ingot_auth.profile import AuthProfileUnit
-from ingot_auth.session import AuthSessionUnit
+from ingot_auth.profiles import AuthProfiles
+from ingot_auth.sessions import AuthSessions
 from ingot_auth.sign_up import AuthSignUpUnit
 from ingot_auth.storage import AuthStorage
 
@@ -34,7 +34,7 @@ class AuthUnit(CliUnit):
     cache = Slot(AuthCache)
     methods = Slot(AuthMethods)
     policies = Slot(AuthPolicies)
-    profile = Slot(AuthProfileUnit)
-    session = Slot(AuthSessionUnit)
+    profiles = Slot(AuthProfiles)
+    sessions = Slot(AuthSessions)
     sign_up = Slot(AuthSignUpUnit)
     metadata = Slot(AuthMetadataUnit)
