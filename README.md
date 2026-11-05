@@ -67,6 +67,16 @@ class AppMethods(AuthMethods):
 
 its email checked on a sign-up by its preset `preset_sign_up_email`.
 
+A method bound binds its configs too: the toggles of its flows, on by
+default, which the application mixes into its configs. A toggle closes a
+flow in an environment, and the metadata lists the methods with their
+flows open or closed:
+
+```python
+class AppConfigs(AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs):
+    AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)  # by invitation only
+```
+
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and
 MongoDB takes transactions on a replica set only: run a replica set, of one

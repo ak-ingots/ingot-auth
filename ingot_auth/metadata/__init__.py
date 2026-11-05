@@ -1,17 +1,26 @@
-"""The metadata of the auth: the registries, as its consumers read them."""
+"""
+The metadata of the auth: the registries and the methods, as its consumers
+read them.
+"""
 
 __all__ = (
     "AuthGetMetadata",
     "AuthMetadata",
     "AuthMetadataPermissions",
     "AuthMetadataUnit",
+    "AuthMethodMetadata",
     "AuthProfileMetadata",
     "AuthSessionMetadata",
 )
 
 from ingots.puer import Factory, Unit
 
-from .items import AuthMetadata, AuthProfileMetadata, AuthSessionMetadata
+from .items import (
+    AuthMetadata,
+    AuthMethodMetadata,
+    AuthProfileMetadata,
+    AuthSessionMetadata,
+)
 from .operations import AuthGetMetadata
 from .permissions import AuthMetadataPermissions
 

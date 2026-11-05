@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package ingot_auth.metadata.v1;
 
-// The registries as the consumers read them: a client asks for them before
-// signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+// The registries and the methods as the consumers read them: a client asks
+// for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+// default.
 service Metadata {
   // Requires PERMISSION_CAN_READ.
   rpc Get(GetMetadataRequest) returns (GetMetadataResponse);
@@ -67,9 +68,19 @@ message Session {
   repeated Binding bindings = 3;
 }
 
+// A method of the server: the path of its slot, `nickname`, `email_code`,
+// and whether each flow is open, closed as well when the method does not
+// take it.
+message Method {
+  string name = 1;
+  bool sign_up = 2;
+  bool sign_in = 3;
+}
+
 message GetMetadataRequest {}
 
 message GetMetadataResponse {
   Profile profile = 1;
   Session session = 2;
+  repeated Method methods = 3;
 }

@@ -50,6 +50,14 @@ class AuthMethods(Unit):
     """
 
     @t.final
+    def get_all(self) -> tuple[BaseAuthMethod[t.Any, t.Any, t.Any], ...]:
+        """The methods, in the order of their slots."""
+        return tuple(
+            self.slots_find_entity(name, BaseAuthMethod)
+            for name, _ in type(self).slots_iter(BaseAuthMethod)
+        )
+
+    @t.final
     def get(self, name: str) -> BaseAuthMethod[t.Any, t.Any, t.Any]:
         """
         The method of a name.

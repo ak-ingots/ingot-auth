@@ -5,11 +5,14 @@ extends :class:`BaseAuthEmailCodeMethod` with the sending, by the mail of its
 own, and declares it as a slot of its methods,
 ``email_code = Slot(AppEmailCodeMethod)``. The email of a sign-up is checked by the
 preset of the policies of the method, its slot ``preset_sign_up_email``,
-empty unless an application binds policies to it in its subclass.
+empty unless an application binds policies to it in its subclass. Its flows
+are toggled by its configs, :class:`AuthEmailCodeConfigs`, which the project
+mixes into its own.
 """
 
 __all__ = (
     "AuthEmailCodeChallenge",
+    "AuthEmailCodeConfigs",
     "AuthEmailCodeStart",
     "AuthEmailCodeState",
     "AuthEmailSignUpContext",
@@ -36,6 +39,7 @@ from ingot_auth.methods import (
 )
 from ingot_auth.profiles.identities import AuthIdentityNotFoundError
 
+from .configs import AuthEmailCodeConfigs
 from .contexts import AuthEmailSignUpContext
 from .presets import AuthEmailSignUpPreset
 
@@ -85,6 +89,14 @@ class BaseAuthEmailCodeMethod(
     preset_sign_up_email = Slot(AuthEmailSignUpPreset)
 
     @t.override
+    def _get_sign_up_enabled(self) -> bool:
+        return self._get_configs().AUTH_SIGN_UP_EMAIL_CODE_ENABLED
+
+    @t.override
+    def _get_sign_in_enabled(self) -> bool:
+        return self._get_configs().AUTH_SIGN_IN_EMAIL_CODE_ENABLED
+
+    @t.override
     async def _start_sign_up(self, parameters: AuthEmailCodeStart) -> AuthStep:
         email = self._normalize_email(parameters.email)
         await self._check(
@@ -119,6 +131,11 @@ class BaseAuthEmailCodeMethod(
     def _create_code(self) -> str:
         """A code of random digits."""
         return f"{secrets.randbelow(10**self.CODE_LENGTH):0{self.CODE_LENGTH}d}"
+
+    @t.final
+    def _get_configs(self) -> AuthEmailCodeConfigs:
+        # mixed into the configs of the project, as the doc of the package says
+        return t.cast(AuthEmailCodeConfigs, self.project.settings.configs)
 
     @t.final
     async def _send(self, email: str) -> AuthStep:

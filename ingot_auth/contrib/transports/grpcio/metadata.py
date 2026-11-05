@@ -10,6 +10,7 @@ from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
 
 from ingot_auth.metadata import (
     AuthMetadataPermissions,
+    AuthMethodMetadata,
     AuthProfileMetadata,
     AuthSessionMetadata,
 )
@@ -46,6 +47,7 @@ class AuthGrpcMetadataServicer(
         return metadata_pb2.GetMetadataResponse(
             profile=build_profile_message(metadata.profile),
             session=build_session_message(metadata.session),
+            methods=(build_method_message(method) for method in metadata.methods),
         )
 
     @t.override
@@ -97,4 +99,11 @@ def build_session_message(session: AuthSessionMetadata) -> metadata_pb2.Session:
             )
             for binding in session.bindings
         ),
+    )
+
+
+def build_method_message(method: AuthMethodMetadata) -> metadata_pb2.Method:
+    """Internal: the message of a method."""
+    return metadata_pb2.Method(
+        name=method.name, sign_up=method.sign_up, sign_in=method.sign_in
     )

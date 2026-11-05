@@ -8,7 +8,12 @@ from ingots.defaults.operations import BaseOperation, OperationMetadata, Permiss
 
 from ingot_auth.sessions.attrs import AuthSessionAttrSource
 
-from .items import AuthMetadata, AuthProfileMetadata, AuthSessionMetadata
+from .items import (
+    AuthMetadata,
+    AuthMethodMetadata,
+    AuthProfileMetadata,
+    AuthSessionMetadata,
+)
 from .permissions import AuthMetadataPermissions
 
 if t.TYPE_CHECKING:
@@ -19,7 +24,9 @@ class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
     """
     The metadata: a client asks for it before signing in. Of the sessions it
     gives only what is the client's: the attributes the transport, the
-    provider or the server give are not, nor are their bindings.
+    provider or the server give are not, nor are their bindings. The methods
+    are those of the slots of the methods, each with its flows open or
+    closed.
     """
 
     PERMISSIONS = Permissions(AuthMetadataPermissions.CAN_READ)
@@ -29,7 +36,9 @@ class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
     @t.override
     async def _run(self, parameters: None, metadata: OperationMetadata) -> AuthMetadata:
         return AuthMetadata(
-            profile=await self._get_profile(), session=await self._get_session()
+            profile=await self._get_profile(),
+            session=await self._get_session(),
+            methods=self._get_methods(),
         )
 
     async def _get_profile(self) -> AuthProfileMetadata:
@@ -51,4 +60,14 @@ class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
             attrs=attrs,
             presets=await storage.presets.get_all(),
             bindings=tuple(b for b in bindings if b.attr_id in attr_ids),
+        )
+
+    def _get_methods(self) -> tuple[AuthMethodMetadata, ...]:
+        return tuple(
+            AuthMethodMetadata(
+                name=method.get_name(),
+                sign_up=method.get_sign_up_enabled(),
+                sign_in=method.get_sign_in_enabled(),
+            )
+            for method in self.project.auth.methods.get_all()
         )
