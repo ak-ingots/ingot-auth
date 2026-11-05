@@ -18,9 +18,9 @@ from ingot_auth.methods import (
     AuthStep,
     AuthVerified,
 )
-from ingot_auth.profile.identities import AuthIdentity
-from ingot_auth.profile.profiles import AuthProfile
-from ingot_auth.session.attrs import check_client_values
+from ingot_auth.profiles.identities import AuthIdentity
+from ingot_auth.profiles import AuthProfile
+from ingot_auth.sessions.attrs import check_client_values
 
 from .items import (
     AuthAnswerSignUpParameters,
@@ -101,12 +101,12 @@ class BaseAuthSignUpOperation[ParametersType](
             uid=uid, method=method, signed_up_at=now, values=values
         )
         async with storage.transaction():
-            await storage.profile.identities.create(identity)
+            await storage.profiles.identities.create(identity)
             if verified.secret is not None:
-                await storage.profile.secrets.put(
+                await storage.profiles.secrets.put(
                     method, verified.subject, verified.secret
                 )
-            await storage.profile.profiles.create(AuthProfile(uid=uid, created_at=now))
+            await storage.profiles.create(AuthProfile(uid=uid, created_at=now))
             await storage.sign_up.records.add(record)
         return AuthSignedUp(uid=uid)
 
@@ -144,7 +144,7 @@ class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
         self, parameters: AuthStartSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
         method = self.project.auth.methods.get(parameters.method)
-        attrs = await self.project.auth.storage.session.attrs.get_all()
+        attrs = await self.project.auth.storage.sessions.attrs.get_all()
         check_client_values(attrs, parameters.values)
         step = await method.start_sign_up(parameters.parameters)
         return await self.proceed(parameters.method, step, parameters.values)

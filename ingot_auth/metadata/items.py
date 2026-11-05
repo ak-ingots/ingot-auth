@@ -8,10 +8,10 @@ __all__ = ("AuthMetadata", "AuthProfileMetadata", "AuthSessionMetadata")
 
 from dataclasses import dataclass
 
-from ingot_auth.profile.attrs import AuthAttr
-from ingot_auth.profile.tags import AuthTag
-from ingot_auth.session.attrs import AuthSessionAttr
-from ingot_auth.session.presets import AuthSessionPreset, AuthSessionPresetBinding
+from ingot_auth.profiles.attrs import AuthAttr
+from ingot_auth.profiles.tags import AuthTag
+from ingot_auth.sessions.attrs import AuthSessionAttr
+from ingot_auth.sessions.presets import AuthSessionPreset, AuthSessionPresetBinding
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

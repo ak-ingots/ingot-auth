@@ -34,7 +34,7 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profile.identities import AuthIdentityNotFoundError
+from ingot_auth.profiles.identities import AuthIdentityNotFoundError
 
 from .contexts import AuthEmailSignUpContext
 from .presets import AuthEmailSignUpPreset
@@ -95,7 +95,7 @@ class BaseAuthEmailCodeMethod(
     @t.override
     async def _start_sign_in(self, parameters: AuthEmailCodeStart) -> AuthStep:
         email = self._normalize_email(parameters.email)
-        identities = self.project.auth.storage.profile.identities
+        identities = self.project.auth.storage.profiles.identities
         try:
             await identities.find_uid(self.get_name(), email)
         except AuthIdentityNotFoundError:

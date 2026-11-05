@@ -120,7 +120,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertRegex(code, r"^\d{6}$")
         result = await self.answer(challenge.attempt_id, code)
         assert isinstance(result, AuthSignedUp)
-        identities = self.project.auth.storage.profile.identities
+        identities = self.project.auth.storage.profiles.identities
         self.assertEqual(
             await identities.find_uid("email_code", "alice@example.com"), result.uid
         )
@@ -138,7 +138,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_email_is_normalized(self) -> None:
         await self.sign_up("  Alice@Example.COM ")
         self.assertEqual(self.method.sent[-1][0], "alice@example.com")
-        identities = self.project.auth.storage.profile.identities
+        identities = self.project.auth.storage.profiles.identities
         await identities.find_uid("email_code", "alice@example.com")
 
     async def test_a_sign_up_keeps_the_preset_of_the_email(self) -> None:

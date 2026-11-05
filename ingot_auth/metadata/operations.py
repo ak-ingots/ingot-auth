@@ -6,7 +6,7 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
-from ingot_auth.session.attrs import AuthSessionAttrSource
+from ingot_auth.sessions.attrs import AuthSessionAttrSource
 
 from .items import AuthMetadata, AuthProfileMetadata, AuthSessionMetadata
 from .permissions import AuthMetadataPermissions
@@ -33,13 +33,13 @@ class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
         )
 
     async def _get_profile(self) -> AuthProfileMetadata:
-        storage = self.project.auth.storage.profile
+        storage = self.project.auth.storage.profiles
         return AuthProfileMetadata(
             tags=await storage.tags.get_all(), attrs=await storage.attrs.get_all()
         )
 
     async def _get_session(self) -> AuthSessionMetadata:
-        storage = self.project.auth.storage.session
+        storage = self.project.auth.storage.sessions
         attrs = tuple(
             attr
             for attr in await storage.attrs.get_all()

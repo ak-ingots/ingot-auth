@@ -25,18 +25,18 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profile.identities import (
+from ingot_auth.profiles.identities import (
     AuthIdentityConflictError,
     AuthIdentityNotFoundError,
 )
-from ingot_auth.profile.profiles import AuthProfileNotFoundError
-from ingot_auth.profile.secrets import AuthSecretNotFoundError
+from ingot_auth.profiles import AuthProfileNotFoundError
+from ingot_auth.profiles.secrets import AuthSecretNotFoundError
 from ingot_auth.registry import (
     AuthAttrType,
     AuthItemInvalidError,
     AuthItemNotFoundError,
 )
-from ingot_auth.session.attrs import AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
 from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
@@ -86,7 +86,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
         self.project = TstProject()
         self.metadata = self.project.operations.create_metadata(SIGNING_UP)
-        await self.project.auth.storage.session.attrs.create(
+        await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
                 id=1,
                 name="device",
@@ -94,7 +94,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
                 source=AuthSessionAttrSource.CLIENT,
             )
         )
-        await self.project.auth.storage.session.attrs.create(
+        await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
                 id=2,
                 name="ip",
@@ -126,9 +126,9 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(result, AuthSignedUp)
         storage = self.project.auth.storage
         self.assertEqual(
-            await storage.profile.identities.find_uid("testing", "a@b.c"), result.uid
+            await storage.profiles.identities.find_uid("testing", "a@b.c"), result.uid
         )
-        profile = await storage.profile.profiles.get(result.uid)
+        profile = await storage.profiles.get(result.uid)
         record = await storage.sign_up.records.get(result.uid)
         self.assertEqual(
             record,
@@ -154,7 +154,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             await self.answer(challenge.attempt_id, "1234")
 
     async def test_the_secret_of_the_method_is_kept(self) -> None:
-        secrets = self.project.auth.storage.profile.secrets
+        secrets = self.project.auth.storage.profiles.secrets
         await self.start(AuthTestingStart(subject="a", secret="hash-a"))
         challenge = await self.start(
             AuthTestingStart(subject="b", code="1234", secret="hash-b")
@@ -167,7 +167,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_no_secret_is_kept_for_a_method_giving_none(self) -> None:
         await self.start(AuthTestingStart(subject="a"))
         with self.assertRaises(AuthSecretNotFoundError):
-            await self.project.auth.storage.profile.secrets.get("testing", "a")
+            await self.project.auth.storage.profiles.secrets.get("testing", "a")
 
     async def test_a_method_signs_up_only_if_it_takes_the_flow(self) -> None:
         with self.assertRaises(AuthMethodUnsupportedError) as error:
@@ -229,12 +229,12 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             await self.start(AuthTestingStart(subject="a@b.c"))
 
     async def test_a_sign_up_failing_midway_leaves_nothing(self) -> None:
-        profiles = type(self.project.auth.storage.profile.profiles)
+        profiles = type(self.project.auth.storage.profiles)
         with mock.patch.object(profiles, "_create", side_effect=OSError):
             with self.assertRaises(OSError):
                 await self.start(AuthTestingStart(subject="a@b.c", secret="hash"))
         with self.assertRaises(AuthSecretNotFoundError):
-            await self.project.auth.storage.profile.secrets.get("testing", "a@b.c")
+            await self.project.auth.storage.profiles.secrets.get("testing", "a@b.c")
         result = await self.start(AuthTestingStart(subject="a@b.c"))
         self.assertIsInstance(result, AuthSignedUp)
 

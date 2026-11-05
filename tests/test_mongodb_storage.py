@@ -19,7 +19,7 @@ from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
 from ingot_auth.logging import AuthLogging
-from ingot_auth.profile.tags import AuthTag
+from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.settings import AuthSettings
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.testing.contracts import (
@@ -97,7 +97,7 @@ class MongoDbTagsStorageTestCase(
         tag = AuthTag(id=1, name="beta")
         await self.storage.create(tag)
         project = await self.start()
-        self.assertEqual(await project.auth.storage.profile.tags.get_all(), (tag,))
+        self.assertEqual(await project.auth.storage.profiles.tags.get_all(), (tag,))
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")

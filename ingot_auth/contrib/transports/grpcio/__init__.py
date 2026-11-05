@@ -1,6 +1,6 @@
 """
 The auth over gRPC, with the extra ``grpcio``, laid out by the subdomains of the
-auth, ``profile``, ``session`` and ``metadata``: a service per registry, each
+auth, ``profiles``, ``sessions`` and ``metadata``: a service per registry, each
 in a binding of its own, so that a server serves the ones it should; a public
 server the metadata, an internal one the administration too::
 
@@ -22,10 +22,10 @@ __all__ = (
     "AuthGrpcErrors",
     "AuthGrpcMetadataBinding",
     "AuthGrpcMetadataServicer",
-    "AuthGrpcProfileBinding",
+    "AuthGrpcProfilesBinding",
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
-    "AuthGrpcSessionBinding",
+    "AuthGrpcSessionsBinding",
     "AuthGrpcSessionPresetsBinding",
     "AuthGrpcSessionPresetsServicer",
     "AuthGrpcTagsBinding",
@@ -36,21 +36,21 @@ __all__ = (
 from .base import BaseAuthGrpcServicer
 from .errors import AuthGrpcErrors
 from .metadata import AuthGrpcMetadataBinding, AuthGrpcMetadataServicer
-from .profile import (
+from .profiles import (
     AuthGrpcAttrsBinding,
     AuthGrpcAttrsServicer,
-    AuthGrpcProfileBinding,
+    AuthGrpcProfilesBinding,
     AuthGrpcTagsBinding,
     AuthGrpcTagsServicer,
 )
-from .session import (
+from .sessions import (
     AuthGrpcSessionAttrsBinding,
     AuthGrpcSessionAttrsServicer,
-    AuthGrpcSessionBinding,
+    AuthGrpcSessionsBinding,
     AuthGrpcSessionPresetsBinding,
     AuthGrpcSessionPresetsServicer,
 )
 
 
-class AuthGrpcAdminBinding(AuthGrpcProfileBinding, AuthGrpcSessionBinding):
+class AuthGrpcAdminBinding(AuthGrpcProfilesBinding, AuthGrpcSessionsBinding):
     pass

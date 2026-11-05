@@ -14,8 +14,8 @@ import typing as t
 
 from ingots.puer import Slot, Unit
 
-from ingot_auth.profile import AuthProfileStorage
-from ingot_auth.session import AuthSessionStorage
+from ingot_auth.profiles import AuthProfilesStorage
+from ingot_auth.sessions import AuthSessionsStorage
 from ingot_auth.sign_up import AuthSignUpStorage
 
 from .errors import AuthTransactionError
@@ -47,8 +47,10 @@ class AuthStorage(Unit):
     reach it with :meth:`get_transaction`.
     """
 
-    profile = Slot(AuthProfileStorage)
-    session = Slot(AuthSessionStorage)
+    # mypy refuses an abstract class where a type is expected: a slot of
+    # one is an open question of ingots
+    profiles = Slot(AuthProfilesStorage)  # type: ignore[type-abstract]
+    sessions = Slot(AuthSessionsStorage)
     sign_up = Slot(AuthSignUpStorage)
 
     @t.final

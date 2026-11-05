@@ -19,7 +19,7 @@ class AuthRegistryError(Exception):
 
     @property
     def registry(self) -> str:
-        """The registry: ``profile.tags``, ``session.attrs``."""
+        """The registry: ``profiles.tags``, ``sessions.attrs``."""
         return t.cast(str, self.args[1])
 
     @property

@@ -2,9 +2,9 @@
 
 __all__ = ("AuthStorageTransactionsContract",)
 
-from ingot_auth.profile.tags import AuthTag
+from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.registry import AuthAttrType
-from ingot_auth.session.attrs import AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
 from ingot_auth.storage import AuthTransactionError
 
 from .base import BaseAuthContract
@@ -23,15 +23,15 @@ class AuthStorageTransactionsContract(BaseAuthContract):
 
     async def write(self) -> None:
         storage = self.project.auth.storage
-        await storage.profile.tags.create(BETA)
-        await storage.session.attrs.create(DEVICE)
+        await storage.profiles.tags.create(BETA)
+        await storage.sessions.attrs.create(DEVICE)
 
     async def assert_written(self, written: bool) -> None:
         storage = self.project.auth.storage
         self.assertEqual(
             (
-                await storage.profile.tags.get_all(),
-                await storage.session.attrs.get_all(),
+                await storage.profiles.tags.get_all(),
+                await storage.sessions.attrs.get_all(),
             ),
             ((BETA,), (DEVICE,)) if written else ((), ()),
         )
@@ -52,11 +52,11 @@ class AuthStorageTransactionsContract(BaseAuthContract):
 
     async def test_a_rollback_keeps_what_was_there(self) -> None:
         storage = self.project.auth.storage
-        await storage.profile.tags.create(BETA)
+        await storage.profiles.tags.create(BETA)
         await storage.begin()
-        await storage.profile.tags.rename(1, "preview")
+        await storage.profiles.tags.rename(1, "preview")
         await storage.rollback()
-        self.assertEqual(await storage.profile.tags.get_all(), (BETA,))
+        self.assertEqual(await storage.profiles.tags.get_all(), (BETA,))
 
     async def test_a_block_is_committed(self) -> None:
         async with self.project.auth.storage.transaction():
