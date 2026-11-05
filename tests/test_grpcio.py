@@ -17,6 +17,7 @@ from ingot_grpcio.logging import GrpcLogging
 from ingot_grpcio.settings import GrpcSettings
 from ingot_grpcio.settings.configs import GrpcConfigs
 from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
+from ingots.defaults.settings.configs import BoolConfig
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
@@ -60,6 +61,8 @@ from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.sessions.presets.v1 i
 )
 from ingot_auth.logging import AuthLogging
 from ingot_auth.metadata import AuthMetadataPermissions
+from ingot_auth.methods import AuthMethods, BaseAuthMethod
+from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.registry import AuthAttrType
@@ -203,6 +206,32 @@ class TstClosedProject(TstProject):
     grpc = Slot(TstClosedGrpc)
 
 
+class NoFlowMethod(BaseAuthMethod[str, str, None]):
+    pass
+
+
+class TstMethods(AuthMethods):
+    nickname = Slot(AuthNicknameMethod)
+    no_flow = Slot(NoFlowMethod)
+
+
+class TstMethodsAuth(TstAuth):
+    methods = Slot(TstMethods)
+
+
+class TstMethodsConfigs(AuthNicknameConfigs, TstConfigs):
+    AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)
+
+
+class TstMethodsSettings(TstSettings):
+    configs = Slot(TstMethodsConfigs)
+
+
+class TstMethodsProject(TstAnonymousProject):
+    settings = Slot(TstMethodsSettings)
+    auth = Slot(TstMethodsAuth)
+
+
 def find_free_port() -> int:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -246,6 +275,17 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(GrpcError) as error:
             await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
+
+    async def test_the_metadata_gives_the_methods_with_their_flows(self) -> None:
+        client = await self.connect(TstMethodsProject)
+        reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
+        self.assertEqual(
+            list(reply.methods),
+            [
+                metadata_pb2.Method(name="nickname", sign_up=False, sign_in=True),
+                metadata_pb2.Method(name="no_flow", sign_up=False, sign_in=False),
+            ],
+        )
 
     async def test_the_metadata_gives_the_registries(self) -> None:
         client = await self.connect()

@@ -228,6 +228,36 @@ class Session(_message.Message):
 Global___Session: _TypeAlias = Session  # noqa: Y015
 
 @_typing.final
+class Method(_message.Message):
+    """A method of the server: the path of its slot, `nickname`, `email_code`,
+    and whether each flow is open, closed as well when the method does not
+    take it.
+    """
+
+    DESCRIPTOR: _descriptor.Descriptor
+
+    NAME_FIELD_NUMBER: _builtins.int
+    SIGN_UP_FIELD_NUMBER: _builtins.int
+    SIGN_IN_FIELD_NUMBER: _builtins.int
+    name: _builtins.str
+    sign_up: _builtins.bool
+    sign_in: _builtins.bool
+    def __init__(
+        self,
+        *,
+        name: _builtins.str = ...,
+        sign_up: _builtins.bool = ...,
+        sign_in: _builtins.bool = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "sign_in", b"sign_in", "sign_up", b"sign_up"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___Method: _TypeAlias = Method  # noqa: Y015
+
+@_typing.final
 class GetMetadataRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
@@ -248,19 +278,23 @@ class GetMetadataResponse(_message.Message):
 
     PROFILE_FIELD_NUMBER: _builtins.int
     SESSION_FIELD_NUMBER: _builtins.int
+    METHODS_FIELD_NUMBER: _builtins.int
     @_builtins.property
     def profile(self) -> Global___Profile: ...
     @_builtins.property
     def session(self) -> Global___Session: ...
+    @_builtins.property
+    def methods(self) -> _containers.RepeatedCompositeFieldContainer[Global___Method]: ...
     def __init__(
         self,
         *,
         profile: Global___Profile | None = ...,
         session: Global___Session | None = ...,
+        methods: _abc.Iterable[Global___Method] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["profile", b"profile", "session", b"session"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["profile", b"profile", "session", b"session"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["methods", b"methods", "profile", b"profile", "session", b"session"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

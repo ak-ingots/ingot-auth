@@ -6,11 +6,13 @@ policies of the method, its slots ``preset_sign_up_nickname`` and
 ``preset_sign_up_password``, empty unless an application binds policies to
 them in a subclass of the method. The password is kept as its
 hash, a secret of the nickname, by scrypt of the standard library; how it
-hashes is changed by subclassing.
+hashes is changed by subclassing. Its flows are toggled by its configs,
+:class:`AuthNicknameConfigs`, which the project mixes into its own.
 """
 
 __all__ = (
     "AuthHasNickname",
+    "AuthNicknameConfigs",
     "AuthNicknameMethod",
     "AuthNicknameSignUpContext",
     "AuthNicknameSignUpPreset",
@@ -34,6 +36,7 @@ from ingot_auth.methods import (
 )
 from ingot_auth.profiles.secrets import AuthSecretNotFoundError
 
+from .configs import AuthNicknameConfigs
 from .contexts import (
     AuthHasNickname,
     AuthNicknameSignUpContext,
@@ -73,6 +76,14 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     preset_sign_up_password = Slot(AuthPasswordSignUpPreset)
 
     _dummy_secret: str
+
+    @t.override
+    def _get_sign_up_enabled(self) -> bool:
+        return self._get_configs().AUTH_SIGN_UP_NICKNAME_ENABLED
+
+    @t.override
+    def _get_sign_in_enabled(self) -> bool:
+        return self._get_configs().AUTH_SIGN_IN_NICKNAME_ENABLED
 
     @t.override
     async def _start_sign_up(self, parameters: AuthNicknameStart) -> AuthStep:
@@ -119,6 +130,11 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     def _verify(self, password: str, secret: str) -> bool:
         """Whether a password is that of a hash :meth:`_hash` made, in a thread."""
         return verify_password(password, secret)
+
+    @t.final
+    def _get_configs(self) -> AuthNicknameConfigs:
+        # mixed into the configs of the project, as the doc of the package says
+        return t.cast(AuthNicknameConfigs, self.project.settings.configs)
 
     @t.final
     def _get_dummy_secret(self) -> str:

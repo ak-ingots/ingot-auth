@@ -27,8 +27,9 @@ GRPC_GENERATED_VERSION: str
 GRPC_VERSION: str
 
 class MetadataStub:
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     @_typing.overload
@@ -40,8 +41,9 @@ class MetadataStub:
 
 @_typing.type_check_only
 class MetadataAsyncStub(MetadataStub):
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     def __init__(self, channel: _aio.Channel) -> None: ...
@@ -49,8 +51,9 @@ class MetadataAsyncStub(MetadataStub):
     """Requires PERMISSION_CAN_READ."""
 
 class MetadataServicer(metaclass=_abc_1.ABCMeta):
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     @_abc_1.abstractmethod

@@ -26,8 +26,9 @@ if _version_not_supported:
 
 
 class MetadataStub:
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     def __init__(self, channel):
@@ -44,8 +45,9 @@ class MetadataStub:
 
 
 class MetadataServicer:
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     def Get(self, request, context):
@@ -72,8 +74,9 @@ def add_MetadataServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Metadata:
-    """The registries as the consumers read them: a client asks for them before
-    signing in, so a server gives anyone PERMISSION_CAN_READ by default.
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     @staticmethod
