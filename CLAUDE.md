@@ -63,7 +63,7 @@ provides the environments and interpreters.
 
 ```bash
 make check        # what CI runs: lint, test, coverage, wheel-test, doc, cl-check
-make lint         # black --check, flake8, mypy --strict, buf lint (BUF=<path>)
+make lint         # black --check, flake8, mypy --strict, buf lint (Buf of ingots-libs)
 make test         # unittest on the working tree
 make coverage     # the same under coverage, with MongoDB; fails below 99%
 make integration  # the storage in MongoDB against docker-compose.yml, a replica set
