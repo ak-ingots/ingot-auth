@@ -1,3 +1,4 @@
+import datetime
 import os
 import socket
 import typing as t
@@ -21,17 +22,30 @@ from ingots.defaults.settings.configs import BoolConfig
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
+from ingot_auth.access import AuthAccess
+from ingot_auth.access.groups import AuthGroup, AuthGroups, AuthGroupsPermissions
+from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcAdminBinding,
     AuthGrpcAttrsServicer,
     AuthGrpcErrors,
+    AuthGrpcGroupsServicer,
+    AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
     AuthGrpcMetadataServicer,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
     AuthGrpcTagsServicer,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.access.groups.v1 import (
+    groups_pb2,
+    groups_pb2_grpc,
+)
+from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.access.members.v1 import (
+    members_pb2,
+    members_pb2_grpc,
 )
 from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.metadata.v1 import (
     metadata_pb2,
@@ -63,6 +77,7 @@ from ingot_auth.logging import AuthLogging
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods import AuthMethods, BaseAuthMethod
 from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
+from ingot_auth.profiles import AuthProfile
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.registry import AuthAttrType
@@ -71,6 +86,7 @@ from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.settings import AuthSettings
 from ingot_auth.settings.configs import AuthConfigs
 
+NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 ADMIN: t.Final = Caller(
     uid="admin",
     permissions=Permissions(
@@ -78,6 +94,8 @@ ADMIN: t.Final = Caller(
         *AuthAttrsPermissions,
         *AuthSessionAttrsPermissions,
         *AuthSessionPresetsPermissions,
+        *AuthGroupsPermissions,
+        *AuthMembersPermissions,
     ),
 )
 
@@ -103,6 +121,14 @@ class SessionPresetsServicer(AdminCaller, AuthGrpcSessionPresetsServicer):
     pass
 
 
+class GroupsServicer(AdminCaller, AuthGrpcGroupsServicer):
+    pass
+
+
+class MembersServicer(AdminCaller, AuthGrpcMembersServicer):
+    pass
+
+
 class TstAdminBinding:
     auth_profiles_tags = GrpcService(profile_tags_pb2_grpc.TagsStub, TagsServicer)
     auth_profiles_attrs = GrpcService(profile_attrs_pb2_grpc.AttrsStub, AttrsServicer)
@@ -112,6 +138,8 @@ class TstAdminBinding:
     auth_sessions_presets = GrpcService(
         presets_pb2_grpc.PresetsStub, SessionPresetsServicer
     )
+    auth_access_groups = GrpcService(groups_pb2_grpc.GroupsStub, GroupsServicer)
+    auth_access_members = GrpcService(members_pb2_grpc.MembersStub, MembersServicer)
 
 
 class TstAnonymousServer(
@@ -150,8 +178,23 @@ class TstLogging(AuthLogging, GrpcLogging):
     project: "TstProject"
 
 
+class AdminsGroup(AuthGroup):
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return super()._get_permissions() | Permissions(*AuthMembersPermissions)
+
+
+class TstGroups(AuthGroups):
+    admins = Slot(AdminsGroup)
+
+
+class TstAccess(AuthAccess):
+    groups = Slot(TstGroups)
+
+
 class TstAuth(AuthUnit):
     storage = Slot(AuthMemoryStorage)
+    access = Slot(TstAccess)
 
 
 class TstClients(GrpcClients):
@@ -254,11 +297,11 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def connect(
         self, project_cls: type[TstProject] = TstAdminProject
     ) -> TstClient:
-        project = project_cls()
-        await project._configure()
-        self.addAsyncCleanup(project._do_shut_down)
-        await project.grpc.servers.default
-        return await project.grpc.clients.default
+        self.project = project_cls()
+        await self.project._configure()
+        self.addAsyncCleanup(self.project._do_shut_down)
+        await self.project.grpc.servers.default
+        return await self.project.grpc.clients.default
 
     async def test_the_metadata_is_public_by_default(self) -> None:
         client = await self.connect(TstAnonymousProject)
@@ -378,6 +421,65 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             len((await tags.List(profile_tags_pb2.ListTagsRequest())).tags), 0
         )
+
+    async def test_the_groups_are_listed_with_their_grants(self) -> None:
+        groups = (await self.connect()).auth_access_groups
+        reply = await groups.ListGroups(groups_pb2.ListGroupsRequest())
+        self.assertEqual(
+            list(reply.groups),
+            [groups_pb2.Group(name="admins", permissions={"auth.access.members": 7})],
+        )
+
+    async def test_the_members_are_managed(self) -> None:
+        members = (await self.connect()).auth_access_members
+        await self.project.auth.storage.profiles.create(
+            AuthProfile(uid="a1", created_at=NOW)
+        )
+        membership = members_pb2.Membership(group="admins", uid="a1")
+        await members.AddMember(members_pb2.AddMemberRequest(membership=membership))
+        reply = await members.ListMembers(
+            members_pb2.ListMembersRequest(group="admins")
+        )
+        self.assertEqual(list(reply.uids), ["a1"])
+        groups = await members.ListMemberGroups(
+            members_pb2.ListMemberGroupsRequest(uid="a1")
+        )
+        self.assertEqual(list(groups.groups), ["admins"])
+        await members.RemoveMember(
+            members_pb2.RemoveMemberRequest(membership=membership)
+        )
+        reply = await members.ListMembers(
+            members_pb2.ListMembersRequest(group="admins")
+        )
+        self.assertEqual(list(reply.uids), [])
+
+    async def test_the_errors_of_the_members_have_their_statuses(self) -> None:
+        members = (await self.connect()).auth_access_members
+        for membership, reason, metadata in (
+            (
+                members_pb2.Membership(group="guests", uid="a1"),
+                "GROUP_NOT_FOUND",
+                {"group": "guests"},
+            ),
+            (
+                members_pb2.Membership(group="admins", uid="a1"),
+                "PROFILE_NOT_FOUND",
+                {"uid": "a1"},
+            ),
+        ):
+            with self.assertRaises(GrpcError) as error:
+                await members.AddMember(
+                    members_pb2.AddMemberRequest(membership=membership)
+                )
+            self.assertEqual(
+                (
+                    error.exception.code,
+                    error.exception.domain,
+                    error.exception.reason,
+                    error.exception.metadata,
+                ),
+                (grpc.StatusCode.NOT_FOUND, "ingot-auth", reason, metadata),
+            )
 
     async def test_the_attrs_are_managed(self) -> None:
         attrs = (await self.connect()).auth_profiles_attrs
@@ -536,6 +638,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthSessionAttrsPermissions, session_attrs_pb2.Permission),
             (AuthSessionPresetsPermissions, presets_pb2.Permission),
             (AuthMetadataPermissions, metadata_pb2.Permission),
+            (AuthGroupsPermissions, groups_pb2.Permission),
+            (AuthMembersPermissions, members_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value
@@ -625,6 +729,10 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             client.auth_sessions_attrs.List(session_attrs_pb2.ListAttrsRequest()),
             client.auth_sessions_presets.ListBindings(
                 presets_pb2.ListBindingsRequest()
+            ),
+            client.auth_access_groups.ListGroups(groups_pb2.ListGroupsRequest()),
+            client.auth_access_members.ListMembers(
+                members_pb2.ListMembersRequest(group="admins")
             ),
         ):
             with self.assertRaises(GrpcError) as error:

@@ -15,13 +15,16 @@ __all__ = (
     "AuthGroups",
     "AuthGroupsPermissions",
     "AuthListGroups",
+    "AuthListGroupsCommand",
 )
 
 import re
 import typing as t
 
-from ingots.puer import Factory, Unit
+from ingots.puer import Factory, Slot
+from ingots.puer.cli import CliUnit
 
+from .commands import AuthListGroupsCommand
 from .entities import AuthGroup
 from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
@@ -32,14 +35,19 @@ from .permissions import AuthGroupsPermissions
 NAME_PATTERN: t.Final = re.compile(r"[a-z][a-z0-9_]*")
 
 
-class AuthGroups(Unit):
+class AuthGroups(CliUnit):
     """
     The groups, none here: whatever their source, they come by :meth:`get`
     and :meth:`get_all`. A name of a group is lowercase letters, digits and
     ``_``, checked when the class is created.
     """
 
+    cli_name = "groups"
+    cli_description = "The groups of the users."
+
     op_list = Factory(AuthListGroups)
+
+    cmd_list = Slot(AuthListGroupsCommand)
 
     @t.override
     @classmethod

@@ -1,5 +1,8 @@
 import asyncio
+import contextlib
 import datetime
+import io
+import os
 import typing as t
 import unittest
 from unittest import mock
@@ -11,9 +14,16 @@ from ingots.defaults.operations import (
     PermissionFlags,
     Permissions,
 )
-from ingots.puer import Slot
+from ingots.puer import Project, Slot
+from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
+from ingot_auth.contrib.storages.memory import (
+    AuthMemoryAccessStorage,
+    AuthMemoryMembersStorage,
+    AuthMemoryProfilesStorage,
+    AuthMemoryStorage,
+)
 from ingot_auth.access import AuthAccess
 from ingot_auth.access.groups import (
     AuthGroup,
@@ -250,3 +260,77 @@ class GroupsGrantsTestCase(unittest.TestCase):
 
     def _get_permissions(self, uid: str) -> Permissions:
         return asyncio.run(self.project.auth.access.permissions.get_permissions(uid))
+
+
+class SeededProfilesStorage(AuthMemoryProfilesStorage):
+    def __init__(self, project: Project) -> None:
+        super().__init__(project)
+        self._profiles["a1"] = AuthProfile(uid="a1", created_at=NOW)
+
+
+class SeededMembersStorage(AuthMemoryMembersStorage):
+    def __init__(self, project: Project) -> None:
+        super().__init__(project)
+        self._memberships.add(("editors", "a1"))
+
+
+class SeededAccessStorage(AuthMemoryAccessStorage):
+    members = Slot(SeededMembersStorage)
+
+
+class SeededStorage(AuthMemoryStorage):
+    profiles = Slot(SeededProfilesStorage)
+    access = Slot(SeededAccessStorage)
+
+
+class SeededAuth(AppAuth):
+    storage = Slot(SeededStorage)
+
+
+class SeededProject(AuthMemoryProject):
+    auth = Slot(SeededAuth)
+
+
+class CommandsTestCase(unittest.TestCase):
+    @t.override
+    def setUp(self) -> None:
+        self.enterContext(mock.patch.dict(os.environ, clear=True))
+        self.enterContext(mock.patch("logging.config.dictConfig"))
+
+    def run_project(self, *argv: str) -> tuple[int, str]:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = CommandRunner(
+                SeededProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
+            ).run()
+        return code, out.getvalue()
+
+    def test_the_groups_are_printed_with_their_grants(self) -> None:
+        self.assertEqual(
+            self.run_project("auth", "access", "groups", "list"),
+            (
+                0,
+                "admins\tarticles=1\tauth.access.members=3\tshop=2\n"
+                "editors\tarticles=2\n"
+                "buyers\tshop=1\n",
+            ),
+        )
+
+    def test_the_members_are_printed(self) -> None:
+        members = ("auth", "access", "members")
+        self.assertEqual(self.run_project(*members, "list", "editors"), (0, "a1\n"))
+        self.assertEqual(
+            self.run_project(*members, "list-groups", "a1"), (0, "editors\n")
+        )
+
+    def test_a_user_is_added_and_removed_as_the_root(self) -> None:
+        members = ("auth", "access", "members")
+        self.assertEqual(self.run_project(*members, "add", "admins", "a1"), (0, ""))
+        self.assertEqual(self.run_project(*members, "remove", "editors", "a1"), (0, ""))
+
+    def test_an_unknown_group_fails_the_command(self) -> None:
+        with self.assertLogs("ingots.puer.runner", "ERROR"):
+            code, _ = self.run_project(
+                "auth", "access", "members", "add", "guests", "a1"
+            )
+        self.assertEqual(code, 1)

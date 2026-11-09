@@ -2,10 +2,12 @@
 
 __all__ = (
     "AuthGrpcErrors",
+    "AuthGrpcGroupNotFoundPolicy",
     "AuthGrpcItemConflictPolicy",
     "AuthGrpcItemInvalidPolicy",
     "AuthGrpcItemNotFoundPolicy",
     "AuthGrpcPermissionsPolicy",
+    "AuthGrpcProfileNotFoundPolicy",
     "BaseAuthGrpcErrorPolicy",
     "BaseAuthGrpcItemPolicy",
 )
@@ -17,6 +19,8 @@ from ingot_grpcio.grpc.errors import BaseStaticGrpcErrorPolicy, GrpcErrors
 from ingots.defaults.operations import OperationPermissionsError
 from ingots.puer import Slot
 
+from ingot_auth.access.groups import AuthGroupError, AuthGroupNotFoundError
+from ingot_auth.profiles import AuthProfileError, AuthProfileNotFoundError
 from ingot_auth.registry import (
     AuthItemConflictError,
     AuthItemInvalidError,
@@ -58,6 +62,30 @@ class AuthGrpcItemNotFoundPolicy(BaseAuthGrpcItemPolicy):
     REASON = "ITEM_NOT_FOUND"
 
 
+class AuthGrpcGroupNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """No group has the name: tells it."""
+
+    EXCEPTION = AuthGroupNotFoundError
+    CODE = grpc.StatusCode.NOT_FOUND
+    REASON = "GROUP_NOT_FOUND"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"group": t.cast(AuthGroupError, error).name}
+
+
+class AuthGrpcProfileNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """No profile has the uid: tells it, to the administration it is for."""
+
+    EXCEPTION = AuthProfileNotFoundError
+    CODE = grpc.StatusCode.NOT_FOUND
+    REASON = "PROFILE_NOT_FOUND"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"uid": t.cast(AuthProfileError, error).uid}
+
+
 class AuthGrpcPermissionsPolicy(BaseAuthGrpcErrorPolicy):
     EXCEPTION = OperationPermissionsError
     CODE = grpc.StatusCode.PERMISSION_DENIED
@@ -70,4 +98,6 @@ class AuthGrpcErrors(GrpcErrors):
     auth_item_conflict = Slot(AuthGrpcItemConflictPolicy)
     auth_item_invalid = Slot(AuthGrpcItemInvalidPolicy)
     auth_item_not_found = Slot(AuthGrpcItemNotFoundPolicy)
+    auth_group_not_found = Slot(AuthGrpcGroupNotFoundPolicy)
+    auth_profile_not_found = Slot(AuthGrpcProfileNotFoundPolicy)
     auth_permissions = Slot(AuthGrpcPermissionsPolicy)
