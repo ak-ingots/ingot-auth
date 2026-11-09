@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package ingot_auth.access.members.v1;
+
+// The members of the groups: the users bound to them, by their uids.
+service Members {
+  // Requires PERMISSION_CAN_ADD; a member already stays one.
+  rpc AddMember(AddMemberRequest) returns (AddMemberResponse);
+  // Requires PERMISSION_CAN_REMOVE; one not a member is no error.
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+  // Requires PERMISSION_CAN_READ.
+  rpc ListMemberGroups(ListMemberGroupsRequest) returns (ListMemberGroupsResponse);
+}
+
+// The bits of the domain `auth.access.members` the RPCs require: an aid for a
+// client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_ADD = 1;
+  PERMISSION_CAN_REMOVE = 2;
+  PERMISSION_CAN_READ = 4;
+}
+
+// A user bound to a group.
+message Membership {
+  string group = 1;
+  string uid = 2;
+}
+
+message AddMemberRequest {
+  Membership membership = 1;
+}
+
+message AddMemberResponse {}
+
+message RemoveMemberRequest {
+  Membership membership = 1;
+}
+
+message RemoveMemberResponse {}
+
+message ListMembersRequest {
+  string group = 1;
+}
+
+message ListMembersResponse {
+  repeated string uids = 1;
+}
+
+message ListMemberGroupsRequest {
+  string uid = 1;
+}
+
+message ListMemberGroupsResponse {
+  repeated string groups = 1;
+}

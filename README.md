@@ -13,7 +13,8 @@ profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers; stored in memory or in MongoDB, and all of it
 over gRPC; the sign-up by pluggable methods in steps, a nickname and a
 password, and an email and a code sent to it, in memory so far; the policies of what a user types,
-bound to their presets.
+bound to their presets; the groups of the users, declared in the code, and
+their members, in memory so far, on the command line and over gRPC.
 
 ## For Consumers
 
@@ -102,7 +103,14 @@ class AppAccess(AuthAccess):
 
 The storage keeps the members of the groups only, added and removed by the
 operations of `auth.access.members`, a group no source has granting
-nothing.
+nothing. The command line runs them as the root, so the first
+administrator is made there; then an administrator does the rest over
+gRPC, the services `Groups` and `Members` of `AuthGrpcAccessBinding`:
+
+```console
+$ python -m app auth access groups list
+$ python -m app auth access members add admins 0f6c…
+```
 
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and

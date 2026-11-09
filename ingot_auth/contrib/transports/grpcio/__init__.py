@@ -1,8 +1,8 @@
 """
 The auth over gRPC, with the extra ``grpcio``, laid out by the subdomains of the
-auth, ``profiles``, ``sessions`` and ``metadata``: a service per registry, each
-in a binding of its own, so that a server serves the ones it should; a public
-server the metadata, an internal one the administration too::
+auth, ``profiles``, ``sessions``, ``access`` and ``metadata``: a service per
+registry, each in a binding of its own, so that a server serves the ones it
+should; a public server the metadata, an internal one the administration too::
 
     class AppGrpcServer(AuthGrpcMetadataBinding, DefaultGrpcServer):
         pass
@@ -16,10 +16,15 @@ is calling (``_get_caller()``).
 """
 
 __all__ = (
+    "AuthGrpcAccessBinding",
     "AuthGrpcAdminBinding",
     "AuthGrpcAttrsBinding",
     "AuthGrpcAttrsServicer",
     "AuthGrpcErrors",
+    "AuthGrpcGroupsBinding",
+    "AuthGrpcGroupsServicer",
+    "AuthGrpcMembersBinding",
+    "AuthGrpcMembersServicer",
     "AuthGrpcMetadataBinding",
     "AuthGrpcMetadataServicer",
     "AuthGrpcProfilesBinding",
@@ -33,6 +38,13 @@ __all__ = (
     "BaseAuthGrpcServicer",
 )
 
+from .access import (
+    AuthGrpcAccessBinding,
+    AuthGrpcGroupsBinding,
+    AuthGrpcGroupsServicer,
+    AuthGrpcMembersBinding,
+    AuthGrpcMembersServicer,
+)
 from .base import BaseAuthGrpcServicer
 from .errors import AuthGrpcErrors
 from .metadata import AuthGrpcMetadataBinding, AuthGrpcMetadataServicer
@@ -52,5 +64,7 @@ from .sessions import (
 )
 
 
-class AuthGrpcAdminBinding(AuthGrpcProfilesBinding, AuthGrpcSessionsBinding):
+class AuthGrpcAdminBinding(
+    AuthGrpcProfilesBinding, AuthGrpcSessionsBinding, AuthGrpcAccessBinding
+):
     pass

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ingot_auth.access.groups.v1;
+
+// The groups of the users, declared in the code of the server: read only.
+service Groups {
+  // Requires PERMISSION_CAN_READ.
+  rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse);
+}
+
+// The bits of the domain `auth.access.groups` the RPCs require: an aid for a
+// client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_READ = 1;
+}
+
+// A group: its name and what it grants, a mask by the domain of the
+// permissions.
+message Group {
+  string name = 1;
+  map<string, uint64> permissions = 2;
+}
+
+message ListGroupsRequest {}
+
+message ListGroupsResponse {
+  repeated Group groups = 1;
+}
