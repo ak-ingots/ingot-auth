@@ -1,0 +1,11 @@
+# The gRPC contract of the addon, linted by Buf (ADR 0013 of the ecosystem):
+# STANDARD but for the suffix of the services, which ADRs 0009 and 0011 leave
+# out. The version of Buf is the ecosystem's: see the Makefile.
+version: v2
+modules:
+  - path: ingot_auth/contrib/transports/grpcio/proto
+lint:
+  use:
+    - STANDARD
+  except:
+    - SERVICE_SUFFIX

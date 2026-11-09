@@ -30,6 +30,9 @@ jobs:
         with:
           fetch-depth: 0  # cl-check compares the branch with origin/main
       - uses: astral-sh/setup-uv@v10.3.2  # no floating major tags since v8
+      # the Buf of the ecosystem, for the contract linted by `make lint`
+      - uses: ak-ingots/ingots-libs/.github/actions/setup-buf@main
+        if: matrix.target == 'lint'
       - run: make ${{ matrix.target }}
 
   # The built wheel, once per supported interpreter (PYTHONS in the Makefile).

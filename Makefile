@@ -37,10 +37,18 @@ check: lint test coverage wheel-test doc cl-check  ## Every check: lint, test, c
 
 # docs/conf.py is checked too: mypy needs the doc group to see Sphinx.
 .PHONY: lint
-lint:  ## black --check, flake8, mypy --strict
+lint: proto-lint  ## black --check, flake8, mypy --strict, the contract by Buf
 	uv run black --check --diff $(SRC)
 	uv run flake8 $(SRC)
 	uv run --group doc mypy $(SRC)
+
+# The gRPC contract by buf.yaml. Buf is of the version the ecosystem pins:
+# `make check` of ingots-libs passes its own as BUF, its action setup-buf puts
+# it on the PATH in CI; alone, install that version yourself.
+BUF ?= buf
+.PHONY: proto-lint
+proto-lint:  ## The gRPC contract by Buf STANDARD (ADR 0013)
+	$(BUF) lint
 
 .PHONY: test
 test:  ## unittest on the working tree

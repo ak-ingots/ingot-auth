@@ -131,7 +131,11 @@ Set as environment variables with the prefix of the project
 ## Development
 
 Requires [uv](https://docs.astral.sh/uv/) and `make`; uv fetches the
-interpreters it needs.
+interpreters it needs. `make lint` lints the gRPC contract by
+[Buf](https://buf.build/docs/cli/), of the version the ecosystem pins in
+[ingots-libs](https://github.com/ak-ingots/ingots-libs/blob/main/.github/actions/setup-buf/version):
+its `make check` passes its own, alone install that version, or give its
+path as `BUF`.
 
 ```sh
 make                 # the target list
