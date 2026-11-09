@@ -39,9 +39,10 @@ implementations are in `contrib/` (`contrib/storages/<backend>/`,
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
 `contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
-ADRs 0009 and 0011: a file per service, its path mirroring its package,
-`ingot_auth/profiles/tags/v1/tags.proto` for `ingot_auth.profiles.tags.v1`; `make
-proto` generates the code, committed, and makes its imports relative. A set of
+ADRs 0009, 0011 and 0013: a file per service, its path mirroring its package,
+`ingot_auth/profiles/tags/v1/tags.proto` for `ingot_auth.profiles.tags.v1`, an
+RPC a verb then its subject, `ListTags(ListTagsRequest)`, as `buf.yaml` lints
+it; `make proto` generates the code, committed, and makes its imports relative. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
@@ -60,7 +61,7 @@ provides the environments and interpreters.
 
 ```bash
 make check        # what CI runs: lint, test, coverage, wheel-test, doc, cl-check
-make lint         # black --check, flake8, mypy --strict
+make lint         # black --check, flake8, mypy --strict, buf lint (BUF=<path>)
 make test         # unittest on the working tree
 make coverage     # the same under coverage, with MongoDB; fails below 99%
 make integration  # the storage in MongoDB against docker-compose.yml, a replica set
