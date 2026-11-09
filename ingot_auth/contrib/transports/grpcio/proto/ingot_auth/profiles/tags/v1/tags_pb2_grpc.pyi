@@ -33,13 +33,13 @@ class TagsStub:
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> TagsAsyncStub: ...
-    Create: _grpc.UnaryUnaryMultiCallable[_tags_pb2.CreateTagRequest, _tags_pb2.CreateTagResponse]
+    CreateTag: _grpc.UnaryUnaryMultiCallable[_tags_pb2.CreateTagRequest, _tags_pb2.CreateTagResponse]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _grpc.UnaryUnaryMultiCallable[_tags_pb2.ListTagsRequest, _tags_pb2.ListTagsResponse]
+    ListTags: _grpc.UnaryUnaryMultiCallable[_tags_pb2.ListTagsRequest, _tags_pb2.ListTagsResponse]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _grpc.UnaryUnaryMultiCallable[_tags_pb2.RenameTagRequest, _tags_pb2.RenameTagResponse]
+    RenameTag: _grpc.UnaryUnaryMultiCallable[_tags_pb2.RenameTagRequest, _tags_pb2.RenameTagResponse]
     """Requires PERMISSION_CAN_UPDATE."""
-    Delete: _grpc.UnaryUnaryMultiCallable[_tags_pb2.DeleteTagRequest, _tags_pb2.DeleteTagResponse]
+    DeleteTag: _grpc.UnaryUnaryMultiCallable[_tags_pb2.DeleteTagRequest, _tags_pb2.DeleteTagResponse]
     """Requires PERMISSION_CAN_DELETE."""
 
 @_typing.type_check_only
@@ -47,20 +47,20 @@ class TagsAsyncStub(TagsStub):
     """The tags of the profiles, as their administrator manages them."""
 
     def __init__(self, channel: _aio.Channel) -> None: ...
-    Create: _aio.UnaryUnaryMultiCallable[_tags_pb2.CreateTagRequest, _tags_pb2.CreateTagResponse]  # type: ignore[assignment]
+    CreateTag: _aio.UnaryUnaryMultiCallable[_tags_pb2.CreateTagRequest, _tags_pb2.CreateTagResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _aio.UnaryUnaryMultiCallable[_tags_pb2.ListTagsRequest, _tags_pb2.ListTagsResponse]  # type: ignore[assignment]
+    ListTags: _aio.UnaryUnaryMultiCallable[_tags_pb2.ListTagsRequest, _tags_pb2.ListTagsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _aio.UnaryUnaryMultiCallable[_tags_pb2.RenameTagRequest, _tags_pb2.RenameTagResponse]  # type: ignore[assignment]
+    RenameTag: _aio.UnaryUnaryMultiCallable[_tags_pb2.RenameTagRequest, _tags_pb2.RenameTagResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_UPDATE."""
-    Delete: _aio.UnaryUnaryMultiCallable[_tags_pb2.DeleteTagRequest, _tags_pb2.DeleteTagResponse]  # type: ignore[assignment]
+    DeleteTag: _aio.UnaryUnaryMultiCallable[_tags_pb2.DeleteTagRequest, _tags_pb2.DeleteTagResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_DELETE."""
 
 class TagsServicer(metaclass=_abc_1.ABCMeta):
     """The tags of the profiles, as their administrator manages them."""
 
     @_abc_1.abstractmethod
-    def Create(
+    def CreateTag(
         self,
         request: _tags_pb2.CreateTagRequest,
         context: _ServicerContext,
@@ -68,7 +68,7 @@ class TagsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_CREATE."""
 
     @_abc_1.abstractmethod
-    def List(
+    def ListTags(
         self,
         request: _tags_pb2.ListTagsRequest,
         context: _ServicerContext,
@@ -76,7 +76,7 @@ class TagsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_READ."""
 
     @_abc_1.abstractmethod
-    def Rename(
+    def RenameTag(
         self,
         request: _tags_pb2.RenameTagRequest,
         context: _ServicerContext,
@@ -84,7 +84,7 @@ class TagsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_UPDATE."""
 
     @_abc_1.abstractmethod
-    def Delete(
+    def DeleteTag(
         self,
         request: _tags_pb2.DeleteTagRequest,
         context: _ServicerContext,

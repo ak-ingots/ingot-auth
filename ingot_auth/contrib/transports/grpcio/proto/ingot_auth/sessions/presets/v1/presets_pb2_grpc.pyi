@@ -35,17 +35,17 @@ class PresetsStub:
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> PresetsAsyncStub: ...
-    Create: _grpc.UnaryUnaryMultiCallable[_presets_pb2.CreatePresetRequest, _presets_pb2.CreatePresetResponse]
+    CreatePreset: _grpc.UnaryUnaryMultiCallable[_presets_pb2.CreatePresetRequest, _presets_pb2.CreatePresetResponse]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _grpc.UnaryUnaryMultiCallable[_presets_pb2.ListPresetsRequest, _presets_pb2.ListPresetsResponse]
+    ListPresets: _grpc.UnaryUnaryMultiCallable[_presets_pb2.ListPresetsRequest, _presets_pb2.ListPresetsResponse]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _grpc.UnaryUnaryMultiCallable[_presets_pb2.RenamePresetRequest, _presets_pb2.RenamePresetResponse]
+    RenamePreset: _grpc.UnaryUnaryMultiCallable[_presets_pb2.RenamePresetRequest, _presets_pb2.RenamePresetResponse]
     """Requires PERMISSION_CAN_RENAME."""
-    Delete: _grpc.UnaryUnaryMultiCallable[_presets_pb2.DeletePresetRequest, _presets_pb2.DeletePresetResponse]
+    DeletePreset: _grpc.UnaryUnaryMultiCallable[_presets_pb2.DeletePresetRequest, _presets_pb2.DeletePresetResponse]
     """Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it."""
-    Bind: _grpc.UnaryUnaryMultiCallable[_presets_pb2.BindAttrRequest, _presets_pb2.BindAttrResponse]
+    BindAttr: _grpc.UnaryUnaryMultiCallable[_presets_pb2.BindAttrRequest, _presets_pb2.BindAttrResponse]
     """Requires PERMISSION_CAN_BIND; binding again tells the requirement anew."""
-    Unbind: _grpc.UnaryUnaryMultiCallable[_presets_pb2.UnbindAttrRequest, _presets_pb2.UnbindAttrResponse]
+    UnbindAttr: _grpc.UnaryUnaryMultiCallable[_presets_pb2.UnbindAttrRequest, _presets_pb2.UnbindAttrResponse]
     """Requires PERMISSION_CAN_UNBIND."""
     ListBindings: _grpc.UnaryUnaryMultiCallable[_presets_pb2.ListBindingsRequest, _presets_pb2.ListBindingsResponse]
     """Requires PERMISSION_CAN_READ."""
@@ -57,17 +57,17 @@ class PresetsAsyncStub(PresetsStub):
     """
 
     def __init__(self, channel: _aio.Channel) -> None: ...
-    Create: _aio.UnaryUnaryMultiCallable[_presets_pb2.CreatePresetRequest, _presets_pb2.CreatePresetResponse]  # type: ignore[assignment]
+    CreatePreset: _aio.UnaryUnaryMultiCallable[_presets_pb2.CreatePresetRequest, _presets_pb2.CreatePresetResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _aio.UnaryUnaryMultiCallable[_presets_pb2.ListPresetsRequest, _presets_pb2.ListPresetsResponse]  # type: ignore[assignment]
+    ListPresets: _aio.UnaryUnaryMultiCallable[_presets_pb2.ListPresetsRequest, _presets_pb2.ListPresetsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _aio.UnaryUnaryMultiCallable[_presets_pb2.RenamePresetRequest, _presets_pb2.RenamePresetResponse]  # type: ignore[assignment]
+    RenamePreset: _aio.UnaryUnaryMultiCallable[_presets_pb2.RenamePresetRequest, _presets_pb2.RenamePresetResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_RENAME."""
-    Delete: _aio.UnaryUnaryMultiCallable[_presets_pb2.DeletePresetRequest, _presets_pb2.DeletePresetResponse]  # type: ignore[assignment]
+    DeletePreset: _aio.UnaryUnaryMultiCallable[_presets_pb2.DeletePresetRequest, _presets_pb2.DeletePresetResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it."""
-    Bind: _aio.UnaryUnaryMultiCallable[_presets_pb2.BindAttrRequest, _presets_pb2.BindAttrResponse]  # type: ignore[assignment]
+    BindAttr: _aio.UnaryUnaryMultiCallable[_presets_pb2.BindAttrRequest, _presets_pb2.BindAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_BIND; binding again tells the requirement anew."""
-    Unbind: _aio.UnaryUnaryMultiCallable[_presets_pb2.UnbindAttrRequest, _presets_pb2.UnbindAttrResponse]  # type: ignore[assignment]
+    UnbindAttr: _aio.UnaryUnaryMultiCallable[_presets_pb2.UnbindAttrRequest, _presets_pb2.UnbindAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_UNBIND."""
     ListBindings: _aio.UnaryUnaryMultiCallable[_presets_pb2.ListBindingsRequest, _presets_pb2.ListBindingsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
@@ -78,7 +78,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
     """
 
     @_abc_1.abstractmethod
-    def Create(
+    def CreatePreset(
         self,
         request: _presets_pb2.CreatePresetRequest,
         context: _ServicerContext,
@@ -86,7 +86,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_CREATE."""
 
     @_abc_1.abstractmethod
-    def List(
+    def ListPresets(
         self,
         request: _presets_pb2.ListPresetsRequest,
         context: _ServicerContext,
@@ -94,7 +94,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_READ."""
 
     @_abc_1.abstractmethod
-    def Rename(
+    def RenamePreset(
         self,
         request: _presets_pb2.RenamePresetRequest,
         context: _ServicerContext,
@@ -102,7 +102,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_RENAME."""
 
     @_abc_1.abstractmethod
-    def Delete(
+    def DeletePreset(
         self,
         request: _presets_pb2.DeletePresetRequest,
         context: _ServicerContext,
@@ -110,7 +110,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it."""
 
     @_abc_1.abstractmethod
-    def Bind(
+    def BindAttr(
         self,
         request: _presets_pb2.BindAttrRequest,
         context: _ServicerContext,
@@ -118,7 +118,7 @@ class PresetsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_BIND; binding again tells the requirement anew."""
 
     @_abc_1.abstractmethod
-    def Unbind(
+    def UnbindAttr(
         self,
         request: _presets_pb2.UnbindAttrRequest,
         context: _ServicerContext,

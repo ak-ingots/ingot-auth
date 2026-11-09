@@ -40,7 +40,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
     """
 
     @t.override
-    async def Create(
+    async def CreateAttr(
         self, request: attrs_pb2.CreateAttrRequest, context: Context
     ) -> attrs_pb2.CreateAttrResponse:
         message = request.attr
@@ -55,7 +55,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
         return attrs_pb2.CreateAttrResponse(attr=build_session_attr_message(created))
 
     @t.override
-    async def List(
+    async def ListAttrs(
         self, request: attrs_pb2.ListAttrsRequest, context: Context
     ) -> attrs_pb2.ListAttrsResponse:
         factory = self.project.auth.sessions.attrs.op_list
@@ -65,7 +65,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
         )
 
     @t.override
-    async def Rename(
+    async def RenameAttr(
         self, request: attrs_pb2.RenameAttrRequest, context: Context
     ) -> attrs_pb2.RenameAttrResponse:
         parameters = AuthRenameItemParameters(id=request.id, name=request.name)
@@ -74,7 +74,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
         return attrs_pb2.RenameAttrResponse(attr=build_session_attr_message(renamed))
 
     @t.override
-    async def Delete(
+    async def DeleteAttr(
         self, request: attrs_pb2.DeleteAttrRequest, context: Context
     ) -> attrs_pb2.DeleteAttrResponse:
         parameters = AuthDeleteItemParameters(id=request.id)

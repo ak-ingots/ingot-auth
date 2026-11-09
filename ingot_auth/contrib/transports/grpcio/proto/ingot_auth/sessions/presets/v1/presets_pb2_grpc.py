@@ -36,33 +36,33 @@ class PresetsStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.Create = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/Create',
+        self.CreatePreset = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/CreatePreset',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetResponse.FromString,
                 _registered_method=True)
-        self.List = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/List',
+        self.ListPresets = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/ListPresets',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsResponse.FromString,
                 _registered_method=True)
-        self.Rename = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/Rename',
+        self.RenamePreset = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/RenamePreset',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetResponse.FromString,
                 _registered_method=True)
-        self.Delete = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/Delete',
+        self.DeletePreset = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/DeletePreset',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetResponse.FromString,
                 _registered_method=True)
-        self.Bind = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/Bind',
+        self.BindAttr = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/BindAttr',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrResponse.FromString,
                 _registered_method=True)
-        self.Unbind = channel.unary_unary(
-                '/ingot_auth.sessions.presets.v1.Presets/Unbind',
+        self.UnbindAttr = channel.unary_unary(
+                '/ingot_auth.sessions.presets.v1.Presets/UnbindAttr',
                 request_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrResponse.FromString,
                 _registered_method=True)
@@ -78,42 +78,42 @@ class PresetsServicer:
     manages them.
     """
 
-    def Create(self, request, context):
+    def CreatePreset(self, request, context):
         """Requires PERMISSION_CAN_CREATE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def List(self, request, context):
+    def ListPresets(self, request, context):
         """Requires PERMISSION_CAN_READ.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Rename(self, request, context):
+    def RenamePreset(self, request, context):
         """Requires PERMISSION_CAN_RENAME.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Delete(self, request, context):
+    def DeletePreset(self, request, context):
         """Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Bind(self, request, context):
+    def BindAttr(self, request, context):
         """Requires PERMISSION_CAN_BIND; binding again tells the requirement anew.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Unbind(self, request, context):
+    def UnbindAttr(self, request, context):
         """Requires PERMISSION_CAN_UNBIND.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -130,33 +130,33 @@ class PresetsServicer:
 
 def add_PresetsServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Create': grpc.unary_unary_rpc_method_handler(
-                    servicer.Create,
+            'CreatePreset': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreatePreset,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetResponse.SerializeToString,
             ),
-            'List': grpc.unary_unary_rpc_method_handler(
-                    servicer.List,
+            'ListPresets': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListPresets,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsResponse.SerializeToString,
             ),
-            'Rename': grpc.unary_unary_rpc_method_handler(
-                    servicer.Rename,
+            'RenamePreset': grpc.unary_unary_rpc_method_handler(
+                    servicer.RenamePreset,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetResponse.SerializeToString,
             ),
-            'Delete': grpc.unary_unary_rpc_method_handler(
-                    servicer.Delete,
+            'DeletePreset': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePreset,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetResponse.SerializeToString,
             ),
-            'Bind': grpc.unary_unary_rpc_method_handler(
-                    servicer.Bind,
+            'BindAttr': grpc.unary_unary_rpc_method_handler(
+                    servicer.BindAttr,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrResponse.SerializeToString,
             ),
-            'Unbind': grpc.unary_unary_rpc_method_handler(
-                    servicer.Unbind,
+            'UnbindAttr': grpc.unary_unary_rpc_method_handler(
+                    servicer.UnbindAttr,
                     request_deserializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrResponse.SerializeToString,
             ),
@@ -179,7 +179,7 @@ class Presets:
     """
 
     @staticmethod
-    def Create(request,
+    def CreatePreset(request,
             target,
             options=(),
             channel_credentials=None,
@@ -192,7 +192,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/Create',
+            '/ingot_auth.sessions.presets.v1.Presets/CreatePreset',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.CreatePresetResponse.FromString,
             options,
@@ -206,7 +206,7 @@ class Presets:
             _registered_method=True)
 
     @staticmethod
-    def List(request,
+    def ListPresets(request,
             target,
             options=(),
             channel_credentials=None,
@@ -219,7 +219,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/List',
+            '/ingot_auth.sessions.presets.v1.Presets/ListPresets',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.ListPresetsResponse.FromString,
             options,
@@ -233,7 +233,7 @@ class Presets:
             _registered_method=True)
 
     @staticmethod
-    def Rename(request,
+    def RenamePreset(request,
             target,
             options=(),
             channel_credentials=None,
@@ -246,7 +246,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/Rename',
+            '/ingot_auth.sessions.presets.v1.Presets/RenamePreset',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.RenamePresetResponse.FromString,
             options,
@@ -260,7 +260,7 @@ class Presets:
             _registered_method=True)
 
     @staticmethod
-    def Delete(request,
+    def DeletePreset(request,
             target,
             options=(),
             channel_credentials=None,
@@ -273,7 +273,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/Delete',
+            '/ingot_auth.sessions.presets.v1.Presets/DeletePreset',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.DeletePresetResponse.FromString,
             options,
@@ -287,7 +287,7 @@ class Presets:
             _registered_method=True)
 
     @staticmethod
-    def Bind(request,
+    def BindAttr(request,
             target,
             options=(),
             channel_credentials=None,
@@ -300,7 +300,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/Bind',
+            '/ingot_auth.sessions.presets.v1.Presets/BindAttr',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.BindAttrResponse.FromString,
             options,
@@ -314,7 +314,7 @@ class Presets:
             _registered_method=True)
 
     @staticmethod
-    def Unbind(request,
+    def UnbindAttr(request,
             target,
             options=(),
             channel_credentials=None,
@@ -327,7 +327,7 @@ class Presets:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.sessions.presets.v1.Presets/Unbind',
+            '/ingot_auth.sessions.presets.v1.Presets/UnbindAttr',
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2.UnbindAttrResponse.FromString,
             options,

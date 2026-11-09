@@ -35,23 +35,23 @@ class TagsStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.Create = channel.unary_unary(
-                '/ingot_auth.profiles.tags.v1.Tags/Create',
+        self.CreateTag = channel.unary_unary(
+                '/ingot_auth.profiles.tags.v1.Tags/CreateTag',
                 request_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagResponse.FromString,
                 _registered_method=True)
-        self.List = channel.unary_unary(
-                '/ingot_auth.profiles.tags.v1.Tags/List',
+        self.ListTags = channel.unary_unary(
+                '/ingot_auth.profiles.tags.v1.Tags/ListTags',
                 request_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsResponse.FromString,
                 _registered_method=True)
-        self.Rename = channel.unary_unary(
-                '/ingot_auth.profiles.tags.v1.Tags/Rename',
+        self.RenameTag = channel.unary_unary(
+                '/ingot_auth.profiles.tags.v1.Tags/RenameTag',
                 request_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagResponse.FromString,
                 _registered_method=True)
-        self.Delete = channel.unary_unary(
-                '/ingot_auth.profiles.tags.v1.Tags/Delete',
+        self.DeleteTag = channel.unary_unary(
+                '/ingot_auth.profiles.tags.v1.Tags/DeleteTag',
                 request_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagResponse.FromString,
                 _registered_method=True)
@@ -61,28 +61,28 @@ class TagsServicer:
     """The tags of the profiles, as their administrator manages them.
     """
 
-    def Create(self, request, context):
+    def CreateTag(self, request, context):
         """Requires PERMISSION_CAN_CREATE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def List(self, request, context):
+    def ListTags(self, request, context):
         """Requires PERMISSION_CAN_READ.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Rename(self, request, context):
+    def RenameTag(self, request, context):
         """Requires PERMISSION_CAN_UPDATE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Delete(self, request, context):
+    def DeleteTag(self, request, context):
         """Requires PERMISSION_CAN_DELETE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -92,23 +92,23 @@ class TagsServicer:
 
 def add_TagsServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Create': grpc.unary_unary_rpc_method_handler(
-                    servicer.Create,
+            'CreateTag': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateTag,
                     request_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagResponse.SerializeToString,
             ),
-            'List': grpc.unary_unary_rpc_method_handler(
-                    servicer.List,
+            'ListTags': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListTags,
                     request_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsResponse.SerializeToString,
             ),
-            'Rename': grpc.unary_unary_rpc_method_handler(
-                    servicer.Rename,
+            'RenameTag': grpc.unary_unary_rpc_method_handler(
+                    servicer.RenameTag,
                     request_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagResponse.SerializeToString,
             ),
-            'Delete': grpc.unary_unary_rpc_method_handler(
-                    servicer.Delete,
+            'DeleteTag': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteTag,
                     request_deserializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagResponse.SerializeToString,
             ),
@@ -125,7 +125,7 @@ class Tags:
     """
 
     @staticmethod
-    def Create(request,
+    def CreateTag(request,
             target,
             options=(),
             channel_credentials=None,
@@ -138,7 +138,7 @@ class Tags:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.tags.v1.Tags/Create',
+            '/ingot_auth.profiles.tags.v1.Tags/CreateTag',
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.CreateTagResponse.FromString,
             options,
@@ -152,7 +152,7 @@ class Tags:
             _registered_method=True)
 
     @staticmethod
-    def List(request,
+    def ListTags(request,
             target,
             options=(),
             channel_credentials=None,
@@ -165,7 +165,7 @@ class Tags:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.tags.v1.Tags/List',
+            '/ingot_auth.profiles.tags.v1.Tags/ListTags',
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.ListTagsResponse.FromString,
             options,
@@ -179,7 +179,7 @@ class Tags:
             _registered_method=True)
 
     @staticmethod
-    def Rename(request,
+    def RenameTag(request,
             target,
             options=(),
             channel_credentials=None,
@@ -192,7 +192,7 @@ class Tags:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.tags.v1.Tags/Rename',
+            '/ingot_auth.profiles.tags.v1.Tags/RenameTag',
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.RenameTagResponse.FromString,
             options,
@@ -206,7 +206,7 @@ class Tags:
             _registered_method=True)
 
     @staticmethod
-    def Delete(request,
+    def DeleteTag(request,
             target,
             options=(),
             channel_credentials=None,
@@ -219,7 +219,7 @@ class Tags:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.tags.v1.Tags/Delete',
+            '/ingot_auth.profiles.tags.v1.Tags/DeleteTag',
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2.DeleteTagResponse.FromString,
             options,

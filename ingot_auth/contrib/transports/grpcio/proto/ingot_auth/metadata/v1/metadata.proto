@@ -7,7 +7,7 @@ package ingot_auth.metadata.v1;
 // default.
 service Metadata {
   // Requires PERMISSION_CAN_READ.
-  rpc Get(GetMetadataRequest) returns (GetMetadataResponse);
+  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
 }
 
 // The bits of the domain `auth.metadata` the RPCs require: an aid for a client

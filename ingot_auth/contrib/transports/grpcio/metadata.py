@@ -38,7 +38,7 @@ class AuthGrpcMetadataServicer(
     """
 
     @t.override
-    async def Get(
+    async def GetMetadata(
         self, request: metadata_pb2.GetMetadataRequest, context: Context
     ) -> metadata_pb2.GetMetadataResponse:
         metadata = await self.run_operation(

@@ -37,8 +37,8 @@ class MetadataStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.Get = channel.unary_unary(
-                '/ingot_auth.metadata.v1.Metadata/Get',
+        self.GetMetadata = channel.unary_unary(
+                '/ingot_auth.metadata.v1.Metadata/GetMetadata',
                 request_serializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.FromString,
                 _registered_method=True)
@@ -50,7 +50,7 @@ class MetadataServicer:
     default.
     """
 
-    def Get(self, request, context):
+    def GetMetadata(self, request, context):
         """Requires PERMISSION_CAN_READ.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -60,8 +60,8 @@ class MetadataServicer:
 
 def add_MetadataServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Get': grpc.unary_unary_rpc_method_handler(
-                    servicer.Get,
+            'GetMetadata': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMetadata,
                     request_deserializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.FromString,
                     response_serializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.SerializeToString,
             ),
@@ -80,7 +80,7 @@ class Metadata:
     """
 
     @staticmethod
-    def Get(request,
+    def GetMetadata(request,
             target,
             options=(),
             channel_credentials=None,
@@ -93,7 +93,7 @@ class Metadata:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.metadata.v1.Metadata/Get',
+            '/ingot_auth.metadata.v1.Metadata/GetMetadata',
             ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.SerializeToString,
             ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.FromString,
             options,

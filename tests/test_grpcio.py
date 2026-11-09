@@ -305,7 +305,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_metadata_is_public_by_default(self) -> None:
         client = await self.connect(TstAnonymousProject)
-        reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
+        reply = await client.auth_metadata.GetMetadata(
+            metadata_pb2.GetMetadataRequest()
+        )
         self.assertEqual(
             reply,
             metadata_pb2.GetMetadataResponse(
@@ -316,12 +318,14 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_a_servicer_may_close_the_metadata(self) -> None:
         client = await self.connect(TstClosedProject)
         with self.assertRaises(GrpcError) as error:
-            await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
+            await client.auth_metadata.GetMetadata(metadata_pb2.GetMetadataRequest())
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
 
     async def test_the_metadata_gives_the_methods_with_their_flows(self) -> None:
         client = await self.connect(TstMethodsProject)
-        reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
+        reply = await client.auth_metadata.GetMetadata(
+            metadata_pb2.GetMetadataRequest()
+        )
         self.assertEqual(
             list(reply.methods),
             [
@@ -332,12 +336,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_metadata_gives_the_registries(self) -> None:
         client = await self.connect()
-        await client.auth_profiles_tags.Create(
+        await client.auth_profiles_tags.CreateTag(
             profile_tags_pb2.CreateTagRequest(
                 tag=profile_tags_pb2.Tag(id=1, name="beta")
             )
         )
-        await client.auth_profiles_attrs.Create(
+        await client.auth_profiles_attrs.CreateAttr(
             profile_attrs_pb2.CreateAttrRequest(
                 attr=profile_attrs_pb2.Attr(
                     id=7, name="title/en", type=profile_attrs_pb2.ATTR_TYPE_STR
@@ -348,7 +352,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (1, "device", session_attrs_pb2.ATTR_SOURCE_CLIENT),
             (2, "ip", session_attrs_pb2.ATTR_SOURCE_TRANSPORT),
         ):
-            await client.auth_sessions_attrs.Create(
+            await client.auth_sessions_attrs.CreateAttr(
                 session_attrs_pb2.CreateAttrRequest(
                     attr=session_attrs_pb2.Attr(
                         id=attr_id,
@@ -359,20 +363,22 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 )
             )
         presets = client.auth_sessions_presets
-        await presets.Create(
+        await presets.CreatePreset(
             presets_pb2.CreatePresetRequest(
                 preset=presets_pb2.Preset(id=1, name="sign_in")
             )
         )
         for attr_id in (1, 2):
-            await presets.Bind(
+            await presets.BindAttr(
                 presets_pb2.BindAttrRequest(
                     binding=presets_pb2.Binding(
                         preset_id=1, attr_id=attr_id, required=True
                     )
                 )
             )
-        reply = await client.auth_metadata.Get(metadata_pb2.GetMetadataRequest())
+        reply = await client.auth_metadata.GetMetadata(
+            metadata_pb2.GetMetadataRequest()
+        )
         self.assertEqual(
             reply.profile,
             metadata_pb2.Profile(
@@ -404,22 +410,23 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         tags = (await self.connect()).auth_profiles_tags
         beta = profile_tags_pb2.Tag(id=1, name="beta")
         self.assertEqual(
-            (await tags.Create(profile_tags_pb2.CreateTagRequest(tag=beta))).tag, beta
+            (await tags.CreateTag(profile_tags_pb2.CreateTagRequest(tag=beta))).tag,
+            beta,
         )
         preview = profile_tags_pb2.Tag(id=1, name="preview")
         self.assertEqual(
             (
-                await tags.Rename(
+                await tags.RenameTag(
                     profile_tags_pb2.RenameTagRequest(id=1, name="preview")
                 )
             ).tag,
             preview,
         )
-        reply = await tags.List(profile_tags_pb2.ListTagsRequest())
+        reply = await tags.ListTags(profile_tags_pb2.ListTagsRequest())
         self.assertEqual(list(reply.tags), [preview])
-        await tags.Delete(profile_tags_pb2.DeleteTagRequest(id=1))
+        await tags.DeleteTag(profile_tags_pb2.DeleteTagRequest(id=1))
         self.assertEqual(
-            len((await tags.List(profile_tags_pb2.ListTagsRequest())).tags), 0
+            len((await tags.ListTags(profile_tags_pb2.ListTagsRequest())).tags), 0
         )
 
     async def test_the_groups_are_listed_with_their_grants(self) -> None:
@@ -487,7 +494,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             id=1, name="phone", type=profile_attrs_pb2.ATTR_TYPE_STR
         )
         self.assertEqual(
-            (await attrs.Create(profile_attrs_pb2.CreateAttrRequest(attr=attr))).attr,
+            (
+                await attrs.CreateAttr(profile_attrs_pb2.CreateAttrRequest(attr=attr))
+            ).attr,
             attr,
         )
         renamed = profile_attrs_pb2.Attr(
@@ -495,17 +504,17 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(
             (
-                await attrs.Rename(
+                await attrs.RenameAttr(
                     profile_attrs_pb2.RenameAttrRequest(id=1, name="mobile")
                 )
             ).attr,
             renamed,
         )
-        reply = await attrs.List(profile_attrs_pb2.ListAttrsRequest())
+        reply = await attrs.ListAttrs(profile_attrs_pb2.ListAttrsRequest())
         self.assertEqual(list(reply.attrs), [renamed])
-        await attrs.Delete(profile_attrs_pb2.DeleteAttrRequest(id=1))
+        await attrs.DeleteAttr(profile_attrs_pb2.DeleteAttrRequest(id=1))
         self.assertEqual(
-            len((await attrs.List(profile_attrs_pb2.ListAttrsRequest())).attrs), 0
+            len((await attrs.ListAttrs(profile_attrs_pb2.ListAttrsRequest())).attrs), 0
         )
 
     async def test_the_session_attrs_are_managed(self) -> None:
@@ -516,26 +525,26 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             type=session_attrs_pb2.ATTR_TYPE_STR,
             source=session_attrs_pb2.ATTR_SOURCE_TRANSPORT,
         )
-        created = await session_attrs.Create(
+        created = await session_attrs.CreateAttr(
             session_attrs_pb2.CreateAttrRequest(attr=ip)
         )
         self.assertEqual(created.attr, ip)
         renamed = session_attrs_pb2.Attr()
         renamed.CopyFrom(ip)
         renamed.name = "peer/ip"
-        reply = await session_attrs.Rename(
+        reply = await session_attrs.RenameAttr(
             session_attrs_pb2.RenameAttrRequest(id=1, name="peer/ip")
         )
         self.assertEqual(reply.attr, renamed)
-        listed = await session_attrs.List(session_attrs_pb2.ListAttrsRequest())
+        listed = await session_attrs.ListAttrs(session_attrs_pb2.ListAttrsRequest())
         self.assertEqual(list(listed.attrs), [renamed])
-        await session_attrs.Delete(session_attrs_pb2.DeleteAttrRequest(id=1))
-        listed = await session_attrs.List(session_attrs_pb2.ListAttrsRequest())
+        await session_attrs.DeleteAttr(session_attrs_pb2.DeleteAttrRequest(id=1))
+        listed = await session_attrs.ListAttrs(session_attrs_pb2.ListAttrsRequest())
         self.assertEqual(len(listed.attrs), 0)
 
     async def test_the_session_presets_are_managed(self) -> None:
         client = await self.connect()
-        await client.auth_sessions_attrs.Create(
+        await client.auth_sessions_attrs.CreateAttr(
             session_attrs_pb2.CreateAttrRequest(
                 attr=session_attrs_pb2.Attr(
                     id=1,
@@ -547,33 +556,37 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
         presets = client.auth_sessions_presets
         preset = presets_pb2.Preset(id=1, name="sign_in")
-        created = await presets.Create(presets_pb2.CreatePresetRequest(preset=preset))
+        created = await presets.CreatePreset(
+            presets_pb2.CreatePresetRequest(preset=preset)
+        )
         self.assertEqual(created.preset, preset)
-        renamed = await presets.Rename(
+        renamed = await presets.RenamePreset(
             presets_pb2.RenamePresetRequest(id=1, name="sign_up")
         )
         self.assertEqual(renamed.preset, presets_pb2.Preset(id=1, name="sign_up"))
-        listed = await presets.List(presets_pb2.ListPresetsRequest())
+        listed = await presets.ListPresets(presets_pb2.ListPresetsRequest())
         self.assertEqual(list(listed.presets), [renamed.preset])
         binding = presets_pb2.Binding(preset_id=1, attr_id=1, required=True)
-        bound = await presets.Bind(presets_pb2.BindAttrRequest(binding=binding))
+        bound = await presets.BindAttr(presets_pb2.BindAttrRequest(binding=binding))
         self.assertEqual(bound.binding, binding)
         bindings = await presets.ListBindings(presets_pb2.ListBindingsRequest())
         self.assertEqual(list(bindings.bindings), [binding])
-        await presets.Unbind(presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=1))
+        await presets.UnbindAttr(presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=1))
         bindings = await presets.ListBindings(presets_pb2.ListBindingsRequest())
         self.assertEqual(len(bindings.bindings), 0)
-        await presets.Delete(presets_pb2.DeletePresetRequest(id=1))
-        listed = await presets.List(presets_pb2.ListPresetsRequest())
+        await presets.DeletePreset(presets_pb2.DeletePresetRequest(id=1))
+        listed = await presets.ListPresets(presets_pb2.ListPresetsRequest())
         self.assertEqual(len(listed.presets), 0)
 
     async def test_an_attr_not_bound_is_not_found(self) -> None:
         presets = (await self.connect()).auth_sessions_presets
-        await presets.Create(
+        await presets.CreatePreset(
             presets_pb2.CreatePresetRequest(preset=presets_pb2.Preset(id=1, name="a"))
         )
         with self.assertRaises(GrpcError) as error:
-            await presets.Unbind(presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=2))
+            await presets.UnbindAttr(
+                presets_pb2.UnbindAttrRequest(preset_id=1, attr_id=2)
+            )
         self.assertEqual(
             (error.exception.code, error.exception.metadata),
             (
@@ -605,7 +618,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 id=1, name="device", type=attr_type, source=source
             )
             with self.assertRaises(GrpcError) as error:
-                await session_attrs.Create(
+                await session_attrs.CreateAttr(
                     session_attrs_pb2.CreateAttrRequest(attr=session_attr)
                 )
             self.assertEqual(
@@ -659,7 +672,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_an_attr_needs_a_type(self) -> None:
         attrs = (await self.connect()).auth_profiles_attrs
         with self.assertRaises(GrpcError) as error:
-            await attrs.Create(
+            await attrs.CreateAttr(
                 profile_attrs_pb2.CreateAttrRequest(
                     attr=profile_attrs_pb2.Attr(
                         id=1, name="phone", type=profile_attrs_pb2.ATTR_TYPE_UNSPECIFIED
@@ -671,14 +684,14 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_errors_of_the_registries_have_their_statuses(self) -> None:
         tags = (await self.connect()).auth_profiles_tags
-        await tags.Create(
+        await tags.CreateTag(
             profile_tags_pb2.CreateTagRequest(
                 tag=profile_tags_pb2.Tag(id=1, name="beta")
             )
         )
         for call, code, reason, key in (
             (
-                tags.Create(
+                tags.CreateTag(
                     profile_tags_pb2.CreateTagRequest(
                         tag=profile_tags_pb2.Tag(id=1, name="staff")
                     )
@@ -688,7 +701,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 "1",
             ),
             (
-                tags.Create(
+                tags.CreateTag(
                     profile_tags_pb2.CreateTagRequest(
                         tag=profile_tags_pb2.Tag(id=2, name="Staff")
                     )
@@ -698,7 +711,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 "Staff",
             ),
             (
-                tags.Delete(profile_tags_pb2.DeleteTagRequest(id=3)),
+                tags.DeleteTag(profile_tags_pb2.DeleteTagRequest(id=3)),
                 grpc.StatusCode.NOT_FOUND,
                 "ITEM_NOT_FOUND",
                 "3",
@@ -719,14 +732,14 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_administration_refuses_who_it_cannot_tell(self) -> None:
         client = await self.connect(TstAnonymousProject)
         for call in (
-            client.auth_profiles_tags.List(profile_tags_pb2.ListTagsRequest()),
-            client.auth_profiles_tags.Create(
+            client.auth_profiles_tags.ListTags(profile_tags_pb2.ListTagsRequest()),
+            client.auth_profiles_tags.CreateTag(
                 profile_tags_pb2.CreateTagRequest(
                     tag=profile_tags_pb2.Tag(id=1, name="beta")
                 )
             ),
-            client.auth_profiles_attrs.List(profile_attrs_pb2.ListAttrsRequest()),
-            client.auth_sessions_attrs.List(session_attrs_pb2.ListAttrsRequest()),
+            client.auth_profiles_attrs.ListAttrs(profile_attrs_pb2.ListAttrsRequest()),
+            client.auth_sessions_attrs.ListAttrs(session_attrs_pb2.ListAttrsRequest()),
             client.auth_sessions_presets.ListBindings(
                 presets_pb2.ListBindingsRequest()
             ),
