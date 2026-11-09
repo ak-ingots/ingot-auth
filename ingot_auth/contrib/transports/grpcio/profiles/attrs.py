@@ -12,7 +12,7 @@ from ingot_auth.registry.operations import (
 )
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.profiles.attrs.v1 import attrs_pb2, attrs_pb2_grpc
+from ingot_auth.profiles.attrs.v1 import attrs_pb2, attrs_pb2_grpc
 
 ATTR_TYPES: t.Final = {
     AuthAttrType.BOOL: attrs_pb2.ATTR_TYPE_BOOL,

@@ -5,7 +5,7 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
-from . import groups_pb2 as _groups_pb2
+from ingot_auth.access.groups.v1 import groups_pb2 as _groups_pb2
 import abc as _abc_1
 import grpc as _grpc
 import sys

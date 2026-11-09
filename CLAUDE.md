@@ -38,11 +38,13 @@ implementations are in `contrib/` (`contrib/storages/<backend>/`,
 `contrib/transports/<addon>/`, `contrib/caches/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
-`contrib/transports/grpcio/` keeps its contract in `proto/`, named and shaped by
-ADRs 0009, 0011 and 0013: a file per service, its path mirroring its package,
-`ingot_auth/profiles/tags/v1/tags.proto` for `ingot_auth.profiles.tags.v1`, an
-RPC a verb then its subject, `ListTags(ListTagsRequest)`, as `buf.yaml` lints
-it; `make proto` generates the code, committed, and makes its imports relative. A set of
+The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013: a file per
+service at the path of its package, in the tree of the core next to the
+subdomain it serves, `ingot_auth/profiles/tags/v1/tags.proto` for
+`ingot_auth.profiles.tags.v1`, an RPC a verb then its subject,
+`ListTags(ListTagsRequest)`, as `buf.yaml` lints it; `make proto` generates
+the code next to it, committed, imported as `protoc` writes it, by
+`contrib/transports/grpcio/` alone: the core imports no `v1` module. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the

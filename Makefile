@@ -96,18 +96,13 @@ installed-test:
 	done
 
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
-# stubs of mypy-protobuf, committed next to them. The names of the contract are
-# what its consumers see, ingot_auth/<path>/v<N>/<service>.proto mirroring
-# their packages, not where this package holds them, so the imports of the
-# generated code, each of a file next to it, are made relative.
-PROTO := ingot_auth/contrib/transports/grpcio/proto
+# stubs of mypy-protobuf, committed next to them. A contract lies at the path of
+# its proto package, ingot_auth/<path>/v<N>/<service>.proto, so its code is
+# imported as protoc writes it (ADR 0011): no rewrite.
 .PHONY: proto
 proto:  ## Generate the code of the .proto files
-	cd $(PROTO) && uv run python -m grpc_tools.protoc -I . --python_out=. \
-		--grpc_python_out=. --mypy_out=. --mypy_grpc_out=. \
-		$$(find ingot_auth -name '*.proto')
-	find $(PROTO)/ingot_auth -name '*_pb2*.py*' -exec sed -i \
-		's/^from ingot_auth\.\([a-z0-9_]*\.\)*v[0-9]* import /from . import /' {} +
+	uv run python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. \
+		--mypy_out=. --mypy_grpc_out=. $$(find ingot_auth -name '*.proto')
 
 .PHONY: format
 format:  ## Format code with black

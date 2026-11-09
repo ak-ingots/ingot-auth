@@ -10,8 +10,8 @@ __all__ = (
 
 from ingot_grpcio.grpc.services import GrpcService
 
-from ..proto.ingot_auth.sessions.attrs.v1 import attrs_pb2_grpc
-from ..proto.ingot_auth.sessions.presets.v1 import presets_pb2_grpc
+from ingot_auth.sessions.attrs.v1 import attrs_pb2_grpc
+from ingot_auth.sessions.presets.v1 import presets_pb2_grpc
 from .attrs import AuthGrpcSessionAttrsServicer
 from .presets import AuthGrpcSessionPresetsServicer
 

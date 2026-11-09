@@ -10,8 +10,8 @@ __all__ = (
 
 from ingot_grpcio.grpc.services import GrpcService
 
-from ..proto.ingot_auth.profiles.attrs.v1 import attrs_pb2_grpc
-from ..proto.ingot_auth.profiles.tags.v1 import tags_pb2_grpc
+from ingot_auth.profiles.attrs.v1 import attrs_pb2_grpc
+from ingot_auth.profiles.tags.v1 import tags_pb2_grpc
 from .attrs import AuthGrpcAttrsServicer
 from .tags import AuthGrpcTagsServicer
 

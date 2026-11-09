@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import presets_pb2 as ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2
+from ingot_auth.sessions.presets.v1 import presets_pb2 as ingot__auth_dot_sessions_dot_presets_dot_v1_dot_presets__pb2
 
 GRPC_GENERATED_VERSION = '1.85.1'
 GRPC_VERSION = grpc.__version__

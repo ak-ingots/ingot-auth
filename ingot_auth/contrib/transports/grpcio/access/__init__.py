@@ -10,8 +10,8 @@ __all__ = (
 
 from ingot_grpcio.grpc.services import GrpcService
 
-from ..proto.ingot_auth.access.groups.v1 import groups_pb2_grpc
-from ..proto.ingot_auth.access.members.v1 import members_pb2_grpc
+from ingot_auth.access.groups.v1 import groups_pb2_grpc
+from ingot_auth.access.members.v1 import members_pb2_grpc
 from .groups import AuthGrpcGroupsServicer
 from .members import AuthGrpcMembersServicer
 
