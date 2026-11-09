@@ -77,6 +77,33 @@ class AppConfigs(AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs):
     AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)  # by invitation only
 ```
 
+A signed-in user has what its groups grant. The groups are declared in
+the code, slots of the groups of the access, each granting by its hook;
+the addons grant to a group as the application does, which declares the
+class joining them when two of its bases hold the group:
+
+```python
+class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return super()._get_permissions() | Permissions(
+            AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE
+        )
+
+
+class AppGroups(ShopGroups, ArticlesGroups):
+    admins = Slot(AppAdminsGroup)  # joins what the two grant to it
+    editors = Slot(EditorsGroup)
+
+
+class AppAccess(AuthAccess):
+    groups = Slot(AppGroups)
+```
+
+The storage keeps the members of the groups only, added and removed by the
+operations of `auth.access.members`, a group no source has granting
+nothing.
+
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and
 MongoDB takes transactions on a replica set only: run a replica set, of one

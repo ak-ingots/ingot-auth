@@ -8,6 +8,7 @@ from ingot_auth.testing.contracts import (
     AuthAttemptsCacheContract,
     AuthAttrsStorageContract,
     AuthIdentitiesStorageContract,
+    AuthMembersStorageContract,
     AuthProfilesStorageContract,
     AuthSecretsStorageContract,
     AuthSessionAttrsStorageContract,
@@ -62,6 +63,7 @@ class MemoryProfilesStorageTestCase(
 class MemoryIdentitiesStorageTestCase(
     MemoryStorageMixin,
     AuthIdentitiesStorageContract,
+    AuthMembersStorageContract,
     unittest.IsolatedAsyncioTestCase,
 ):
     pass
@@ -78,6 +80,14 @@ class MemorySecretsStorageTestCase(
 class MemorySignUpRecordsStorageTestCase(
     MemoryStorageMixin,
     AuthSignUpRecordsStorageContract,
+    unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemoryMembersStorageTestCase(
+    MemoryStorageMixin,
+    AuthMembersStorageContract,
     unittest.IsolatedAsyncioTestCase,
 ):
     pass
