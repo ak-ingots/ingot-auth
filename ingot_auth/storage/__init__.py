@@ -1,6 +1,6 @@
 """
 The storage of the auth: a facade, a unit a subdomain, the profiles, the
-sessions, the sign-up, which a backend in ``ingot_auth.contrib.storages``
+sessions, the sign-up, the access, which a backend in ``ingot_auth.contrib.storages``
 implements, with the transactions of the backend over all of them.
 """
 
@@ -14,6 +14,7 @@ import typing as t
 
 from ingots.puer import Slot, Unit
 
+from ingot_auth.access import AuthAccessStorage
 from ingot_auth.profiles import AuthProfilesStorage
 from ingot_auth.sessions import AuthSessionsStorage
 from ingot_auth.sign_up import AuthSignUpStorage
@@ -52,6 +53,7 @@ class AuthStorage(Unit):
     profiles = Slot(AuthProfilesStorage)  # type: ignore[type-abstract]
     sessions = Slot(AuthSessionsStorage)
     sign_up = Slot(AuthSignUpStorage)
+    access = Slot(AuthAccessStorage)
 
     @t.final
     def get_transaction(self) -> object | None:

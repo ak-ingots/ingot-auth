@@ -14,6 +14,7 @@ __all__ = (
     "AuthAttemptsCacheContract",
     "AuthAttrsStorageContract",
     "AuthIdentitiesStorageContract",
+    "AuthMembersStorageContract",
     "AuthProfilesStorageContract",
     "AuthSecretsStorageContract",
     "AuthSessionAttrsStorageContract",
@@ -23,6 +24,7 @@ __all__ = (
     "AuthTagsStorageContract",
 )
 
+from .access import AuthMembersStorageContract
 from .cache import AuthAttemptsCacheContract
 from .profiles import (
     AuthIdentitiesStorageContract,
