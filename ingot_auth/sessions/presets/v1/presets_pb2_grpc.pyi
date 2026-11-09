@@ -5,7 +5,7 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
-from . import presets_pb2 as _presets_pb2
+from ingot_auth.sessions.presets.v1 import presets_pb2 as _presets_pb2
 import abc as _abc_1
 import grpc as _grpc
 import sys

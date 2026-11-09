@@ -12,7 +12,7 @@ from ingot_auth.sessions.presets import AuthSessionPreset, AuthSessionPresetBind
 from ingot_auth.sessions.presets.operations import AuthUnbindSessionAttrParameters
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.sessions.presets.v1 import presets_pb2, presets_pb2_grpc
+from ingot_auth.sessions.presets.v1 import presets_pb2, presets_pb2_grpc
 
 
 class AuthGrpcSessionPresetsServicer(

@@ -12,7 +12,7 @@ from ingot_auth.registry.operations import (
 from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.sessions.attrs.v1 import attrs_pb2, attrs_pb2_grpc
+from ingot_auth.sessions.attrs.v1 import attrs_pb2, attrs_pb2_grpc
 
 REGISTRY: t.Final = "sessions.attrs"
 ATTR_TYPES: t.Final = {

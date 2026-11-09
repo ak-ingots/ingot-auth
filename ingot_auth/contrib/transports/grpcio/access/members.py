@@ -7,7 +7,7 @@ import typing as t
 from ingot_auth.access.members import AuthMembership
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.access.members.v1 import members_pb2, members_pb2_grpc
+from ingot_auth.access.members.v1 import members_pb2, members_pb2_grpc
 
 
 class AuthGrpcMembersServicer(BaseAuthGrpcServicer, members_pb2_grpc.MembersServicer):

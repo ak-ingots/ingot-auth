@@ -7,7 +7,7 @@ import typing as t
 from ingot_auth.access.groups import AuthGroupInfo
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.access.groups.v1 import groups_pb2, groups_pb2_grpc
+from ingot_auth.access.groups.v1 import groups_pb2, groups_pb2_grpc
 
 
 class AuthGrpcGroupsServicer(BaseAuthGrpcServicer, groups_pb2_grpc.GroupsServicer):

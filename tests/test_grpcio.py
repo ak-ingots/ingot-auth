@@ -39,37 +39,37 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcSessionPresetsServicer,
     AuthGrpcTagsServicer,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.access.groups.v1 import (
+from ingot_auth.access.groups.v1 import (
     groups_pb2,
     groups_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.access.members.v1 import (
+from ingot_auth.access.members.v1 import (
     members_pb2,
     members_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.metadata.v1 import (
+from ingot_auth.metadata.v1 import (
     metadata_pb2,
     metadata_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profiles.attrs.v1 import (
+from ingot_auth.profiles.attrs.v1 import (
     attrs_pb2 as profile_attrs_pb2,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profiles.attrs.v1 import (
+from ingot_auth.profiles.attrs.v1 import (
     attrs_pb2_grpc as profile_attrs_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profiles.tags.v1 import (
+from ingot_auth.profiles.tags.v1 import (
     tags_pb2 as profile_tags_pb2,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.profiles.tags.v1 import (
+from ingot_auth.profiles.tags.v1 import (
     tags_pb2_grpc as profile_tags_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.sessions.attrs.v1 import (
+from ingot_auth.sessions.attrs.v1 import (
     attrs_pb2 as session_attrs_pb2,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.sessions.attrs.v1 import (
+from ingot_auth.sessions.attrs.v1 import (
     attrs_pb2_grpc as session_attrs_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.proto.ingot_auth.sessions.presets.v1 import (
+from ingot_auth.sessions.presets.v1 import (
     presets_pb2,
     presets_pb2_grpc,
 )

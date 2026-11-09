@@ -101,7 +101,7 @@ exclude = ["_pb2(_grpc)?\\.py$"]
 
 [[tool.mypy.overrides]]
 # the stubs mypy-protobuf generates override without @override
-module = ["ingot_auth.contrib.transports.grpcio.proto.*"]
+module = ["ingot_auth.*.v1.*"]
 disable_error_code = ["explicit-override"]
 
 [tool.towncrier]

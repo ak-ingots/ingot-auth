@@ -5,7 +5,7 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
-from . import attrs_pb2 as _attrs_pb2
+from ingot_auth.profiles.attrs.v1 import attrs_pb2 as _attrs_pb2
 import abc as _abc_1
 import grpc as _grpc
 import sys
@@ -27,7 +27,7 @@ GRPC_GENERATED_VERSION: str
 GRPC_VERSION: str
 
 class AttrsStub:
-    """The attributes of the sessions, as their administrator manages them."""
+    """The attributes of the profiles, as their administrator manages them."""
 
     @_typing.overload
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
@@ -38,13 +38,13 @@ class AttrsStub:
     ListAttrs: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]
     """Requires PERMISSION_CAN_READ."""
     RenameAttr: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]
-    """Requires PERMISSION_CAN_RENAME."""
+    """Requires PERMISSION_CAN_UPDATE."""
     DeleteAttr: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]
     """Requires PERMISSION_CAN_DELETE."""
 
 @_typing.type_check_only
 class AttrsAsyncStub(AttrsStub):
-    """The attributes of the sessions, as their administrator manages them."""
+    """The attributes of the profiles, as their administrator manages them."""
 
     def __init__(self, channel: _aio.Channel) -> None: ...
     CreateAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.CreateAttrRequest, _attrs_pb2.CreateAttrResponse]  # type: ignore[assignment]
@@ -52,12 +52,12 @@ class AttrsAsyncStub(AttrsStub):
     ListAttrs: _aio.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
     RenameAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]  # type: ignore[assignment]
-    """Requires PERMISSION_CAN_RENAME."""
+    """Requires PERMISSION_CAN_UPDATE."""
     DeleteAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_DELETE."""
 
 class AttrsServicer(metaclass=_abc_1.ABCMeta):
-    """The attributes of the sessions, as their administrator manages them."""
+    """The attributes of the profiles, as their administrator manages them."""
 
     @_abc_1.abstractmethod
     def CreateAttr(
@@ -81,7 +81,7 @@ class AttrsServicer(metaclass=_abc_1.ABCMeta):
         request: _attrs_pb2.RenameAttrRequest,
         context: _ServicerContext,
     ) -> _typing.Union[_attrs_pb2.RenameAttrResponse, _abc.Awaitable[_attrs_pb2.RenameAttrResponse]]:
-        """Requires PERMISSION_CAN_RENAME."""
+        """Requires PERMISSION_CAN_UPDATE."""
 
     @_abc_1.abstractmethod
     def DeleteAttr(

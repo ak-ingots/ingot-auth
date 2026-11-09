@@ -3,7 +3,9 @@
 # out. The version of Buf is the ecosystem's: see the Makefile.
 version: v2
 modules:
-  - path: ingot_auth/contrib/transports/grpcio/proto
+  - path: .
+    excludes:
+      - .venv
 lint:
   use:
     - STANDARD

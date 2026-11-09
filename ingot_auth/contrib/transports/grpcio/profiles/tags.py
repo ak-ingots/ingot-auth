@@ -11,7 +11,7 @@ from ingot_auth.registry.operations import (
 )
 
 from ..base import BaseAuthGrpcServicer, Context
-from ..proto.ingot_auth.profiles.tags.v1 import tags_pb2, tags_pb2_grpc
+from ingot_auth.profiles.tags.v1 import tags_pb2, tags_pb2_grpc
 
 
 class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):

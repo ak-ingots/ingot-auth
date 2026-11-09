@@ -17,7 +17,7 @@ from ingot_auth.metadata import (
 from ingot_auth.registry import AuthAttrType
 
 from .base import BaseAuthGrpcServicer, Context
-from .proto.ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc
+from ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc
 
 ATTR_TYPES: t.Final = {
     AuthAttrType.BOOL: metadata_pb2.ATTR_TYPE_BOOL,

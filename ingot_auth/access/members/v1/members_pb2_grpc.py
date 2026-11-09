@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import members_pb2 as ingot__auth_dot_access_dot_members_dot_v1_dot_members__pb2
+from ingot_auth.access.members.v1 import members_pb2 as ingot__auth_dot_access_dot_members_dot_v1_dot_members__pb2
 
 GRPC_GENERATED_VERSION = '1.85.1'
 GRPC_VERSION = grpc.__version__

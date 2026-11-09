@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import tags_pb2 as ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2
+from ingot_auth.profiles.tags.v1 import tags_pb2 as ingot__auth_dot_profiles_dot_tags_dot_v1_dot_tags__pb2
 
 GRPC_GENERATED_VERSION = '1.85.1'
 GRPC_VERSION = grpc.__version__

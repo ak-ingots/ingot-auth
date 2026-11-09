@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import groups_pb2 as ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2
+from ingot_auth.metadata.v1 import metadata_pb2 as ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2
 
 GRPC_GENERATED_VERSION = '1.85.1'
 GRPC_VERSION = grpc.__version__
@@ -18,15 +18,17 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in ingot_auth/access/groups/v1/groups_pb2_grpc.py depends on'
+        + ' but the generated code in ingot_auth/metadata/v1/metadata_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class GroupsStub:
-    """The groups of the users, declared in the code of the server: read only.
+class MetadataStub:
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     def __init__(self, channel):
@@ -35,18 +37,20 @@ class GroupsStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.ListGroups = channel.unary_unary(
-                '/ingot_auth.access.groups.v1.Groups/ListGroups',
-                request_serializer=ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsRequest.SerializeToString,
-                response_deserializer=ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsResponse.FromString,
+        self.GetMetadata = channel.unary_unary(
+                '/ingot_auth.metadata.v1.Metadata/GetMetadata',
+                request_serializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.SerializeToString,
+                response_deserializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.FromString,
                 _registered_method=True)
 
 
-class GroupsServicer:
-    """The groups of the users, declared in the code of the server: read only.
+class MetadataServicer:
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
-    def ListGroups(self, request, context):
+    def GetMetadata(self, request, context):
         """Requires PERMISSION_CAN_READ.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -54,27 +58,29 @@ class GroupsServicer:
         raise NotImplementedError('Method not implemented!')
 
 
-def add_GroupsServicer_to_server(servicer, server):
+def add_MetadataServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ListGroups': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListGroups,
-                    request_deserializer=ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsRequest.FromString,
-                    response_serializer=ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsResponse.SerializeToString,
+            'GetMetadata': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMetadata,
+                    request_deserializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.FromString,
+                    response_serializer=ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'ingot_auth.access.groups.v1.Groups', rpc_method_handlers)
+            'ingot_auth.metadata.v1.Metadata', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('ingot_auth.access.groups.v1.Groups', rpc_method_handlers)
+    server.add_registered_method_handlers('ingot_auth.metadata.v1.Metadata', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class Groups:
-    """The groups of the users, declared in the code of the server: read only.
+class Metadata:
+    """The registries and the methods as the consumers read them: a client asks
+    for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
+    default.
     """
 
     @staticmethod
-    def ListGroups(request,
+    def GetMetadata(request,
             target,
             options=(),
             channel_credentials=None,
@@ -87,9 +93,9 @@ class Groups:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.access.groups.v1.Groups/ListGroups',
-            ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsRequest.SerializeToString,
-            ingot__auth_dot_access_dot_groups_dot_v1_dot_groups__pb2.ListGroupsResponse.FromString,
+            '/ingot_auth.metadata.v1.Metadata/GetMetadata',
+            ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataRequest.SerializeToString,
+            ingot__auth_dot_metadata_dot_v1_dot_metadata__pb2.GetMetadataResponse.FromString,
             options,
             channel_credentials,
             insecure,
