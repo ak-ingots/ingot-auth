@@ -42,12 +42,23 @@ lint: proto-lint  ## black --check, flake8, mypy --strict, the contract by Buf
 	uv run flake8 $(SRC)
 	uv run --group doc mypy $(SRC)
 
-# The gRPC contract by buf.yaml. Buf is of the version the ecosystem pins:
-# `make check` of ingots-libs passes its own as BUF, its action setup-buf puts
-# it on the PATH in CI; alone, install that version yourself.
+# The gRPC contract by buf.yaml, by Buf of the version the ecosystem pins:
+# that of ingots-libs when this repository lies in its checkout, fetched there
+# on the first use; else the one on the PATH, where the action setup-buf of
+# ingots-libs puts it in CI. BUF=<path> gives another.
+META := $(abspath ..)
+BUF_VERSION_FILE := $(META)/.github/actions/setup-buf/version
+ifneq ($(wildcard $(BUF_VERSION_FILE)),)
+BUF ?= $(META)/.cache/buf/$(shell cat $(BUF_VERSION_FILE))/buf
+endif
 BUF ?= buf
 .PHONY: proto-lint
 proto-lint:  ## The gRPC contract by Buf STANDARD (ADR 0013)
+	@if [ "$(BUF)" != buf ] && [ ! -x "$(BUF)" ]; then $(MAKE) -C $(META) buf; fi
+	@command -v $(BUF) >/dev/null || { \
+		echo "no Buf: clone this repository inside ingots-libs, or put on the"; \
+		echo "PATH the version ingots-libs pins in"; \
+		echo ".github/actions/setup-buf/version, or give its path as BUF"; exit 1; }
 	$(BUF) lint
 
 .PHONY: test

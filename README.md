@@ -134,8 +134,9 @@ Requires [uv](https://docs.astral.sh/uv/) and `make`; uv fetches the
 interpreters it needs. `make lint` lints the gRPC contract by
 [Buf](https://buf.build/docs/cli/), of the version the ecosystem pins in
 [ingots-libs](https://github.com/ak-ingots/ingots-libs/blob/main/.github/actions/setup-buf/version):
-its `make check` passes its own, alone install that version, or give its
-path as `BUF`.
+cloned inside ingots-libs, as `make clone` there does, it takes that one,
+fetched on the first use; alone, install that version on the `PATH`, or give
+its path as `BUF`.
 
 ```sh
 make                 # the target list
