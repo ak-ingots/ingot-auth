@@ -5,13 +5,13 @@ package ingot_auth.profiles.tags.v1;
 // The tags of the profiles, as their administrator manages them.
 service Tags {
   // Requires PERMISSION_CAN_CREATE.
-  rpc Create(CreateTagRequest) returns (CreateTagResponse);
+  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse);
   // Requires PERMISSION_CAN_READ.
-  rpc List(ListTagsRequest) returns (ListTagsResponse);
+  rpc ListTags(ListTagsRequest) returns (ListTagsResponse);
   // Requires PERMISSION_CAN_UPDATE.
-  rpc Rename(RenameTagRequest) returns (RenameTagResponse);
+  rpc RenameTag(RenameTagRequest) returns (RenameTagResponse);
   // Requires PERMISSION_CAN_DELETE.
-  rpc Delete(DeleteTagRequest) returns (DeleteTagResponse);
+  rpc DeleteTag(DeleteTagRequest) returns (DeleteTagResponse);
 }
 
 // The bits of the domain `auth.profiles.tags` the RPCs require: an aid for a

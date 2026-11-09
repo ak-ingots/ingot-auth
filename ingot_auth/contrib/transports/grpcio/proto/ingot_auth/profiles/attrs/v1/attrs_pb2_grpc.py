@@ -35,23 +35,23 @@ class AttrsStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.Create = channel.unary_unary(
-                '/ingot_auth.profiles.attrs.v1.Attrs/Create',
+        self.CreateAttr = channel.unary_unary(
+                '/ingot_auth.profiles.attrs.v1.Attrs/CreateAttr',
                 request_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrResponse.FromString,
                 _registered_method=True)
-        self.List = channel.unary_unary(
-                '/ingot_auth.profiles.attrs.v1.Attrs/List',
+        self.ListAttrs = channel.unary_unary(
+                '/ingot_auth.profiles.attrs.v1.Attrs/ListAttrs',
                 request_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsResponse.FromString,
                 _registered_method=True)
-        self.Rename = channel.unary_unary(
-                '/ingot_auth.profiles.attrs.v1.Attrs/Rename',
+        self.RenameAttr = channel.unary_unary(
+                '/ingot_auth.profiles.attrs.v1.Attrs/RenameAttr',
                 request_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrResponse.FromString,
                 _registered_method=True)
-        self.Delete = channel.unary_unary(
-                '/ingot_auth.profiles.attrs.v1.Attrs/Delete',
+        self.DeleteAttr = channel.unary_unary(
+                '/ingot_auth.profiles.attrs.v1.Attrs/DeleteAttr',
                 request_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrResponse.FromString,
                 _registered_method=True)
@@ -61,28 +61,28 @@ class AttrsServicer:
     """The attributes of the profiles, as their administrator manages them.
     """
 
-    def Create(self, request, context):
+    def CreateAttr(self, request, context):
         """Requires PERMISSION_CAN_CREATE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def List(self, request, context):
+    def ListAttrs(self, request, context):
         """Requires PERMISSION_CAN_READ.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Rename(self, request, context):
+    def RenameAttr(self, request, context):
         """Requires PERMISSION_CAN_UPDATE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Delete(self, request, context):
+    def DeleteAttr(self, request, context):
         """Requires PERMISSION_CAN_DELETE.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -92,23 +92,23 @@ class AttrsServicer:
 
 def add_AttrsServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Create': grpc.unary_unary_rpc_method_handler(
-                    servicer.Create,
+            'CreateAttr': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateAttr,
                     request_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrResponse.SerializeToString,
             ),
-            'List': grpc.unary_unary_rpc_method_handler(
-                    servicer.List,
+            'ListAttrs': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListAttrs,
                     request_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsResponse.SerializeToString,
             ),
-            'Rename': grpc.unary_unary_rpc_method_handler(
-                    servicer.Rename,
+            'RenameAttr': grpc.unary_unary_rpc_method_handler(
+                    servicer.RenameAttr,
                     request_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrResponse.SerializeToString,
             ),
-            'Delete': grpc.unary_unary_rpc_method_handler(
-                    servicer.Delete,
+            'DeleteAttr': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteAttr,
                     request_deserializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrRequest.FromString,
                     response_serializer=ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrResponse.SerializeToString,
             ),
@@ -125,7 +125,7 @@ class Attrs:
     """
 
     @staticmethod
-    def Create(request,
+    def CreateAttr(request,
             target,
             options=(),
             channel_credentials=None,
@@ -138,7 +138,7 @@ class Attrs:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.attrs.v1.Attrs/Create',
+            '/ingot_auth.profiles.attrs.v1.Attrs/CreateAttr',
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.CreateAttrResponse.FromString,
             options,
@@ -152,7 +152,7 @@ class Attrs:
             _registered_method=True)
 
     @staticmethod
-    def List(request,
+    def ListAttrs(request,
             target,
             options=(),
             channel_credentials=None,
@@ -165,7 +165,7 @@ class Attrs:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.attrs.v1.Attrs/List',
+            '/ingot_auth.profiles.attrs.v1.Attrs/ListAttrs',
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.ListAttrsResponse.FromString,
             options,
@@ -179,7 +179,7 @@ class Attrs:
             _registered_method=True)
 
     @staticmethod
-    def Rename(request,
+    def RenameAttr(request,
             target,
             options=(),
             channel_credentials=None,
@@ -192,7 +192,7 @@ class Attrs:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.attrs.v1.Attrs/Rename',
+            '/ingot_auth.profiles.attrs.v1.Attrs/RenameAttr',
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.RenameAttrResponse.FromString,
             options,
@@ -206,7 +206,7 @@ class Attrs:
             _registered_method=True)
 
     @staticmethod
-    def Delete(request,
+    def DeleteAttr(request,
             target,
             options=(),
             channel_credentials=None,
@@ -219,7 +219,7 @@ class Attrs:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/ingot_auth.profiles.attrs.v1.Attrs/Delete',
+            '/ingot_auth.profiles.attrs.v1.Attrs/DeleteAttr',
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrRequest.SerializeToString,
             ingot__auth_dot_profiles_dot_attrs_dot_v1_dot_attrs__pb2.DeleteAttrResponse.FromString,
             options,

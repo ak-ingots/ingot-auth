@@ -25,7 +25,7 @@ class AuthGrpcSessionPresetsServicer(
     """
 
     @t.override
-    async def Create(
+    async def CreatePreset(
         self, request: presets_pb2.CreatePresetRequest, context: Context
     ) -> presets_pb2.CreatePresetResponse:
         preset = AuthSessionPreset(id=request.preset.id, name=request.preset.name)
@@ -34,7 +34,7 @@ class AuthGrpcSessionPresetsServicer(
         return presets_pb2.CreatePresetResponse(preset=build_preset_message(created))
 
     @t.override
-    async def List(
+    async def ListPresets(
         self, request: presets_pb2.ListPresetsRequest, context: Context
     ) -> presets_pb2.ListPresetsResponse:
         factory = self.project.auth.sessions.presets.op_list
@@ -44,7 +44,7 @@ class AuthGrpcSessionPresetsServicer(
         )
 
     @t.override
-    async def Rename(
+    async def RenamePreset(
         self, request: presets_pb2.RenamePresetRequest, context: Context
     ) -> presets_pb2.RenamePresetResponse:
         parameters = AuthRenameItemParameters(id=request.id, name=request.name)
@@ -53,7 +53,7 @@ class AuthGrpcSessionPresetsServicer(
         return presets_pb2.RenamePresetResponse(preset=build_preset_message(renamed))
 
     @t.override
-    async def Delete(
+    async def DeletePreset(
         self, request: presets_pb2.DeletePresetRequest, context: Context
     ) -> presets_pb2.DeletePresetResponse:
         parameters = AuthDeleteItemParameters(id=request.id)
@@ -62,7 +62,7 @@ class AuthGrpcSessionPresetsServicer(
         return presets_pb2.DeletePresetResponse()
 
     @t.override
-    async def Bind(
+    async def BindAttr(
         self, request: presets_pb2.BindAttrRequest, context: Context
     ) -> presets_pb2.BindAttrResponse:
         message = request.binding
@@ -76,7 +76,7 @@ class AuthGrpcSessionPresetsServicer(
         return presets_pb2.BindAttrResponse(binding=build_binding_message(bound))
 
     @t.override
-    async def Unbind(
+    async def UnbindAttr(
         self, request: presets_pb2.UnbindAttrRequest, context: Context
     ) -> presets_pb2.UnbindAttrResponse:
         parameters = AuthUnbindSessionAttrParameters(

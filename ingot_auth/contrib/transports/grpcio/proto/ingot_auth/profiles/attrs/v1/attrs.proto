@@ -5,13 +5,13 @@ package ingot_auth.profiles.attrs.v1;
 // The attributes of the profiles, as their administrator manages them.
 service Attrs {
   // Requires PERMISSION_CAN_CREATE.
-  rpc Create(CreateAttrRequest) returns (CreateAttrResponse);
+  rpc CreateAttr(CreateAttrRequest) returns (CreateAttrResponse);
   // Requires PERMISSION_CAN_READ.
-  rpc List(ListAttrsRequest) returns (ListAttrsResponse);
+  rpc ListAttrs(ListAttrsRequest) returns (ListAttrsResponse);
   // Requires PERMISSION_CAN_UPDATE.
-  rpc Rename(RenameAttrRequest) returns (RenameAttrResponse);
+  rpc RenameAttr(RenameAttrRequest) returns (RenameAttrResponse);
   // Requires PERMISSION_CAN_DELETE.
-  rpc Delete(DeleteAttrRequest) returns (DeleteAttrResponse);
+  rpc DeleteAttr(DeleteAttrRequest) returns (DeleteAttrResponse);
 }
 
 // The bits of the domain `auth.profiles.attrs` the RPCs require: an aid for a

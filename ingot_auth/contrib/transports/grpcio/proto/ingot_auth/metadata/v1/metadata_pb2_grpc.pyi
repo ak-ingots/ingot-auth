@@ -36,7 +36,7 @@ class MetadataStub:
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> MetadataAsyncStub: ...
-    Get: _grpc.UnaryUnaryMultiCallable[_metadata_pb2.GetMetadataRequest, _metadata_pb2.GetMetadataResponse]
+    GetMetadata: _grpc.UnaryUnaryMultiCallable[_metadata_pb2.GetMetadataRequest, _metadata_pb2.GetMetadataResponse]
     """Requires PERMISSION_CAN_READ."""
 
 @_typing.type_check_only
@@ -47,7 +47,7 @@ class MetadataAsyncStub(MetadataStub):
     """
 
     def __init__(self, channel: _aio.Channel) -> None: ...
-    Get: _aio.UnaryUnaryMultiCallable[_metadata_pb2.GetMetadataRequest, _metadata_pb2.GetMetadataResponse]  # type: ignore[assignment]
+    GetMetadata: _aio.UnaryUnaryMultiCallable[_metadata_pb2.GetMetadataRequest, _metadata_pb2.GetMetadataResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
 
 class MetadataServicer(metaclass=_abc_1.ABCMeta):
@@ -57,7 +57,7 @@ class MetadataServicer(metaclass=_abc_1.ABCMeta):
     """
 
     @_abc_1.abstractmethod
-    def Get(
+    def GetMetadata(
         self,
         request: _metadata_pb2.GetMetadataRequest,
         context: _ServicerContext,

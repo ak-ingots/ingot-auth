@@ -22,7 +22,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
     """
 
     @t.override
-    async def Create(
+    async def CreateTag(
         self, request: tags_pb2.CreateTagRequest, context: Context
     ) -> tags_pb2.CreateTagResponse:
         tag = AuthTag(id=request.tag.id, name=request.tag.name)
@@ -31,7 +31,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
         return tags_pb2.CreateTagResponse(tag=build_tag_message(created))
 
     @t.override
-    async def List(
+    async def ListTags(
         self, request: tags_pb2.ListTagsRequest, context: Context
     ) -> tags_pb2.ListTagsResponse:
         tags = await self.run_operation(
@@ -40,7 +40,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
         return tags_pb2.ListTagsResponse(tags=map(build_tag_message, tags))
 
     @t.override
-    async def Rename(
+    async def RenameTag(
         self, request: tags_pb2.RenameTagRequest, context: Context
     ) -> tags_pb2.RenameTagResponse:
         parameters = AuthRenameItemParameters(id=request.id, name=request.name)
@@ -49,7 +49,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
         return tags_pb2.RenameTagResponse(tag=build_tag_message(renamed))
 
     @t.override
-    async def Delete(
+    async def DeleteTag(
         self, request: tags_pb2.DeleteTagRequest, context: Context
     ) -> tags_pb2.DeleteTagResponse:
         parameters = AuthDeleteItemParameters(id=request.id)

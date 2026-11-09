@@ -33,13 +33,13 @@ class AttrsStub:
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> AttrsAsyncStub: ...
-    Create: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.CreateAttrRequest, _attrs_pb2.CreateAttrResponse]
+    CreateAttr: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.CreateAttrRequest, _attrs_pb2.CreateAttrResponse]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]
+    ListAttrs: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]
+    RenameAttr: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]
     """Requires PERMISSION_CAN_RENAME."""
-    Delete: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]
+    DeleteAttr: _grpc.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]
     """Requires PERMISSION_CAN_DELETE."""
 
 @_typing.type_check_only
@@ -47,20 +47,20 @@ class AttrsAsyncStub(AttrsStub):
     """The attributes of the sessions, as their administrator manages them."""
 
     def __init__(self, channel: _aio.Channel) -> None: ...
-    Create: _aio.UnaryUnaryMultiCallable[_attrs_pb2.CreateAttrRequest, _attrs_pb2.CreateAttrResponse]  # type: ignore[assignment]
+    CreateAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.CreateAttrRequest, _attrs_pb2.CreateAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_CREATE."""
-    List: _aio.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]  # type: ignore[assignment]
+    ListAttrs: _aio.UnaryUnaryMultiCallable[_attrs_pb2.ListAttrsRequest, _attrs_pb2.ListAttrsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_READ."""
-    Rename: _aio.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]  # type: ignore[assignment]
+    RenameAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.RenameAttrRequest, _attrs_pb2.RenameAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_RENAME."""
-    Delete: _aio.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]  # type: ignore[assignment]
+    DeleteAttr: _aio.UnaryUnaryMultiCallable[_attrs_pb2.DeleteAttrRequest, _attrs_pb2.DeleteAttrResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_DELETE."""
 
 class AttrsServicer(metaclass=_abc_1.ABCMeta):
     """The attributes of the sessions, as their administrator manages them."""
 
     @_abc_1.abstractmethod
-    def Create(
+    def CreateAttr(
         self,
         request: _attrs_pb2.CreateAttrRequest,
         context: _ServicerContext,
@@ -68,7 +68,7 @@ class AttrsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_CREATE."""
 
     @_abc_1.abstractmethod
-    def List(
+    def ListAttrs(
         self,
         request: _attrs_pb2.ListAttrsRequest,
         context: _ServicerContext,
@@ -76,7 +76,7 @@ class AttrsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_READ."""
 
     @_abc_1.abstractmethod
-    def Rename(
+    def RenameAttr(
         self,
         request: _attrs_pb2.RenameAttrRequest,
         context: _ServicerContext,
@@ -84,7 +84,7 @@ class AttrsServicer(metaclass=_abc_1.ABCMeta):
         """Requires PERMISSION_CAN_RENAME."""
 
     @_abc_1.abstractmethod
-    def Delete(
+    def DeleteAttr(
         self,
         request: _attrs_pb2.DeleteAttrRequest,
         context: _ServicerContext,

@@ -6,17 +6,17 @@ package ingot_auth.sessions.presets.v1;
 // manages them.
 service Presets {
   // Requires PERMISSION_CAN_CREATE.
-  rpc Create(CreatePresetRequest) returns (CreatePresetResponse);
+  rpc CreatePreset(CreatePresetRequest) returns (CreatePresetResponse);
   // Requires PERMISSION_CAN_READ.
-  rpc List(ListPresetsRequest) returns (ListPresetsResponse);
+  rpc ListPresets(ListPresetsRequest) returns (ListPresetsResponse);
   // Requires PERMISSION_CAN_RENAME.
-  rpc Rename(RenamePresetRequest) returns (RenamePresetResponse);
+  rpc RenamePreset(RenamePresetRequest) returns (RenamePresetResponse);
   // Requires PERMISSION_CAN_DELETE; the bindings of the preset go with it.
-  rpc Delete(DeletePresetRequest) returns (DeletePresetResponse);
+  rpc DeletePreset(DeletePresetRequest) returns (DeletePresetResponse);
   // Requires PERMISSION_CAN_BIND; binding again tells the requirement anew.
-  rpc Bind(BindAttrRequest) returns (BindAttrResponse);
+  rpc BindAttr(BindAttrRequest) returns (BindAttrResponse);
   // Requires PERMISSION_CAN_UNBIND.
-  rpc Unbind(UnbindAttrRequest) returns (UnbindAttrResponse);
+  rpc UnbindAttr(UnbindAttrRequest) returns (UnbindAttrResponse);
   // Requires PERMISSION_CAN_READ.
   rpc ListBindings(ListBindingsRequest) returns (ListBindingsResponse);
 }
