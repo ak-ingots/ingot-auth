@@ -14,7 +14,7 @@ from ingot_auth.sessions.attrs import (
 from ..registry import AuthMongoDbRegistryStorage
 
 if t.TYPE_CHECKING:
-    from ..registry import Document
+    from ..collection import Document
 
 
 class AuthMongoDbSessionAttrsStorage(
@@ -22,7 +22,7 @@ class AuthMongoDbSessionAttrsStorage(
 ):
     """The attributes of the sessions in MongoDB."""
 
-    COLLECTION: t.ClassVar[str] = "auth_sessions_attrs"
+    MONGODB_COLLECTION: t.ClassVar[str] = "auth_sessions_attrs"
 
     @t.override
     def _build_document(self, item: AuthSessionAttr) -> "Document":

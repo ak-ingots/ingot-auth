@@ -12,6 +12,13 @@ services:
       - --port=${INGOT_AUTH_TEST_PORT:-27118}
     ports:
       - "127.0.0.1:${INGOT_AUTH_TEST_PORT:-27118}:${INGOT_AUTH_TEST_PORT:-27118}"
+    # the open files MongoDB recommends: a test drops the database and the next
+    # creates its collections anew, and the server keeps the files of the
+    # dropped ones open for a while, past the 1024 a container may get
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     healthcheck:
       # initiates the set on the first check, healthy once the node is primary
       test:

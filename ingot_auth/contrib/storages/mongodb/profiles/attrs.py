@@ -10,7 +10,7 @@ from ingot_auth.registry import AuthAttrType
 from ..registry import AuthMongoDbRegistryStorage
 
 if t.TYPE_CHECKING:
-    from ..registry import Document
+    from ..collection import Document
 
 
 class AuthMongoDbAttrsStorage(
@@ -18,7 +18,7 @@ class AuthMongoDbAttrsStorage(
 ):
     """The attributes in MongoDB."""
 
-    COLLECTION: t.ClassVar[str] = "auth_profiles_attrs"
+    MONGODB_COLLECTION: t.ClassVar[str] = "auth_profiles_attrs"
 
     @t.override
     def _build_document(self, item: AuthAttr) -> "Document":

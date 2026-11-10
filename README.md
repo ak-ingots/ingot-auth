@@ -10,11 +10,11 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
-metadata for the consumers; stored in memory or in MongoDB, and all of it
-over gRPC; the sign-up by pluggable methods in steps, a nickname and a
-password, and an email and a code sent to it, in memory so far; the policies of what a user types,
-bound to their presets; the groups of the users, declared in the code, and
-their members, in memory so far, on the command line and over gRPC.
+metadata for the consumers, all of it over gRPC; the sign-up by pluggable
+methods in steps, a nickname and a password, and an email and a code sent
+to it; the policies of what a user types, bound to their presets; the groups
+of the users, declared in the code, and their members, on the command line
+and over gRPC; all of it stored in memory or in MongoDB.
 
 ## For Consumers
 

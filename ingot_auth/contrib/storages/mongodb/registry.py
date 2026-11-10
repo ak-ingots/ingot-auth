@@ -15,41 +15,33 @@ from ingot_auth.registry import (
     BaseAuthRegistryStorage,
 )
 
+from .collection import AuthMongoDbCollectionMixin
+
 if t.TYPE_CHECKING:
-    from ingot_pymongo import MongoDbProject
-    from ingot_pymongo.mongodb.clients import BaseMongoDbClient
-    from pymongo.asynchronous.client_session import AsyncClientSession
     from pymongo.asynchronous.collection import AsyncCollection
 
-    from ingot_auth.project import AuthProject
-
-    Document: t.TypeAlias = dict[str, t.Any]
+    from .collection import Document
 
 
-class AuthMongoDbRegistryStorage[ItemType: AuthItem](BaseAuthRegistryStorage[ItemType]):
+class AuthMongoDbRegistryStorage[ItemType: AuthItem](
+    AuthMongoDbCollectionMixin, BaseAuthRegistryStorage[ItemType]
+):
     """
     A registry in a collection of MongoDB: a document per item, its ``_id`` the
     id of the item, which holds the id unique. A deleted item stays as a document
     marked ``deleted``, which keeps its id taken, and a unique index over the
     documents not marked holds the names unique and frees the name of a deleted
-    one. The index is created with the first use of the collection.
+    one.
     """
-
-    # the database and the collection of the client of _get_client()
-    DATABASE: t.ClassVar[str] = "ingot_auth"
-    COLLECTION: t.ClassVar[str]
-
-    project: "MongoDbProject"
-    _collection: "AsyncCollection[Document]"
 
     @t.override
     async def _create(self, item: ItemType) -> None:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         document = self._build_document(item)
         try:
             await collection.insert_one(
                 {**document, "_id": item.id, "deleted": False},
-                session=self._get_session(),
+                session=self._mongodb_get_session(),
             )
         except DuplicateKeyError as error:
             details = error.details or {}
@@ -59,21 +51,21 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](BaseAuthRegistryStorage[Ite
 
     @t.override
     async def _get_all(self) -> tuple[ItemType, ...]:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"deleted": False}, session=self._get_session()
+            {"deleted": False}, session=self._mongodb_get_session()
         ).sort("_id", 1)
         return tuple([self._build_item(document) async for document in documents])
 
     @t.override
     async def _rename(self, item_id: int, name: str) -> ItemType:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         try:
             document = await collection.find_one_and_update(
                 {"_id": item_id, "deleted": False},
                 {"$set": {"name": name}},
                 return_document=ReturnDocument.AFTER,
-                session=self._get_session(),
+                session=self._mongodb_get_session(),
             )
         except DuplicateKeyError as error:
             raise AuthItemConflictError.for_name(self.REGISTRY, name) from error
@@ -83,11 +75,11 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](BaseAuthRegistryStorage[Ite
 
     @t.override
     async def _delete(self, item_id: int) -> None:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         result = await collection.update_one(
             {"_id": item_id, "deleted": False},
             {"$set": {"deleted": True}},
-            session=self._get_session(),
+            session=self._mongodb_get_session(),
         )
         if not result.matched_count:
             raise AuthItemNotFoundError.for_id(self.REGISTRY, item_id)
@@ -101,28 +93,10 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](BaseAuthRegistryStorage[Ite
     def _build_item(self, document: "Document") -> ItemType:
         raise NotImplementedError(f"{type(self).__qualname__}._build_item")
 
-    def _get_client(self) -> "BaseMongoDbClient":
-        """
-        The client of the registry: another one is a matter of an override,
-        and it is that of :class:`AuthMongoDbStorage` for a transaction to
-        span the registry.
-        """
-        return self.project.mongodb.clients.default
-
-    def _get_session(self) -> "AsyncClientSession | None":
-        """The session of the transaction of the storage in this context, if any."""
-        storage = t.cast("AuthProject", self.project).auth.storage
-        return t.cast("AsyncClientSession | None", storage.get_transaction())
-
-    async def _get_collection(self) -> "AsyncCollection[Document]":
-        try:
-            return self._collection
-        except AttributeError:
-            pass
-        client = await self._get_client()
-        collection = client.get_database(self.DATABASE)[self.COLLECTION]
+    @t.override
+    async def _mongodb_create_indexes(
+        self, collection: "AsyncCollection[Document]"
+    ) -> None:
         await collection.create_index(
             "name", unique=True, partialFilterExpression={"deleted": False}
         )
-        self._collection = collection
-        return collection

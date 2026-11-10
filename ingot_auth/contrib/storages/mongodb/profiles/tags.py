@@ -9,13 +9,13 @@ from ingot_auth.profiles.tags import AuthTag, BaseAuthTagsStorage
 from ..registry import AuthMongoDbRegistryStorage
 
 if t.TYPE_CHECKING:
-    from ..registry import Document
+    from ..collection import Document
 
 
 class AuthMongoDbTagsStorage(AuthMongoDbRegistryStorage[AuthTag], BaseAuthTagsStorage):
     """The tags in MongoDB."""
 
-    COLLECTION: t.ClassVar[str] = "auth_profiles_tags"
+    MONGODB_COLLECTION: t.ClassVar[str] = "auth_profiles_tags"
 
     @t.override
     def _build_document(self, item: AuthTag) -> "Document":
