@@ -13,24 +13,44 @@ from ingot_pymongo import MongoDbProject
 from ingot_pymongo.logging import MongoDbLoggingUnit
 from ingot_pymongo.settings import MongoDbSettingsUnit
 from ingot_pymongo.settings.configs import MongoDbConfigs
+from ingots.defaults.operations import Caller, Permissions
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
+from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
 from ingot_auth.logging import AuthLoggingUnit
+from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.profiles.identities import AuthIdentityNotFoundError
+from ingot_auth.profiles.secrets import AuthSecretNotFoundError
 from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.sign_up import (
+    AuthSignedUp,
+    AuthSignUpPermissions,
+    AuthSignUpResult,
+    AuthStartSignUpParameters,
+)
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
+    AuthIdentitiesStorageContract,
+    AuthMembersStorageContract,
+    AuthProfilesStorageContract,
+    AuthSecretsStorageContract,
     AuthSessionAttrsStorageContract,
     AuthSessionPresetsStorageContract,
+    AuthSignUpRecordsStorageContract,
     AuthStorageTransactionsContract,
     AuthTagsStorageContract,
 )
+from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
 
 PORT = os.environ.get("INGOT_AUTH_TEST_PORT")
+SIGNING_UP: t.Final = Caller(
+    uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+)
 
 
 class TstConfigs(AuthConfigs, MongoDbConfigs):
@@ -45,8 +65,14 @@ class TstLoggingUnit(AuthLoggingUnit, MongoDbLoggingUnit):
     project: "TstProject"
 
 
+class TstMethodsUnit(AuthMethodsUnit):
+    testing = Slot(AuthTestingMethod)
+
+
 class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMongoDbStorage)
+    cache = Slot(AuthMemoryCache)
+    methods = Slot(TstMethodsUnit)
 
 
 class TstProject(AuthProject, MongoDbProject):
@@ -126,3 +152,80 @@ class MongoDbStorageTransactionsTestCase(
     ServerMixin, AuthStorageTransactionsContract, unittest.IsolatedAsyncioTestCase
 ):
     pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbProfilesStorageTestCase(
+    ServerMixin, AuthProfilesStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbIdentitiesStorageTestCase(
+    ServerMixin, AuthIdentitiesStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbSecretsStorageTestCase(
+    ServerMixin, AuthSecretsStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbSignUpRecordsStorageTestCase(
+    ServerMixin, AuthSignUpRecordsStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbMembersStorageTestCase(
+    ServerMixin, AuthMembersStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbSignUpTestCase(ServerMixin, unittest.IsolatedAsyncioTestCase):
+    """A sign-up on the storage in MongoDB: its end is one transaction."""
+
+    @t.override
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
+        self.project = await self.create_project()
+
+    async def sign_up(self, start: AuthTestingStart) -> AuthSignUpResult:
+        return await self.project.operations.runner.run(
+            self.project.auth.sign_up.op_start,
+            AuthStartSignUpParameters(method="testing", parameters=start),
+            self.project.operations.create_metadata(SIGNING_UP),
+        )
+
+    async def test_a_sign_up_keeps_what_it_writes(self) -> None:
+        result = await self.sign_up(AuthTestingStart(subject="a@b.c", secret="hash"))
+        assert isinstance(result, AuthSignedUp)
+        storage = self.project.auth.storage
+        self.assertEqual(
+            await storage.profiles.identities.find_uid("testing", "a@b.c"), result.uid
+        )
+        self.assertEqual(await storage.profiles.secrets.get("testing", "a@b.c"), "hash")
+        profile = await storage.profiles.get(result.uid)
+        record = await storage.sign_up.records.get(result.uid)
+        self.assertEqual(record.signed_up_at, profile.created_at)
+
+    async def test_a_sign_up_failing_midway_leaves_nothing(self) -> None:
+        storage = self.project.auth.storage
+        with mock.patch.object(type(storage.profiles), "_create", side_effect=OSError):
+            with self.assertRaises(OSError):
+                await self.sign_up(AuthTestingStart(subject="a@b.c", secret="hash"))
+        with self.assertRaises(AuthIdentityNotFoundError):
+            await storage.profiles.identities.find_uid("testing", "a@b.c")
+        with self.assertRaises(AuthSecretNotFoundError):
+            await storage.profiles.secrets.get("testing", "a@b.c")
+        result = await self.sign_up(AuthTestingStart(subject="a@b.c"))
+        self.assertIsInstance(result, AuthSignedUp)

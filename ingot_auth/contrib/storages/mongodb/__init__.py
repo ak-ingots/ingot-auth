@@ -1,17 +1,24 @@
 """
 The storage in MongoDB, with the extra ``pymongo``, on a client of ingot-pymongo:
 a project joining ``MongoDbProject`` declares it in the slot of its auth,
-``storage = Slot(AuthMongoDbStorage)``. A subclass of a registry changes what it
+``storage = Slot(AuthMongoDbStorage)``. A subclass of a storage changes what it
 chooses: the client by a hook, the names of the database and the collection.
 """
 
 __all__ = (
+    "AuthMongoDbAccessStorage",
     "AuthMongoDbAttrsStorage",
+    "AuthMongoDbCollectionMixin",
+    "AuthMongoDbIdentitiesStorage",
+    "AuthMongoDbMembersStorage",
     "AuthMongoDbProfilesStorage",
     "AuthMongoDbRegistryStorage",
+    "AuthMongoDbSecretsStorage",
     "AuthMongoDbSessionAttrsStorage",
     "AuthMongoDbSessionPresetsStorage",
     "AuthMongoDbSessionsStorage",
+    "AuthMongoDbSignUpRecordsStorage",
+    "AuthMongoDbSignUpStorage",
     "AuthMongoDbStorage",
     "AuthMongoDbTagsStorage",
 )
@@ -22,9 +29,13 @@ from ingots.puer import Slot
 
 from ingot_auth.storage import AuthStorage
 
+from .access import AuthMongoDbAccessStorage, AuthMongoDbMembersStorage
+from .collection import AuthMongoDbCollectionMixin
 from .profiles import (
     AuthMongoDbAttrsStorage,
+    AuthMongoDbIdentitiesStorage,
     AuthMongoDbProfilesStorage,
+    AuthMongoDbSecretsStorage,
     AuthMongoDbTagsStorage,
 )
 from .registry import AuthMongoDbRegistryStorage
@@ -33,6 +44,7 @@ from .sessions import (
     AuthMongoDbSessionPresetsStorage,
     AuthMongoDbSessionsStorage,
 )
+from .sign_up import AuthMongoDbSignUpRecordsStorage, AuthMongoDbSignUpStorage
 
 if t.TYPE_CHECKING:
     from ingot_pymongo import MongoDbProject
@@ -43,7 +55,7 @@ if t.TYPE_CHECKING:
 class AuthMongoDbStorage(AuthStorage):
     """
     The storage of the auth in MongoDB. A transaction is one of a session of
-    the client of :meth:`_get_client`, which the registries pass to their
+    the client of :meth:`_get_client`, which the storages pass to their
     queries: MongoDB takes transactions on a replica set only, of one node
     for the tests. A transaction may fail on a conflict with another, with
     the label ``TransientTransactionError``: retrying it is for the caller.
@@ -51,20 +63,21 @@ class AuthMongoDbStorage(AuthStorage):
 
     project: "MongoDbProject"
 
-    # abstract still: the profiles themselves are not in MongoDB yet
-    profiles = Slot(AuthMongoDbProfilesStorage)  # type: ignore[type-abstract]
+    profiles = Slot(AuthMongoDbProfilesStorage)
     sessions = Slot(AuthMongoDbSessionsStorage)
+    sign_up = Slot(AuthMongoDbSignUpStorage)
+    access = Slot(AuthMongoDbAccessStorage)
 
     @t.override
     async def _begin(self) -> object:
         # a transaction sees the collections there were when it began: those
-        # the registries create on their first use are created before it
+        # the storages create on their first use are created before it
         for path, slot in type(self).slots_walk():
-            if issubclass(slot.cls, AuthMongoDbRegistryStorage):
-                registry = self.slots_find_entity(path)
+            if issubclass(slot.cls, AuthMongoDbCollectionMixin):
+                storage = self.slots_find_entity(path)
                 await t.cast(
-                    AuthMongoDbRegistryStorage[t.Any], registry
-                )._get_collection()
+                    AuthMongoDbCollectionMixin, storage
+                )._mongodb_get_collection()
         client = await self._get_client()
         session = client.client.start_session()
         await session.start_transaction()
@@ -87,5 +100,5 @@ class AuthMongoDbStorage(AuthStorage):
             await session.end_session()
 
     def _get_client(self) -> "BaseMongoDbClient":
-        """The client of the transactions, that of the registries by default."""
+        """The client of the transactions, that of the storages by default."""
         return self.project.mongodb.clients.default

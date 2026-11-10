@@ -14,7 +14,7 @@ from ingot_auth.sessions.presets import (
 from ..registry import AuthMongoDbRegistryStorage
 
 if t.TYPE_CHECKING:
-    from ..registry import Document
+    from ..collection import Document
 
 
 class AuthMongoDbSessionPresetsStorage(
@@ -26,7 +26,7 @@ class AuthMongoDbSessionPresetsStorage(
     one update of one document.
     """
 
-    COLLECTION: t.ClassVar[str] = "auth_sessions_presets"
+    MONGODB_COLLECTION: t.ClassVar[str] = "auth_sessions_presets"
 
     @t.override
     def _build_document(self, item: AuthSessionPreset) -> "Document":
@@ -38,7 +38,7 @@ class AuthMongoDbSessionPresetsStorage(
 
     @t.override
     async def _bind(self, binding: AuthSessionPresetBinding) -> None:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         others = {
             "$filter": {
                 "input": "$bindings",
@@ -49,32 +49,32 @@ class AuthMongoDbSessionPresetsStorage(
         result = await collection.update_one(
             {"_id": binding.preset_id, "deleted": False},
             [{"$set": {"bindings": {"$concatArrays": [others, [bound]]}}}],
-            session=self._get_session(),
+            session=self._mongodb_get_session(),
         )
         if not result.matched_count:
             raise AuthItemNotFoundError.for_id(self.REGISTRY, binding.preset_id)
 
     @t.override
     async def _unbind(self, preset_id: int, attr_id: int) -> None:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         result = await collection.update_one(
             {"_id": preset_id, "deleted": False, "bindings.attr_id": attr_id},
             {"$pull": {"bindings": {"attr_id": attr_id}}},
-            session=self._get_session(),
+            session=self._mongodb_get_session(),
         )
         if result.matched_count:
             return
         if await collection.count_documents(
-            {"_id": preset_id, "deleted": False}, session=self._get_session()
+            {"_id": preset_id, "deleted": False}, session=self._mongodb_get_session()
         ):
             raise AuthItemNotFoundError.for_binding(self.REGISTRY, preset_id, attr_id)
         raise AuthItemNotFoundError.for_id(self.REGISTRY, preset_id)
 
     @t.override
     async def _get_bindings(self) -> tuple[AuthSessionPresetBinding, ...]:
-        collection = await self._get_collection()
+        collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"deleted": False}, {"bindings": True}, session=self._get_session()
+            {"deleted": False}, {"bindings": True}, session=self._mongodb_get_session()
         ).sort("_id", 1)
         return tuple(
             [
