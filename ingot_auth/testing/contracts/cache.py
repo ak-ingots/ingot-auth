@@ -1,13 +1,29 @@
 """The contract of a cache: what a backend guarantees, whatever it runs on."""
 
-__all__ = ("AuthAttemptsCacheContract",)
+__all__ = (
+    "AuthAttemptsCacheContract",
+    "AuthCallersCacheContract",
+    "AuthSessionsCacheContract",
+)
 
 import asyncio
 import datetime
+import typing as t
 
+from ingots.defaults.operations import Permissions
+
+from ingot_auth.access.groups import AuthGroupsPermissions
 from ingot_auth.methods import AuthAttempt, AuthAttemptNotFoundError
+from ingot_auth.sessions import AuthCaller
 
 from .base import BaseAuthContract
+from .sessions import create_session
+
+CALLER: t.Final = AuthCaller(
+    uid="a1",
+    session_id="s1",
+    permissions=Permissions(AuthGroupsPermissions.CAN_READ),
+)
 
 
 class AuthAttemptsCacheContract(BaseAuthContract):
@@ -69,3 +85,61 @@ class AuthAttemptsCacheContract(BaseAuthContract):
         )
         taken = [r for r in results if isinstance(r, AuthAttempt)]
         self.assertEqual(len(taken), 1, results)
+
+
+class AuthSessionsCacheContract(BaseAuthContract):
+    """The sessions of a cache, by the hashes of their tokens."""
+
+    async def test_a_session_is_got_as_put(self) -> None:
+        sessions = self.project.auth.cache.sessions
+        session = create_session()
+        await sessions.put(session, in_seconds(60))
+        self.assertEqual(await sessions.get("h1"), session)
+
+    async def test_a_session_missed_is_none(self) -> None:
+        sessions = self.project.auth.cache.sessions
+        await sessions.put(create_session(), in_seconds(60))
+        self.assertIsNone(await sessions.get("h2"))
+
+    async def test_an_expired_session_is_none(self) -> None:
+        sessions = self.project.auth.cache.sessions
+        await sessions.put(create_session(), in_seconds(-1))
+        self.assertIsNone(await sessions.get("h1"))
+
+    async def test_a_forgotten_session_is_none(self) -> None:
+        sessions = self.project.auth.cache.sessions
+        await sessions.put(create_session(), in_seconds(60))
+        await sessions.forget("h1")
+        await sessions.forget("h2")
+        self.assertIsNone(await sessions.get("h1"))
+
+
+class AuthCallersCacheContract(BaseAuthContract):
+    """The callers of a cache, by the hashes of the tokens of their sessions."""
+
+    async def test_a_caller_is_got_as_put(self) -> None:
+        callers = self.project.auth.cache.callers
+        await callers.put("h1", CALLER, in_seconds(60))
+        self.assertEqual(await callers.get("h1"), CALLER)
+
+    async def test_a_caller_missed_is_none(self) -> None:
+        callers = self.project.auth.cache.callers
+        await callers.put("h1", CALLER, in_seconds(60))
+        self.assertIsNone(await callers.get("h2"))
+
+    async def test_an_expired_caller_is_none(self) -> None:
+        callers = self.project.auth.cache.callers
+        await callers.put("h1", CALLER, in_seconds(-1))
+        self.assertIsNone(await callers.get("h1"))
+
+    async def test_a_forgotten_caller_is_none(self) -> None:
+        callers = self.project.auth.cache.callers
+        await callers.put("h1", CALLER, in_seconds(60))
+        await callers.forget("h1")
+        await callers.forget("h2")
+        self.assertIsNone(await callers.get("h1"))
+
+
+def in_seconds(seconds: float) -> datetime.datetime:
+    """The time in that many seconds."""
+    return datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=seconds)

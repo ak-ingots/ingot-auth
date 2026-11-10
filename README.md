@@ -14,7 +14,8 @@ metadata for the consumers, all of it over gRPC; the sign-up by pluggable
 methods in steps, a nickname and a password, and an email and a code sent
 to it; the policies of what a user types, bound to their presets; the groups
 of the users, declared in the code, and their members, on the command line
-and over gRPC; all of it stored in memory or in MongoDB.
+and over gRPC; the sessions, a token turned into a caller, with no sign-in
+opening them yet; all of it stored in memory or in MongoDB.
 
 ## For Consumers
 
@@ -112,6 +113,18 @@ $ python -m app auth access groups list
 $ python -m app auth access members add admins 0f6c…
 ```
 
+A session lives as the strategy of its lifetime says, which the
+application declares, as the sessions have none: `AuthFixedLifetime` for
+one, `AUTH_SESSION_TTL` seconds from the sign-in. A request brings the token
+of its session, and `auth.sessions.authenticate(token)` gives its caller,
+with the uid of the profile and the permissions of its groups, from the
+cache, formed again past `AUTH_SESSION_CACHE_TTL`:
+
+```python
+class AppSessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthFixedLifetime)
+```
+
 The storage in MongoDB (extra `pymongo`, `AuthMongoDbStorage`) writes what
 belongs together in one transaction, the end of a sign-up for one, and
 MongoDB takes transactions on a replica set only: run a replica set, of one
@@ -127,6 +140,8 @@ Set as environment variables with the prefix of the project
 | `AUTH_LOGGING_LEVEL` | `INFO` | the level of the logger of the addon, `ingot_auth` |
 | `AUTH_ATTEMPT_TTL` | `600` | the seconds an attempt of a sign-up waits for an answer |
 | `AUTH_ATTEMPT_MAX_FAILURES` | `5` | the answers refused before an attempt is over |
+| `AUTH_SESSION_TTL` | `2592000` | the seconds a session of `AuthFixedLifetime` lives, 30 days |
+| `AUTH_SESSION_CACHE_TTL` | `300` | the seconds a session and its caller stay in the cache |
 
 ## Development
 
