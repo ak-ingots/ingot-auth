@@ -1,6 +1,6 @@
 """The operations of the metadata."""
 
-__all__ = ("AuthGetMetadata",)
+__all__ = ("AuthGetMetadataOperation",)
 
 import typing as t
 
@@ -20,7 +20,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthGetMetadata(BaseOperation[None, AuthMetadata]):
+class AuthGetMetadataOperation(BaseOperation[None, AuthMetadata]):
     """
     The metadata: a client asks for it before signing in. Of the sessions it
     gives only what is the client's: the attributes the transport, the

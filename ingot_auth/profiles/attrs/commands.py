@@ -24,7 +24,12 @@ from ingot_auth.registry.operations import (
 )
 
 from .items import AuthAttr
-from .operations import AuthCreateAttr, AuthDeleteAttr, AuthListAttrs, AuthRenameAttr
+from .operations import (
+    AuthCreateAttrOperation,
+    AuthDeleteAttrOperation,
+    AuthListAttrsOperation,
+    AuthRenameAttrOperation,
+)
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
@@ -71,7 +76,7 @@ class AuthCreateAttrCommand(
         )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthCreateAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateAttrOperation]":
         return self.project.auth.profiles.attrs.op_create
 
 
@@ -82,7 +87,7 @@ class AuthListAttrsCommand(
     cli_description = "Prints the attributes."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListAttrs]":
+    def _get_operation(self) -> "BoundFactory[AuthListAttrsOperation]":
         return self.project.auth.profiles.attrs.op_list
 
 
@@ -93,7 +98,7 @@ class AuthRenameAttrCommand(
     cli_description = "Gives an attribute a new name; its type stays."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthRenameAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameAttrOperation]":
         return self.project.auth.profiles.attrs.op_rename
 
 
@@ -104,5 +109,5 @@ class AuthDeleteAttrCommand(
     cli_description = "Deletes an attribute; its id is never given again."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthDeleteAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteAttrOperation]":
         return self.project.auth.profiles.attrs.op_delete

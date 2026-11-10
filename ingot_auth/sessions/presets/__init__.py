@@ -8,7 +8,7 @@ requires the attribute.
 __all__ = (
     "AuthSessionPreset",
     "AuthSessionPresetBinding",
-    "AuthSessionPresets",
+    "AuthSessionPresetsUnit",
     "AuthSessionPresetsPermissions",
     "BaseAuthSessionPresetsStorage",
 )
@@ -27,19 +27,19 @@ from .commands import (
 )
 from .items import AuthSessionPreset, AuthSessionPresetBinding
 from .operations import (
-    AuthBindSessionAttr,
-    AuthCreateSessionPreset,
-    AuthDeleteSessionPreset,
-    AuthListSessionPresetBindings,
-    AuthListSessionPresets,
-    AuthRenameSessionPreset,
-    AuthUnbindSessionAttr,
+    AuthBindSessionAttrOperation,
+    AuthCreateSessionPresetOperation,
+    AuthDeleteSessionPresetOperation,
+    AuthListSessionPresetBindingsOperation,
+    AuthListSessionPresetsOperation,
+    AuthRenameSessionPresetOperation,
+    AuthUnbindSessionAttrOperation,
 )
 from .permissions import AuthSessionPresetsPermissions
 from .storage import BaseAuthSessionPresetsStorage
 
 
-class AuthSessionPresets(CliUnit):
+class AuthSessionPresetsUnit(CliUnit):
     """
     The registry of the presets of the sessions with their bindings: its
     operations, ``op_*``, and the commands running them, ``cmd_*``; the
@@ -49,13 +49,13 @@ class AuthSessionPresets(CliUnit):
     cli_name = "presets"
     cli_description = "The presets of the sessions."
 
-    op_create = Factory(AuthCreateSessionPreset)
-    op_list = Factory(AuthListSessionPresets)
-    op_rename = Factory(AuthRenameSessionPreset)
-    op_delete = Factory(AuthDeleteSessionPreset)
-    op_bind = Factory(AuthBindSessionAttr)
-    op_unbind = Factory(AuthUnbindSessionAttr)
-    op_list_bindings = Factory(AuthListSessionPresetBindings)
+    op_create = Factory(AuthCreateSessionPresetOperation)
+    op_list = Factory(AuthListSessionPresetsOperation)
+    op_rename = Factory(AuthRenameSessionPresetOperation)
+    op_delete = Factory(AuthDeleteSessionPresetOperation)
+    op_bind = Factory(AuthBindSessionAttrOperation)
+    op_unbind = Factory(AuthUnbindSessionAttrOperation)
+    op_list_bindings = Factory(AuthListSessionPresetBindingsOperation)
 
     cmd_create = Slot(AuthCreateSessionPresetCommand)
     cmd_list = Slot(AuthListSessionPresetsCommand)

@@ -7,17 +7,17 @@ repeat what README or the ADRs say: link to them.
 
 `ingot-auth`: an addon of [Ingots](https://github.com/ak-ingots/ingots) for
 the sign-up, the sign-in and the sessions of the users of an application.
-`AuthProject` (`project.py`) takes the addon's `AuthSettings` (`settings/`)
+`AuthProject` (`project.py`) takes the addon's `AuthSettingsUnit` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
-`AuthLogging` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
+`AuthLoggingUnit` (`logging/`, the logger `ingot_auth`) and `AuthUnit` (`auth/`,
 the auth of the project: the units `profiles/`, with the registries `tags/`
 and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`; the `access/`, its `groups/` entities
-in slots of `AuthGroups`, declared in the code, granting by a hook, its
+in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its
 `members/` the memberships in the storage, and `AuthGroupsGrants`, the
 permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
-methods of signing up and in `methods/`, units in slots of `AuthMethods`, a
+methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
 steps kept by attempts, a hook to start each flow they take, their secrets

@@ -40,7 +40,7 @@ until the application declares its slot: a nickname and a password,
 from ingot_auth.methods.nickname import AuthNicknameMethod
 
 
-class AppMethods(AuthMethods):
+class AppMethods(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
 ```
 
@@ -62,7 +62,7 @@ class AppEmailCodeMethod(BaseAuthEmailCodeMethod):
         ...  # by the mail of the application
 
 
-class AppMethods(AuthMethods):
+class AppMethods(AuthMethodsUnit):
     email_code = Slot(AppEmailCodeMethod)
 ```
 
@@ -92,13 +92,13 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
         )
 
 
-class AppGroups(ShopGroups, ArticlesGroups):
+class AppGroupsUnit(ShopGroupsUnit, ArticlesGroupsUnit):
     admins = Slot(AppAdminsGroup)  # joins what the two grant to it
     editors = Slot(EditorsGroup)
 
 
-class AppAccess(AuthAccess):
-    groups = Slot(AppGroups)
+class AppAccessUnit(AuthAccessUnit):
+    groups = Slot(AppGroupsUnit)
 ```
 
 The storage keeps the members of the groups only, added and removed by the

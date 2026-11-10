@@ -1,16 +1,16 @@
 """The members of the groups: the memberships, the users bound to them."""
 
 __all__ = (
-    "AuthAddMember",
+    "AuthAddMemberOperation",
     "AuthAddMemberCommand",
-    "AuthListMemberGroups",
+    "AuthListMemberGroupsOperation",
     "AuthListMemberGroupsCommand",
-    "AuthListMembers",
+    "AuthListMembersOperation",
     "AuthListMembersCommand",
-    "AuthMembers",
+    "AuthMembersUnit",
     "AuthMembersPermissions",
     "AuthMembership",
-    "AuthRemoveMember",
+    "AuthRemoveMemberOperation",
     "AuthRemoveMemberCommand",
     "BaseAuthMembersStorage",
 )
@@ -27,16 +27,16 @@ from .commands import (
 
 from .items import AuthMembership
 from .operations import (
-    AuthAddMember,
-    AuthListMemberGroups,
-    AuthListMembers,
-    AuthRemoveMember,
+    AuthAddMemberOperation,
+    AuthListMemberGroupsOperation,
+    AuthListMembersOperation,
+    AuthRemoveMemberOperation,
 )
 from .permissions import AuthMembersPermissions
 from .storage import BaseAuthMembersStorage
 
 
-class AuthMembers(CliUnit):
+class AuthMembersUnit(CliUnit):
     """
     The operations of the memberships, ``op_*``, and the commands running
     them, ``cmd_*``; the memberships themselves are in the storage of the
@@ -46,10 +46,10 @@ class AuthMembers(CliUnit):
     cli_name = "members"
     cli_description = "The members of the groups."
 
-    op_add = Factory(AuthAddMember)
-    op_remove = Factory(AuthRemoveMember)
-    op_list = Factory(AuthListMembers)
-    op_list_groups = Factory(AuthListMemberGroups)
+    op_add = Factory(AuthAddMemberOperation)
+    op_remove = Factory(AuthRemoveMemberOperation)
+    op_list = Factory(AuthListMembersOperation)
+    op_list_groups = Factory(AuthListMemberGroupsOperation)
 
     cmd_add = Slot(AuthAddMemberCommand)
     cmd_remove = Slot(AuthRemoveMemberCommand)

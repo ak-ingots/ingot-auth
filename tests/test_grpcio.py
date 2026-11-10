@@ -9,28 +9,28 @@ import grpc
 from grpc import aio
 from ingot_grpcio import GrpcProject
 from ingot_grpcio.grpc import GrpcUnit
-from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClients
+from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClientsUnit
 from ingot_grpcio.grpc.errors import GrpcError
-from ingot_grpcio.grpc.servers import DefaultGrpcServer, GrpcServers
+from ingot_grpcio.grpc.servers import DefaultGrpcServer, GrpcServersUnit
 from ingot_grpcio.grpc.services import GrpcService
 from ingot_grpcio.grpc.services.export import build_descriptor_set
-from ingot_grpcio.logging import GrpcLogging
-from ingot_grpcio.settings import GrpcSettings
+from ingot_grpcio.logging import GrpcLoggingUnit
+from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
 from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
-from ingot_auth.access import AuthAccess
-from ingot_auth.access.groups import AuthGroup, AuthGroups, AuthGroupsPermissions
+from ingot_auth.access import AuthAccessUnit
+from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit, AuthGroupsPermissions
 from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcAdminBinding,
     AuthGrpcAttrsServicer,
-    AuthGrpcErrors,
+    AuthGrpcErrorsUnit,
     AuthGrpcGroupsServicer,
     AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
@@ -73,9 +73,9 @@ from ingot_auth.sessions.presets.v1 import (
     presets_pb2,
     presets_pb2_grpc,
 )
-from ingot_auth.logging import AuthLogging
+from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.methods import AuthMethods, BaseAuthMethod
+from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
 from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
 from ingot_auth.profiles import AuthProfile
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
@@ -83,7 +83,7 @@ from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.registry import AuthAttrType
 from ingot_auth.sessions.attrs import AuthSessionAttrSource, AuthSessionAttrsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
-from ingot_auth.settings import AuthSettings
+from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
@@ -170,11 +170,11 @@ class TstConfigs(AuthConfigs, GrpcConfigs):
     pass
 
 
-class TstSettings(AuthSettings, GrpcSettings):
+class TstSettingsUnit(AuthSettingsUnit, GrpcSettingsUnit):
     configs = Slot(TstConfigs)
 
 
-class TstLogging(AuthLogging, GrpcLogging):
+class TstLoggingUnit(AuthLoggingUnit, GrpcLoggingUnit):
     project: "TstProject"
 
 
@@ -184,95 +184,95 @@ class AdminsGroup(AuthGroup):
         return super()._get_permissions() | Permissions(*AuthMembersPermissions)
 
 
-class TstGroups(AuthGroups):
+class TstGroupsUnit(AuthGroupsUnit):
     admins = Slot(AdminsGroup)
 
 
-class TstAccess(AuthAccess):
-    groups = Slot(TstGroups)
+class TstAccessUnit(AuthAccessUnit):
+    groups = Slot(TstGroupsUnit)
 
 
-class TstAuth(AuthUnit):
+class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
-    access = Slot(TstAccess)
+    access = Slot(TstAccessUnit)
 
 
-class TstClients(GrpcClients):
+class TstClientsUnit(GrpcClientsUnit):
     default = Slot(TstClient)
 
 
-class TstServers(GrpcServers):
+class TstServersUnit(GrpcServersUnit):
     default = Slot(TstServer)
 
 
-class TstAnonymousServers(GrpcServers):
+class TstAnonymousServersUnit(GrpcServersUnit):
     default = Slot(TstAnonymousServer)
 
 
-class TstClosedServers(GrpcServers):
+class TstClosedServersUnit(GrpcServersUnit):
     default = Slot(TstClosedServer)
 
 
-class TstGrpc(GrpcUnit):
-    errors = Slot(AuthGrpcErrors)
-    clients = Slot(TstClients)
+class TstGrpcUnit(GrpcUnit):
+    errors = Slot(AuthGrpcErrorsUnit)
+    clients = Slot(TstClientsUnit)
 
 
-class TstAdminGrpc(TstGrpc):
-    servers = Slot(TstServers)
+class TstAdminGrpcUnit(TstGrpcUnit):
+    servers = Slot(TstServersUnit)
 
 
-class TstAnonymousGrpc(TstGrpc):
-    servers = Slot(TstAnonymousServers)
+class TstAnonymousGrpcUnit(TstGrpcUnit):
+    servers = Slot(TstAnonymousServersUnit)
 
 
-class TstClosedGrpc(TstGrpc):
-    servers = Slot(TstClosedServers)
+class TstClosedGrpcUnit(TstGrpcUnit):
+    servers = Slot(TstClosedServersUnit)
 
 
 class TstProject(AuthProject, GrpcProject):
-    settings = Slot(TstSettings)
-    logging = Slot(TstLogging)
-    auth = Slot(TstAuth)
-    grpc = Slot(TstGrpc)
+    settings = Slot(TstSettingsUnit)
+    logging = Slot(TstLoggingUnit)
+    auth = Slot(TstAuthUnit)
+    grpc = Slot(TstGrpcUnit)
 
 
 class TstAdminProject(TstProject):
-    grpc = Slot(TstAdminGrpc)
+    grpc = Slot(TstAdminGrpcUnit)
 
 
 class TstAnonymousProject(TstProject):
-    grpc = Slot(TstAnonymousGrpc)
+    grpc = Slot(TstAnonymousGrpcUnit)
 
 
 class TstClosedProject(TstProject):
-    grpc = Slot(TstClosedGrpc)
+    grpc = Slot(TstClosedGrpcUnit)
 
 
 class NoFlowMethod(BaseAuthMethod[str, str, None]):
     pass
 
 
-class TstMethods(AuthMethods):
+class TstMethodsUnit(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
     no_flow = Slot(NoFlowMethod)
 
 
-class TstMethodsAuth(TstAuth):
-    methods = Slot(TstMethods)
+class TstMethodsAuthUnit(TstAuthUnit):
+    methods = Slot(TstMethodsUnit)
 
 
 class TstMethodsConfigs(AuthNicknameConfigs, TstConfigs):
     AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)
 
 
-class TstMethodsSettings(TstSettings):
+class TstMethodsSettingsUnit(TstSettingsUnit):
     configs = Slot(TstMethodsConfigs)
 
 
 class TstMethodsProject(TstAnonymousProject):
-    settings = Slot(TstMethodsSettings)
-    auth = Slot(TstMethodsAuth)
+    settings = Slot(TstMethodsSettingsUnit)
+    auth = Slot(TstMethodsAuthUnit)
 
 
 def find_free_port() -> int:

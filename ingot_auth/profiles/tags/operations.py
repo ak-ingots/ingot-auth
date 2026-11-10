@@ -1,10 +1,10 @@
 """The operations of the tags."""
 
 __all__ = (
-    "AuthCreateTag",
-    "AuthDeleteTag",
-    "AuthListTags",
-    "AuthRenameTag",
+    "AuthCreateTagOperation",
+    "AuthDeleteTagOperation",
+    "AuthListTagsOperation",
+    "AuthRenameTagOperation",
     "BaseAuthTagsOperation",
 )
 
@@ -15,11 +15,11 @@ from ingots.defaults.operations import Permissions
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
-    BaseAuthCreateItem,
-    BaseAuthDeleteItem,
-    BaseAuthListItems,
+    BaseAuthCreateItemOperation,
+    BaseAuthDeleteItemOperation,
+    BaseAuthListItemsOperation,
     BaseAuthRegistryOperation,
-    BaseAuthRenameItem,
+    BaseAuthRenameItemOperation,
 )
 
 from .items import AuthTag
@@ -42,28 +42,28 @@ class BaseAuthTagsOperation[ParametersType, ResultType](
         return self.project.auth.storage.profiles.tags
 
 
-class AuthCreateTag(
-    BaseAuthCreateItem[AuthTag], BaseAuthTagsOperation[AuthTag, AuthTag]
+class AuthCreateTagOperation(
+    BaseAuthCreateItemOperation[AuthTag], BaseAuthTagsOperation[AuthTag, AuthTag]
 ):
     PERMISSIONS = Permissions(AuthTagsPermissions.CAN_CREATE)
 
 
-class AuthListTags(
-    BaseAuthListItems[AuthTag],
+class AuthListTagsOperation(
+    BaseAuthListItemsOperation[AuthTag],
     BaseAuthTagsOperation[None, tuple[AuthTag, ...]],
 ):
     PERMISSIONS = Permissions(AuthTagsPermissions.CAN_READ)
 
 
-class AuthRenameTag(
-    BaseAuthRenameItem[AuthTag],
+class AuthRenameTagOperation(
+    BaseAuthRenameItemOperation[AuthTag],
     BaseAuthTagsOperation[AuthRenameItemParameters, AuthTag],
 ):
     PERMISSIONS = Permissions(AuthTagsPermissions.CAN_UPDATE)
 
 
-class AuthDeleteTag(
-    BaseAuthDeleteItem[AuthTag],
+class AuthDeleteTagOperation(
+    BaseAuthDeleteItemOperation[AuthTag],
     BaseAuthTagsOperation[AuthDeleteItemParameters, None],
 ):
     PERMISSIONS = Permissions(AuthTagsPermissions.CAN_DELETE)

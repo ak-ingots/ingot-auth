@@ -12,7 +12,7 @@ from ingot_auth.policies import (
     AuthHasValue,
     AuthLengthConfig,
     AuthLengthPolicy,
-    AuthPolicies,
+    AuthPoliciesUnit,
     AuthPolicyBinding,
     AuthPolicyNotFoundError,
     AuthPolicyPreset,
@@ -105,12 +105,12 @@ class BrokenPreset(AuthPolicyPreset[AuthValueContext]):
         return {"unbound": UnboundPolicy.bind(None)}
 
 
-class TstPolicies(AuthPolicies):
+class TstPoliciesUnit(AuthPoliciesUnit):
     banned_words = Slot(BannedWordsPolicy)
     changed = Slot(ChangedPolicy)
 
 
-class TstPresets(Unit):
+class TstPresetsUnit(Unit):
     """The presets, as a method holds them."""
 
     preset_nickname = Slot(NicknamePreset)
@@ -119,25 +119,25 @@ class TstPresets(Unit):
     preset_broken = Slot(BrokenPreset)
 
 
-class TstAuth(AuthMemoryUnit):
-    policies = Slot(TstPolicies)
-    presets = Slot(TstPresets)
+class TstAuthUnit(AuthMemoryUnit):
+    policies = Slot(TstPoliciesUnit)
+    presets = Slot(TstPresetsUnit)
 
 
 class TstProject(AuthMemoryProject):
-    auth = Slot(TstAuth)
+    auth = Slot(TstAuthUnit)
 
 
-class StrictPolicies(TstPolicies):
+class StrictPoliciesUnit(TstPoliciesUnit):
     length = Slot(StrictLengthPolicy)
 
 
-class StrictAuth(TstAuth):
-    policies = Slot(StrictPolicies)
+class StrictAuthUnit(TstAuthUnit):
+    policies = Slot(StrictPoliciesUnit)
 
 
 class StrictProject(TstProject):
-    auth = Slot(StrictAuth)
+    auth = Slot(StrictAuthUnit)
 
 
 class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
@@ -231,7 +231,7 @@ class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
 
 class PresetsTestCase(unittest.IsolatedAsyncioTestCase):
     @property
-    def presets(self) -> TstPresets:
+    def presets(self) -> TstPresetsUnit:
         return self.project.auth.presets
 
     @t.override

@@ -8,25 +8,25 @@ __all__ = (
     "AuthProfileConflictError",
     "AuthProfileError",
     "AuthProfileNotFoundError",
-    "AuthProfiles",
+    "AuthProfilesUnit",
     "AuthProfilesStorage",
 )
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
-from .attrs import AuthAttrs
+from .attrs import AuthAttrsUnit
 from .errors import AuthProfileConflictError, AuthProfileError, AuthProfileNotFoundError
 from .items import AuthProfile
 from .storage import AuthProfilesStorage
-from .tags import AuthTags
+from .tags import AuthTagsUnit
 
 
-class AuthProfiles(CliUnit):
+class AuthProfilesUnit(CliUnit):
     """The profiles: the registries of the tags and of the attributes."""
 
     cli_name = "profiles"
     cli_description = "The profiles of the users."
 
-    tags = Slot(AuthTags)
-    attrs = Slot(AuthAttrs)
+    tags = Slot(AuthTagsUnit)
+    attrs = Slot(AuthAttrsUnit)

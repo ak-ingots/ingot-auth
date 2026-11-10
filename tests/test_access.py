@@ -24,12 +24,12 @@ from ingot_auth.contrib.storages.memory import (
     AuthMemoryProfilesStorage,
     AuthMemoryStorage,
 )
-from ingot_auth.access import AuthAccess
+from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import (
     AuthGroup,
     AuthGroupInfo,
     AuthGroupNotFoundError,
-    AuthGroups,
+    AuthGroupsUnit,
 )
 from ingot_auth.access.members import AuthMembership, AuthMembersPermissions
 from ingot_auth.profiles import AuthProfile, AuthProfileNotFoundError
@@ -60,7 +60,7 @@ class BuyersGroup(AuthGroup):
         return super()._get_permissions() | Permissions(ShopPermissions.CAN_BUY)
 
 
-class ShopGroups(AuthGroups):
+class ShopGroupsUnit(AuthGroupsUnit):
     admins = Slot(ShopAdminsGroup)
     buyers = Slot(BuyersGroup)
 
@@ -78,7 +78,7 @@ class EditorsGroup(AuthGroup):
         return super()._get_permissions() | Permissions(ArticlesPermissions.CAN_PUBLISH)
 
 
-class ArticlesGroups(AuthGroups):
+class ArticlesGroupsUnit(AuthGroupsUnit):
     admins = Slot(ArticlesAdminsGroup)
     editors = Slot(EditorsGroup)
 
@@ -92,20 +92,20 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
         )
 
 
-class AppGroups(ShopGroups, ArticlesGroups):
+class AppGroupsUnit(ShopGroupsUnit, ArticlesGroupsUnit):
     admins = Slot(AppAdminsGroup)
 
 
-class AppAccess(AuthAccess):
-    groups = Slot(AppGroups)
+class AppAccessUnit(AuthAccessUnit):
+    groups = Slot(AppGroupsUnit)
 
 
-class AppAuth(AuthMemoryUnit):
-    access = Slot(AppAccess)
+class AppAuthUnit(AuthMemoryUnit):
+    access = Slot(AppAccessUnit)
 
 
 class AppProject(AuthMemoryProject):
-    auth = Slot(AppAuth)
+    auth = Slot(AppAuthUnit)
 
 
 class GroupsTestCase(unittest.TestCase):
@@ -147,13 +147,15 @@ class GroupsTestCase(unittest.TestCase):
         # refused by mypy too
         with self.assertRaises(TypeError):
 
-            class UnjoinedGroups(ShopGroups, ArticlesGroups):  # type: ignore[misc]
+            class UnjoinedGroupsUnit(  # type: ignore[misc]
+                ShopGroupsUnit, ArticlesGroupsUnit
+            ):
                 pass
 
     def test_a_name_of_a_group_is_lowercase(self) -> None:
         with self.assertRaisesRegex(TypeError, "Admins"):
 
-            class WrongGroups(AuthGroups):
+            class WrongGroups(AuthGroupsUnit):
                 Admins = Slot(EditorsGroup)
 
 
@@ -283,12 +285,12 @@ class SeededStorage(AuthMemoryStorage):
     access = Slot(SeededAccessStorage)
 
 
-class SeededAuth(AppAuth):
+class SeededAuthUnit(AppAuthUnit):
     storage = Slot(SeededStorage)
 
 
 class SeededProject(AuthMemoryProject):
-    auth = Slot(SeededAuth)
+    auth = Slot(SeededAuthUnit)
 
 
 class CommandsTestCase(unittest.TestCase):

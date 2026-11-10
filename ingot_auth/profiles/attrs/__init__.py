@@ -2,7 +2,7 @@
 
 __all__ = (
     "AuthAttr",
-    "AuthAttrs",
+    "AuthAttrsUnit",
     "AuthAttrsPermissions",
     "BaseAuthAttrsStorage",
 )
@@ -17,12 +17,17 @@ from .commands import (
     AuthRenameAttrCommand,
 )
 from .items import AuthAttr
-from .operations import AuthCreateAttr, AuthDeleteAttr, AuthListAttrs, AuthRenameAttr
+from .operations import (
+    AuthCreateAttrOperation,
+    AuthDeleteAttrOperation,
+    AuthListAttrsOperation,
+    AuthRenameAttrOperation,
+)
 from .permissions import AuthAttrsPermissions
 from .storage import BaseAuthAttrsStorage
 
 
-class AuthAttrs(CliUnit):
+class AuthAttrsUnit(CliUnit):
     """
     The registry of the attributes: its operations, ``op_*``, and the
     commands running them, ``cmd_*``; the attributes themselves are in the
@@ -32,10 +37,10 @@ class AuthAttrs(CliUnit):
     cli_name = "attrs"
     cli_description = "The attributes of the profiles."
 
-    op_create = Factory(AuthCreateAttr)
-    op_list = Factory(AuthListAttrs)
-    op_rename = Factory(AuthRenameAttr)
-    op_delete = Factory(AuthDeleteAttr)
+    op_create = Factory(AuthCreateAttrOperation)
+    op_list = Factory(AuthListAttrsOperation)
+    op_rename = Factory(AuthRenameAttrOperation)
+    op_delete = Factory(AuthDeleteAttrOperation)
 
     cmd_create = Slot(AuthCreateAttrCommand)
     cmd_list = Slot(AuthListAttrsCommand)

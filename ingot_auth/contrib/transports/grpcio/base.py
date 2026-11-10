@@ -21,7 +21,7 @@ class BaseAuthGrpcServicer(GrpcServicer):
     A servicer of the auth: an RPC turns its request into the parameters of
     an operation and the result into its reply, nothing else. The operation
     runs for the caller of :meth:`_get_caller`; its exceptions reach the
-    policies of :class:`~..errors.AuthGrpcErrors`.
+    policies of :class:`~..errors.AuthGrpcErrorsUnit`.
     """
 
     project: "AuthProject"

@@ -1,7 +1,7 @@
 The policies and their presets. A policy is an entity of the project, a
 rule a value is checked against with the config a binding gives it: the
 length and the characters, by the sets of Unicode, in the core, others as
-slots of `AuthPolicies`, found by their class. A policy takes the part of
+slots of `AuthPoliciesUnit`, found by their class. A policy takes the part of
 a context its protocol tells; a preset is of a context, and binds in order
 the policies taking its parts, each by `bind()` with a
 config of its type, so mypy refuses a policy or a config that does not

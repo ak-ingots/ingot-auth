@@ -25,10 +25,10 @@ from ingot_auth.registry.operations import (
 
 from .items import AuthSessionAttr, AuthSessionAttrSource
 from .operations import (
-    AuthCreateSessionAttr,
-    AuthDeleteSessionAttr,
-    AuthListSessionAttrs,
-    AuthRenameSessionAttr,
+    AuthCreateSessionAttrOperation,
+    AuthDeleteSessionAttrOperation,
+    AuthListSessionAttrsOperation,
+    AuthRenameSessionAttrOperation,
 )
 
 if t.TYPE_CHECKING:
@@ -88,7 +88,7 @@ class AuthCreateSessionAttrCommand(
         )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthCreateSessionAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateSessionAttrOperation]":
         return self.project.auth.sessions.attrs.op_create
 
 
@@ -99,7 +99,7 @@ class AuthListSessionAttrsCommand(
     cli_description = "Prints the attributes of the sessions."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListSessionAttrs]":
+    def _get_operation(self) -> "BoundFactory[AuthListSessionAttrsOperation]":
         return self.project.auth.sessions.attrs.op_list
 
 
@@ -112,7 +112,7 @@ class AuthRenameSessionAttrCommand(
     )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthRenameSessionAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameSessionAttrOperation]":
         return self.project.auth.sessions.attrs.op_rename
 
 
@@ -125,5 +125,5 @@ class AuthDeleteSessionAttrCommand(
     )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthDeleteSessionAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteSessionAttrOperation]":
         return self.project.auth.sessions.attrs.op_delete

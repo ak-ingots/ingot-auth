@@ -3,11 +3,11 @@
 __all__ = (
     "AuthDeleteItemParameters",
     "AuthRenameItemParameters",
-    "BaseAuthCreateItem",
-    "BaseAuthDeleteItem",
-    "BaseAuthListItems",
+    "BaseAuthCreateItemOperation",
+    "BaseAuthDeleteItemOperation",
+    "BaseAuthListItemsOperation",
     "BaseAuthRegistryOperation",
-    "BaseAuthRenameItem",
+    "BaseAuthRenameItemOperation",
 )
 
 import abc
@@ -56,7 +56,7 @@ class BaseAuthRegistryOperation[ItemType: AuthItem, ParametersType, ResultType](
             raise AuthItemInvalidError.for_name(self._get_storage().REGISTRY, name)
 
 
-class BaseAuthCreateItem[ItemType: AuthItem](
+class BaseAuthCreateItemOperation[ItemType: AuthItem](
     BaseAuthRegistryOperation[ItemType, ItemType, ItemType]
 ):
     """Creates an item, returning it."""
@@ -71,7 +71,7 @@ class BaseAuthCreateItem[ItemType: AuthItem](
         return parameters
 
 
-class BaseAuthListItems[ItemType: AuthItem](
+class BaseAuthListItemsOperation[ItemType: AuthItem](
     BaseAuthRegistryOperation[ItemType, None, tuple[ItemType, ...]]
 ):
     """The items, by id."""
@@ -83,7 +83,7 @@ class BaseAuthListItems[ItemType: AuthItem](
         return await self._get_storage().get_all()
 
 
-class BaseAuthRenameItem[ItemType: AuthItem](
+class BaseAuthRenameItemOperation[ItemType: AuthItem](
     BaseAuthRegistryOperation[ItemType, AuthRenameItemParameters, ItemType]
 ):
     """Gives an item a new name, returning the item renamed."""
@@ -96,7 +96,7 @@ class BaseAuthRenameItem[ItemType: AuthItem](
         return await self._get_storage().rename(parameters.id, parameters.name)
 
 
-class BaseAuthDeleteItem[ItemType: AuthItem](
+class BaseAuthDeleteItemOperation[ItemType: AuthItem](
     BaseAuthRegistryOperation[ItemType, AuthDeleteItemParameters, None]
 ):
     """

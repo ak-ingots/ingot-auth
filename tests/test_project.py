@@ -8,8 +8,8 @@ from unittest import mock
 import ingot_auth
 from ingot_auth.__main__ import main
 from ingot_auth.auth import AuthUnit
-from ingot_auth.logging import AuthLogging
-from ingot_auth.settings import AuthSettings
+from ingot_auth.logging import AuthLoggingUnit
+from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingots.defaults import Project
 from ingots.puer.cli import CommandRunner
@@ -33,9 +33,9 @@ class ProjectTestCase(unittest.TestCase):
 
     def test_the_project_extends_the_defaults(self) -> None:
         self.assertTrue(issubclass(ingot_auth.AuthProject, Project))
-        self.assertIs(ingot_auth.AuthProject.settings.cls, AuthSettings)
-        self.assertIs(ingot_auth.AuthProject.logging.cls, AuthLogging)
-        self.assertIs(AuthSettings.configs.cls, AuthConfigs)
+        self.assertIs(ingot_auth.AuthProject.settings.cls, AuthSettingsUnit)
+        self.assertIs(ingot_auth.AuthProject.logging.cls, AuthLoggingUnit)
+        self.assertIs(AuthSettingsUnit.configs.cls, AuthConfigs)
         self.assertIs(ingot_auth.AuthProject.auth.cls, AuthUnit)
 
     def test_the_configs_of_the_addon_are_read(self) -> None:

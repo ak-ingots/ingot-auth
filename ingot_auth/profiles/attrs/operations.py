@@ -1,10 +1,10 @@
 """The operations of the attributes."""
 
 __all__ = (
-    "AuthCreateAttr",
-    "AuthDeleteAttr",
-    "AuthListAttrs",
-    "AuthRenameAttr",
+    "AuthCreateAttrOperation",
+    "AuthDeleteAttrOperation",
+    "AuthListAttrsOperation",
+    "AuthRenameAttrOperation",
     "BaseAuthAttrsOperation",
 )
 
@@ -15,11 +15,11 @@ from ingots.defaults.operations import Permissions
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
-    BaseAuthCreateItem,
-    BaseAuthDeleteItem,
-    BaseAuthListItems,
+    BaseAuthCreateItemOperation,
+    BaseAuthDeleteItemOperation,
+    BaseAuthListItemsOperation,
     BaseAuthRegistryOperation,
-    BaseAuthRenameItem,
+    BaseAuthRenameItemOperation,
 )
 
 from .items import AuthAttr
@@ -42,28 +42,28 @@ class BaseAuthAttrsOperation[ParametersType, ResultType](
         return self.project.auth.storage.profiles.attrs
 
 
-class AuthCreateAttr(
-    BaseAuthCreateItem[AuthAttr], BaseAuthAttrsOperation[AuthAttr, AuthAttr]
+class AuthCreateAttrOperation(
+    BaseAuthCreateItemOperation[AuthAttr], BaseAuthAttrsOperation[AuthAttr, AuthAttr]
 ):
     PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_CREATE)
 
 
-class AuthListAttrs(
-    BaseAuthListItems[AuthAttr],
+class AuthListAttrsOperation(
+    BaseAuthListItemsOperation[AuthAttr],
     BaseAuthAttrsOperation[None, tuple[AuthAttr, ...]],
 ):
     PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_READ)
 
 
-class AuthRenameAttr(
-    BaseAuthRenameItem[AuthAttr],
+class AuthRenameAttrOperation(
+    BaseAuthRenameItemOperation[AuthAttr],
     BaseAuthAttrsOperation[AuthRenameItemParameters, AuthAttr],
 ):
     PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_UPDATE)
 
 
-class AuthDeleteAttr(
-    BaseAuthDeleteItem[AuthAttr],
+class AuthDeleteAttrOperation(
+    BaseAuthDeleteItemOperation[AuthAttr],
     BaseAuthAttrsOperation[AuthDeleteItemParameters, None],
 ):
     PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_DELETE)

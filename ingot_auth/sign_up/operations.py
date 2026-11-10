@@ -1,6 +1,10 @@
 """The operations of the sign-up."""
 
-__all__ = ("AuthAnswerSignUp", "AuthStartSignUp", "BaseAuthSignUpOperation")
+__all__ = (
+    "AuthAnswerSignUpOperation",
+    "AuthStartSignUpOperation",
+    "BaseAuthSignUpOperation",
+)
 
 import dataclasses
 import datetime
@@ -125,7 +129,7 @@ class BaseAuthSignUpOperation[ParametersType](
         return datetime.timedelta(seconds=configs.AUTH_ATTEMPT_TTL)
 
 
-class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
+class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
     """
     Starts a sign-up by a method, with the values of the attributes of the
     session the client gives.
@@ -150,7 +154,7 @@ class AuthStartSignUp(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
         return await self.proceed(parameters.method, step, parameters.values)
 
 
-class AuthAnswerSignUp(BaseAuthSignUpOperation[AuthAnswerSignUpParameters]):
+class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParameters]):
     """
     Answers the challenge of a sign-up. The attempt is taken by the answer: a
     refused one keeps it until the answers refused reach

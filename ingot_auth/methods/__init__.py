@@ -4,9 +4,9 @@ verifies in steps, a challenge asking for an answer or the verified subject,
 and an attempt keeps a flow between its steps. The core binds no method: its
 methods, one subpackage each, ``nickname`` and ``email_code``, are a
 catalogue an application takes from, declaring those it takes as slots of
-:class:`AuthMethods`::
+:class:`AuthMethodsUnit`::
 
-    class AppMethods(AuthMethods):
+    class AppMethods(AuthMethodsUnit):
         nickname = Slot(AuthNicknameMethod)
 """
 
@@ -19,7 +19,7 @@ __all__ = (
     "AuthMethodNotFoundError",
     "AuthMethodRefusedError",
     "AuthMethodUnsupportedError",
-    "AuthMethods",
+    "AuthMethodsUnit",
     "AuthStep",
     "AuthVerified",
     "BaseAuthAttemptsCache",
@@ -43,7 +43,7 @@ from .errors import (
 from .steps import AuthChallenge, AuthStep, AuthVerified
 
 
-class AuthMethods(Unit):
+class AuthMethodsUnit(Unit):
     """
     The methods of the project, none here: a subclass declares each as a
     slot, the name of the slot the name of the method.

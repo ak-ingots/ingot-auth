@@ -6,7 +6,7 @@ happened on, the device, the IP, declared in a registry with their sources.
 __all__ = (
     "AuthSessionAttr",
     "AuthSessionAttrSource",
-    "AuthSessionAttrs",
+    "AuthSessionAttrsUnit",
     "AuthSessionAttrsPermissions",
     "BaseAuthSessionAttrsStorage",
     "check_client_values",
@@ -23,17 +23,17 @@ from .commands import (
 )
 from .items import AuthSessionAttr, AuthSessionAttrSource
 from .operations import (
-    AuthCreateSessionAttr,
-    AuthDeleteSessionAttr,
-    AuthListSessionAttrs,
-    AuthRenameSessionAttr,
+    AuthCreateSessionAttrOperation,
+    AuthDeleteSessionAttrOperation,
+    AuthListSessionAttrsOperation,
+    AuthRenameSessionAttrOperation,
 )
 from .permissions import AuthSessionAttrsPermissions
 from .storage import BaseAuthSessionAttrsStorage
 from .values import check_client_values
 
 
-class AuthSessionAttrs(CliUnit):
+class AuthSessionAttrsUnit(CliUnit):
     """
     The registry of the attributes of the sessions: its operations, ``op_*``,
     and the commands running them, ``cmd_*``; the attributes themselves are in
@@ -43,10 +43,10 @@ class AuthSessionAttrs(CliUnit):
     cli_name = "attrs"
     cli_description = "The attributes of the sessions."
 
-    op_create = Factory(AuthCreateSessionAttr)
-    op_list = Factory(AuthListSessionAttrs)
-    op_rename = Factory(AuthRenameSessionAttr)
-    op_delete = Factory(AuthDeleteSessionAttr)
+    op_create = Factory(AuthCreateSessionAttrOperation)
+    op_list = Factory(AuthListSessionAttrsOperation)
+    op_rename = Factory(AuthRenameSessionAttrOperation)
+    op_delete = Factory(AuthDeleteSessionAttrOperation)
 
     cmd_create = Slot(AuthCreateSessionAttrCommand)
     cmd_list = Slot(AuthListSessionAttrsCommand)

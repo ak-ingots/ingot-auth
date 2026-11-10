@@ -1,14 +1,14 @@
 """The operations of the presets of the sessions."""
 
 __all__ = (
-    "AuthBindSessionAttr",
-    "AuthCreateSessionPreset",
-    "AuthDeleteSessionPreset",
-    "AuthListSessionPresetBindings",
-    "AuthListSessionPresets",
-    "AuthRenameSessionPreset",
+    "AuthBindSessionAttrOperation",
+    "AuthCreateSessionPresetOperation",
+    "AuthDeleteSessionPresetOperation",
+    "AuthListSessionPresetBindingsOperation",
+    "AuthListSessionPresetsOperation",
+    "AuthRenameSessionPresetOperation",
     "AuthUnbindSessionAttrParameters",
-    "AuthUnbindSessionAttr",
+    "AuthUnbindSessionAttrOperation",
     "BaseAuthSessionPresetsOperation",
 )
 
@@ -21,11 +21,11 @@ from ingot_auth.registry import AuthItemNotFoundError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
-    BaseAuthCreateItem,
-    BaseAuthDeleteItem,
-    BaseAuthListItems,
+    BaseAuthCreateItemOperation,
+    BaseAuthDeleteItemOperation,
+    BaseAuthListItemsOperation,
     BaseAuthRegistryOperation,
-    BaseAuthRenameItem,
+    BaseAuthRenameItemOperation,
 )
 
 from .items import AuthSessionPreset, AuthSessionPresetBinding
@@ -59,29 +59,29 @@ class BaseAuthSessionPresetsOperation[ParametersType, ResultType](
         return {attr.id for attr in attrs}
 
 
-class AuthCreateSessionPreset(
-    BaseAuthCreateItem[AuthSessionPreset],
+class AuthCreateSessionPresetOperation(
+    BaseAuthCreateItemOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[AuthSessionPreset, AuthSessionPreset],
 ):
     PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_CREATE)
 
 
-class AuthListSessionPresets(
-    BaseAuthListItems[AuthSessionPreset],
+class AuthListSessionPresetsOperation(
+    BaseAuthListItemsOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[None, tuple[AuthSessionPreset, ...]],
 ):
     PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_READ)
 
 
-class AuthRenameSessionPreset(
-    BaseAuthRenameItem[AuthSessionPreset],
+class AuthRenameSessionPresetOperation(
+    BaseAuthRenameItemOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[AuthRenameItemParameters, AuthSessionPreset],
 ):
     PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_RENAME)
 
 
-class AuthDeleteSessionPreset(
-    BaseAuthDeleteItem[AuthSessionPreset],
+class AuthDeleteSessionPresetOperation(
+    BaseAuthDeleteItemOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[AuthDeleteItemParameters, None],
 ):
     """Deletes a preset with its bindings; its id is never given again."""
@@ -89,7 +89,7 @@ class AuthDeleteSessionPreset(
     PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_DELETE)
 
 
-class AuthBindSessionAttr(
+class AuthBindSessionAttrOperation(
     BaseAuthSessionPresetsOperation[AuthSessionPresetBinding, AuthSessionPresetBinding]
 ):
     """
@@ -110,7 +110,7 @@ class AuthBindSessionAttr(
         return parameters
 
 
-class AuthUnbindSessionAttr(
+class AuthUnbindSessionAttrOperation(
     BaseAuthSessionPresetsOperation[AuthUnbindSessionAttrParameters, None]
 ):
     """Unbinds an attribute of the sessions from a preset."""
@@ -124,7 +124,7 @@ class AuthUnbindSessionAttr(
         await self._get_storage().unbind(parameters.preset_id, parameters.attr_id)
 
 
-class AuthListSessionPresetBindings(
+class AuthListSessionPresetBindingsOperation(
     BaseAuthSessionPresetsOperation[None, tuple[AuthSessionPresetBinding, ...]]
 ):
     """

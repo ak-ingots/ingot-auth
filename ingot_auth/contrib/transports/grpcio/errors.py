@@ -1,7 +1,7 @@
 """The statuses of the exceptions of the auth."""
 
 __all__ = (
-    "AuthGrpcErrors",
+    "AuthGrpcErrorsUnit",
     "AuthGrpcGroupNotFoundPolicy",
     "AuthGrpcItemConflictPolicy",
     "AuthGrpcItemInvalidPolicy",
@@ -15,7 +15,7 @@ __all__ = (
 import typing as t
 
 import grpc
-from ingot_grpcio.grpc.errors import BaseStaticGrpcErrorPolicy, GrpcErrors
+from ingot_grpcio.grpc.errors import BaseStaticGrpcErrorPolicy, GrpcErrorsUnit
 from ingots.defaults.operations import OperationPermissionsError
 from ingots.puer import Slot
 
@@ -92,7 +92,7 @@ class AuthGrpcPermissionsPolicy(BaseAuthGrpcErrorPolicy):
     REASON = "PERMISSION_DENIED"
 
 
-class AuthGrpcErrors(GrpcErrors):
+class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     """The policies of the auth: the errors unit of the gRPC takes it as a base."""
 
     auth_item_conflict = Slot(AuthGrpcItemConflictPolicy)
