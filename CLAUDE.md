@@ -13,7 +13,10 @@ with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 the auth of the project: the units `profiles/`, with the registries `tags/`
 and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
-many, all on the shared `registry/`; the `access/`, its `groups/` entities
+many, all on the shared `registry/`, the sessions themselves kept by the hash
+of their token, their lifetime a strategy in the slot `lifetime`, none by
+default, and `authenticate()` turning a token into an `AuthCaller`, the
+session and the caller cached apart; the `access/`, its `groups/` entities
 in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its
 `members/` the memberships in the storage, and `AuthGroupsGrants`, the
 permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the

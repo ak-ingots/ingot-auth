@@ -2,10 +2,7 @@
 
 __all__ = ("AuthMongoDbSignUpRecordsStorage",)
 
-import decimal
 import typing as t
-
-from bson.decimal128 import Decimal128
 
 from ingot_auth.sign_up import (
     AuthSignUpRecord,
@@ -14,9 +11,7 @@ from ingot_auth.sign_up import (
 )
 
 from ..collection import AuthMongoDbCollectionMixin
-
-if t.TYPE_CHECKING:
-    from ingot_auth.registry import AuthAttrValue
+from ..values import build_bson_values, build_values
 
 
 class AuthMongoDbSignUpRecordsStorage(
@@ -24,9 +19,7 @@ class AuthMongoDbSignUpRecordsStorage(
 ):
     """
     The records of the sign-ups in MongoDB: a document a record, the uid of its
-    profile the ``_id``. The values are a list of the ids of their attributes
-    with them, as a key of a document is a string; a decimal is a ``Decimal128``
-    of BSON, the other types are those of BSON already.
+    profile the ``_id``, its values as :func:`build_bson_values` gives them.
     """
 
     MONGODB_COLLECTION: t.ClassVar[str] = "auth_sign_up_records"
@@ -39,10 +32,7 @@ class AuthMongoDbSignUpRecordsStorage(
                 "_id": record.uid,
                 "method": record.method,
                 "signed_up_at": record.signed_up_at,
-                "values": [
-                    {"attr_id": attr_id, "value": _build_bson_value(value)}
-                    for attr_id, value in record.values.items()
-                ],
+                "values": build_bson_values(record.values),
             },
             session=self._mongodb_get_session(),
         )
@@ -59,18 +49,5 @@ class AuthMongoDbSignUpRecordsStorage(
             uid=document["_id"],
             method=document["method"],
             signed_up_at=document["signed_up_at"],
-            values={
-                bound["attr_id"]: _build_value(bound["value"])
-                for bound in document["values"]
-            },
+            values=build_values(document["values"]),
         )
-
-
-def _build_bson_value(value: "AuthAttrValue") -> object:
-    return Decimal128(value) if isinstance(value, decimal.Decimal) else value
-
-
-def _build_value(value: object) -> "AuthAttrValue":
-    if isinstance(value, Decimal128):
-        return value.to_decimal()
-    return t.cast("AuthAttrValue", value)

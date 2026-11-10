@@ -1,24 +1,152 @@
 """
-The sessions: the registry of the attributes of what a sign-up, a sign-in
-happened on, the presets asking for them, and their storage. The sessions
-themselves come here too.
+The sessions: what a sign-in opens and a token stands for, the caller of a
+request, with the registry of the attributes of what a sign-up, a sign-in
+happened on, the presets asking for them, their storage and their caches.
 """
 
-__all__ = ("AuthSessionsStorage", "AuthSessionsUnit")
+__all__ = (
+    "AuthCaller",
+    "AuthFixedLifetime",
+    "AuthSessionCloseReason",
+    "AuthSessionError",
+    "AuthSessionExpiredError",
+    "AuthSessionNotFoundError",
+    "AuthSessionRecord",
+    "AuthSessionsStorage",
+    "AuthSessionsUnit",
+    "BaseAuthCallersCache",
+    "BaseAuthSessionLifetime",
+    "BaseAuthSessionsCache",
+)
+
+import datetime
+import hashlib
+import os
+import secrets
+import typing as t
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
 from .attrs import AuthSessionAttrsUnit
+from .cache import BaseAuthCallersCache, BaseAuthSessionsCache
+from .errors import (
+    AuthSessionError,
+    AuthSessionExpiredError,
+    AuthSessionNotFoundError,
+)
+from .items import AuthCaller, AuthSessionCloseReason, AuthSessionRecord
+from .lifetimes import AuthFixedLifetime, BaseAuthSessionLifetime
 from .presets import AuthSessionPresetsUnit
 from .storage import AuthSessionsStorage
 
+if t.TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from ingot_auth.project import AuthProject
+    from ingot_auth.registry import AuthAttrValue
+
 
 class AuthSessionsUnit(CliUnit):
-    """The sessions: the registries of their attributes and of the presets."""
+    """
+    The sessions: the registries of their attributes and of the presets, and
+    the strategy of their lifetime in the slot ``lifetime``, none by default,
+    which a project declares. A sign-in opens a session and gives its token;
+    a request brings the token, and :meth:`authenticate` turns it into the
+    caller, from the cache, or from the storage and the access on a miss.
+    """
 
     cli_name = "sessions"
     cli_description = "The sessions of the users."
 
+    project: "AuthProject"
+
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
+    # mypy refuses an abstract class where a type is expected: a slot of
+    # one is an open question of ingots
+    lifetime = Slot(BaseAuthSessionLifetime)  # type: ignore[type-abstract]
+
+    @t.final
+    async def open(
+        self, uid: str, method: str, values: "Mapping[int, AuthAttrValue]"
+    ) -> str:
+        """
+        Opens a session of a profile signed in by a method, with the values of
+        the attributes of the session, checked by the caller, and gives its
+        token: 256 random bits, given once, kept by none but the client.
+        """
+        token = secrets.token_urlsafe(32)
+        await self.project.auth.storage.sessions.open(
+            AuthSessionRecord(
+                id=self._create_id(),
+                uid=uid,
+                method=method,
+                token_hash=_hash_token(token),
+                values=values,
+                opened_at=self._get_now(),
+            )
+        )
+        return token
+
+    @t.final
+    async def authenticate(self, token: str) -> AuthCaller:
+        """
+        The caller of the session of a token: its uid, the id of the session and
+        the permissions of the access, from the cache, or formed on a miss.
+
+        :raises AuthSessionNotFoundError: no open session has the token.
+        :raises AuthSessionExpiredError: its session expired, closed now.
+        """
+        token_hash = _hash_token(token)
+        cache = self.project.auth.cache
+        now = self._get_now()
+        session = await cache.sessions.get(token_hash)
+        if session is None:
+            session = await self.project.auth.storage.sessions.find(token_hash)
+            await cache.sessions.put(session, now + self._get_cache_ttl())
+        reason = self.lifetime.check(session, now)
+        if reason is not None:
+            await self._expire(session, reason, now)
+            raise AuthSessionExpiredError.for_reason(reason)
+        caller = await cache.callers.get(token_hash)
+        if caller is None:
+            permissions = await self.project.auth.access.permissions.get_permissions(
+                session.uid
+            )
+            caller = AuthCaller(
+                uid=session.uid, session_id=session.id, permissions=permissions
+            )
+            await cache.callers.put(token_hash, caller, now + self._get_cache_ttl())
+        return caller
+
+    def _create_id(self) -> str:
+        """The id of a new session: random, as the uids are."""
+        return os.urandom(16).hex()
+
+    def _get_now(self) -> datetime.datetime:
+        return datetime.datetime.now(datetime.UTC)
+
+    def _get_cache_ttl(self) -> datetime.timedelta:
+        configs = self.project.settings.configs
+        return datetime.timedelta(seconds=configs.AUTH_SESSION_CACHE_TTL)
+
+    async def _expire(
+        self,
+        session: AuthSessionRecord,
+        reason: AuthSessionCloseReason,
+        now: datetime.datetime,
+    ) -> None:
+        """Closes an expired session and forgets it in the cache."""
+        try:
+            await self.project.auth.storage.sessions.close(session.id, reason, now)
+        except AuthSessionNotFoundError:
+            pass  # closed meanwhile, by another request
+        cache = self.project.auth.cache
+        await cache.sessions.forget(session.token_hash)
+        await cache.callers.forget(session.token_hash)
+
+
+def _hash_token(token: str) -> str:
+    # sha256: the token is random, a slow hash would buy nothing
+    return hashlib.sha256(token.encode()).hexdigest()

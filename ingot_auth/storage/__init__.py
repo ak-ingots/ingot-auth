@@ -51,7 +51,7 @@ class AuthStorage(Unit):
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots
     profiles = Slot(AuthProfilesStorage)  # type: ignore[type-abstract]
-    sessions = Slot(AuthSessionsStorage)
+    sessions = Slot(AuthSessionsStorage)  # type: ignore[type-abstract]
     sign_up = Slot(AuthSignUpStorage)
     access = Slot(AuthAccessStorage)
 

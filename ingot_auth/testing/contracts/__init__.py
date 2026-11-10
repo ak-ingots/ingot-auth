@@ -13,24 +13,32 @@ runtime. A test case takes a contract and tells what to run it on::
 __all__ = (
     "AuthAttemptsCacheContract",
     "AuthAttrsStorageContract",
+    "AuthCallersCacheContract",
     "AuthIdentitiesStorageContract",
     "AuthMembersStorageContract",
     "AuthProfilesStorageContract",
     "AuthSecretsStorageContract",
     "AuthSessionAttrsStorageContract",
     "AuthSessionPresetsStorageContract",
+    "AuthSessionsCacheContract",
+    "AuthSessionsStorageContract",
     "AuthSignUpRecordsStorageContract",
     "AuthStorageTransactionsContract",
     "AuthTagsStorageContract",
 )
 
 from .access import AuthMembersStorageContract
-from .cache import AuthAttemptsCacheContract
+from .cache import (
+    AuthAttemptsCacheContract,
+    AuthCallersCacheContract,
+    AuthSessionsCacheContract,
+)
 from .profiles import (
     AuthIdentitiesStorageContract,
     AuthProfilesStorageContract,
     AuthSecretsStorageContract,
 )
+from .sessions import AuthSessionsStorageContract
 from .sign_up import AuthSignUpRecordsStorageContract
 from .storage import (
     AuthAttrsStorageContract,

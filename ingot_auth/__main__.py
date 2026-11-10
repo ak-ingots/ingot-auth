@@ -14,11 +14,17 @@ from .auth import AuthUnit
 from .contrib.caches.memory import AuthMemoryCache
 from .contrib.storages.memory import AuthMemoryStorage
 from .project import AuthProject
+from .sessions import AuthFixedLifetime, AuthSessionsUnit
+
+
+class AuthMemorySessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthFixedLifetime)
 
 
 class AuthMemoryUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
     cache = Slot(AuthMemoryCache)
+    sessions = Slot(AuthMemorySessionsUnit)
 
 
 class AuthMemoryProject(AuthProject):
