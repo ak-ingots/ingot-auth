@@ -4,7 +4,7 @@ read them.
 """
 
 __all__ = (
-    "AuthGetMetadata",
+    "AuthGetMetadataOperation",
     "AuthMetadata",
     "AuthMetadataPermissions",
     "AuthMetadataUnit",
@@ -21,11 +21,11 @@ from .items import (
     AuthProfileMetadata,
     AuthSessionMetadata,
 )
-from .operations import AuthGetMetadata
+from .operations import AuthGetMetadataOperation
 from .permissions import AuthMetadataPermissions
 
 
 class AuthMetadataUnit(Unit):
     """The operations of the metadata."""
 
-    op_get = Factory(AuthGetMetadata)
+    op_get = Factory(AuthGetMetadataOperation)

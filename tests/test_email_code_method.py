@@ -18,7 +18,7 @@ from ingot_auth.methods import (
     AuthChallenge,
     AuthMethodInvalidError,
     AuthMethodRefusedError,
-    AuthMethods,
+    AuthMethodsUnit,
     AuthVerified,
 )
 from ingot_auth.policies import (
@@ -64,16 +64,16 @@ class TstEmailCodeMethod(BaseAuthEmailCodeMethod):
         self.sent.append((email, code))
 
 
-class TstMethods(AuthMethods):
+class TstMethodsUnit(AuthMethodsUnit):
     email_code = Slot(TstEmailCodeMethod)
 
 
-class TstAuth(AuthMemoryUnit):
-    methods = Slot(TstMethods)
+class TstAuthUnit(AuthMemoryUnit):
+    methods = Slot(TstMethodsUnit)
 
 
 class TstProject(AuthMemoryProject):
-    auth = Slot(TstAuth)
+    auth = Slot(TstAuthUnit)
 
 
 class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):

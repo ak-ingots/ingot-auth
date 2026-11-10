@@ -10,17 +10,17 @@ import unittest
 from unittest import mock
 
 from ingot_pymongo import MongoDbProject
-from ingot_pymongo.logging import MongoDbLogging
-from ingot_pymongo.settings import MongoDbSettings
+from ingot_pymongo.logging import MongoDbLoggingUnit
+from ingot_pymongo.settings import MongoDbSettingsUnit
 from ingot_pymongo.settings.configs import MongoDbConfigs
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
-from ingot_auth.logging import AuthLogging
+from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.profiles.tags import AuthTag
-from ingot_auth.settings import AuthSettings
+from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
@@ -37,22 +37,22 @@ class TstConfigs(AuthConfigs, MongoDbConfigs):
     pass
 
 
-class TstSettings(AuthSettings, MongoDbSettings):
+class TstSettingsUnit(AuthSettingsUnit, MongoDbSettingsUnit):
     configs = Slot(TstConfigs)
 
 
-class TstLogging(AuthLogging, MongoDbLogging):
+class TstLoggingUnit(AuthLoggingUnit, MongoDbLoggingUnit):
     project: "TstProject"
 
 
-class TstAuth(AuthUnit):
+class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMongoDbStorage)
 
 
 class TstProject(AuthProject, MongoDbProject):
-    settings = Slot(TstSettings)
-    logging = Slot(TstLogging)
-    auth = Slot(TstAuth)
+    settings = Slot(TstSettingsUnit)
+    logging = Slot(TstLoggingUnit)
+    auth = Slot(TstAuthUnit)
 
 
 if t.TYPE_CHECKING:

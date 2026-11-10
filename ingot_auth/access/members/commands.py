@@ -10,22 +10,26 @@ __all__ = (
 import argparse
 import typing as t
 
-from ingot_auth.access.commands import BaseAuthAccessCommand
+from ingots.defaults.operations import BaseOperationCommand
 
 from .items import AuthMembership
 from .operations import (
-    AuthAddMember,
-    AuthListMemberGroups,
-    AuthListMembers,
-    AuthRemoveMember,
+    AuthAddMemberOperation,
+    AuthListMemberGroupsOperation,
+    AuthListMembersOperation,
+    AuthRemoveMemberOperation,
 )
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
 
+    from ingot_auth.project import AuthProject
 
-class BaseAuthMembershipCommand(BaseAuthAccessCommand[AuthMembership, None]):
+
+class BaseAuthMembershipCommand(BaseOperationCommand[AuthMembership, None]):
     """A command on a membership: the group and the uid, as arguments."""
+
+    project: "AuthProject"
 
     cli_args: AuthMembership
 
@@ -50,7 +54,7 @@ class AuthAddMemberCommand(BaseAuthMembershipCommand):
     cli_description = "Adds a user to a group; a member already stays one."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthAddMember]":
+    def _get_operation(self) -> "BoundFactory[AuthAddMemberOperation]":
         return self.project.auth.access.members.op_add
 
 
@@ -59,11 +63,13 @@ class AuthRemoveMemberCommand(BaseAuthMembershipCommand):
     cli_description = "Removes a user from a group."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthRemoveMember]":
+    def _get_operation(self) -> "BoundFactory[AuthRemoveMemberOperation]":
         return self.project.auth.access.members.op_remove
 
 
-class AuthListMembersCommand(BaseAuthAccessCommand[str, tuple[str, ...]]):
+class AuthListMembersCommand(BaseOperationCommand[str, tuple[str, ...]]):
+    project: "AuthProject"
+
     cli_name = "list"
     cli_description = "Prints the uids of the members of a group, one a line."
     cli_args: str
@@ -79,7 +85,7 @@ class AuthListMembersCommand(BaseAuthAccessCommand[str, tuple[str, ...]]):
         return t.cast(str, namespace.members_group)
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListMembers]":
+    def _get_operation(self) -> "BoundFactory[AuthListMembersOperation]":
         return self.project.auth.access.members.op_list
 
     @t.override
@@ -88,7 +94,9 @@ class AuthListMembersCommand(BaseAuthAccessCommand[str, tuple[str, ...]]):
             print(uid)
 
 
-class AuthListMemberGroupsCommand(BaseAuthAccessCommand[str, tuple[str, ...]]):
+class AuthListMemberGroupsCommand(BaseOperationCommand[str, tuple[str, ...]]):
+    project: "AuthProject"
+
     cli_name = "list-groups"
     cli_description = "Prints the groups a user is added to, one a line."
     cli_args: str
@@ -104,7 +112,7 @@ class AuthListMemberGroupsCommand(BaseAuthAccessCommand[str, tuple[str, ...]]):
         return t.cast(str, namespace.members_uid)
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListMemberGroups]":
+    def _get_operation(self) -> "BoundFactory[AuthListMemberGroupsOperation]":
         return self.project.auth.access.members.op_list_groups
 
     @t.override

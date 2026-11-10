@@ -1,14 +1,14 @@
 """
 The policies: the rules a value is checked against, each an entity of the
-project in the registry :class:`AuthPolicies`, found by its class, and their
+project in the registry :class:`AuthPoliciesUnit`, found by its class, and their
 presets, the policies a field of a flow is checked against, bound with their
 configs. A policy takes the part of a context its protocol tells, and a
 preset is bound only the policies its context has the parts of. The core
 gives the policies needing nothing more, the length and the characters; a
 preset is of the method whose field it checks, a slot of the method. An
-application adds its policies as slots of :class:`AuthPolicies`::
+application adds its policies as slots of :class:`AuthPoliciesUnit`::
 
-    class AppPolicies(AuthPolicies):
+    class AppPolicies(AuthPoliciesUnit):
         banned_words = Slot(AppBannedWordsPolicy)
 """
 
@@ -19,7 +19,7 @@ __all__ = (
     "AuthHasValue",
     "AuthLengthConfig",
     "AuthLengthPolicy",
-    "AuthPolicies",
+    "AuthPoliciesUnit",
     "AuthPolicyBinding",
     "AuthPolicyNotFoundError",
     "AuthPolicyPreset",
@@ -40,7 +40,7 @@ from .length import AuthLengthConfig, AuthLengthPolicy
 from .presets import AuthPolicyPreset
 
 
-class AuthPolicies(Unit):
+class AuthPoliciesUnit(Unit):
     """The registry of the policies of the project, one a class, found by it."""
 
     length = Slot(AuthLengthPolicy)

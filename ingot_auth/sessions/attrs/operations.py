@@ -1,10 +1,10 @@
 """The operations of the attributes of the sessions."""
 
 __all__ = (
-    "AuthCreateSessionAttr",
-    "AuthDeleteSessionAttr",
-    "AuthListSessionAttrs",
-    "AuthRenameSessionAttr",
+    "AuthCreateSessionAttrOperation",
+    "AuthDeleteSessionAttrOperation",
+    "AuthListSessionAttrsOperation",
+    "AuthRenameSessionAttrOperation",
     "BaseAuthSessionAttrsOperation",
 )
 
@@ -15,11 +15,11 @@ from ingots.defaults.operations import Permissions
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
-    BaseAuthCreateItem,
-    BaseAuthDeleteItem,
-    BaseAuthListItems,
+    BaseAuthCreateItemOperation,
+    BaseAuthDeleteItemOperation,
+    BaseAuthListItemsOperation,
     BaseAuthRegistryOperation,
-    BaseAuthRenameItem,
+    BaseAuthRenameItemOperation,
 )
 
 from .items import AuthSessionAttr
@@ -42,29 +42,29 @@ class BaseAuthSessionAttrsOperation[ParametersType, ResultType](
         return self.project.auth.storage.sessions.attrs
 
 
-class AuthCreateSessionAttr(
-    BaseAuthCreateItem[AuthSessionAttr],
+class AuthCreateSessionAttrOperation(
+    BaseAuthCreateItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthSessionAttr, AuthSessionAttr],
 ):
     PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_CREATE)
 
 
-class AuthListSessionAttrs(
-    BaseAuthListItems[AuthSessionAttr],
+class AuthListSessionAttrsOperation(
+    BaseAuthListItemsOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[None, tuple[AuthSessionAttr, ...]],
 ):
     PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_READ)
 
 
-class AuthRenameSessionAttr(
-    BaseAuthRenameItem[AuthSessionAttr],
+class AuthRenameSessionAttrOperation(
+    BaseAuthRenameItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthRenameItemParameters, AuthSessionAttr],
 ):
     PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_RENAME)
 
 
-class AuthDeleteSessionAttr(
-    BaseAuthDeleteItem[AuthSessionAttr],
+class AuthDeleteSessionAttrOperation(
+    BaseAuthDeleteItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthDeleteItemParameters, None],
 ):
     PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_DELETE)

@@ -19,7 +19,7 @@ from ingot_auth.methods.nickname.scrypt import hash_password, verify_password
 from ingot_auth.methods import (
     AuthMethodInvalidError,
     AuthMethodRefusedError,
-    AuthMethods,
+    AuthMethodsUnit,
     AuthVerified,
 )
 from ingot_auth.policies import (
@@ -29,7 +29,7 @@ from ingot_auth.policies import (
     AuthHasValue,
     AuthLengthConfig,
     AuthLengthPolicy,
-    AuthPolicies,
+    AuthPoliciesUnit,
     AuthPolicyBinding,
     BaseAuthPolicy,
 )
@@ -53,16 +53,16 @@ class TstCostlierNicknameMethod(TstNicknameMethod):
     SCRYPT_LOG_N = 5
 
 
-class TstMethods(AuthMethods):
+class TstMethodsUnit(AuthMethodsUnit):
     nickname = Slot(TstNicknameMethod)
 
 
-class TstAuth(AuthMemoryUnit):
-    methods = Slot(TstMethods)
+class TstAuthUnit(AuthMemoryUnit):
+    methods = Slot(TstMethodsUnit)
 
 
 class TstProject(AuthMemoryProject):
-    auth = Slot(TstAuth)
+    auth = Slot(TstAuthUnit)
 
 
 class NicknamePreset(AuthNicknameSignUpPreset):
@@ -101,7 +101,7 @@ class PasswordPreset(AuthPasswordSignUpPreset):
         return bindings
 
 
-class TstPolicies(AuthPolicies):
+class TstPoliciesUnit(AuthPoliciesUnit):
     not_nickname = Slot(NotNicknamePolicy)
 
 
@@ -110,29 +110,29 @@ class PolicedNicknameMethod(TstNicknameMethod):
     preset_sign_up_password = Slot(PasswordPreset)
 
 
-class PolicedMethods(TstMethods):
+class PolicedMethodsUnit(TstMethodsUnit):
     nickname = Slot(PolicedNicknameMethod)
 
 
-class TstPoliciesAuth(TstAuth):
-    methods = Slot(PolicedMethods)
-    policies = Slot(TstPolicies)
+class TstPoliciesAuthUnit(TstAuthUnit):
+    methods = Slot(PolicedMethodsUnit)
+    policies = Slot(TstPoliciesUnit)
 
 
 class TstPoliciesProject(TstProject):
-    auth = Slot(TstPoliciesAuth)
+    auth = Slot(TstPoliciesAuthUnit)
 
 
-class TstCostlierMethods(TstMethods):
+class TstCostlierMethodsUnit(TstMethodsUnit):
     nickname = Slot(TstCostlierNicknameMethod)
 
 
-class TstCostlierAuth(TstAuth):
-    methods = Slot(TstCostlierMethods)
+class TstCostlierAuthUnit(TstAuthUnit):
+    methods = Slot(TstCostlierMethodsUnit)
 
 
 class TstCostlierProject(TstProject):
-    auth = Slot(TstCostlierAuth)
+    auth = Slot(TstCostlierAuthUnit)
 
 
 class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):

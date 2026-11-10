@@ -8,10 +8,10 @@ from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.metadata import AuthMetadata, AuthMethodMetadata
-from ingot_auth.methods import AuthMethods, BaseAuthMethod
+from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
 from ingot_auth.methods.email_code import AuthEmailCodeConfigs, BaseAuthEmailCodeMethod
 from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
-from ingot_auth.settings import AuthSettings
+from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 
 
@@ -25,27 +25,27 @@ class NoFlowMethod(BaseAuthMethod[str, str, None]):
     pass
 
 
-class TstMethods(AuthMethods):
+class TstMethodsUnit(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
     email_code = Slot(EmailCodeMethod)
     no_flow = Slot(NoFlowMethod)
 
 
-class TstAuth(AuthMemoryUnit):
-    methods = Slot(TstMethods)
+class TstAuthUnit(AuthMemoryUnit):
+    methods = Slot(TstMethodsUnit)
 
 
 class TstConfigs(AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs):
     AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)  # by invitation only
 
 
-class TstSettings(AuthSettings):
+class TstSettingsUnit(AuthSettingsUnit):
     configs = Slot(TstConfigs)
 
 
 class TstProject(AuthMemoryProject):
-    settings = Slot(TstSettings)
-    auth = Slot(TstAuth)
+    settings = Slot(TstSettingsUnit)
+    auth = Slot(TstAuthUnit)
 
 
 class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):

@@ -18,7 +18,12 @@ from ingot_auth.registry.commands import (
 )
 
 from .items import AuthTag
-from .operations import AuthCreateTag, AuthDeleteTag, AuthListTags, AuthRenameTag
+from .operations import (
+    AuthCreateTagOperation,
+    AuthDeleteTagOperation,
+    AuthListTagsOperation,
+    AuthRenameTagOperation,
+)
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
@@ -36,7 +41,7 @@ class AuthCreateTagCommand(BaseAuthCreateItemCommand[AuthTag]):
         return AuthTag(id=namespace.registry_id, name=namespace.registry_name)
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthCreateTag]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateTagOperation]":
         return self.project.auth.profiles.tags.op_create
 
 
@@ -45,7 +50,7 @@ class AuthListTagsCommand(BaseAuthListItemsCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListTags]":
+    def _get_operation(self) -> "BoundFactory[AuthListTagsOperation]":
         return self.project.auth.profiles.tags.op_list
 
 
@@ -54,7 +59,7 @@ class AuthRenameTagCommand(BaseAuthRenameItemCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthRenameTag]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameTagOperation]":
         return self.project.auth.profiles.tags.op_rename
 
 
@@ -63,5 +68,5 @@ class AuthDeleteTagCommand(BaseAuthDeleteItemCommand[AuthTag]):
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthDeleteTag]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteTagOperation]":
         return self.project.auth.profiles.tags.op_delete

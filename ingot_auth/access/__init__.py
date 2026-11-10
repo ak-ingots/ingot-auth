@@ -2,29 +2,29 @@
 The access: the groups of the users, what each grants, and the members of
 each. The permissions of a signed-in user are the union of what its groups
 grant, by the strategy of the slot ``permissions``. An application declares
-its groups in its own :class:`AuthGroups`::
+its groups in its own :class:`AuthGroupsUnit`::
 
-    class AppAccess(AuthAccess):
-        groups = Slot(AppGroups)
+    class AppAccessUnit(AuthAccessUnit):
+        groups = Slot(AppGroupsUnit)
 """
 
-__all__ = ("AuthAccess", "AuthAccessStorage", "AuthGroupsGrants")
+__all__ = ("AuthAccessUnit", "AuthAccessStorage", "AuthGroupsGrants")
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
-from .groups import AuthGroups
-from .members import AuthMembers
+from .groups import AuthGroupsUnit
+from .members import AuthMembersUnit
 from .storage import AuthAccessStorage
 from .strategies import AuthGroupsGrants
 
 
-class AuthAccess(CliUnit):
+class AuthAccessUnit(CliUnit):
     """The access: the groups, their members and the permissions of a user."""
 
     cli_name = "access"
     cli_description = "The groups of the users and their members."
 
-    groups = Slot(AuthGroups)
-    members = Slot(AuthMembers)
+    groups = Slot(AuthGroupsUnit)
+    members = Slot(AuthMembersUnit)
     permissions = Slot(AuthGroupsGrants)

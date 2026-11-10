@@ -33,7 +33,7 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     A method is a unit: its presets of the policies are its slots
     ``preset_<flow>_<field>``, each of a class and a context of its own, the
     context made by the method on the step that checks it. A method is a slot
-    of :class:`AuthMethods`, its name the path of the slot.
+    of :class:`AuthMethodsUnit`, its name the path of the slot.
 
     Whether a flow is open is of a hook of its own, ``_get_<flow>_enabled``,
     closed here: a method opens the flows it takes, by the configs of its

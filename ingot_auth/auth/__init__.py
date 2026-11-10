@@ -5,13 +5,13 @@ __all__ = ("AuthUnit",)
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
-from ingot_auth.access import AuthAccess
+from ingot_auth.access import AuthAccessUnit
 from ingot_auth.cache import AuthCache
 from ingot_auth.metadata import AuthMetadataUnit
-from ingot_auth.methods import AuthMethods
-from ingot_auth.policies import AuthPolicies
-from ingot_auth.profiles import AuthProfiles
-from ingot_auth.sessions import AuthSessions
+from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.policies import AuthPoliciesUnit
+from ingot_auth.profiles import AuthProfilesUnit
+from ingot_auth.sessions import AuthSessionsUnit
 from ingot_auth.sign_up import AuthSignUpUnit
 from ingot_auth.storage import AuthStorage
 
@@ -33,10 +33,10 @@ class AuthUnit(CliUnit):
     # one is an open question of ingots
     storage = Slot(AuthStorage)  # type: ignore[type-abstract]
     cache = Slot(AuthCache)
-    methods = Slot(AuthMethods)
-    policies = Slot(AuthPolicies)
-    profiles = Slot(AuthProfiles)
-    sessions = Slot(AuthSessions)
-    access = Slot(AuthAccess)
+    methods = Slot(AuthMethodsUnit)
+    policies = Slot(AuthPoliciesUnit)
+    profiles = Slot(AuthProfilesUnit)
+    sessions = Slot(AuthSessionsUnit)
+    access = Slot(AuthAccessUnit)
     sign_up = Slot(AuthSignUpUnit)
     metadata = Slot(AuthMetadataUnit)

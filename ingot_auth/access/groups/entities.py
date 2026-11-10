@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
 
 class AuthGroup(Entity):
     """
-    A group of the users, a slot of :class:`AuthGroups`, its name the name
+    A group of the users, a slot of :class:`AuthGroupsUnit`, its name the name
     of the slot. What it grants is of its hook, :meth:`_get_permissions`,
     nothing here: each class adds its own to ``super()``, so that an addon
     and the application grant to the same group, the application declaring

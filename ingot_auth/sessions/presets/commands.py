@@ -23,13 +23,13 @@ from ingot_auth.registry.commands import (
 
 from .items import AuthSessionPreset, AuthSessionPresetBinding
 from .operations import (
-    AuthBindSessionAttr,
-    AuthCreateSessionPreset,
-    AuthDeleteSessionPreset,
-    AuthListSessionPresetBindings,
-    AuthListSessionPresets,
-    AuthRenameSessionPreset,
-    AuthUnbindSessionAttr,
+    AuthBindSessionAttrOperation,
+    AuthCreateSessionPresetOperation,
+    AuthDeleteSessionPresetOperation,
+    AuthListSessionPresetBindingsOperation,
+    AuthListSessionPresetsOperation,
+    AuthRenameSessionPresetOperation,
+    AuthUnbindSessionAttrOperation,
     AuthUnbindSessionAttrParameters,
 )
 
@@ -49,7 +49,7 @@ class AuthCreateSessionPresetCommand(BaseAuthCreateItemCommand[AuthSessionPreset
         return AuthSessionPreset(id=namespace.registry_id, name=namespace.registry_name)
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthCreateSessionPreset]":
+    def _get_operation(self) -> "BoundFactory[AuthCreateSessionPresetOperation]":
         return self.project.auth.sessions.presets.op_create
 
 
@@ -58,7 +58,7 @@ class AuthListSessionPresetsCommand(BaseAuthListItemsCommand[AuthSessionPreset])
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListSessionPresets]":
+    def _get_operation(self) -> "BoundFactory[AuthListSessionPresetsOperation]":
         return self.project.auth.sessions.presets.op_list
 
 
@@ -67,7 +67,7 @@ class AuthRenameSessionPresetCommand(BaseAuthRenameItemCommand[AuthSessionPreset
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthRenameSessionPreset]":
+    def _get_operation(self) -> "BoundFactory[AuthRenameSessionPresetOperation]":
         return self.project.auth.sessions.presets.op_rename
 
 
@@ -79,7 +79,7 @@ class AuthDeleteSessionPresetCommand(BaseAuthDeleteItemCommand[AuthSessionPreset
     project: "AuthProject"
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthDeleteSessionPreset]":
+    def _get_operation(self) -> "BoundFactory[AuthDeleteSessionPresetOperation]":
         return self.project.auth.sessions.presets.op_delete
 
 
@@ -130,7 +130,7 @@ class AuthBindSessionAttrCommand(
         )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthBindSessionAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthBindSessionAttrOperation]":
         return self.project.auth.sessions.presets.op_bind
 
     @t.override
@@ -161,7 +161,7 @@ class AuthUnbindSessionAttrCommand(
         )
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthUnbindSessionAttr]":
+    def _get_operation(self) -> "BoundFactory[AuthUnbindSessionAttrOperation]":
         return self.project.auth.sessions.presets.op_unbind
 
     @t.override
@@ -176,7 +176,7 @@ class AuthListSessionPresetBindingsCommand(
     cli_description = "Prints the bindings of the presets of the sessions."
 
     @t.override
-    def _get_operation(self) -> "BoundFactory[AuthListSessionPresetBindings]":
+    def _get_operation(self) -> "BoundFactory[AuthListSessionPresetBindingsOperation]":
         return self.project.auth.sessions.presets.op_list_bindings
 
     @t.override

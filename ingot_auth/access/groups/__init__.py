@@ -1,9 +1,9 @@
 """
 The groups of the users, each granting permissions. The code is their
 source, the first: an application declares them as slots of
-:class:`AuthGroups`, the name of the slot the name of the group::
+:class:`AuthGroupsUnit`, the name of the slot the name of the group::
 
-    class AppGroups(AuthGroups):
+    class AppGroupsUnit(AuthGroupsUnit):
         admins = Slot(AdminsGroup)
 """
 
@@ -12,9 +12,9 @@ __all__ = (
     "AuthGroupError",
     "AuthGroupInfo",
     "AuthGroupNotFoundError",
-    "AuthGroups",
+    "AuthGroupsUnit",
     "AuthGroupsPermissions",
-    "AuthListGroups",
+    "AuthListGroupsOperation",
     "AuthListGroupsCommand",
 )
 
@@ -28,14 +28,14 @@ from .commands import AuthListGroupsCommand
 from .entities import AuthGroup
 from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
-from .operations import AuthListGroups
+from .operations import AuthListGroupsOperation
 from .permissions import AuthGroupsPermissions
 
 # a name is of the scripts and the memberships, for good
 NAME_PATTERN: t.Final = re.compile(r"[a-z][a-z0-9_]*")
 
 
-class AuthGroups(CliUnit):
+class AuthGroupsUnit(CliUnit):
     """
     The groups, none here: whatever their source, they come by :meth:`get`
     and :meth:`get_all`. A name of a group is lowercase letters, digits and
@@ -45,7 +45,7 @@ class AuthGroups(CliUnit):
     cli_name = "groups"
     cli_description = "The groups of the users."
 
-    op_list = Factory(AuthListGroups)
+    op_list = Factory(AuthListGroupsOperation)
 
     cmd_list = Slot(AuthListGroupsCommand)
 

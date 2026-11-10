@@ -8,7 +8,7 @@ should; a public server the metadata, an internal one the administration too::
         pass
 
 
-    class AppGrpcErrors(AuthGrpcErrors):
+    class AppGrpcErrors(AuthGrpcErrorsUnit):
         pass
 
 The administration lets nobody in until a subclass of its servicers tells who
@@ -20,7 +20,7 @@ __all__ = (
     "AuthGrpcAdminBinding",
     "AuthGrpcAttrsBinding",
     "AuthGrpcAttrsServicer",
-    "AuthGrpcErrors",
+    "AuthGrpcErrorsUnit",
     "AuthGrpcGroupsBinding",
     "AuthGrpcGroupsServicer",
     "AuthGrpcMembersBinding",
@@ -46,7 +46,7 @@ from .access import (
     AuthGrpcMembersServicer,
 )
 from .base import BaseAuthGrpcServicer
-from .errors import AuthGrpcErrors
+from .errors import AuthGrpcErrorsUnit
 from .metadata import AuthGrpcMetadataBinding, AuthGrpcMetadataServicer
 from .profiles import (
     AuthGrpcAttrsBinding,

@@ -5,7 +5,7 @@ what it happened on. It opens no session.
 """
 
 __all__ = (
-    "AuthAnswerSignUp",
+    "AuthAnswerSignUpOperation",
     "AuthAnswerSignUpParameters",
     "AuthSignUpChallenge",
     "AuthSignUpPermissions",
@@ -15,7 +15,7 @@ __all__ = (
     "AuthSignUpStorage",
     "AuthSignUpUnit",
     "AuthSignedUp",
-    "AuthStartSignUp",
+    "AuthStartSignUpOperation",
     "AuthStartSignUpParameters",
     "BaseAuthSignUpRecordsStorage",
 )
@@ -31,7 +31,7 @@ from .items import (
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
-from .operations import AuthAnswerSignUp, AuthStartSignUp
+from .operations import AuthAnswerSignUpOperation, AuthStartSignUpOperation
 from .permissions import AuthSignUpPermissions
 from .storage import (
     AuthSignUpStorage,
@@ -42,5 +42,5 @@ from .storage import (
 class AuthSignUpUnit(Unit):
     """The operations of the sign-up: a start and the answers to it."""
 
-    op_start = Factory(AuthStartSignUp)
-    op_answer = Factory(AuthAnswerSignUp)
+    op_start = Factory(AuthStartSignUpOperation)
+    op_answer = Factory(AuthAnswerSignUpOperation)

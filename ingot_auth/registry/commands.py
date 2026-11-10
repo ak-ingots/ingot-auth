@@ -10,20 +10,14 @@ __all__ = (
     "BaseAuthRenameItemCommand",
 )
 
-import abc
 import argparse
 import typing as t
 from dataclasses import dataclass
 
-from ingots.defaults.operations import ROOT_CALLER, BaseOperation
-from ingots.puer.cli import BaseCommand
+from ingots.defaults.operations import BaseOperationCommand
 
 from .items import AuthItem
 from .operations import AuthDeleteItemParameters, AuthRenameItemParameters
-
-if t.TYPE_CHECKING:
-    from ingots.defaults import Project
-    from ingots.puer import BoundFactory
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,36 +32,19 @@ class AuthRenameItemCliArgs:
 
 
 class BaseAuthRegistryCommand[ItemType: AuthItem, ParametersType, ResultType](
-    BaseCommand
+    BaseOperationCommand[ParametersType, ResultType]
 ):
     """
     A command of a registry: runs its operation, which a subclass gives in
-    :meth:`_get_operation`, as the root and prints the items, one a line,
+    :meth:`_get_operation`, as the root, and prints the items, one a line,
     as :meth:`_format_item` gives them.
     """
-
-    project: "Project"
-
-    @t.final
-    async def run_operation(self, parameters: ParametersType) -> ResultType:
-        """Runs the operation of the command as the root."""
-        operations = self.project.operations
-        metadata = operations.create_metadata(ROOT_CALLER)
-        factory = self._get_operation()
-        return await operations.runner.run(factory, parameters, metadata)
 
     @t.final
     def print_items(self, *items: ItemType) -> None:
         """Prints the items, one a line."""
         for item in items:
             print(self._format_item(item))
-
-    @abc.abstractmethod
-    def _get_operation(
-        self,
-    ) -> "BoundFactory[BaseOperation[ParametersType, ResultType]]":
-        """The operation of the command: ``self.project.auth.profiles.tags.op_list``."""
-        raise NotImplementedError(f"{type(self).__qualname__}._get_operation")
 
     def _format_item(self, item: ItemType) -> str:
         """An item on its line: its id and its name."""

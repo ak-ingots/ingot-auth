@@ -2,7 +2,7 @@
 
 __all__ = (
     "AuthTag",
-    "AuthTags",
+    "AuthTagsUnit",
     "AuthTagsPermissions",
     "BaseAuthTagsStorage",
 )
@@ -17,12 +17,17 @@ from .commands import (
     AuthRenameTagCommand,
 )
 from .items import AuthTag
-from .operations import AuthCreateTag, AuthDeleteTag, AuthListTags, AuthRenameTag
+from .operations import (
+    AuthCreateTagOperation,
+    AuthDeleteTagOperation,
+    AuthListTagsOperation,
+    AuthRenameTagOperation,
+)
 from .permissions import AuthTagsPermissions
 from .storage import BaseAuthTagsStorage
 
 
-class AuthTags(CliUnit):
+class AuthTagsUnit(CliUnit):
     """
     The registry of the tags: its operations, ``op_*``, and the commands
     running them, ``cmd_*``; the tags themselves are in the storage of the
@@ -32,10 +37,10 @@ class AuthTags(CliUnit):
     cli_name = "tags"
     cli_description = "The tags of the profiles."
 
-    op_create = Factory(AuthCreateTag)
-    op_list = Factory(AuthListTags)
-    op_rename = Factory(AuthRenameTag)
-    op_delete = Factory(AuthDeleteTag)
+    op_create = Factory(AuthCreateTagOperation)
+    op_list = Factory(AuthListTagsOperation)
+    op_rename = Factory(AuthRenameTagOperation)
+    op_delete = Factory(AuthDeleteTagOperation)
 
     cmd_create = Slot(AuthCreateTagCommand)
     cmd_list = Slot(AuthListTagsCommand)

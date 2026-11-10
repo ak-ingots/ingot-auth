@@ -1,10 +1,10 @@
 """The operations of the memberships."""
 
 __all__ = (
-    "AuthAddMember",
-    "AuthListMemberGroups",
-    "AuthListMembers",
-    "AuthRemoveMember",
+    "AuthAddMemberOperation",
+    "AuthListMemberGroupsOperation",
+    "AuthListMembersOperation",
+    "AuthRemoveMemberOperation",
     "BaseAuthMembersOperation",
 )
 
@@ -47,7 +47,7 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
         await self.project.auth.storage.profiles.get(uid)
 
 
-class AuthAddMember(BaseAuthMembersOperation[AuthMembership, None]):
+class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
     Adds a user to a group; a member already stays one.
 
@@ -66,7 +66,7 @@ class AuthAddMember(BaseAuthMembersOperation[AuthMembership, None]):
         await self._get_storage().add(parameters)
 
 
-class AuthRemoveMember(BaseAuthMembersOperation[AuthMembership, None]):
+class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
     Removes a user from a group; one not a member is no error.
 
@@ -85,7 +85,7 @@ class AuthRemoveMember(BaseAuthMembersOperation[AuthMembership, None]):
         await self._get_storage().remove(parameters)
 
 
-class AuthListMembers(BaseAuthMembersOperation[str, tuple[str, ...]]):
+class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
     """
     The uids of the members of a group, sorted.
 
@@ -102,7 +102,7 @@ class AuthListMembers(BaseAuthMembersOperation[str, tuple[str, ...]]):
         return await self._get_storage().get_uids(parameters)
 
 
-class AuthListMemberGroups(BaseAuthMembersOperation[str, tuple[str, ...]]):
+class AuthListMemberGroupsOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
     """
     The names of the groups a user is added to, sorted, those of a group
     no source has any more among them, granting nothing.

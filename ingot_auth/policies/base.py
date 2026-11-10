@@ -34,7 +34,7 @@ class BaseAuthPolicy[ContextType, ConfigType](Entity):
     context its protocol tells, ``ContextType``; the config is data, given to
     a client as well, to check a form before sending it.
 
-    A policy is a slot of :class:`AuthPolicies`, found by its class.
+    A policy is a slot of :class:`AuthPoliciesUnit`, found by its class.
     """
 
     @t.final

@@ -19,7 +19,7 @@ from ingot_auth.methods import (
     AuthMethodInvalidError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
-    AuthMethods,
+    AuthMethodsUnit,
     AuthMethodUnsupportedError,
     AuthStep,
     AuthVerified,
@@ -65,18 +65,18 @@ class NoFlowMethod(BaseAuthMethod[str, str, None]):
     pass
 
 
-class TstMethods(AuthMethods):
+class TstMethodsUnit(AuthMethodsUnit):
     testing = Slot(AuthTestingMethod)
     one_step = Slot(OneStepMethod)
     no_flow = Slot(NoFlowMethod)
 
 
-class TstAuth(AuthMemoryUnit):
-    methods = Slot(TstMethods)
+class TstAuthUnit(AuthMemoryUnit):
+    methods = Slot(TstMethodsUnit)
 
 
 class TstProject(AuthMemoryProject):
-    auth = Slot(TstAuth)
+    auth = Slot(TstAuthUnit)
 
 
 class SignUpTestCase(unittest.IsolatedAsyncioTestCase):

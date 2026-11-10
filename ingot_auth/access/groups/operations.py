@@ -1,6 +1,6 @@
 """The operations of the groups."""
 
-__all__ = ("AuthListGroups",)
+__all__ = ("AuthListGroupsOperation",)
 
 import typing as t
 
@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthListGroups(BaseOperation[None, tuple[AuthGroupInfo, ...]]):
+class AuthListGroupsOperation(BaseOperation[None, tuple[AuthGroupInfo, ...]]):
     """The groups, in the order of their slots, each with what it grants."""
 
     PERMISSIONS = Permissions(AuthGroupsPermissions.CAN_READ)

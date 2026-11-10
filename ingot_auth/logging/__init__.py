@@ -1,16 +1,16 @@
 """The logging unit of the defaults with the logger of the addon."""
 
-__all__ = ("AuthLogging",)
+__all__ = ("AuthLoggingUnit",)
 
 import typing as t
 
-from ingots.defaults.logging import Logging
+from ingots.defaults.logging import LoggingUnit
 
 if t.TYPE_CHECKING:
     from ..project import AuthProject
 
 
-class AuthLogging(Logging):
+class AuthLoggingUnit(LoggingUnit):
     """
     The logging unit, with the logger of the addon, ``ingot_auth``, at
     ``AUTH_LOGGING_LEVEL``.
