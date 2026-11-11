@@ -7,15 +7,17 @@ from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.nickname import (
-    AuthHasNickname,
     AuthNicknameSignUpContext,
     AuthNicknameSignUpPreset,
     AuthNicknameMethod,
-    AuthPasswordSignUpContext,
-    AuthPasswordSignUpPreset,
     AuthNicknameStart,
 )
-from ingot_auth.methods.nickname.scrypt import hash_password, verify_password
+from ingot_auth.methods.password import (
+    AuthHasIdentifiers,
+    AuthPassword,
+    AuthPasswordSetContext,
+    AuthPasswordSetPreset,
+)
 from ingot_auth.methods import (
     AuthMethodInvalidError,
     AuthMethodRefusedError,
@@ -33,6 +35,7 @@ from ingot_auth.policies import (
     AuthPolicyBinding,
     BaseAuthPolicy,
 )
+from ingot_auth.profiles.identities import AuthIdentity
 from ingot_auth.sign_up import (
     AuthSignedUp,
     AuthSignUpPermissions,
@@ -44,17 +47,18 @@ SIGNING_UP: t.Final = Caller(
 )
 
 
-class TstNicknameMethod(AuthNicknameMethod):
+class TstPassword(AuthPassword):
     # cheap for the tests
     SCRYPT_LOG_N = 4
 
 
-class TstCostlierNicknameMethod(TstNicknameMethod):
+class TstCostlierPassword(TstPassword):
     SCRYPT_LOG_N = 5
 
 
 class TstMethodsUnit(AuthMethodsUnit):
-    nickname = Slot(TstNicknameMethod)
+    nickname = Slot(AuthNicknameMethod)
+    password = Slot(TstPassword)
 
 
 class TstAuthUnit(AuthMemoryUnit):
@@ -77,41 +81,45 @@ class NicknamePreset(AuthNicknameSignUpPreset):
         return bindings
 
 
-class HasPasswordAndNickname(AuthHasValue, AuthHasNickname, t.Protocol):
+class HasPasswordAndIdentifiers(AuthHasValue, AuthHasIdentifiers, t.Protocol):
     pass
 
 
-class NotNicknamePolicy(BaseAuthPolicy[HasPasswordAndNickname, None]):
-    """A policy of an application, of a part the method gives."""
+class NoIdentifierPolicy(BaseAuthPolicy[HasPasswordAndIdentifiers, None]):
+    """A policy of an application, of a part the context of the password gives."""
 
     @t.override
-    async def _accepts(self, context: HasPasswordAndNickname, config: None) -> bool:
-        nickname = await context.get_nickname()
-        return nickname not in await context.get_value()
+    async def _accepts(self, context: HasPasswordAndIdentifiers, config: None) -> bool:
+        password = await context.get_value()
+        return not any(i in password for i in await context.get_identifiers())
 
 
-class PasswordPreset(AuthPasswordSignUpPreset):
+class PasswordPreset(AuthPasswordSetPreset):
     @t.override
     def _get_bindings(
         self,
-    ) -> dict[str, AuthPolicyBinding[AuthPasswordSignUpContext, t.Any]]:
+    ) -> dict[str, AuthPolicyBinding[AuthPasswordSetContext, t.Any]]:
         bindings = super()._get_bindings()
         bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=8))
-        bindings["nickname"] = NotNicknamePolicy.bind(None)
+        bindings["identifier"] = NoIdentifierPolicy.bind(None)
         return bindings
 
 
 class TstPoliciesUnit(AuthPoliciesUnit):
-    not_nickname = Slot(NotNicknamePolicy)
+    no_identifier = Slot(NoIdentifierPolicy)
 
 
-class PolicedNicknameMethod(TstNicknameMethod):
+class PolicedNicknameMethod(AuthNicknameMethod):
     preset_sign_up_nickname = Slot(NicknamePreset)
-    preset_sign_up_password = Slot(PasswordPreset)
+
+
+class PolicedPassword(TstPassword):
+    preset_set = Slot(PasswordPreset)
 
 
 class PolicedMethodsUnit(TstMethodsUnit):
     nickname = Slot(PolicedNicknameMethod)
+    password = Slot(PolicedPassword)
 
 
 class TstPoliciesAuthUnit(TstAuthUnit):
@@ -124,7 +132,7 @@ class TstPoliciesProject(TstProject):
 
 
 class TstCostlierMethodsUnit(TstMethodsUnit):
-    nickname = Slot(TstCostlierNicknameMethod)
+    password = Slot(TstCostlierPassword)
 
 
 class TstCostlierAuthUnit(TstAuthUnit):
@@ -179,12 +187,20 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_password_is_kept_as_its_hash(self) -> None:
-        await self.sign_up("alice", "correct horse")
-        secret = await self.project.auth.storage.profiles.secrets.get(
-            "nickname", "alice"
-        )
+        result = await self.sign_up("alice", "correct horse")
+        secret = await self.project.auth.storage.profiles.secrets.get(result.uid)
         self.assertTrue(secret.startswith("$scrypt$ln=4,r=8,p=1$"), secret)
         self.assertNotIn("correct horse", secret)
+
+    async def test_the_password_is_of_the_profile(self) -> None:
+        result = await self.sign_up("alice", "correct horse")
+        await self.project.auth.storage.profiles.identities.create(
+            AuthIdentity(kind="nickname", value="wonder", uid=result.uid)
+        )
+        self.assertEqual(
+            await self.sign_in("wonder", "correct horse"),
+            AuthVerified(subject="wonder"),
+        )
 
     async def test_the_nickname_is_normalized(self) -> None:
         await self.sign_up("Ａlice", "correct horse")
@@ -210,7 +226,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_unknown_nickname_is_verified_against_a_dummy(self) -> None:
         with mock.patch.object(
-            TstNicknameMethod, "_verify", autospec=True, return_value=True
+            TstPassword, "_verify", autospec=True, return_value=True
         ) as verify:
             for _ in range(2):
                 with self.assertRaises(AuthMethodRefusedError):
@@ -231,7 +247,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         for nickname, password, field, binding in (
             ("al ice", "correct horse", "nickname", "chars"),
             ("alice", "short", "password", "length"),
-            ("alice", "alice-in-wonderland", "password", "nickname"),
+            ("alice", "alice-in-wonderland", "password", "identifier"),
         ):
             with self.subTest(nickname=nickname, password=password):
                 with self.assertRaises(AuthMethodInvalidError) as error:
@@ -246,12 +262,14 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("alice", "\ufb01ve-six")
 
     async def test_a_hash_of_other_parameters_is_verified(self) -> None:
-        await self.sign_up("alice", "correct horse")
+        result = await self.sign_up("alice", "correct horse")
         costlier = TstCostlierProject()
-        secret = await self.project.auth.storage.profiles.secrets.get(
-            "nickname", "alice"
+        secret = await self.project.auth.storage.profiles.secrets.get(result.uid)
+        profiles = costlier.auth.storage.profiles
+        await profiles.identities.create(
+            AuthIdentity(kind="nickname", value="alice", uid=result.uid)
         )
-        await costlier.auth.storage.profiles.secrets.put("nickname", "alice", secret)
+        await profiles.secrets.put(result.uid, secret)
         method = costlier.auth.methods.get("nickname")
         start = AuthNicknameStart(nickname="alice", password="correct horse")
         self.assertEqual(
@@ -259,35 +277,11 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_a_context_gives_its_parts_and_shows_none(self) -> None:
-        context = AuthPasswordSignUpContext("correct horse", "alice")
+        context = AuthPasswordSetContext("correct horse", ("alice",))
         self.assertEqual(await context.get_value(), "correct horse")
-        self.assertEqual(await context.get_nickname(), "alice")
+        self.assertEqual(await context.get_identifiers(), ("alice",))
         self.assertNotIn("correct horse", repr(context))
 
     def test_the_password_is_not_in_the_repr(self) -> None:
         start = AuthNicknameStart(nickname="alice", password="correct horse")
         self.assertNotIn("correct horse", repr(start))
-
-
-class ScryptTestCase(unittest.TestCase):
-    def test_a_hash_verifies_its_password_only(self) -> None:
-        secret = hash_password("correct horse", 4, 8, 1)
-        self.assertTrue(verify_password("correct horse", secret))
-        self.assertFalse(verify_password("correct horsE", secret))
-
-    def test_a_password_gets_a_new_salt_each_time(self) -> None:
-        self.assertNotEqual(hash_password("x", 4, 8, 1), hash_password("x", 4, 8, 1))
-
-    def test_what_is_not_a_hash_verifies_nothing(self) -> None:
-        secret = hash_password("x", 4, 8, 1)
-        _, _, parameters, salt, digest = secret.split("$")
-        for other in (
-            "",
-            "x" + secret,
-            secret.replace("$scrypt$", "$argon2id$"),
-            f"$scrypt$ln=4,r=8${salt}${digest}",
-            f"$scrypt$ln=four,r=8,p=1${salt}${digest}",
-            f"$scrypt${parameters}$!!${digest}",
-        ):
-            with self.subTest(other=other):
-                self.assertFalse(verify_password("x", other))

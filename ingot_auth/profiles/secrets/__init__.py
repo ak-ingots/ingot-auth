@@ -1,7 +1,8 @@
 """
-The secrets: what a method keeps to verify a subject later, the hash of a
-password, say, by the method and the subject. Apart from the identities, so
-a method with no secret has none, and a new one replaces the old alone.
+The secrets: what a profile is verified by later, the hash of its password,
+one a profile, by its uid, whatever identifier it signs in by. Apart from the
+identities, so a profile signed up with no password has none, and a new one
+replaces the old alone.
 """
 
 __all__ = ("AuthSecretNotFoundError", "BaseAuthSecretsStorage")
@@ -17,27 +18,27 @@ from .errors import AuthSecretNotFoundError
 class BaseAuthSecretsStorage(Entity):
     """
     The storage of the secrets: what a backend implements. A secret is as
-    the method makes it, a string the storage keeps as it is.
+    its maker makes it, a string the storage keeps as it is.
     """
 
     @t.final
-    async def put(self, method: str, subject: str, secret: str) -> None:
-        """Keeps the secret of a subject of a method, in place of one there was."""
-        await self._put(method, subject, secret)
+    async def put(self, uid: str, secret: str) -> None:
+        """Keeps the secret of a profile, in place of one there was."""
+        await self._put(uid, secret)
 
     @t.final
-    async def get(self, method: str, subject: str) -> str:
+    async def get(self, uid: str) -> str:
         """
-        The secret of a subject of a method.
+        The secret of a profile.
 
         :raises AuthSecretNotFoundError: it has none.
         """
-        return await self._get(method, subject)
+        return await self._get(uid)
 
     @abc.abstractmethod
-    async def _put(self, method: str, subject: str, secret: str) -> None:
+    async def _put(self, uid: str, secret: str) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._put")
 
     @abc.abstractmethod
-    async def _get(self, method: str, subject: str) -> str:
+    async def _get(self, uid: str) -> str:
         raise NotImplementedError(f"{type(self).__qualname__}._get")

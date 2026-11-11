@@ -28,7 +28,7 @@ __all__ = (
 
 import typing as t
 
-from ingots.puer import Unit
+from ingots.puer import Slot, Unit
 
 from .attempts import AuthAttempt, BaseAuthAttemptsCache
 from .base import BaseAuthMethod
@@ -40,14 +40,19 @@ from .errors import (
     AuthMethodRefusedError,
     AuthMethodUnsupportedError,
 )
+from .password import AuthPassword
 from .steps import AuthChallenge, AuthStep, AuthVerified
 
 
 class AuthMethodsUnit(Unit):
     """
     The methods of the project, none here: a subclass declares each as a
-    slot, the name of the slot the name of the method.
+    slot, the name of the slot the name of the method. The password of a
+    profile, which the methods of a password share, is the slot ``password``,
+    not a method.
     """
+
+    password = Slot(AuthPassword)
 
     @t.final
     def get_all(self) -> tuple[BaseAuthMethod[t.Any, t.Any, t.Any], ...]:

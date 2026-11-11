@@ -38,7 +38,15 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     Whether a flow is open is of a hook of its own, ``_get_<flow>_enabled``,
     closed here: a method opens the flows it takes, by the configs of its
     package as a rule, which the project mixes into its own.
+
+    A method names the kind of the identifier it verifies, ``IDENTIFIER_KIND``:
+    the subject it verifies is a value of that kind, bound to a profile once
+    whatever method verifies it, so two methods of an email find the same
+    profile.
     """
+
+    # the kind of the identifier of the method: nickname, email, phone
+    IDENTIFIER_KIND: t.ClassVar[str]
 
     project: "AuthProject"
 

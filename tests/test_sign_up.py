@@ -47,6 +47,7 @@ from ingot_auth.sign_up import (
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
+from ingot_auth.sign_up.operations import BaseAuthSignUpOperation
 from ingot_auth.storage import AuthTransactionError
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
 
@@ -56,6 +57,9 @@ SIGNING_UP: t.Final = Caller(
 
 
 class OneStepMethod(BaseAuthMethod[str, str, None]):
+    # of the kind of the testing method: they share its identifiers
+    IDENTIFIER_KIND = "testing"
+
     @t.override
     async def _start_sign_up(self, parameters: str) -> AuthStep:
         return AuthVerified(subject=parameters)
@@ -153,21 +157,31 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AuthAttemptNotFoundError):
             await self.answer(challenge.attempt_id, "1234")
 
-    async def test_the_secret_of_the_method_is_kept(self) -> None:
+    async def test_the_secret_of_the_method_is_kept_as_of_the_profile(self) -> None:
         secrets = self.project.auth.storage.profiles.secrets
-        await self.start(AuthTestingStart(subject="a", secret="hash-a"))
+        first = await self.start(AuthTestingStart(subject="a", secret="hash-a"))
         challenge = await self.start(
             AuthTestingStart(subject="b", code="1234", secret="hash-b")
         )
         assert isinstance(challenge, AuthSignUpChallenge)
-        await self.answer(challenge.attempt_id, "1234")
-        self.assertEqual(await secrets.get("testing", "a"), "hash-a")
-        self.assertEqual(await secrets.get("testing", "b"), "hash-b")
+        second = await self.answer(challenge.attempt_id, "1234")
+        assert isinstance(first, AuthSignedUp) and isinstance(second, AuthSignedUp)
+        self.assertEqual(await secrets.get(first.uid), "hash-a")
+        self.assertEqual(await secrets.get(second.uid), "hash-b")
 
     async def test_no_secret_is_kept_for_a_method_giving_none(self) -> None:
-        await self.start(AuthTestingStart(subject="a"))
+        result = await self.start(AuthTestingStart(subject="a"))
+        assert isinstance(result, AuthSignedUp)
         with self.assertRaises(AuthSecretNotFoundError):
-            await self.project.auth.storage.profiles.secrets.get("testing", "a")
+            await self.project.auth.storage.profiles.secrets.get(result.uid)
+
+    async def test_an_identifier_is_bound_once_whatever_method_of_its_kind(
+        self,
+    ) -> None:
+        await self.start(AuthTestingStart(subject="a@b.c"))
+        with self.assertRaises(AuthIdentityConflictError) as error:
+            await self.start("a@b.c", method="one_step")
+        self.assertEqual(error.exception.kind, "testing")
 
     async def test_a_method_signs_up_only_if_it_takes_the_flow(self) -> None:
         with self.assertRaises(AuthMethodUnsupportedError) as error:
@@ -230,11 +244,16 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_sign_up_failing_midway_leaves_nothing(self) -> None:
         profiles = type(self.project.auth.storage.profiles)
-        with mock.patch.object(profiles, "_create", side_effect=OSError):
+        with (
+            mock.patch.object(profiles, "_create", side_effect=OSError),
+            mock.patch.object(
+                BaseAuthSignUpOperation, "_create_uid", return_value="a1"
+            ),
+        ):
             with self.assertRaises(OSError):
                 await self.start(AuthTestingStart(subject="a@b.c", secret="hash"))
         with self.assertRaises(AuthSecretNotFoundError):
-            await self.project.auth.storage.profiles.secrets.get("testing", "a@b.c")
+            await self.project.auth.storage.profiles.secrets.get("a1")
         result = await self.start(AuthTestingStart(subject="a@b.c"))
         self.assertIsInstance(result, AuthSignedUp)
 
@@ -284,17 +303,17 @@ class ErrorsTestCase(unittest.TestCase):
                 "the method takes no sign_in",
             ),
             (
-                AuthSecretNotFoundError.for_method("password"),
-                "password: the subject has no secret",
+                AuthSecretNotFoundError.for_uid("a1"),
+                "the profile 'a1' has no secret",
             ),
             (AuthAttemptNotFoundError.create(), "no such attempt"),
             (
-                AuthIdentityConflictError.for_method("mail"),
-                "mail: the subject is bound already",
+                AuthIdentityConflictError.for_kind("email"),
+                "email: the identifier is bound already",
             ),
             (
-                AuthIdentityNotFoundError.for_method("mail"),
-                "mail: the subject is not bound",
+                AuthIdentityNotFoundError.for_kind("email"),
+                "email: the identifier is not bound",
             ),
             (AuthProfileNotFoundError.for_uid("a1"), "no profile 'a1'"),
             (AuthSignUpRecordNotFoundError.for_uid("a1"), "no sign-up of 'a1'"),

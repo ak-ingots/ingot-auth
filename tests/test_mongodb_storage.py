@@ -33,6 +33,7 @@ from ingot_auth.sign_up import (
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
+from ingot_auth.sign_up.operations import BaseAuthSignUpOperation
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
     AuthIdentitiesStorageContract,
@@ -221,19 +222,24 @@ class MongoDbSignUpTestCase(ServerMixin, unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             await storage.profiles.identities.find_uid("testing", "a@b.c"), result.uid
         )
-        self.assertEqual(await storage.profiles.secrets.get("testing", "a@b.c"), "hash")
+        self.assertEqual(await storage.profiles.secrets.get(result.uid), "hash")
         profile = await storage.profiles.get(result.uid)
         record = await storage.sign_up.records.get(result.uid)
         self.assertEqual(record.signed_up_at, profile.created_at)
 
     async def test_a_sign_up_failing_midway_leaves_nothing(self) -> None:
         storage = self.project.auth.storage
-        with mock.patch.object(type(storage.profiles), "_create", side_effect=OSError):
+        with (
+            mock.patch.object(type(storage.profiles), "_create", side_effect=OSError),
+            mock.patch.object(
+                BaseAuthSignUpOperation, "_create_uid", return_value="a1"
+            ),
+        ):
             with self.assertRaises(OSError):
                 await self.sign_up(AuthTestingStart(subject="a@b.c", secret="hash"))
         with self.assertRaises(AuthIdentityNotFoundError):
             await storage.profiles.identities.find_uid("testing", "a@b.c")
         with self.assertRaises(AuthSecretNotFoundError):
-            await storage.profiles.secrets.get("testing", "a@b.c")
+            await storage.profiles.secrets.get("a1")
         result = await self.sign_up(AuthTestingStart(subject="a@b.c"))
         self.assertIsInstance(result, AuthSignedUp)

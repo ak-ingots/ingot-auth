@@ -1,27 +1,23 @@
 """
 The method of a nickname and a password, of one step: an application declares
 it as a slot of its methods, ``nickname = Slot(AuthNicknameMethod)``. The
-nickname and the password of a sign-up are checked by the presets of the
-policies of the method, its slots ``preset_sign_up_nickname`` and
-``preset_sign_up_password``, empty unless an application binds policies to
-them in a subclass of the method. The password is kept as its
-hash, a secret of the nickname, by scrypt of the standard library; how it
-hashes is changed by subclassing. Its flows are toggled by its configs,
-:class:`AuthNicknameConfigs`, which the project mixes into its own.
+nickname of a sign-up is checked by the preset of the policies of the method,
+its slot ``preset_sign_up_nickname``, the password by that of the password of
+the profile, ``preset_set`` of :class:`~ingot_auth.methods.password.AuthPassword`,
+both empty unless an application binds policies to them in a subclass. The
+password is kept as its hash, the secret of the profile. Its flows are
+toggled by its configs, :class:`AuthNicknameConfigs`, which the project mixes
+into its own.
 """
 
 __all__ = (
-    "AuthHasNickname",
     "AuthNicknameConfigs",
     "AuthNicknameMethod",
     "AuthNicknameSignUpContext",
     "AuthNicknameSignUpPreset",
     "AuthNicknameStart",
-    "AuthPasswordSignUpContext",
-    "AuthPasswordSignUpPreset",
 )
 
-import asyncio
 import typing as t
 import unicodedata
 from dataclasses import dataclass, field
@@ -34,16 +30,12 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError
+from ingot_auth.methods.password import AuthPasswordSetContext
+from ingot_auth.profiles.identities import AuthIdentityNotFoundError
 
 from .configs import AuthNicknameConfigs
-from .contexts import (
-    AuthHasNickname,
-    AuthNicknameSignUpContext,
-    AuthPasswordSignUpContext,
-)
-from .presets import AuthNicknameSignUpPreset, AuthPasswordSignUpPreset
-from .scrypt import hash_password, verify_password
+from .contexts import AuthNicknameSignUpContext
+from .presets import AuthNicknameSignUpPreset
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -56,26 +48,18 @@ class AuthNicknameStart:
 
 class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     """
-    A nickname and a password. Both are normalized first, to NFKC, the
-    nickname to its case-folded form too, so that ``Alice`` is ``alice``: the
-    subject is the nickname normalized. A sign-up checks them by their
-    presets of the policies and gives the hash of the password as the
-    secret; a sign-in verifies the password against it. A nickname with no secret is
-    verified against a hash of nothing all the same, so that the time of the
-    refusal tells nothing of it.
-
-    The hash is that of :meth:`_hash`, verified by :meth:`_verify`: scrypt
-    with the parameters of OWASP, ``2 ** SCRYPT_LOG_N`` the cost.
+    A nickname and a password. The nickname is normalized first, to NFKC and
+    case-folded, so that ``Alice`` is ``alice``: the identifier of the kind
+    ``nickname`` is the nickname normalized; the password is normalized by the
+    password of the profile. A sign-up checks both by their presets and gives
+    the hash of the password as the secret; a sign-in finds the profile by the
+    nickname and verifies the password against its secret, a nickname bound
+    to none against a hash of nothing all the same.
     """
 
-    SCRYPT_LOG_N: t.ClassVar[int] = 17
-    SCRYPT_R: t.ClassVar[int] = 8
-    SCRYPT_P: t.ClassVar[int] = 1
+    IDENTIFIER_KIND: t.ClassVar[str] = "nickname"
 
     preset_sign_up_nickname = Slot(AuthNicknameSignUpPreset)
-    preset_sign_up_password = Slot(AuthPasswordSignUpPreset)
-
-    _dummy_secret: str
 
     @t.override
     def _get_sign_up_enabled(self) -> bool:
@@ -87,8 +71,9 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
 
     @t.override
     async def _start_sign_up(self, parameters: AuthNicknameStart) -> AuthStep:
+        password = self.project.auth.methods.password
         nickname = self._normalize_nickname(parameters.nickname)
-        password = self._normalize_password(parameters.password)
+        value = password.normalize(parameters.password)
         await self._check(
             "nickname",
             self.preset_sign_up_nickname,
@@ -96,51 +81,29 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
         )
         await self._check(
             "password",
-            self.preset_sign_up_password,
-            AuthPasswordSignUpContext(password, nickname),
+            password.preset_set,
+            AuthPasswordSetContext(value, (nickname,)),
         )
-        secret = await asyncio.to_thread(self._hash, password)
-        return AuthVerified(subject=nickname, secret=secret)
+        return AuthVerified(subject=nickname, secret=await password.hash(value))
 
     @t.override
     async def _start_sign_in(self, parameters: AuthNicknameStart) -> AuthStep:
+        password = self.project.auth.methods.password
         nickname = self._normalize_nickname(parameters.nickname)
-        password = self._normalize_password(parameters.password)
-        secrets = self.project.auth.storage.profiles.secrets
+        identities = self.project.auth.storage.profiles.identities
+        uid: str | None
         try:
-            secret = await secrets.get(self.get_name(), nickname)
-        except AuthSecretNotFoundError:
-            dummy = await asyncio.to_thread(self._get_dummy_secret)
-            await asyncio.to_thread(self._verify, password, dummy)
-            raise AuthMethodRefusedError.create() from None
-        if not await asyncio.to_thread(self._verify, password, secret):
+            uid = await identities.find_uid(self.IDENTIFIER_KIND, nickname)
+        except AuthIdentityNotFoundError:
+            uid = None
+        if not await password.verify(password.normalize(parameters.password), uid):
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=nickname)
 
     def _normalize_nickname(self, nickname: str) -> str:
         return unicodedata.normalize("NFKC", nickname).casefold()
 
-    def _normalize_password(self, password: str) -> str:
-        return unicodedata.normalize("NFKC", password)
-
-    def _hash(self, password: str) -> str:
-        """The hash of a password, run in a thread."""
-        return hash_password(password, self.SCRYPT_LOG_N, self.SCRYPT_R, self.SCRYPT_P)
-
-    def _verify(self, password: str, secret: str) -> bool:
-        """Whether a password is that of a hash :meth:`_hash` made, in a thread."""
-        return verify_password(password, secret)
-
     @t.final
     def _get_configs(self) -> AuthNicknameConfigs:
         # mixed into the configs of the project, as the doc of the package says
         return t.cast(AuthNicknameConfigs, self.project.settings.configs)
-
-    @t.final
-    def _get_dummy_secret(self) -> str:
-        try:
-            return self._dummy_secret
-        except AttributeError:
-            pass
-        self._dummy_secret = self._hash("")
-        return self._dummy_secret

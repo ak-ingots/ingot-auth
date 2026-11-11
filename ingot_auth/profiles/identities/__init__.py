@@ -1,6 +1,8 @@
 """
-The identities: who a profile is to a method, the subject of the method,
-bound to the uid of the profile. A profile may have several, one a method.
+The identities: what a profile signs in by, an identifier of a kind, a
+nickname, an email, bound to the uid of the profile once, whatever method
+uses it: the methods of an email find the same profile by the same email. A
+profile may have several, one a kind.
 """
 
 __all__ = (
@@ -26,10 +28,10 @@ from .errors import (
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthIdentity:
-    """The subject of a method, bound to a profile: unique within the method."""
+    """An identifier of a kind, bound to a profile: unique within its kind."""
 
-    method: str
-    subject: str
+    kind: str
+    value: str
     uid: str
 
 
@@ -39,25 +41,25 @@ class BaseAuthIdentitiesStorage(Entity):
     @t.final
     async def create(self, identity: AuthIdentity) -> None:
         """
-        Binds a subject to a profile.
+        Binds an identifier to a profile.
 
-        :raises AuthIdentityConflictError: the subject of the method is bound.
+        :raises AuthIdentityConflictError: the identifier of the kind is bound.
         """
         await self._create(identity)
 
     @t.final
-    async def find_uid(self, method: str, subject: str) -> str:
+    async def find_uid(self, kind: str, value: str) -> str:
         """
-        The uid of the profile a subject of a method is bound to.
+        The uid of the profile an identifier of a kind is bound to.
 
         :raises AuthIdentityNotFoundError: it is bound to none.
         """
-        return await self._find_uid(method, subject)
+        return await self._find_uid(kind, value)
 
     @abc.abstractmethod
     async def _create(self, identity: AuthIdentity) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._create")
 
     @abc.abstractmethod
-    async def _find_uid(self, method: str, subject: str) -> str:
+    async def _find_uid(self, kind: str, value: str) -> str:
         raise NotImplementedError(f"{type(self).__qualname__}._find_uid")

@@ -84,6 +84,7 @@ class BaseAuthEmailCodeMethod(
     email: no code is then good.
     """
 
+    IDENTIFIER_KIND: t.ClassVar[str] = "email"
     CODE_LENGTH: t.ClassVar[int] = 6
 
     preset_sign_up_email = Slot(AuthEmailSignUpPreset)
@@ -109,7 +110,7 @@ class BaseAuthEmailCodeMethod(
         email = self._normalize_email(parameters.email)
         identities = self.project.auth.storage.profiles.identities
         try:
-            await identities.find_uid(self.get_name(), email)
+            await identities.find_uid(self.IDENTIFIER_KIND, email)
         except AuthIdentityNotFoundError:
             return self._ask(email, self._create_code())
         return await self._send(email)

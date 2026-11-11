@@ -41,7 +41,12 @@ class AuthTestingState:
 
 
 class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState]):
-    """The method of the tests: one step, or two with a code."""
+    """
+    The method of the tests: one step, or two with a code; its identifiers are
+    of a kind of their own, ``testing``.
+    """
+
+    IDENTIFIER_KIND: t.ClassVar[str] = "testing"
 
     @t.override
     async def _start_sign_up(self, parameters: AuthTestingStart) -> AuthStep:
