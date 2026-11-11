@@ -23,7 +23,9 @@ permissions of a user from its groups; the `metadata/` for the consumers, by the
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
-steps kept by attempts, a hook to start each flow they take, each naming
+steps kept by attempts, a hook to start each flow they take, their flows
+their permissions too, a domain a method, its flag a flow by a hook
+(`_get_<flow>_permissions`), given by the toggles, each naming
 the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
 `(kind, value)` bound to a profile once whatever method, their presets of
 the policies their slots `preset_<flow>_<field>`, each of a class and a

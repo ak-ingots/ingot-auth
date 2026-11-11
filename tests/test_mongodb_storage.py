@@ -49,11 +49,18 @@ from ingot_auth.testing.contracts import (
     AuthStorageTransactionsContract,
     AuthTagsStorageContract,
 )
-from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
+from ingot_auth.testing.methods import (
+    AuthTestingMethod,
+    AuthTestingPermissions,
+    AuthTestingStart,
+)
 
 PORT = os.environ.get("INGOT_AUTH_TEST_PORT")
 SIGNING_UP: t.Final = Caller(
-    uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+    uid="anonymous",
+    permissions=Permissions(
+        AuthSignUpPermissions.CAN_SIGN_UP, AuthTestingPermissions.CAN_SIGN_UP
+    ),
 )
 
 

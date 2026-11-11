@@ -7,12 +7,13 @@ the profile, ``preset_set`` of :class:`~ingot_auth.methods.password.AuthPassword
 both empty unless an application binds policies to them in a subclass. The
 password is kept as its hash, the secret of the profile. Its flows are
 toggled by its configs, :class:`AuthNicknameConfigs`, which the project mixes
-into its own.
+into its own, and are its permissions, :class:`AuthNicknamePermissions`.
 """
 
 __all__ = (
     "AuthNicknameConfigs",
     "AuthNicknameMethod",
+    "AuthNicknamePermissions",
     "AuthNicknameSignUpContext",
     "AuthNicknameSignUpPreset",
     "AuthNicknameStart",
@@ -22,6 +23,7 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
+from ingots.defaults.operations import Permissions
 from ingots.puer import Slot
 
 from ingot_auth.methods import (
@@ -35,6 +37,7 @@ from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthNicknameConfigs
 from .contexts import AuthNicknameSignUpContext
+from .permissions import AuthNicknamePermissions
 from .presets import AuthNicknameSignUpPreset
 
 
@@ -68,6 +71,14 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     @t.override
     def _get_sign_in_enabled(self) -> bool:
         return self._get_configs().AUTH_SIGN_IN_NICKNAME_ENABLED
+
+    @t.override
+    def _get_sign_up_permissions(self) -> Permissions:
+        return Permissions(AuthNicknamePermissions.CAN_SIGN_UP)
+
+    @t.override
+    def _get_sign_in_permissions(self) -> Permissions:
+        return Permissions(AuthNicknamePermissions.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(self, parameters: AuthNicknameStart) -> AuthStep:

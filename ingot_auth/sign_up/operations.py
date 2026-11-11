@@ -36,6 +36,7 @@ from .permissions import AuthSignUpPermissions
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
+    from ingot_auth.methods import BaseAuthMethod
     from ingot_auth.project import AuthProject
     from ingot_auth.storages import AuthAttrValue
 
@@ -49,12 +50,33 @@ class BaseAuthSignUpOperation[ParametersType](
     A step of the sign-up: a challenge keeps an attempt for the answer, the
     verified subject ends the sign-up with a profile bound to it. The uid of
     a new profile comes from :meth:`_create_uid`, the time from
-    :meth:`_get_now`.
+    :meth:`_get_now`. The runner checks the caller may sign up, the step
+    that it may by the method, as the runner cannot: one operation serves
+    every method.
     """
 
     PERMISSIONS = Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
 
     project: "AuthProject"
+
+    @t.final
+    async def get_method(
+        self, name: str, metadata: OperationMetadata
+    ) -> "BaseAuthMethod[t.Any, t.Any, t.Any]":
+        """
+        The method of a name, which the caller may sign up by: it has its
+        ``CAN_SIGN_UP``, which the toggle of the method gives, checked by the
+        checker of the operations as the runner checks any.
+
+        :raises AuthMethodNotFoundError: no method has the name.
+        :raises AuthMethodUnsupportedError: the method signs no one up.
+        :raises OperationPermissionsError: the caller may not sign up by it.
+        """
+        method = self.project.auth.methods.get(name)
+        await self.project.operations.checker.check(
+            type(self), method.get_sign_up_permissions(), metadata
+        )
+        return method
 
     @t.final
     async def proceed(
@@ -133,9 +155,10 @@ class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters
     session the client gives.
 
     :raises AuthMethodNotFoundError: no method has the name.
+    :raises AuthMethodUnsupportedError: the method signs no one up.
+    :raises OperationPermissionsError: the caller may not sign up by it.
     :raises AuthItemNotFoundError, AuthItemInvalidError: a value is not one
         of an attribute of the client, or not of its type.
-    :raises AuthMethodUnsupportedError: the method signs no one up.
     :raises AuthMethodInvalidError: it breaks a policy of the method.
     :raises AuthMethodRefusedError: the method refuses what it starts with.
     :raises AuthIdentityConflictError: the subject is bound already.
@@ -145,7 +168,7 @@ class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters
     async def _run(
         self, parameters: AuthStartSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
-        method = self.project.auth.methods.get(parameters.method)
+        method = await self.get_method(parameters.method, metadata)
         attrs = await self.project.auth.storage.sessions.attrs.get_all()
         check_client_values(attrs, parameters.values)
         step = await method.start_sign_up(parameters.parameters)
@@ -159,6 +182,8 @@ class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParamete
     ``AUTH_ATTEMPT_MAX_FAILURES``, then it is over.
 
     :raises AuthAttemptNotFoundError: no sign-up waits under the id.
+    :raises OperationPermissionsError: the caller may not sign up by the
+        method of the attempt, closed meanwhile.
     :raises AuthMethodRefusedError: the method refuses the answer.
     :raises AuthIdentityConflictError: the subject is bound already.
     """
@@ -171,7 +196,7 @@ class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParamete
         attempt = await attempts.take(parameters.attempt_id)
         if attempt.flow != FLOW:
             raise AuthAttemptNotFoundError.create()
-        method = self.project.auth.methods.get(attempt.method)
+        method = await self.get_method(attempt.method, metadata)
         try:
             step = await method.answer(attempt.state, parameters.answer)
         except AuthMethodRefusedError:

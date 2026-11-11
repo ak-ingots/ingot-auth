@@ -10,6 +10,7 @@ from ingot_auth.methods.nickname import (
     AuthNicknameSignUpContext,
     AuthNicknameSignUpPreset,
     AuthNicknameMethod,
+    AuthNicknamePermissions,
     AuthNicknameStart,
 )
 from ingot_auth.methods.password import (
@@ -43,7 +44,10 @@ from ingot_auth.sign_up import (
 from ingot_auth.storages import AuthIdentity
 
 SIGNING_UP: t.Final = Caller(
-    uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+    uid="anonymous",
+    permissions=Permissions(
+        AuthSignUpPermissions.CAN_SIGN_UP, AuthNicknamePermissions.CAN_SIGN_UP
+    ),
 )
 
 

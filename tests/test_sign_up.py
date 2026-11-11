@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import typing as t
 import unittest
@@ -7,6 +8,7 @@ from ingots.defaults.operations import (
     ANONYMOUS_CALLER,
     Caller,
     OperationPermissionsError,
+    PermissionFlags,
     Permissions,
 )
 from ingots.puer import Slot
@@ -47,16 +49,28 @@ from ingot_auth.storages import (
     AuthSignUpRecordNotFoundError,
     AuthTransactionError,
 )
-from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
-
-SIGNING_UP: t.Final = Caller(
-    uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+from ingot_auth.testing.methods import (
+    AuthTestingMethod,
+    AuthTestingPermissions,
+    AuthTestingStart,
 )
+
+
+class OneStepPermissions(PermissionFlags, domain="tests.one_step"):
+    CAN_SIGN_UP = 1 << 0
 
 
 class OneStepMethod(BaseAuthMethod[str, str, None]):
     # of the kind of the testing method: they share its identifiers
     IDENTIFIER_KIND = "testing"
+
+    @t.override
+    def _get_sign_up_enabled(self) -> bool:
+        return True
+
+    @t.override
+    def _get_sign_up_permissions(self) -> Permissions:
+        return Permissions(OneStepPermissions.CAN_SIGN_UP)
 
     @t.override
     async def _start_sign_up(self, parameters: str) -> AuthStep:
@@ -67,10 +81,20 @@ class NoFlowMethod(BaseAuthMethod[str, str, None]):
     pass
 
 
+class NoFlagMethod(BaseAuthMethod[str, str, None]):
+    # starts a sign-up, but gives no flag of it
+    IDENTIFIER_KIND = "testing"
+
+    @t.override
+    async def _start_sign_up(self, parameters: str) -> AuthStep:
+        return AuthVerified(subject=parameters)
+
+
 class TstMethodsUnit(AuthMethodsUnit):
     testing = Slot(AuthTestingMethod)
     one_step = Slot(OneStepMethod)
     no_flow = Slot(NoFlowMethod)
+    no_flag = Slot(NoFlagMethod)
 
 
 class TstAuthUnit(AuthMemoryUnit):
@@ -87,7 +111,13 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         await super().asyncSetUp()
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
         self.project = TstProject()
-        self.metadata = self.project.operations.create_metadata(SIGNING_UP)
+        # the anonymous caller of a server whose sign-up is open
+        self.caller = Caller(
+            uid="anonymous",
+            permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+            | self.project.auth.methods.get_anonymous_permissions(),
+        )
+        self.metadata = self.project.operations.create_metadata(self.caller)
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
                 id=1,
@@ -185,9 +215,20 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(AuthMethodUnsupportedError) as error:
             await self.start("a", method="no_flow")
         self.assertEqual(error.exception.flow, "sign_up")
+        no_flow = self.project.auth.methods.get("no_flow")
         with self.assertRaises(AuthMethodUnsupportedError) as error:
-            await self.project.auth.methods.get("no_flow").start_sign_in("a")
+            await no_flow.start_sign_up("a")
+        self.assertEqual(error.exception.flow, "sign_up")
+        with self.assertRaises(AuthMethodUnsupportedError) as error:
+            await no_flow.start_sign_in("a")
         self.assertEqual(error.exception.flow, "sign_in")
+
+    async def test_a_flow_whose_method_gives_no_flag_of_it_stays_closed(
+        self,
+    ) -> None:
+        with self.assertRaises(AuthMethodUnsupportedError) as error:
+            await self.start("a", method="no_flag")
+        self.assertEqual(error.exception.flow, "sign_up")
 
     async def test_the_testing_method_signs_in_as_it_signs_up(self) -> None:
         method = self.project.auth.methods.get("testing")
@@ -285,6 +326,51 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.metadata = self.project.operations.create_metadata(ANONYMOUS_CALLER)
         with self.assertRaises(OperationPermissionsError):
             await self.start(AuthTestingStart(subject="a"))
+
+    async def test_the_anonymous_caller_gets_the_flags_of_the_methods_open(
+        self,
+    ) -> None:
+        self.assertEqual(
+            self.project.auth.methods.get_anonymous_permissions(),
+            Permissions(
+                AuthTestingPermissions.CAN_SIGN_UP | AuthTestingPermissions.CAN_SIGN_IN,
+                OneStepPermissions.CAN_SIGN_UP,
+            ),
+        )
+
+    async def test_signing_up_by_a_method_needs_its_flag(self) -> None:
+        challenge = await self.start(AuthTestingStart(subject="a", code="1"))
+        assert isinstance(challenge, AuthSignUpChallenge)
+        self.metadata = self.project.operations.create_metadata(
+            dataclasses.replace(
+                self.caller,
+                permissions=self.caller.permissions
+                - Permissions(AuthTestingPermissions.CAN_SIGN_UP),
+            )
+        )
+        with self.assertRaises(OperationPermissionsError) as error:
+            await self.start(AuthTestingStart(subject="b"))
+        self.assertEqual(
+            error.exception.required, Permissions(AuthTestingPermissions.CAN_SIGN_UP)
+        )
+        # an attempt is of a method closed meanwhile
+        with self.assertRaises(OperationPermissionsError):
+            await self.answer(challenge.attempt_id, "1")
+        self.assertIsInstance(await self.start("c", method="one_step"), AuthSignedUp)
+
+
+class MethodPermissionsTestCase(unittest.TestCase):
+    def test_a_flow_needs_its_flag_whether_open_or_not(self) -> None:
+        project = TstProject()
+        one_step = project.auth.methods.get("one_step")
+        self.assertEqual(
+            one_step.get_sign_up_permissions(),
+            Permissions(OneStepPermissions.CAN_SIGN_UP),
+        )
+        no_flow = project.auth.methods.get("no_flow")
+        for get in (no_flow.get_sign_up_permissions, no_flow.get_sign_in_permissions):
+            with self.assertRaises(AuthMethodUnsupportedError):
+                get()
 
 
 class ErrorsTestCase(unittest.TestCase):

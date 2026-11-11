@@ -25,6 +25,7 @@ __all__ = (
 
 import typing as t
 
+from ingots.defaults.operations import Permissions
 from ingots.puer import Slot, Unit
 
 from .base import BaseAuthMethod
@@ -68,3 +69,19 @@ class AuthMethodsUnit(Unit):
             return self.slots_find_entity(name, BaseAuthMethod)
         except LookupError:
             raise AuthMethodNotFoundError.for_name(name) from None
+
+    @t.final
+    def get_anonymous_permissions(self) -> Permissions:
+        """
+        What the methods give the anonymous caller, by their toggles: the
+        flags of the sign-up and of the sign-in of each method that opens
+        them. Those of the flows themselves, of every method, are of the
+        server, ``AuthSignUpPermissions.CAN_SIGN_UP``.
+        """
+        permissions = Permissions()
+        for method in self.get_all():
+            if method.get_sign_up_enabled():
+                permissions |= method.get_sign_up_permissions()
+            if method.get_sign_in_enabled():
+                permissions |= method.get_sign_in_permissions()
+        return permissions

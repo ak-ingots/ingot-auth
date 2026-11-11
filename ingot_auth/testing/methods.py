@@ -1,15 +1,18 @@
 """
 A method for the tests of what is built on the auth: no provider, either
-step, a sign-up and a sign-in alike. A test case declares it as a slot of its methods::
+step, a sign-up and a sign-in alike, both open, with no toggles. A test case
+declares it as a slot of its methods::
 
     class AppTestingMethods(AppMethods):
         testing = Slot(AuthTestingMethod)
 """
 
-__all__ = ("AuthTestingMethod", "AuthTestingStart")
+__all__ = ("AuthTestingMethod", "AuthTestingPermissions", "AuthTestingStart")
 
 import typing as t
 from dataclasses import dataclass
+
+from ingots.defaults.operations import PermissionFlags, Permissions
 
 from ingot_auth.methods import (
     AuthChallenge,
@@ -18,6 +21,13 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
+
+
+class AuthTestingPermissions(PermissionFlags, domain="auth.methods.testing"):
+    """The flows of the method of the tests, as those of any method."""
+
+    CAN_SIGN_UP = 1 << 0
+    CAN_SIGN_IN = 1 << 1
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -47,6 +57,22 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
     """
 
     IDENTIFIER_KIND: t.ClassVar[str] = "testing"
+
+    @t.override
+    def _get_sign_up_enabled(self) -> bool:
+        return True
+
+    @t.override
+    def _get_sign_in_enabled(self) -> bool:
+        return True
+
+    @t.override
+    def _get_sign_up_permissions(self) -> Permissions:
+        return Permissions(AuthTestingPermissions.CAN_SIGN_UP)
+
+    @t.override
+    def _get_sign_in_permissions(self) -> Permissions:
+        return Permissions(AuthTestingPermissions.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(self, parameters: AuthTestingStart) -> AuthStep:
