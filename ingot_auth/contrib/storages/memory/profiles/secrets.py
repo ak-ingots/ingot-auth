@@ -13,19 +13,19 @@ if t.TYPE_CHECKING:
 
 
 class AuthMemorySecretsStorage(AuthMemoryStateMixin, BaseAuthSecretsStorage):
-    """The secrets in memory, by the method and the subject."""
+    """The secrets in memory, by the uids of their profiles."""
 
     def __init__(self, project: "Project") -> None:
         super().__init__(project)
-        self._secrets: dict[tuple[str, str], str] = {}
+        self._secrets: dict[str, str] = {}
 
     @t.override
-    async def _put(self, method: str, subject: str, secret: str) -> None:
-        self._secrets[method, subject] = secret
+    async def _put(self, uid: str, secret: str) -> None:
+        self._secrets[uid] = secret
 
     @t.override
-    async def _get(self, method: str, subject: str) -> str:
+    async def _get(self, uid: str) -> str:
         try:
-            return self._secrets[method, subject]
+            return self._secrets[uid]
         except KeyError:
-            raise AuthSecretNotFoundError.for_method(method) from None
+            raise AuthSecretNotFoundError.for_uid(uid) from None

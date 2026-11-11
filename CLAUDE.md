@@ -23,10 +23,14 @@ permissions of a user from its groups; the `metadata/` for the consumers, by the
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
-steps kept by attempts, a hook to start each flow they take, their secrets
-kept in `profiles/secrets/`, their presets of the policies their slots
-`preset_<flow>_<field>`, each of a class and a context of its own, the
-context made by the method; the `policies/`, rules a value is checked
+steps kept by attempts, a hook to start each flow they take, each naming
+the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
+`(kind, value)` bound to a profile once whatever method, their presets of
+the policies their slots `preset_<flow>_<field>`, each of a class and a
+context of its own, the context made by the method; the password of the
+profile in `methods/password/`, the slot `password` of the methods, not a
+method, its hash the secret of the uid in `profiles/secrets/`, its preset
+`preset_set` of a new one by any method; the `policies/`, rules a value is checked
 against, each taking a part of a context by its protocol, bound to a preset
 by class with a config; the `sign_up/` flow; the storage `storage/`, with the
 transactions of a backend over all its storages, and the cache `cache/`,

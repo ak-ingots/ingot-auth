@@ -91,25 +91,26 @@ class BaseAuthSignUpOperation[ParametersType](
     ) -> AuthSignedUp:
         """
         Ends the sign-up, in one transaction of the storage: binds the
-        subject to a new profile, keeps its secret if the method gave one,
-        creates the profile and keeps the record. The binding goes first, so
-        of two sign-ups of one subject only one goes on.
+        subject, an identifier of the kind of the method, to a new profile,
+        keeps the secret of the profile if the method gave one, creates the
+        profile and keeps the record. The binding goes first, so of two
+        sign-ups of one identifier, by one method or two of its kind, only one
+        goes on.
 
-        :raises AuthIdentityConflictError: the subject is bound already.
+        :raises AuthIdentityConflictError: the identifier is bound already.
         """
         storage = self.project.auth.storage
         uid = self._create_uid()
         now = self._get_now()
-        identity = AuthIdentity(method=method, subject=verified.subject, uid=uid)
+        kind = self.project.auth.methods.get(method).IDENTIFIER_KIND
+        identity = AuthIdentity(kind=kind, value=verified.subject, uid=uid)
         record = AuthSignUpRecord(
             uid=uid, method=method, signed_up_at=now, values=values
         )
         async with storage.transaction():
             await storage.profiles.identities.create(identity)
             if verified.secret is not None:
-                await storage.profiles.secrets.put(
-                    method, verified.subject, verified.secret
-                )
+                await storage.profiles.secrets.put(uid, verified.secret)
             await storage.profiles.create(AuthProfile(uid=uid, created_at=now))
             await storage.sign_up.records.add(record)
         return AuthSignedUp(uid=uid)

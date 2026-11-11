@@ -45,12 +45,26 @@ class AppMethods(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
 ```
 
-the nickname and the password of a sign-up checked by the presets of the
-policies of the method, its slots `preset_sign_up_nickname` and
-`preset_sign_up_password`, empty unless the application binds policies to
-them in a subclass of the method, the parameters of its hash, scrypt,
-changed by subclassing too. An email and a code
-sent to it comes too, of two steps, the sending of the code the
+the nickname of a sign-up checked by the preset of the policies of the
+method, its slot `preset_sign_up_nickname`, the password by that of the
+password, which is of the profile, one whatever identifier it signs in by:
+`preset_set` of `AuthPassword`, the slot `password` of the methods. Both are
+empty unless the application binds policies to them in a subclass, the
+parameters of the hash of the password, scrypt, changed by subclassing too:
+
+```python
+class AppPassword(AuthPassword):
+    preset_set = Slot(AppPasswordSetPreset)  # a new password, by any method
+
+
+class AppMethods(AuthMethodsUnit):
+    nickname = Slot(AuthNicknameMethod)
+    password = Slot(AppPassword)
+```
+
+An identifier is bound to a profile once, whatever method verifies it: a
+method names the kind of its identifier, `nickname`, `email`. An email and
+a code sent to it comes too, of two steps, the sending of the code the
 application's:
 
 ```python

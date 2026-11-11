@@ -55,35 +55,33 @@ class AuthProfilesStorageContract(BaseAuthContract):
 class AuthIdentitiesStorageContract(BaseAuthContract):
     """The identities of a storage."""
 
-    async def test_a_subject_gives_its_uid(self) -> None:
+    async def test_an_identifier_gives_its_uid(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(method="mail", subject="a@b.c", uid="a1"))
-        self.assertEqual(await identities.find_uid("mail", "a@b.c"), "a1")
+        await identities.create(AuthIdentity(kind="email", value="a@b.c", uid="a1"))
+        self.assertEqual(await identities.find_uid("email", "a@b.c"), "a1")
 
-    async def test_a_subject_is_bound_once_a_method(self) -> None:
+    async def test_an_identifier_is_bound_once_a_kind(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(method="mail", subject="a@b.c", uid="a1"))
-        await identities.create(AuthIdentity(method="code", subject="a@b.c", uid="a1"))
+        await identities.create(AuthIdentity(kind="email", value="alice", uid="a1"))
+        await identities.create(AuthIdentity(kind="nickname", value="alice", uid="a1"))
         with self.assertRaises(AuthIdentityConflictError) as error:
-            await identities.create(
-                AuthIdentity(method="mail", subject="a@b.c", uid="b2")
-            )
-        self.assertEqual(error.exception.method, "mail")
-        self.assertEqual(await identities.find_uid("mail", "a@b.c"), "a1")
+            await identities.create(AuthIdentity(kind="email", value="alice", uid="b2"))
+        self.assertEqual(error.exception.kind, "email")
+        self.assertEqual(await identities.find_uid("email", "alice"), "a1")
 
-    async def test_an_unbound_subject_is_not_found(self) -> None:
+    async def test_an_unbound_identifier_is_not_found(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(method="mail", subject="a@b.c", uid="a1"))
-        for method, subject in (("mail", "b@b.c"), ("code", "a@b.c")):
+        await identities.create(AuthIdentity(kind="email", value="a@b.c", uid="a1"))
+        for kind, value in (("email", "b@b.c"), ("phone", "a@b.c")):
             with self.assertRaises(AuthIdentityNotFoundError) as error:
-                await identities.find_uid(method, subject)
-            self.assertEqual(error.exception.method, method)
+                await identities.find_uid(kind, value)
+            self.assertEqual(error.exception.kind, kind)
 
-    async def test_of_concurrent_bindings_of_a_subject_one_wins(self) -> None:
+    async def test_of_concurrent_bindings_of_an_identifier_one_wins(self) -> None:
         identities = self.project.auth.storage.profiles.identities
         results = await asyncio.gather(
             *(
-                identities.create(AuthIdentity(method="mail", subject="a", uid=uid))
+                identities.create(AuthIdentity(kind="email", value="a", uid=uid))
                 for uid in ("a1", "b2")
             ),
             return_exceptions=True,
@@ -93,27 +91,24 @@ class AuthIdentitiesStorageContract(BaseAuthContract):
 
 
 class AuthSecretsStorageContract(BaseAuthContract):
-    """The secrets of a storage."""
+    """The secrets of a storage, one a profile."""
 
     async def test_a_secret_is_given_as_put(self) -> None:
         secrets = self.project.auth.storage.profiles.secrets
-        await secrets.put("password", "alice", "hash-1")
-        await secrets.put("password", "bob", "hash-2")
-        await secrets.put("pin", "alice", "hash-3")
-        self.assertEqual(await secrets.get("password", "alice"), "hash-1")
-        self.assertEqual(await secrets.get("password", "bob"), "hash-2")
-        self.assertEqual(await secrets.get("pin", "alice"), "hash-3")
+        await secrets.put("a1", "hash-1")
+        await secrets.put("b2", "hash-2")
+        self.assertEqual(await secrets.get("a1"), "hash-1")
+        self.assertEqual(await secrets.get("b2"), "hash-2")
 
     async def test_a_secret_put_again_replaces_the_old(self) -> None:
         secrets = self.project.auth.storage.profiles.secrets
-        await secrets.put("password", "alice", "hash-1")
-        await secrets.put("password", "alice", "hash-2")
-        self.assertEqual(await secrets.get("password", "alice"), "hash-2")
+        await secrets.put("a1", "hash-1")
+        await secrets.put("a1", "hash-2")
+        self.assertEqual(await secrets.get("a1"), "hash-2")
 
-    async def test_a_subject_with_no_secret_is_not_found(self) -> None:
+    async def test_a_profile_with_no_secret_is_not_found(self) -> None:
         secrets = self.project.auth.storage.profiles.secrets
-        await secrets.put("password", "alice", "hash-1")
-        for method, subject in (("password", "bob"), ("pin", "alice")):
-            with self.assertRaises(AuthSecretNotFoundError) as error:
-                await secrets.get(method, subject)
-            self.assertEqual(error.exception.method, method)
+        await secrets.put("a1", "hash-1")
+        with self.assertRaises(AuthSecretNotFoundError) as error:
+            await secrets.get("b2")
+        self.assertEqual(error.exception.uid, "b2")

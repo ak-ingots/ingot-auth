@@ -122,7 +122,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(result, AuthSignedUp)
         identities = self.project.auth.storage.profiles.identities
         self.assertEqual(
-            await identities.find_uid("email_code", "alice@example.com"), result.uid
+            await identities.find_uid("email", "alice@example.com"), result.uid
         )
 
     async def test_a_wrong_code_is_refused(self) -> None:
@@ -139,7 +139,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("  Alice@Example.COM ")
         self.assertEqual(self.method.sent[-1][0], "alice@example.com")
         identities = self.project.auth.storage.profiles.identities
-        await identities.find_uid("email_code", "alice@example.com")
+        await identities.find_uid("email", "alice@example.com")
 
     async def test_a_sign_up_keeps_the_preset_of_the_email(self) -> None:
         with self.assertRaises(AuthMethodInvalidError) as error:

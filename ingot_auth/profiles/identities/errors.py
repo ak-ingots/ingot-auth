@@ -11,12 +11,12 @@ import typing as t
 
 class AuthIdentityError(Exception):
     """
-    An error of an identity. ``args`` are the message and the method, not the
-    subject, an email or a phone that has no place in the logs.
+    An error of an identity. ``args`` are the message and the kind, not the
+    identifier, an email or a phone that has no place in the logs.
     """
 
     @property
-    def method(self) -> str:
+    def kind(self) -> str:
         return t.cast(str, self.args[1])
 
     @t.override
@@ -25,16 +25,16 @@ class AuthIdentityError(Exception):
 
 
 class AuthIdentityConflictError(AuthIdentityError):
-    """The subject is bound already."""
+    """The identifier is bound already."""
 
     @classmethod
-    def for_method(cls, method: str) -> t.Self:
-        return cls(f"{method}: the subject is bound already", method)
+    def for_kind(cls, kind: str) -> t.Self:
+        return cls(f"{kind}: the identifier is bound already", kind)
 
 
 class AuthIdentityNotFoundError(AuthIdentityError):
-    """The subject is bound to no profile."""
+    """The identifier is bound to no profile."""
 
     @classmethod
-    def for_method(cls, method: str) -> t.Self:
-        return cls(f"{method}: the subject is not bound", method)
+    def for_kind(cls, kind: str) -> t.Self:
+        return cls(f"{kind}: the identifier is not bound", kind)
