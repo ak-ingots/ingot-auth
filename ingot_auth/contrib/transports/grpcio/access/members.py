@@ -12,8 +12,8 @@ from ingot_auth.access.members.v1 import members_pb2, members_pb2_grpc
 
 class AuthGrpcMembersServicer(BaseAuthGrpcServicer, members_pb2_grpc.MembersServicer):
     """
-    The members of the groups for their administrator: its permissions come
-    from :meth:`_get_caller`, which a subclass overrides.
+    The members of the groups for their administrator: its permissions are
+    those of the session of the token of the call, by :meth:`_get_caller`.
     """
 
     @t.override

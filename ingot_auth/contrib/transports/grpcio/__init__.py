@@ -14,8 +14,11 @@ methods the application takes, an internal one the administration too::
     class AppGrpcErrors(AuthGrpcErrorsUnit):
         pass
 
-The administration lets nobody in until a subclass of its servicers tells who
-is calling (``_get_caller()``).
+A call bears the token of its session, ``authorization: Bearer <token>``, and
+runs for its caller, with the permissions its groups grant; a call with no
+token for the anonymous one, so that the administration lets in only the
+users of its groups (``_get_caller()``). The metadata and the methods run for
+the anonymous one, whatever the call bears.
 """
 
 __all__ = (

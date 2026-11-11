@@ -33,8 +33,8 @@ class AuthGrpcMetadataServicer(
 ):
     """
     The metadata, public unless told otherwise: a client asks for it before
-    signing in, so anyone may read it until a subclass overrides
-    :meth:`_get_anonymous_caller` or :meth:`_get_caller`.
+    signing in, so anyone may read it, signed in or not, until a subclass
+    overrides :meth:`_get_anonymous_caller` or :meth:`_get_caller`.
     """
 
     @t.override
@@ -49,6 +49,11 @@ class AuthGrpcMetadataServicer(
             session=build_session_message(metadata.session),
             methods=(build_method_message(method) for method in metadata.methods),
         )
+
+    @t.override
+    async def _get_caller(self, context: Context) -> Caller:
+        # open to anyone: a token changes nothing
+        return self._get_anonymous_caller()
 
     @t.override
     def _get_anonymous_caller(self) -> Caller:

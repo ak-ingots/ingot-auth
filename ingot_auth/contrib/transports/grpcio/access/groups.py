@@ -12,8 +12,8 @@ from ingot_auth.access.groups.v1 import groups_pb2, groups_pb2_grpc
 
 class AuthGrpcGroupsServicer(BaseAuthGrpcServicer, groups_pb2_grpc.GroupsServicer):
     """
-    The groups for their administrator: its permissions come from
-    :meth:`_get_caller`, which a subclass overrides.
+    The groups for their administrator: its permissions are those of the
+    session of the token of the call, by :meth:`_get_caller`.
     """
 
     @t.override
