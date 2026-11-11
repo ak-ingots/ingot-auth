@@ -11,7 +11,7 @@ from ingot_auth.storages import (
 )
 
 from ..collection import AuthMongoDbCollectionMixin
-from ..values import build_bson_values, build_values
+from ..values import build_bson_attr_values, build_attr_values
 
 
 class AuthMongoDbSignUpRecordsStorage(
@@ -19,7 +19,8 @@ class AuthMongoDbSignUpRecordsStorage(
 ):
     """
     The records of the sign-ups in MongoDB: a document a record, the uid of its
-    profile the ``_id``, its values as :func:`build_bson_values` gives them.
+    profile the ``_id``, its ``attr_values`` as :func:`build_bson_attr_values`
+    gives them.
     """
 
     MONGODB_COLLECTION: t.ClassVar[str] = "auth_sign_up_records"
@@ -32,7 +33,7 @@ class AuthMongoDbSignUpRecordsStorage(
                 "_id": record.uid,
                 "method": record.method,
                 "signed_up_at": record.signed_up_at,
-                "values": build_bson_values(record.values),
+                "attr_values": build_bson_attr_values(record.attr_values),
             },
             session=self._mongodb_get_session(),
         )
@@ -49,5 +50,5 @@ class AuthMongoDbSignUpRecordsStorage(
             uid=document["_id"],
             method=document["method"],
             signed_up_at=document["signed_up_at"],
-            values=build_values(document["values"]),
+            attr_values=build_attr_values(document["attr_values"]),
         )

@@ -87,7 +87,7 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(method.get_sign_up_enabled())
         self.assertFalse(method.get_sign_in_enabled())
 
-    async def test_a_toggle_gives_the_flag_of_its_flow_to_the_anonymous_caller(
+    async def test_a_toggle_gives_the_flag_of_its_flow_to_the_callers(
         self,
     ) -> None:
         methods = self.project.auth.methods
@@ -106,6 +106,10 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
                 AuthNicknamePermissions.CAN_SIGN_IN,
                 AuthEmailCodePermissions.CAN_SIGN_UP,
             ),
+        )
+        self.assertEqual(
+            methods.get_signed_in_permissions(),
+            Permissions(AuthNicknamePermissions.CAN_SIGN_IN),
         )
 
     async def test_no_method_no_methods(self) -> None:

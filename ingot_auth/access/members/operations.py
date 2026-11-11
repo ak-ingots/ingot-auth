@@ -14,6 +14,7 @@ from ingots.defaults.operations import BaseOperation, Permissions
 
 from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
 
+from ..groups import AuthGroupNotFoundError
 from .permissions import AuthMembersPermissions
 
 if t.TYPE_CHECKING:
@@ -26,8 +27,8 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
     BaseOperation[ParametersType, ResultType]
 ):
     """
-    An operation of the memberships: the group is one of a source, the uid
-    of a profile.
+    An operation of the memberships: the group is one of a source, but
+    ``signed_in``, which keeps none; the uid of a profile.
     """
 
     project: "AuthProject"
@@ -38,8 +39,13 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
 
     @t.final
     def _check_group(self, name: str) -> None:
-        """:raises AuthGroupNotFoundError: no group has the name."""
-        self.project.auth.access.groups.get(name)
+        """
+        :raises AuthGroupNotFoundError: no group has the name, or it is
+            ``signed_in``, of every signed-in user.
+        """
+        groups = self.project.auth.access.groups
+        if groups.get(name) is groups.signed_in:
+            raise AuthGroupNotFoundError.for_members(name)
 
     @t.final
     async def _check_uid(self, uid: str) -> None:
@@ -51,7 +57,8 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
     Adds a user to a group; a member already stays one.
 
-    :raises AuthGroupNotFoundError: no group has the name.
+    :raises AuthGroupNotFoundError: no group has the name, or it is
+        ``signed_in``, of every signed-in user.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -70,7 +77,8 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
     Removes a user from a group; one not a member is no error.
 
-    :raises AuthGroupNotFoundError: no group has the name.
+    :raises AuthGroupNotFoundError: no group has the name, or it is
+        ``signed_in``, of every signed-in user.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -89,7 +97,8 @@ class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
     """
     The uids of the members of a group, sorted.
 
-    :raises AuthGroupNotFoundError: no group has the name.
+    :raises AuthGroupNotFoundError: no group has the name, or it is
+        ``signed_in``, of every signed-in user.
     """
 
     PERMISSIONS = Permissions(AuthMembersPermissions.CAN_READ)

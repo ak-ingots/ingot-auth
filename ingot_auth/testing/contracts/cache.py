@@ -41,7 +41,7 @@ class AuthAttemptsCacheContract(BaseAuthContract):
             flow="sign_up",
             method="testing",
             state="state",
-            values={1: "iPhone"},
+            attr_values={1: "iPhone"},
             expires_at=now + datetime.timedelta(seconds=expires_in),
             failures=failures,
         )

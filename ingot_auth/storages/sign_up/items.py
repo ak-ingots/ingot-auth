@@ -23,4 +23,4 @@ class AuthSignUpRecord:
     uid: str
     method: str
     signed_up_at: datetime.datetime
-    values: "Mapping[int, AuthAttrValue]"
+    attr_values: "Mapping[int, AuthAttrValue]"

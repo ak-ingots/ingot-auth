@@ -103,12 +103,34 @@ may not run:
 ```python
 anonymous = Caller(
     uid="anonymous",
-    permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+    permissions=Permissions(
+        AuthSignUpPermissions.CAN_SIGN_UP, AuthSignInPermissions.CAN_SIGN_IN
+    )
     | project.auth.methods.get_anonymous_permissions(),
 )
 ```
 
-A signed-in user has what its groups grant. The groups are declared in
+A sign-in finds the profile bound to what the method verified, checks the
+profile may sign in by the method, its `CAN_SIGN_IN` from the groups,
+`AuthMethodDeniedError` otherwise, and opens a session, giving its token
+once, in one step or after the answers to a challenge, as a sign-up goes:
+
+```python
+start = AuthStartSignInParameters(
+    method="nickname",
+    parameters=AuthNicknameStart(nickname="alice", password="..."),
+)
+result = await project.operations.runner.run(
+    project.auth.sign_in.op_start, start, metadata
+)
+if isinstance(result, AuthSignedIn):
+    token = result.token  # the client sends it with each call
+```
+
+A signed-in user has what its groups grant, `signed_in` first, a group of
+the core every signed-in user is a member of, none stored, granting the
+`CAN_SIGN_IN` of each method open; an application grants every signed-in
+user more by its own `AuthSignedInGroup` in the slot. The groups are declared in
 the code, slots of the groups of the access, each granting by its hook;
 the addons grant to a group as the application does, which declares the
 class joining them when two of its bases hold the group:
@@ -167,7 +189,7 @@ Set as environment variables with the prefix of the project
 | Name | Default | Meaning |
 |---|---|---|
 | `AUTH_LOGGING_LEVEL` | `INFO` | the level of the logger of the addon, `ingot_auth` |
-| `AUTH_ATTEMPT_TTL` | `600` | the seconds an attempt of a sign-up waits for an answer |
+| `AUTH_ATTEMPT_TTL` | `600` | the seconds an attempt of a sign-up, a sign-in waits for an answer |
 | `AUTH_ATTEMPT_MAX_FAILURES` | `5` | the answers refused before an attempt is over |
 | `AUTH_SESSION_TTL` | `2592000` | the seconds a session of `AuthFixedLifetime` lives, 30 days |
 | `AUTH_SESSION_CACHE_TTL` | `300` | the seconds a session and its caller stay in the cache |

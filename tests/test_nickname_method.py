@@ -7,6 +7,7 @@ from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.nickname import (
+    AuthNicknameConfigs,
     AuthNicknameSignUpContext,
     AuthNicknameSignUpPreset,
     AuthNicknameMethod,
@@ -36,6 +37,13 @@ from ingot_auth.policies import (
     AuthPolicyBinding,
     BaseAuthPolicy,
 )
+from ingot_auth.settings import AuthSettingsUnit
+from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.sign_in import (
+    AuthSignedIn,
+    AuthSignInPermissions,
+    AuthStartSignInParameters,
+)
 from ingot_auth.sign_up import (
     AuthSignedUp,
     AuthSignUpPermissions,
@@ -47,6 +55,12 @@ SIGNING_UP: t.Final = Caller(
     uid="anonymous",
     permissions=Permissions(
         AuthSignUpPermissions.CAN_SIGN_UP, AuthNicknamePermissions.CAN_SIGN_UP
+    ),
+)
+SIGNING_IN: t.Final = Caller(
+    uid="anonymous",
+    permissions=Permissions(
+        AuthSignInPermissions.CAN_SIGN_IN, AuthNicknamePermissions.CAN_SIGN_IN
     ),
 )
 
@@ -69,7 +83,16 @@ class TstAuthUnit(AuthMemoryUnit):
     methods = Slot(TstMethodsUnit)
 
 
+class TstConfigs(AuthNicknameConfigs, AuthConfigs):
+    pass
+
+
+class TstSettingsUnit(AuthSettingsUnit):
+    configs = Slot(TstConfigs)
+
+
 class TstProject(AuthMemoryProject):
+    settings = Slot(TstSettingsUnit)
     auth = Slot(TstAuthUnit)
 
 
@@ -189,6 +212,26 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             await self.sign_in("alice", "correct horse"), AuthVerified(subject="alice")
         )
+
+    async def test_a_nickname_signs_in_by_the_flow_and_gets_a_token(self) -> None:
+        uid = (await self.sign_up("alice", "correct horse")).uid
+        runner = self.project.operations.runner
+        metadata = self.project.operations.create_metadata(SIGNING_IN)
+        sign_in = self.project.auth.sign_in.op_start
+        start = AuthStartSignInParameters(
+            method="nickname",
+            parameters=AuthNicknameStart(nickname="Alice", password="correct horse"),
+        )
+        result = await runner.run(sign_in, start, metadata)
+        assert isinstance(result, AuthSignedIn)
+        caller = await self.project.auth.sessions.authenticate(result.token)
+        self.assertEqual((caller.uid, caller.session_id), (uid, result.session_id))
+        wrong = AuthStartSignInParameters(
+            method="nickname",
+            parameters=AuthNicknameStart(nickname="alice", password="wrong horse"),
+        )
+        with self.assertRaises(AuthMethodRefusedError):
+            await runner.run(sign_in, wrong, metadata)
 
     async def test_the_password_is_kept_as_its_hash(self) -> None:
         result = await self.sign_up("alice", "correct horse")

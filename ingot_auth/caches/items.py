@@ -22,15 +22,15 @@ class AuthAttempt:
     """
     A flow waiting for an answer, a sign-up, a sign-in between its steps:
     ``id`` is what the client holds, random, the rest stays with the server.
-    ``values`` are those of the attributes of the session the client started
-    with; ``failures`` the answers refused so far.
+    ``attr_values`` are the values of the attributes of the session the
+    client started with; ``failures`` the answers refused so far.
     """
 
     id: str
     flow: str
     method: str
     state: object
-    values: "Mapping[int, AuthAttrValue]"
+    attr_values: "Mapping[int, AuthAttrValue]"
     expires_at: datetime.datetime
     failures: int = 0
 

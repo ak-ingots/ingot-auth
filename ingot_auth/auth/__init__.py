@@ -12,6 +12,7 @@ from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.policies import AuthPoliciesUnit
 from ingot_auth.profiles import AuthProfilesUnit
 from ingot_auth.sessions import AuthSessionsUnit
+from ingot_auth.sign_in import AuthSignInUnit
 from ingot_auth.sign_up import AuthSignUpUnit
 from ingot_auth.storages import AuthStorage
 
@@ -21,9 +22,9 @@ class AuthUnit(CliUnit):
     The auth of the project: the profiles and the sessions, each with its
     registries, the access, the groups of the users and their members, the
     methods, none here, the policies of what a user types and their
-    presets, the sign-up, the metadata, and the storage and the cache,
-    abstract here: the project declares them with a backend in a subclass.
-    The sign-in and the sessions themselves come as its slots.
+    presets, the sign-up, the sign-in, the metadata, and the storage and the
+    cache, abstract here: the project declares them with a backend in a
+    subclass.
     """
 
     cli_name = "auth"
@@ -39,4 +40,5 @@ class AuthUnit(CliUnit):
     sessions = Slot(AuthSessionsUnit)
     access = Slot(AuthAccessUnit)
     sign_up = Slot(AuthSignUpUnit)
+    sign_in = Slot(AuthSignInUnit)
     metadata = Slot(AuthMetadataUnit)

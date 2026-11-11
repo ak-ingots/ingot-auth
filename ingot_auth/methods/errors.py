@@ -1,6 +1,7 @@
 """The errors of the methods."""
 
 __all__ = (
+    "AuthMethodDeniedError",
     "AuthMethodError",
     "AuthMethodInvalidError",
     "AuthMethodNotFoundError",
@@ -44,6 +45,22 @@ class AuthMethodRefusedError(AuthMethodError):
     @classmethod
     def create(cls) -> t.Self:
         return cls("the method refuses")
+
+
+class AuthMethodDeniedError(AuthMethodError):
+    """
+    The profile may not sign in by the method, its ``CAN_SIGN_IN`` taken off
+    it: its own error, not that of a wrong secret, as the secret is proven
+    by then, so that the support tells the two apart.
+    """
+
+    @classmethod
+    def for_name(cls, name: str) -> t.Self:
+        return cls(f"the method {name!r} is closed to the profile", name)
+
+    @property
+    def name(self) -> str:
+        return t.cast(str, self.args[1])
 
 
 class AuthMethodInvalidError(AuthMethodError):

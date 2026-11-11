@@ -19,7 +19,7 @@ class AuthSignUpRecordsStorageContract(BaseAuthContract):
             uid="a1",
             method="mail",
             signed_up_at=NOW,
-            values={
+            attr_values={
                 1: True,
                 2: 7,
                 3: decimal.Decimal("1.50"),

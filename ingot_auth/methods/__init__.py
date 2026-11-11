@@ -12,6 +12,7 @@ catalogue an application takes from, declaring those it takes as slots of
 
 __all__ = (
     "AuthChallenge",
+    "AuthMethodDeniedError",
     "AuthMethodError",
     "AuthMethodInvalidError",
     "AuthMethodNotFoundError",
@@ -20,6 +21,7 @@ __all__ = (
     "AuthMethodsUnit",
     "AuthStep",
     "AuthVerified",
+    "BaseAuthFlowOperation",
     "BaseAuthMethod",
 )
 
@@ -30,12 +32,14 @@ from ingots.puer import Slot, Unit
 
 from .base import BaseAuthMethod
 from .errors import (
+    AuthMethodDeniedError,
     AuthMethodError,
     AuthMethodInvalidError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,
     AuthMethodUnsupportedError,
 )
+from .operations import BaseAuthFlowOperation
 from .password import AuthPassword
 from .steps import AuthChallenge, AuthStep, AuthVerified
 
@@ -82,6 +86,19 @@ class AuthMethodsUnit(Unit):
         for method in self.get_all():
             if method.get_sign_up_enabled():
                 permissions |= method.get_sign_up_permissions()
+            if method.get_sign_in_enabled():
+                permissions |= method.get_sign_in_permissions()
+        return permissions
+
+    @t.final
+    def get_signed_in_permissions(self) -> Permissions:
+        """
+        What the methods give a signed-in user, by their toggles: the flag
+        of the sign-in of each method that opens it, which a sign-in checks
+        the profile has once the method found it.
+        """
+        permissions = Permissions()
+        for method in self.get_all():
             if method.get_sign_in_enabled():
                 permissions |= method.get_sign_in_permissions()
         return permissions

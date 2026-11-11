@@ -22,9 +22,17 @@ class AuthGroupError(Exception):
 
 
 class AuthGroupNotFoundError(AuthGroupError):
-    """No group has the name."""
+    """No group has the name, or the group keeps no members to tell of."""
 
     @classmethod
     def for_name(cls, name: str) -> t.Self:
         """No source of the groups has one of the name."""
         return cls(f"no group {name!r}", name)
+
+    @classmethod
+    def for_members(cls, name: str) -> t.Self:
+        """
+        The group keeps no members: every signed-in user is one, none is
+        added, removed or listed.
+        """
+        return cls(f"the group {name!r} has every signed-in user", name)
