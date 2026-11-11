@@ -93,6 +93,21 @@ class AppConfigs(AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs):
     AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)  # by invitation only
 ```
 
+The flows of a method are permissions too, a domain a method,
+`AuthNicknamePermissions` of `auth.methods.nickname`, a flag a flow: a
+sign-up by a method needs its `CAN_SIGN_UP` besides the `CAN_SIGN_UP` of
+the sign-up, and the toggles give the anonymous caller the flags of the
+flows open, so that a flow closed is refused as any operation the caller
+may not run:
+
+```python
+anonymous = Caller(
+    uid="anonymous",
+    permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+    | project.auth.methods.get_anonymous_permissions(),
+)
+```
+
 A signed-in user has what its groups grant. The groups are declared in
 the code, slots of the groups of the access, each granting by its hook;
 the addons grant to a group as the application does, which declares the

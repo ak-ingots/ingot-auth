@@ -8,6 +8,7 @@ from ingots.puer import Project, Slot
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.email_code import (
     AuthEmailCodeChallenge,
+    AuthEmailCodePermissions,
     AuthEmailSignUpContext,
     AuthEmailSignUpPreset,
     AuthEmailCodeStart,
@@ -36,7 +37,10 @@ from ingot_auth.sign_up import (
 )
 
 SIGNING_UP: t.Final = Caller(
-    uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+    uid="anonymous",
+    permissions=Permissions(
+        AuthSignUpPermissions.CAN_SIGN_UP, AuthEmailCodePermissions.CAN_SIGN_UP
+    ),
 )
 
 

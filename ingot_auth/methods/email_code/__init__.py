@@ -7,12 +7,13 @@ own, and declares it as a slot of its methods,
 preset of the policies of the method, its slot ``preset_sign_up_email``,
 empty unless an application binds policies to it in its subclass. Its flows
 are toggled by its configs, :class:`AuthEmailCodeConfigs`, which the project
-mixes into its own.
+mixes into its own, and are its permissions, :class:`AuthEmailCodePermissions`.
 """
 
 __all__ = (
     "AuthEmailCodeChallenge",
     "AuthEmailCodeConfigs",
+    "AuthEmailCodePermissions",
     "AuthEmailCodeStart",
     "AuthEmailCodeState",
     "AuthEmailSignUpContext",
@@ -28,6 +29,7 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
+from ingots.defaults.operations import Permissions
 from ingots.puer import Slot
 
 from ingot_auth.methods import (
@@ -41,6 +43,7 @@ from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthEmailCodeConfigs
 from .contexts import AuthEmailSignUpContext
+from .permissions import AuthEmailCodePermissions
 from .presets import AuthEmailSignUpPreset
 
 
@@ -96,6 +99,14 @@ class BaseAuthEmailCodeMethod(
     @t.override
     def _get_sign_in_enabled(self) -> bool:
         return self._get_configs().AUTH_SIGN_IN_EMAIL_CODE_ENABLED
+
+    @t.override
+    def _get_sign_up_permissions(self) -> Permissions:
+        return Permissions(AuthEmailCodePermissions.CAN_SIGN_UP)
+
+    @t.override
+    def _get_sign_in_permissions(self) -> Permissions:
+        return Permissions(AuthEmailCodePermissions.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(self, parameters: AuthEmailCodeStart) -> AuthStep:

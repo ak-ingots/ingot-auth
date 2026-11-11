@@ -2,15 +2,23 @@ import typing as t
 import unittest
 from unittest import mock
 
-from ingots.defaults.operations import ROOT_CALLER
+from ingots.defaults.operations import ROOT_CALLER, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.metadata import AuthMetadata, AuthMethodMetadata
 from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
-from ingot_auth.methods.email_code import AuthEmailCodeConfigs, BaseAuthEmailCodeMethod
-from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
+from ingot_auth.methods.email_code import (
+    AuthEmailCodeConfigs,
+    AuthEmailCodePermissions,
+    BaseAuthEmailCodeMethod,
+)
+from ingot_auth.methods.nickname import (
+    AuthNicknameConfigs,
+    AuthNicknameMethod,
+    AuthNicknamePermissions,
+)
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 
@@ -78,6 +86,27 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         method = self.project.auth.methods.email_code
         self.assertTrue(method.get_sign_up_enabled())
         self.assertFalse(method.get_sign_in_enabled())
+
+    async def test_a_toggle_gives_the_flag_of_its_flow_to_the_anonymous_caller(
+        self,
+    ) -> None:
+        methods = self.project.auth.methods
+        self.assertEqual(
+            methods.get_anonymous_permissions(),
+            Permissions(
+                AuthNicknamePermissions.CAN_SIGN_IN,
+                AuthEmailCodePermissions.CAN_SIGN_UP
+                | AuthEmailCodePermissions.CAN_SIGN_IN,
+            ),
+        )
+        self.project.settings.configs.apply({"AUTH_SIGN_IN_EMAIL_CODE_ENABLED": False})
+        self.assertEqual(
+            methods.get_anonymous_permissions(),
+            Permissions(
+                AuthNicknamePermissions.CAN_SIGN_IN,
+                AuthEmailCodePermissions.CAN_SIGN_UP,
+            ),
+        )
 
     async def test_no_method_no_methods(self) -> None:
         self.assertEqual((await self.get(AuthMemoryProject())).methods, ())

@@ -4,6 +4,7 @@ __all__ = ("BaseAuthMethod",)
 
 import typing as t
 
+from ingots.defaults.operations import Permissions
 from ingots.puer import Unit
 
 from ingot_auth.policies import AuthPolicyViolationError
@@ -39,6 +40,14 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     closed here: a method opens the flows it takes, by the configs of its
     package as a rule, which the project mixes into its own.
 
+    The flows of a method are permissions too, a domain of its own,
+    ``auth.methods.nickname``, a flag a flow it takes, ``CAN_SIGN_UP``,
+    ``CAN_SIGN_IN``, given by a hook of its own, ``_get_<flow>_permissions``,
+    the flow unsupported here: the flow checks the caller has the flag, the
+    toggle of the flow gives it, so a flow closed is refused as any operation
+    the caller may not run. A method that takes a flow and gives no flag of
+    it stays closed, refused as unsupported.
+
     A method names the kind of the identifier it verifies, ``IDENTIFIER_KIND``:
     the subject it verifies is a value of that kind, bound to a profile once
     whatever method verifies it, so two methods of an email find the same
@@ -64,6 +73,26 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     def get_sign_in_enabled(self) -> bool:
         """Whether the method signs in, open in the project."""
         return self._get_sign_in_enabled()
+
+    @t.final
+    def get_sign_up_permissions(self) -> Permissions:
+        """
+        What a caller needs to sign up by the method, ``CAN_SIGN_UP`` of its
+        domain, the flow open or not: the flow checks it, the toggle gives it.
+
+        :raises AuthMethodUnsupportedError: the method signs no one up.
+        """
+        return self._get_sign_up_permissions()
+
+    @t.final
+    def get_sign_in_permissions(self) -> Permissions:
+        """
+        What a caller needs to sign in by the method, ``CAN_SIGN_IN`` of its
+        domain, the flow open or not: the flow checks it, the toggle gives it.
+
+        :raises AuthMethodUnsupportedError: the method signs no one in.
+        """
+        return self._get_sign_in_permissions()
 
     @t.final
     async def start_sign_up(self, parameters: StartType) -> AuthStep:
@@ -102,6 +131,14 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
     def _get_sign_in_enabled(self) -> bool:
         """A method opens the flows it takes, none here."""
         return False
+
+    def _get_sign_up_permissions(self) -> Permissions:
+        """A method gives the flag of each flow it takes, none here."""
+        raise AuthMethodUnsupportedError.for_flow("sign_up")
+
+    def _get_sign_in_permissions(self) -> Permissions:
+        """A method gives the flag of each flow it takes, none here."""
+        raise AuthMethodUnsupportedError.for_flow("sign_in")
 
     async def _start_sign_up(self, parameters: StartType) -> AuthStep:
         """A method takes the flows it overrides the start of, none here."""
