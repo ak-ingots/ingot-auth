@@ -1,12 +1,16 @@
 """
 The sign-in: a method verifies who it is, in steps, and the sign-in finds the
 profile bound to what the method verified, checks the profile may sign in by
-the method and opens a session of it, giving its token.
+the method and opens a session of it, giving its token. A step replies no
+sooner than the strategy of its timing says, the slot ``timing``, none by
+default, which a project declares.
 """
 
 __all__ = (
     "AuthAnswerSignInOperation",
     "AuthAnswerSignInParameters",
+    "AuthFloorTiming",
+    "AuthNoTiming",
     "AuthSignInChallenge",
     "AuthSignInPermissions",
     "AuthSignInResult",
@@ -14,9 +18,10 @@ __all__ = (
     "AuthSignedIn",
     "AuthStartSignInOperation",
     "AuthStartSignInParameters",
+    "BaseAuthTiming",
 )
 
-from ingots.puer import Factory, Unit
+from ingots.puer import Factory, Slot, Unit
 
 from .items import (
     AuthAnswerSignInParameters,
@@ -27,10 +32,18 @@ from .items import (
 )
 from .operations import AuthAnswerSignInOperation, AuthStartSignInOperation
 from .permissions import AuthSignInPermissions
+from .timings import AuthFloorTiming, AuthNoTiming, BaseAuthTiming
 
 
 class AuthSignInUnit(Unit):
-    """The operations of the sign-in: a start and the answers to it."""
+    """
+    The operations of the sign-in, a start and the answers to it, and the
+    strategy of their timing in the slot ``timing``, none by default.
+    """
 
     op_start = Factory(AuthStartSignInOperation)
     op_answer = Factory(AuthAnswerSignInOperation)
+
+    # mypy refuses an abstract class where a type is expected: a slot of
+    # one is an open question of ingots
+    timing = Slot(BaseAuthTiming)  # type: ignore[type-abstract]

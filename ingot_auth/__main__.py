@@ -15,16 +15,22 @@ from .contrib.caches.memory import AuthMemoryCache
 from .contrib.storages.memory import AuthMemoryStorage
 from .project import AuthProject
 from .sessions import AuthFixedLifetime, AuthSessionsUnit
+from .sign_in import AuthNoTiming, AuthSignInUnit
 
 
 class AuthMemorySessionsUnit(AuthSessionsUnit):
     lifetime = Slot(AuthFixedLifetime)
 
 
+class AuthMemorySignInUnit(AuthSignInUnit):
+    timing = Slot(AuthNoTiming)
+
+
 class AuthMemoryUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
     cache = Slot(AuthMemoryCache)
     sessions = Slot(AuthMemorySessionsUnit)
+    sign_in = Slot(AuthMemorySignInUnit)
 
 
 class AuthMemoryProject(AuthProject):

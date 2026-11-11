@@ -37,7 +37,8 @@ method, its hash the secret of the uid in `storages/profiles/secrets.py`, its pr
 against, each taking a part of a context by its protocol, bound to a preset
 by class with a config; the `sign_up/` and `sign_in/` flows, over the base
 of the flows of the methods, `methods/operations.py`, the sign-in opening a
-session; the storages `storages/`, the
+session, its replies held by the strategy in its slot `timing`, none by
+default; the storages `storages/`, the
 interfaces a backend implements with what they keep and raise, depending on
 no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
 with the transactions of a backend over all its storages; and the caches

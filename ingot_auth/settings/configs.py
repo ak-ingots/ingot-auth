@@ -4,7 +4,12 @@ __all__ = ("AuthConfigs",)
 
 import logging
 
-from ingots.defaults.settings.configs import Configs, IntConfig, LogLevelConfig
+from ingots.defaults.settings.configs import (
+    Configs,
+    FloatConfig,
+    IntConfig,
+    LogLevelConfig,
+)
 
 
 class AuthConfigs(Configs):
@@ -15,3 +20,4 @@ class AuthConfigs(Configs):
     AUTH_ATTEMPT_MAX_FAILURES = IntConfig(5)  # answers refused before it is over
     AUTH_SESSION_TTL = IntConfig(30 * 86400)  # seconds a fixed lifetime lasts
     AUTH_SESSION_CACHE_TTL = IntConfig(300)  # seconds a session, a caller is cached
+    AUTH_SIGN_IN_MIN_DURATION = FloatConfig(0.3)  # seconds of the floor timing

@@ -42,7 +42,9 @@ class BaseAuthSignInOperation[ParametersType](
     A step of the sign-in: a challenge keeps an attempt for the answer, the
     verified subject ends the sign-in with a session of its profile. A
     sign-in by a method needs its ``CAN_SIGN_IN``, of the caller first, of
-    the profile once the method found it.
+    the profile once the method found it. A step replies no sooner than the
+    strategy of the timing of the sign-in says, a refusal as late as a
+    success.
     """
 
     FLOW: t.ClassVar[str] = "sign_in"
@@ -113,9 +115,13 @@ class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters
     async def _run(
         self, parameters: AuthStartSignInParameters, metadata: OperationMetadata
     ) -> AuthSignInResult:
-        return await self.start(
-            parameters.method, parameters.parameters, parameters.attr_values, metadata
-        )
+        async with self.project.auth.sign_in.timing.hold():
+            return await self.start(
+                parameters.method,
+                parameters.parameters,
+                parameters.attr_values,
+                metadata,
+            )
 
 
 class AuthAnswerSignInOperation(BaseAuthSignInOperation[AuthAnswerSignInParameters]):
@@ -136,4 +142,5 @@ class AuthAnswerSignInOperation(BaseAuthSignInOperation[AuthAnswerSignInParamete
     async def _run(
         self, parameters: AuthAnswerSignInParameters, metadata: OperationMetadata
     ) -> AuthSignInResult:
-        return await self.answer(parameters.attempt_id, parameters.answer, metadata)
+        async with self.project.auth.sign_in.timing.hold():
+            return await self.answer(parameters.attempt_id, parameters.answer, metadata)

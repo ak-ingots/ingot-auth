@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import dataclasses
 import hashlib
 import typing as t
@@ -11,7 +13,15 @@ from ingots.defaults.operations import (
 )
 from ingots.puer import Slot
 
-from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
+from ingot_auth.__main__ import (
+    AuthMemoryProject,
+    AuthMemorySessionsUnit,
+    AuthMemoryUnit,
+)
+from ingot_auth.auth import AuthUnit
+from ingot_auth.contrib.caches.memory import AuthMemoryCache
+from ingot_auth.contrib.storages.memory import AuthMemoryStorage
+from ingot_auth.project import AuthProject
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import AuthGroupsUnit, AuthSignedInGroup
 from ingot_auth.caches import AuthAttemptNotFoundError
@@ -22,11 +32,15 @@ from ingot_auth.methods import (
 )
 from ingot_auth.sign_in import (
     AuthAnswerSignInParameters,
+    AuthFloorTiming,
+    AuthNoTiming,
     AuthSignedIn,
     AuthSignInChallenge,
     AuthSignInPermissions,
     AuthSignInResult,
+    AuthSignInUnit,
     AuthStartSignInParameters,
+    BaseAuthTiming,
 )
 from ingot_auth.sign_up import (
     AuthSignedUp,
@@ -62,6 +76,24 @@ class TstProject(AuthMemoryProject):
     auth = Slot(TstAuthUnit)
 
 
+class FloorSignInUnit(AuthSignInUnit):
+    timing = Slot(AuthFloorTiming)
+
+
+# the timing of the unit in memory is none, which no floor extends: an auth
+# in memory of its own, with a floor
+class FloorAuthUnit(AuthUnit):
+    storage = Slot(AuthMemoryStorage)
+    cache = Slot(AuthMemoryCache)
+    sessions = Slot(AuthMemorySessionsUnit)
+    methods = Slot(TstMethodsUnit)
+    sign_in = Slot(FloorSignInUnit)
+
+
+class FloorProject(AuthProject):
+    auth = Slot(FloorAuthUnit)
+
+
 class ClosedSignedInGroup(AuthSignedInGroup):
     """Takes the sign-in of every method off the profiles."""
 
@@ -86,14 +118,16 @@ class ClosedProject(AuthMemoryProject):
     auth = Slot(ClosedAuthUnit)
 
 
-class SignInTestCase(unittest.IsolatedAsyncioTestCase):
-    project: AuthMemoryProject
+class BaseSignInTestCase(unittest.IsolatedAsyncioTestCase):
+    """The project of a test case and the calls of the sign-in, no test."""
+
+    project: AuthProject
 
     @t.override
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
-        self.project = TstProject()
+        self.project = self.create_project()
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
                 id=1,
@@ -102,6 +136,9 @@ class SignInTestCase(unittest.IsolatedAsyncioTestCase):
                 source=AuthSessionAttrSource.CLIENT,
             )
         )
+
+    def create_project(self) -> AuthProject:
+        return TstProject()
 
     def create_caller(self) -> Caller:
         """The anonymous caller of a server whose flows are open."""
@@ -152,6 +189,8 @@ class SignInTestCase(unittest.IsolatedAsyncioTestCase):
             self.project.operations.create_metadata(self.create_caller()),
         )
 
+
+class SignInTestCase(BaseSignInTestCase):
     async def test_a_profile_signs_in_and_its_token_gives_its_caller(self) -> None:
         uid = await self.sign_up("a@b.c")
         result = await self.start(AuthTestingStart(subject="a@b.c"), a1="iPhone")
@@ -231,3 +270,55 @@ class SignInTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             str(error.exception), "the method 'testing' is closed to the profile"
         )
+
+
+class TimingTestCase(BaseSignInTestCase):
+    """The replies of the sign-in held to a floor."""
+
+    @t.override
+    def create_project(self) -> AuthProject:
+        return FloorProject()
+
+    async def test_a_reply_and_a_refusal_wait_for_the_floor(self) -> None:
+        await self.sign_up("a@b.c")
+        for start in (AuthTestingStart(subject="a@b.c"), AuthTestingStart(subject="x")):
+            with self.subTest(subject=start.subject):
+                with mock.patch.object(
+                    asyncio, "sleep", new_callable=mock.AsyncMock
+                ) as sleep:
+                    with contextlib.suppress(AuthMethodRefusedError):
+                        await self.start(start)
+                (rest,) = sleep.await_args_list[-1].args
+                self.assertTrue(0 < rest <= 0.3, rest)
+
+    async def test_an_answer_waits_for_the_floor_too(self) -> None:
+        await self.sign_up("a@b.c")
+        with mock.patch.object(asyncio, "sleep", new_callable=mock.AsyncMock) as sleep:
+            challenge = await self.start(AuthTestingStart(subject="a@b.c", code="1"))
+            assert isinstance(challenge, AuthSignInChallenge)
+            with self.assertRaises(AuthMethodRefusedError):
+                await self.answer(challenge.attempt_id, "2")
+        self.assertEqual(sleep.await_count, 2)
+
+
+class TimingStrategiesTestCase(unittest.IsolatedAsyncioTestCase):
+    def test_the_sign_in_has_no_timing_by_default(self) -> None:
+        self.assertIs(AuthSignInUnit.timing.cls, BaseAuthTiming)
+
+    async def test_no_timing_holds_nothing(self) -> None:
+        project = TstProject()
+        timing = project.auth.sign_in.timing
+        self.assertIsInstance(timing, AuthNoTiming)
+        with mock.patch.object(asyncio, "sleep", new_callable=mock.AsyncMock) as sleep:
+            async with timing.hold():
+                pass
+        sleep.assert_not_awaited()
+
+    async def test_the_floor_is_of_the_configs(self) -> None:
+        project = FloorProject()
+        project.settings.configs.apply({"AUTH_SIGN_IN_MIN_DURATION": 0.5})
+        with mock.patch.object(asyncio, "sleep", new_callable=mock.AsyncMock) as sleep:
+            async with project.auth.sign_in.timing.hold():
+                pass
+        (rest,) = sleep.await_args_list[-1].args
+        self.assertTrue(0.4 < rest <= 0.5, rest)
