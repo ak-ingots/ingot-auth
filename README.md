@@ -155,6 +155,18 @@ class AppGrpcServer(
     pass
 ```
 
+The client sends the token of the sign-in with each call,
+`authorization: Bearer <token>`, and the call runs for the caller of its
+session, with the permissions its groups grant; a call with no token runs
+for the anonymous one, and a token of no open session, or of one expired, is
+`UNAUTHENTICATED`, the client signing in again. The metadata and the methods
+run for the anonymous one, signed in or not:
+
+```python
+auth = [("authorization", f"Bearer {token}")]
+await members.ListMembers(ListMembersRequest(group="admins"), metadata=auth)
+```
+
 A signed-in user has what its groups grant, `signed_in` first, a group of
 the core every signed-in user is a member of, none stored, granting the
 `CAN_SIGN_IN` of each method open; an application grants every signed-in

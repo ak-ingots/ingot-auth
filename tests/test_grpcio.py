@@ -53,6 +53,7 @@ from ingot_auth.access.members.v1 import (
     members_pb2,
     members_pb2_grpc,
 )
+from ingot_auth.contrib.transports.grpcio.base import get_bearer_token
 from ingot_auth.contrib.transports.grpcio.sessions.attrs import build_attr_values
 from ingot_auth.metadata.v1 import (
     metadata_pb2,
@@ -107,14 +108,18 @@ from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.sessions import AuthSessionExpiredError
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import (
     AuthAttrType,
     AuthIdentityConflictError,
+    AuthMembership,
     AuthProfile,
     AuthSessionAttr,
     AuthSessionAttrSource,
+    AuthSessionCloseReason,
+    AuthSessionNotFoundError,
 )
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
@@ -132,7 +137,7 @@ ADMIN: t.Final = Caller(
 
 
 class AdminCaller:
-    def _get_caller(self, context: aio.ServicerContext[t.Any, t.Any]) -> Caller:
+    async def _get_caller(self, context: aio.ServicerContext[t.Any, t.Any]) -> Caller:
         return ADMIN
 
 
@@ -185,7 +190,7 @@ class TstServer(AuthGrpcMetadataBinding, TstAdminBinding, DefaultGrpcServer):
 
 class ClosedMetadataServicer(AuthGrpcMetadataServicer):
     @t.override
-    def _get_caller(self, context: aio.ServicerContext[t.Any, t.Any]) -> Caller:
+    async def _get_caller(self, context: aio.ServicerContext[t.Any, t.Any]) -> Caller:
         return ANONYMOUS_CALLER
 
 
@@ -335,7 +340,12 @@ class TstNicknameSettingsUnit(TstSettingsUnit):
     configs = Slot(TstNicknameConfigs)
 
 
-class TstNicknameServer(AuthGrpcNicknameBinding, DefaultGrpcServer):
+class TstNicknameServer(
+    AuthGrpcMetadataBinding,
+    AuthGrpcAdminBinding,
+    AuthGrpcNicknameBinding,
+    DefaultGrpcServer,
+):
     pass
 
 
@@ -959,6 +969,59 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
 
+    async def test_a_user_signs_up_and_in_then_calls_by_its_token(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        sign_in = nickname_pb2.SignInRequest(nickname="alice", password="x")
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="alice", password="x")
+            )
+        ).result.signed_up
+        await self.project.auth.storage.access.members.add(
+            AuthMembership(group="admins", uid=signed_up.uid)
+        )
+        token = (await nickname.SignIn(sign_in)).result.signed_in.token
+        bearer = [("authorization", f"Bearer {token}")]
+        members = client.auth_access_members
+        request = members_pb2.ListMembersRequest(group="admins")
+        reply = await members.ListMembers(request, metadata=bearer)
+        self.assertEqual(list(reply.uids), [signed_up.uid])
+        # open to anyone, signed in or not
+        await client.auth_metadata.GetMetadata(
+            metadata_pb2.GetMetadataRequest(), metadata=bearer
+        )
+        await nickname.SignIn(sign_in, metadata=bearer)
+        for metadata, code, reason in (
+            ([], grpc.StatusCode.PERMISSION_DENIED, "PERMISSION_DENIED"),
+            (
+                [("authorization", "Bearer unknown")],
+                grpc.StatusCode.UNAUTHENTICATED,
+                "SESSION_NOT_FOUND",
+            ),
+        ):
+            with self.subTest(metadata=metadata):
+                with self.assertRaises(GrpcError) as error:
+                    await members.ListMembers(request, metadata=metadata)
+                self.assertEqual(
+                    (error.exception.code, error.exception.reason), (code, reason)
+                )
+
+
+class BearerTokenTestCase(unittest.TestCase):
+    def test_the_token_is_that_of_the_bearer_scheme(self) -> None:
+        for metadata, token in (
+            (None, None),
+            ((), None),
+            ((("authorization", "Bearer abc"),), "abc"),
+            ((("x-trace", "1"), ("authorization", "bearer abc")), "abc"),
+            ((("authorization", "Basic abc"),), None),
+            ((("authorization", "Bearer "),), None),
+            ((("authorization", b"Bearer abc"),), None),
+        ):
+            with self.subTest(metadata=metadata):
+                self.assertEqual(get_bearer_token(metadata), token)
+
 
 class ErrorPoliciesTestCase(unittest.TestCase):
     def test_the_errors_of_the_methods_have_their_statuses(self) -> None:
@@ -1006,6 +1069,22 @@ class ErrorPoliciesTestCase(unittest.TestCase):
                 grpc.StatusCode.ALREADY_EXISTS,
                 "IDENTITY_CONFLICT",
                 {"kind": "nickname"},
+            ),
+            (
+                errors.auth_session_not_found,
+                AuthSessionNotFoundError.for_token(),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "SESSION_NOT_FOUND",
+                {},
+            ),
+            (
+                errors.auth_session_expired,
+                AuthSessionExpiredError.for_reason(
+                    AuthSessionCloseReason.EXPIRED_ABSOLUTE
+                ),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "SESSION_EXPIRED",
+                {"reason": "expired_absolute"},
             ),
         ):
             with self.subTest(reason=reason):

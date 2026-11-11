@@ -45,8 +45,8 @@ SOURCES_BY_MESSAGE: t.Final = {value: key for key, value in SOURCES.items()}
 class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
     """
     The attributes of the sessions for their administrator: its permissions
-    come from :meth:`_get_caller`, which a subclass overrides, so an
-    application serves this only to those it can tell apart.
+    are those of the session of the token of the call, by
+    :meth:`_get_caller`.
     """
 
     @t.override

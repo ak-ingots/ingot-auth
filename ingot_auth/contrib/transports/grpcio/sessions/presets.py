@@ -20,8 +20,8 @@ class AuthGrpcSessionPresetsServicer(
 ):
     """
     The presets of the sessions with their bindings for their administrator:
-    its permissions come from :meth:`_get_caller`, which a subclass overrides,
-    so an application serves this only to those it can tell apart.
+    its permissions are those of the session of the token of the call, by
+    :meth:`_get_caller`.
     """
 
     @t.override

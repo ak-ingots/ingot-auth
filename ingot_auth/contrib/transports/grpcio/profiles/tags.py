@@ -16,9 +16,8 @@ from ingot_auth.profiles.tags.v1 import tags_pb2, tags_pb2_grpc
 
 class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
     """
-    The tags for their administrator: its permissions come from
-    :meth:`_get_caller`, which a subclass overrides, so an application serves
-    this only to those it can tell apart.
+    The tags for their administrator: its permissions are those of the
+    session of the token of the call, by :meth:`_get_caller`.
     """
 
     @t.override

@@ -23,7 +23,8 @@ class AuthGrpcNicknameServicer(
 ):
     """
     The flows of the method of a nickname, open to anyone: they run for the
-    anonymous caller of :meth:`_get_anonymous_caller`, given the flags of the
+    anonymous caller of :meth:`_get_anonymous_caller`, whatever token a call
+    bears, given the flags of the
     sign-up and of the sign-in, and those of the methods whose flows their
     toggles open. :attr:`METHOD` is the name of the slot of the method it
     serves, ``nickname``: an application binding the method under another
@@ -62,6 +63,11 @@ class AuthGrpcNicknameServicer(
         factory = self.project.auth.sign_in.op_start
         result = await self.run_operation(factory, parameters, context)
         return nickname_pb2.SignInResponse(result=build_sign_in_result(result))
+
+    @t.override
+    async def _get_caller(self, context: Context) -> Caller:
+        # open to anyone: a token changes nothing
+        return self._get_anonymous_caller()
 
     @t.override
     def _get_anonymous_caller(self) -> Caller:

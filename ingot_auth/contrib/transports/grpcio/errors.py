@@ -14,6 +14,8 @@ __all__ = (
     "AuthGrpcMethodUnsupportedPolicy",
     "AuthGrpcPermissionsPolicy",
     "AuthGrpcProfileNotFoundPolicy",
+    "AuthGrpcSessionExpiredPolicy",
+    "AuthGrpcSessionNotFoundPolicy",
     "BaseAuthGrpcErrorPolicy",
     "BaseAuthGrpcItemPolicy",
 )
@@ -34,6 +36,7 @@ from ingot_auth.methods import (
     AuthMethodUnsupportedError,
 )
 from ingot_auth.registry import AuthItemInvalidError
+from ingot_auth.sessions import AuthSessionExpiredError
 from ingot_auth.storages import (
     AuthIdentityConflictError,
     AuthIdentityError,
@@ -42,6 +45,7 @@ from ingot_auth.storages import (
     AuthProfileError,
     AuthProfileNotFoundError,
     AuthRegistryError,
+    AuthSessionNotFoundError,
 )
 
 
@@ -183,6 +187,29 @@ class AuthGrpcIdentityConflictPolicy(BaseAuthGrpcErrorPolicy):
         return {"kind": t.cast(AuthIdentityError, error).kind}
 
 
+class AuthGrpcSessionNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    No open session has the token of a call: the client signs in again. Tells
+    nothing of the token.
+    """
+
+    EXCEPTION = AuthSessionNotFoundError
+    CODE = grpc.StatusCode.UNAUTHENTICATED
+    REASON = "SESSION_NOT_FOUND"
+
+
+class AuthGrpcSessionExpiredPolicy(BaseAuthGrpcErrorPolicy):
+    """The session of the token of a call expired: tells the reason it closed."""
+
+    EXCEPTION = AuthSessionExpiredError
+    CODE = grpc.StatusCode.UNAUTHENTICATED
+    REASON = "SESSION_EXPIRED"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"reason": t.cast(AuthSessionExpiredError, error).reason.value}
+
+
 class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     """The policies of the auth: the errors unit of the gRPC takes it as a base."""
 
@@ -198,3 +225,5 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_method_invalid = Slot(AuthGrpcMethodInvalidPolicy)
     auth_method_unsupported = Slot(AuthGrpcMethodUnsupportedPolicy)
     auth_identity_conflict = Slot(AuthGrpcIdentityConflictPolicy)
+    auth_session_not_found = Slot(AuthGrpcSessionNotFoundPolicy)
+    auth_session_expired = Slot(AuthGrpcSessionExpiredPolicy)

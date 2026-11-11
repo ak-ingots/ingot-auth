@@ -26,9 +26,8 @@ ATTR_TYPES_BY_MESSAGE: t.Final = {value: key for key, value in ATTR_TYPES.items(
 
 class AuthGrpcAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
     """
-    The attributes for their administrator: its permissions come from
-    :meth:`_get_caller`, which a subclass overrides, so an application serves
-    this only to those it can tell apart.
+    The attributes for their administrator: its permissions are those of the
+    session of the token of the call, by :meth:`_get_caller`.
     """
 
     @t.override
