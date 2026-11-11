@@ -1,10 +1,57 @@
 """
-The storage of the auth: a facade, a unit a subdomain, the profiles, the
-sessions, the sign-up, the access, which a backend in ``ingot_auth.contrib.storages``
-implements, with the transactions of the backend over all of them.
+The storages of the auth: the interfaces a backend in
+``ingot_auth.contrib.storages`` implements, with what they keep and what they
+raise, depending on no other part of the auth. :class:`AuthStorage` is the
+facade, a unit a subdomain, the profiles, the sessions, the sign-up, the
+access, with the transactions of the backend over all of them.
 """
 
-__all__ = ("AuthStorage", "AuthTransactionError")
+__all__ = (
+    "ATTR_VALUE_TYPES",
+    "AuthAccessStorage",
+    "AuthAttr",
+    "AuthAttrType",
+    "AuthAttrValue",
+    "AuthIdentity",
+    "AuthIdentityConflictError",
+    "AuthIdentityError",
+    "AuthIdentityNotFoundError",
+    "AuthItem",
+    "AuthItemConflictError",
+    "AuthItemNotFoundError",
+    "AuthMembership",
+    "AuthProfile",
+    "AuthProfileConflictError",
+    "AuthProfileError",
+    "AuthProfileNotFoundError",
+    "AuthProfilesStorage",
+    "AuthRegistryError",
+    "AuthSecretNotFoundError",
+    "AuthSessionAttr",
+    "AuthSessionAttrSource",
+    "AuthSessionCloseReason",
+    "AuthSessionError",
+    "AuthSessionNotFoundError",
+    "AuthSessionPreset",
+    "AuthSessionPresetBinding",
+    "AuthSessionRecord",
+    "AuthSessionsStorage",
+    "AuthSignUpRecord",
+    "AuthSignUpRecordNotFoundError",
+    "AuthSignUpStorage",
+    "AuthStorage",
+    "AuthTag",
+    "AuthTransactionError",
+    "BaseAuthAttrsStorage",
+    "BaseAuthIdentitiesStorage",
+    "BaseAuthMembersStorage",
+    "BaseAuthRegistryStorage",
+    "BaseAuthSecretsStorage",
+    "BaseAuthSessionAttrsStorage",
+    "BaseAuthSessionPresetsStorage",
+    "BaseAuthSignUpRecordsStorage",
+    "BaseAuthTagsStorage",
+)
 
 import abc
 import contextlib
@@ -14,12 +61,52 @@ import typing as t
 
 from ingots.puer import Slot, Unit
 
-from ingot_auth.access import AuthAccessStorage
-from ingot_auth.profiles import AuthProfilesStorage
-from ingot_auth.sessions import AuthSessionsStorage
-from ingot_auth.sign_up import AuthSignUpStorage
-
-from .errors import AuthTransactionError
+from .access import AuthAccessStorage, AuthMembership, BaseAuthMembersStorage
+from .errors import (
+    AuthItemConflictError,
+    AuthItemNotFoundError,
+    AuthRegistryError,
+    AuthTransactionError,
+)
+from .items import ATTR_VALUE_TYPES, AuthAttrType, AuthAttrValue, AuthItem
+from .profiles import (
+    AuthAttr,
+    AuthIdentity,
+    AuthIdentityConflictError,
+    AuthIdentityError,
+    AuthIdentityNotFoundError,
+    AuthProfile,
+    AuthProfileConflictError,
+    AuthProfileError,
+    AuthProfileNotFoundError,
+    AuthProfilesStorage,
+    AuthSecretNotFoundError,
+    AuthTag,
+    BaseAuthAttrsStorage,
+    BaseAuthIdentitiesStorage,
+    BaseAuthSecretsStorage,
+    BaseAuthTagsStorage,
+)
+from .registry import BaseAuthRegistryStorage
+from .sessions import (
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+    AuthSessionCloseReason,
+    AuthSessionError,
+    AuthSessionNotFoundError,
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    AuthSessionRecord,
+    AuthSessionsStorage,
+    BaseAuthSessionAttrsStorage,
+    BaseAuthSessionPresetsStorage,
+)
+from .sign_up import (
+    AuthSignUpRecord,
+    AuthSignUpRecordNotFoundError,
+    AuthSignUpStorage,
+    BaseAuthSignUpRecordsStorage,
+)
 
 if t.TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
@@ -30,7 +117,7 @@ if t.TYPE_CHECKING:
 # on every change, so a task does not see what another sets
 _transactions: "contextvars.ContextVar[Mapping[AuthStorage, object]]" = (
     contextvars.ContextVar(
-        "ingot_auth.storage.transactions", default=types.MappingProxyType({})
+        "ingot_auth.storages.transactions", default=types.MappingProxyType({})
     )
 )
 

@@ -17,7 +17,6 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
-from ingot_auth.registry import AuthItemNotFoundError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -27,10 +26,14 @@ from ingot_auth.registry.operations import (
     BaseAuthRegistryOperation,
     BaseAuthRenameItemOperation,
 )
+from ingot_auth.storages import (
+    AuthItemNotFoundError,
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    BaseAuthSessionPresetsStorage,
+)
 
-from .items import AuthSessionPreset, AuthSessionPresetBinding
 from .permissions import AuthSessionPresetsPermissions
-from .storage import BaseAuthSessionPresetsStorage
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject

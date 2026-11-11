@@ -1,37 +1,13 @@
-"""The errors of the sessions: none tells the token."""
+"""
+The errors of the sessions: none tells the token. Those of their storage,
+:class:`AuthSessionError` the base of all, are in :mod:`ingot_auth.storages`.
+"""
 
-__all__ = (
-    "AuthSessionError",
-    "AuthSessionExpiredError",
-    "AuthSessionNotFoundError",
-)
+__all__ = ("AuthSessionExpiredError",)
 
 import typing as t
 
-from .items import AuthSessionCloseReason
-
-
-class AuthSessionError(Exception):
-    """
-    An error of a session: a client signs in again. ``args`` are the message,
-    then what it is of.
-    """
-
-    @t.override
-    def __str__(self) -> str:
-        return str(self.args[0])
-
-
-class AuthSessionNotFoundError(AuthSessionError):
-    """No open session has the token, or the id: never one, or closed."""
-
-    @classmethod
-    def for_token(cls) -> t.Self:
-        return cls("no open session has the token")
-
-    @classmethod
-    def for_id(cls, session_id: str) -> t.Self:
-        return cls(f"no open session {session_id!r}", session_id)
+from ingot_auth.storages import AuthSessionCloseReason, AuthSessionError
 
 
 class AuthSessionExpiredError(AuthSessionError):

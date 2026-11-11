@@ -8,7 +8,7 @@ import typing as t
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
-from ingot_auth.registry import (
+from ingot_auth.storages import (
     AuthItem,
     AuthItemConflictError,
     AuthItemNotFoundError,

@@ -4,7 +4,7 @@ __all__ = ("AuthMongoDbMembersStorage",)
 
 import typing as t
 
-from ingot_auth.access.members import AuthMembership, BaseAuthMembersStorage
+from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
 
 from ..collection import AuthMongoDbCollectionMixin
 

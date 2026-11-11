@@ -4,7 +4,7 @@ __all__ = ("AuthMemorySignUpRecordsStorage", "AuthMemorySignUpStorage")
 
 from ingots.puer import Slot
 
-from ingot_auth.sign_up import AuthSignUpStorage
+from ingot_auth.storages import AuthSignUpStorage
 
 from .records import AuthMemorySignUpRecordsStorage
 

@@ -1,38 +1,18 @@
 """
-The identities: what a profile signs in by, an identifier of a kind, a
-nickname, an email, bound to the uid of the profile once, whatever method
-uses it: the methods of an email find the same profile by the same email. A
-profile may have several, one a kind.
+The storage of the identities: what a profile signs in by, an identifier of
+a kind, a nickname, an email, bound to the uid of the profile once, whatever
+method uses it: the methods of an email find the same profile by the same
+email. A profile may have several, one a kind.
 """
 
-__all__ = (
-    "AuthIdentity",
-    "AuthIdentityConflictError",
-    "AuthIdentityError",
-    "AuthIdentityNotFoundError",
-    "BaseAuthIdentitiesStorage",
-)
+__all__ = ("BaseAuthIdentitiesStorage",)
 
 import abc
 import typing as t
-from dataclasses import dataclass
 
 from ingots.puer import Entity
 
-from .errors import (
-    AuthIdentityConflictError,
-    AuthIdentityError,
-    AuthIdentityNotFoundError,
-)
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthIdentity:
-    """An identifier of a kind, bound to a profile: unique within its kind."""
-
-    kind: str
-    value: str
-    uid: str
+from .items import AuthIdentity
 
 
 class BaseAuthIdentitiesStorage(Entity):

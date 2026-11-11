@@ -1,21 +1,19 @@
-"""What the sign-up takes, gives and keeps."""
+"""What the sign-up takes and gives."""
 
 __all__ = (
     "AuthAnswerSignUpParameters",
     "AuthSignUpChallenge",
-    "AuthSignUpRecord",
     "AuthSignUpResult",
     "AuthSignedUp",
     "AuthStartSignUpParameters",
 )
 
-import datetime
 import typing as t
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 if t.TYPE_CHECKING:
-    from ingot_auth.registry import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -54,17 +52,3 @@ class AuthSignedUp:
 
 
 AuthSignUpResult: t.TypeAlias = AuthSignUpChallenge | AuthSignedUp
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthSignUpRecord:
-    """
-    What a sign-up happened on: the profile, the method, the time and the
-    values of the attributes of the session, for the analytics among others.
-    Not a session: a sign-up opens none.
-    """
-
-    uid: str
-    method: str
-    signed_up_at: datetime.datetime
-    values: "Mapping[int, AuthAttrValue]"

@@ -12,7 +12,8 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperationCommand
 
-from .items import AuthMembership
+from ingot_auth.storages import AuthMembership
+
 from .operations import (
     AuthAddMemberOperation,
     AuthListMemberGroupsOperation,

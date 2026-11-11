@@ -5,7 +5,7 @@ __all__ = ("AuthSessionsStorageContract",)
 import datetime
 import decimal
 
-from ingot_auth.sessions import (
+from ingot_auth.storages import (
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
     AuthSessionRecord,

@@ -6,7 +6,7 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
-from ingot_auth.sessions.attrs import AuthSessionAttrSource
+from ingot_auth.storages import AuthSessionAttrSource
 
 from .items import (
     AuthMetadata,

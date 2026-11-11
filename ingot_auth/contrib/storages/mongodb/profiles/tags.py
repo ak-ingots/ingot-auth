@@ -4,7 +4,7 @@ __all__ = ("AuthMongoDbTagsStorage",)
 
 import typing as t
 
-from ingot_auth.profiles.tags import AuthTag, BaseAuthTagsStorage
+from ingot_auth.storages import AuthTag, BaseAuthTagsStorage
 
 from ..registry import AuthMongoDbRegistryStorage
 

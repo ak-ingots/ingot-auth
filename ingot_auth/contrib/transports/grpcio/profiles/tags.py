@@ -4,11 +4,11 @@ __all__ = ("AuthGrpcTagsServicer",)
 
 import typing as t
 
-from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
+from ingot_auth.storages import AuthTag
 
 from ..base import BaseAuthGrpcServicer, Context
 from ingot_auth.profiles.tags.v1 import tags_pb2, tags_pb2_grpc

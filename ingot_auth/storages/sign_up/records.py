@@ -1,17 +1,12 @@
-"""The storage of the sign-up: its records."""
+"""The storage of the records of the sign-ups."""
 
-__all__ = (
-    "AuthSignUpRecordNotFoundError",
-    "AuthSignUpStorage",
-    "BaseAuthSignUpRecordsStorage",
-)
+__all__ = ("BaseAuthSignUpRecordsStorage",)
 
 import abc
 import typing as t
 
-from ingots.puer import Entity, Slot, Unit
+from ingots.puer import Entity
 
-from .errors import AuthSignUpRecordNotFoundError
 from .items import AuthSignUpRecord
 
 
@@ -39,11 +34,3 @@ class BaseAuthSignUpRecordsStorage(Entity):
     @abc.abstractmethod
     async def _get(self, uid: str) -> AuthSignUpRecord:
         raise NotImplementedError(f"{type(self).__qualname__}._get")
-
-
-class AuthSignUpStorage(Unit):
-    """The storage of the sign-up, every part of it abstract."""
-
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
-    records = Slot(BaseAuthSignUpRecordsStorage)  # type: ignore[type-abstract]

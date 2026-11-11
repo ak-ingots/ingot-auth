@@ -1,18 +1,14 @@
 """
 The sessions: what a sign-in opens and a token stands for, the caller of a
 request, with the registry of the attributes of what a sign-up, a sign-in
-happened on, the presets asking for them, their storage and their caches.
+happened on, the presets asking for them, and their caches; their storage
+is in :mod:`ingot_auth.storages`.
 """
 
 __all__ = (
     "AuthCaller",
     "AuthFixedLifetime",
-    "AuthSessionCloseReason",
-    "AuthSessionError",
     "AuthSessionExpiredError",
-    "AuthSessionNotFoundError",
-    "AuthSessionRecord",
-    "AuthSessionsStorage",
     "AuthSessionsUnit",
     "BaseAuthCallersCache",
     "BaseAuthSessionLifetime",
@@ -28,23 +24,24 @@ import typing as t
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
+from ingot_auth.storages import (
+    AuthSessionCloseReason,
+    AuthSessionNotFoundError,
+    AuthSessionRecord,
+)
+
 from .attrs import AuthSessionAttrsUnit
 from .cache import BaseAuthCallersCache, BaseAuthSessionsCache
-from .errors import (
-    AuthSessionError,
-    AuthSessionExpiredError,
-    AuthSessionNotFoundError,
-)
-from .items import AuthCaller, AuthSessionCloseReason, AuthSessionRecord
+from .errors import AuthSessionExpiredError
+from .items import AuthCaller
 from .lifetimes import AuthFixedLifetime, BaseAuthSessionLifetime
 from .presets import AuthSessionPresetsUnit
-from .storage import AuthSessionsStorage
 
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
     from ingot_auth.project import AuthProject
-    from ingot_auth.registry import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue
 
 
 class AuthSessionsUnit(CliUnit):

@@ -27,7 +27,7 @@ import typing as t
 
 from ingots.puer import Slot
 
-from ingot_auth.storage import AuthStorage
+from ingot_auth.storages import AuthStorage
 
 from .access import AuthMongoDbAccessStorage, AuthMongoDbMembersStorage
 from .collection import AuthMongoDbCollectionMixin

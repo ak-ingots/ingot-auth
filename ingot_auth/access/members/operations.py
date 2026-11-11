@@ -12,9 +12,9 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperation, Permissions
 
-from .items import AuthMembership
+from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
+
 from .permissions import AuthMembersPermissions
-from .storage import BaseAuthMembersStorage
 
 if t.TYPE_CHECKING:
     from ingots.defaults.operations import OperationMetadata

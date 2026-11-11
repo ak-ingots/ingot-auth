@@ -4,12 +4,12 @@ __all__ = ("AuthMembersStorageContract",)
 
 import typing as t
 
-from ingot_auth.access.members import AuthMembership
+from ingot_auth.storages import AuthMembership
 
 from .base import BaseAuthContract
 
 if t.TYPE_CHECKING:
-    from ingot_auth.access.members import BaseAuthMembersStorage
+    from ingot_auth.storages import BaseAuthMembersStorage
 
 
 class AuthMembersStorageContract(BaseAuthContract):

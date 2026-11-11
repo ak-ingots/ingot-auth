@@ -10,7 +10,7 @@ from bson.decimal128 import Decimal128
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ingot_auth.registry import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue
 
     from .collection import Document
 

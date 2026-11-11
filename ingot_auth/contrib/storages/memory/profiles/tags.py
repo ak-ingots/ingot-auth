@@ -2,7 +2,7 @@
 
 __all__ = ("AuthMemoryTagsStorage",)
 
-from ingot_auth.profiles.tags import AuthTag, BaseAuthTagsStorage
+from ingot_auth.storages import AuthTag, BaseAuthTagsStorage
 
 from ..registry import AuthMemoryRegistryStorage
 

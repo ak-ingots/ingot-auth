@@ -4,7 +4,7 @@ __all__ = ("AuthSignUpRecordsStorageContract",)
 
 import decimal
 
-from ingot_auth.sign_up import AuthSignUpRecord, AuthSignUpRecordNotFoundError
+from ingot_auth.storages import AuthSignUpRecord, AuthSignUpRecordNotFoundError
 
 from .base import BaseAuthContract
 from .profiles import NOW

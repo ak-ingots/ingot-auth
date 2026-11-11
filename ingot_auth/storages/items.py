@@ -1,4 +1,7 @@
-"""The items of the registries: what tags and attributes are declared with."""
+"""
+The items of the registries, what the tags and the attributes are declared
+with, and the types of the values of the attributes.
+"""
 
 __all__ = ("ATTR_VALUE_TYPES", "AuthAttrType", "AuthAttrValue", "AuthItem")
 

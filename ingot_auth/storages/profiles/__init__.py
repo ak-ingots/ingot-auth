@@ -1,6 +1,23 @@
 """The storage of the profiles."""
 
-__all__ = ("AuthProfilesStorage",)
+__all__ = (
+    "AuthAttr",
+    "AuthIdentity",
+    "AuthIdentityConflictError",
+    "AuthIdentityError",
+    "AuthIdentityNotFoundError",
+    "AuthProfile",
+    "AuthProfileConflictError",
+    "AuthProfileError",
+    "AuthProfileNotFoundError",
+    "AuthProfilesStorage",
+    "AuthSecretNotFoundError",
+    "AuthTag",
+    "BaseAuthAttrsStorage",
+    "BaseAuthIdentitiesStorage",
+    "BaseAuthSecretsStorage",
+    "BaseAuthTagsStorage",
+)
 
 import abc
 import typing as t
@@ -8,8 +25,17 @@ import typing as t
 from ingots.puer import Slot, Unit
 
 from .attrs import BaseAuthAttrsStorage
+from .errors import (
+    AuthIdentityConflictError,
+    AuthIdentityError,
+    AuthIdentityNotFoundError,
+    AuthProfileConflictError,
+    AuthProfileError,
+    AuthProfileNotFoundError,
+    AuthSecretNotFoundError,
+)
 from .identities import BaseAuthIdentitiesStorage
-from .items import AuthProfile
+from .items import AuthAttr, AuthIdentity, AuthProfile, AuthTag
 from .secrets import BaseAuthSecretsStorage
 from .tags import BaseAuthTagsStorage
 

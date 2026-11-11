@@ -20,8 +20,8 @@ from ingot_auth.registry.commands import (
     BaseAuthRegistryCommand,
     BaseAuthRenameItemCommand,
 )
+from ingot_auth.storages import AuthSessionPreset, AuthSessionPresetBinding
 
-from .items import AuthSessionPreset, AuthSessionPresetBinding
 from .operations import (
     AuthBindSessionAttrOperation,
     AuthCreateSessionPresetOperation,

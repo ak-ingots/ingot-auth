@@ -13,10 +13,13 @@ __all__ = (
 
 from dataclasses import dataclass
 
-from ingot_auth.profiles.attrs import AuthAttr
-from ingot_auth.profiles.tags import AuthTag
-from ingot_auth.sessions.attrs import AuthSessionAttr
-from ingot_auth.sessions.presets import AuthSessionPreset, AuthSessionPresetBinding
+from ingot_auth.storages import (
+    AuthAttr,
+    AuthSessionAttr,
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    AuthTag,
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

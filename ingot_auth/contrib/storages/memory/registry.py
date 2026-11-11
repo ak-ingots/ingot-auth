@@ -5,7 +5,7 @@ __all__ = ("AuthMemoryRegistryStorage",)
 import dataclasses
 import typing as t
 
-from ingot_auth.registry import (
+from ingot_auth.storages import (
     AuthItem,
     AuthItemConflictError,
     AuthItemNotFoundError,

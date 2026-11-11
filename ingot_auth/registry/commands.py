@@ -16,7 +16,8 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperationCommand
 
-from .items import AuthItem
+from ingot_auth.storages import AuthItem
+
 from .operations import AuthDeleteItemParameters, AuthRenameItemParameters
 
 

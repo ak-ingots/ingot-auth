@@ -20,11 +20,12 @@ from ingots.defaults.operations import OperationPermissionsError
 from ingots.puer import Slot
 
 from ingot_auth.access.groups import AuthGroupError, AuthGroupNotFoundError
-from ingot_auth.profiles import AuthProfileError, AuthProfileNotFoundError
-from ingot_auth.registry import (
+from ingot_auth.registry import AuthItemInvalidError
+from ingot_auth.storages import (
     AuthItemConflictError,
-    AuthItemInvalidError,
     AuthItemNotFoundError,
+    AuthProfileError,
+    AuthProfileNotFoundError,
     AuthRegistryError,
 )
 

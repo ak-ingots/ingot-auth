@@ -4,8 +4,8 @@ __all__ = ("AuthMongoDbSessionAttrsStorage",)
 
 import typing as t
 
-from ingot_auth.registry import AuthAttrType
-from ingot_auth.sessions.attrs import (
+from ingot_auth.storages import (
+    AuthAttrType,
     AuthSessionAttr,
     AuthSessionAttrSource,
     BaseAuthSessionAttrsStorage,

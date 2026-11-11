@@ -21,10 +21,9 @@ from ingot_auth.registry.operations import (
     BaseAuthRegistryOperation,
     BaseAuthRenameItemOperation,
 )
+from ingot_auth.storages import AuthSessionAttr, BaseAuthSessionAttrsStorage
 
-from .items import AuthSessionAttr
 from .permissions import AuthSessionAttrsPermissions
-from .storage import BaseAuthSessionAttrsStorage
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject

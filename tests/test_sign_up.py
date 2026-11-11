@@ -25,30 +25,29 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profiles.identities import (
-    AuthIdentityConflictError,
-    AuthIdentityNotFoundError,
-)
-from ingot_auth.profiles import AuthProfileNotFoundError
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError
-from ingot_auth.registry import (
-    AuthAttrType,
-    AuthItemInvalidError,
-    AuthItemNotFoundError,
-)
-from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
     AuthSignUpChallenge,
     AuthSignUpPermissions,
-    AuthSignUpRecord,
-    AuthSignUpRecordNotFoundError,
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
 from ingot_auth.sign_up.operations import BaseAuthSignUpOperation
-from ingot_auth.storage import AuthTransactionError
+from ingot_auth.storages import (
+    AuthAttrType,
+    AuthIdentityConflictError,
+    AuthIdentityNotFoundError,
+    AuthItemNotFoundError,
+    AuthProfileNotFoundError,
+    AuthSecretNotFoundError,
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+    AuthSignUpRecord,
+    AuthSignUpRecordNotFoundError,
+    AuthTransactionError,
+)
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingStart
 
 SIGNING_UP: t.Final = Caller(

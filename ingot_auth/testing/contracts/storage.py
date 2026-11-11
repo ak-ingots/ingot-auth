@@ -12,20 +12,19 @@ import asyncio
 import dataclasses
 import typing as t
 
-from ingot_auth.profiles.attrs import AuthAttr
-from ingot_auth.profiles.tags import AuthTag
-from ingot_auth.registry import (
+from ingot_auth.storages import (
+    AuthAttr,
     AuthAttrType,
     AuthItem,
     AuthItemConflictError,
     AuthItemNotFoundError,
     AuthRegistryError,
-    BaseAuthRegistryStorage,
-)
-from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
-from ingot_auth.sessions.presets import (
+    AuthSessionAttr,
+    AuthSessionAttrSource,
     AuthSessionPreset,
     AuthSessionPresetBinding,
+    AuthTag,
+    BaseAuthRegistryStorage,
     BaseAuthSessionPresetsStorage,
 )
 

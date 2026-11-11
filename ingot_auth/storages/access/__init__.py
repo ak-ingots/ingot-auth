@@ -1,9 +1,10 @@
 """The storage of the access."""
 
-__all__ = ("AuthAccessStorage",)
+__all__ = ("AuthAccessStorage", "AuthMembership", "BaseAuthMembersStorage")
 
 from ingots.puer import Slot, Unit
 
+from .items import AuthMembership
 from .members import BaseAuthMembersStorage
 
 

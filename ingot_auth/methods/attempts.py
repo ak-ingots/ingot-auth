@@ -12,7 +12,7 @@ from ingots.puer import Entity
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ingot_auth.registry import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -13,7 +13,7 @@ import typing as t
 from ingots.puer import Slot
 from pymongo.errors import DuplicateKeyError
 
-from ingot_auth.profiles import (
+from ingot_auth.storages import (
     AuthProfile,
     AuthProfileConflictError,
     AuthProfileNotFoundError,

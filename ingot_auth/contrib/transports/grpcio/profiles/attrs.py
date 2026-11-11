@@ -4,12 +4,12 @@ __all__ = ("AuthGrpcAttrsServicer",)
 
 import typing as t
 
-from ingot_auth.profiles.attrs import AuthAttr
-from ingot_auth.registry import AuthAttrType, AuthItemInvalidError
+from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
+from ingot_auth.storages import AuthAttr, AuthAttrType
 
 from ..base import BaseAuthGrpcServicer, Context
 from ingot_auth.profiles.attrs.v1 import attrs_pb2, attrs_pb2_grpc
