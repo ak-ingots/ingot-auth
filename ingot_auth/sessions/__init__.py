@@ -1,18 +1,15 @@
 """
 The sessions: what a sign-in opens and a token stands for, the caller of a
 request, with the registry of the attributes of what a sign-up, a sign-in
-happened on, the presets asking for them, and their caches; their storage
-is in :mod:`ingot_auth.storages`.
+happened on and the presets asking for them. Their storage is in
+:mod:`ingot_auth.storages`, their caches in :mod:`ingot_auth.caches`.
 """
 
 __all__ = (
-    "AuthCaller",
     "AuthFixedLifetime",
     "AuthSessionExpiredError",
     "AuthSessionsUnit",
-    "BaseAuthCallersCache",
     "BaseAuthSessionLifetime",
-    "BaseAuthSessionsCache",
 )
 
 import datetime
@@ -24,6 +21,7 @@ import typing as t
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
+from ingot_auth.caches import AuthCaller
 from ingot_auth.storages import (
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
@@ -31,9 +29,7 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
-from .cache import BaseAuthCallersCache, BaseAuthSessionsCache
 from .errors import AuthSessionExpiredError
-from .items import AuthCaller
 from .lifetimes import AuthFixedLifetime, BaseAuthSessionLifetime
 from .presets import AuthSessionPresetsUnit
 

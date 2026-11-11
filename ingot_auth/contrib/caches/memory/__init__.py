@@ -13,7 +13,7 @@ __all__ = (
 
 from ingots.puer import Slot
 
-from ingot_auth.cache import AuthCache
+from ingot_auth.caches import AuthCache
 
 from .attempts import AuthMemoryAttemptsCache
 from .callers import AuthMemoryCallersCache

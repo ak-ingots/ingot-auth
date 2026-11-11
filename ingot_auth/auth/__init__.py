@@ -6,7 +6,7 @@ from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
 from ingot_auth.access import AuthAccessUnit
-from ingot_auth.cache import AuthCache
+from ingot_auth.caches import AuthCache
 from ingot_auth.metadata import AuthMetadataUnit
 from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.policies import AuthPoliciesUnit

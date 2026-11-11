@@ -14,9 +14,8 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
+from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError
 from ingot_auth.methods import (
-    AuthAttempt,
-    AuthAttemptNotFoundError,
     AuthChallenge,
     AuthMethodRefusedError,
     AuthStep,
