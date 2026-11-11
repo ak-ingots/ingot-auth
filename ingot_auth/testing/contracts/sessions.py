@@ -22,7 +22,7 @@ def create_session(session_id: str = "s1", token_hash: str = "h1") -> AuthSessio
         uid="a1",
         method="nickname",
         token_hash=token_hash,
-        values={1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: NOW, 5: "iPhone"},
+        attr_values={1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: NOW, 5: "iPhone"},
         opened_at=NOW,
     )
 

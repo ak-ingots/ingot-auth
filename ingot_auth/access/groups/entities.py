@@ -1,6 +1,6 @@
 """The groups: what each grants, declared in the code."""
 
-__all__ = ("AuthGroup",)
+__all__ = ("AuthGroup", "AuthSignedInGroup")
 
 import typing as t
 
@@ -35,3 +35,18 @@ class AuthGroup(Entity):
     def _get_permissions(self) -> Permissions:
         """What the class grants, with ``super()``: nothing here."""
         return Permissions()
+
+
+class AuthSignedInGroup(AuthGroup):
+    """
+    The group ``signed_in`` of the core: every signed-in user is a member,
+    none stored. It grants what the methods give a signed-in user by their
+    toggles, the ``CAN_SIGN_IN`` of each method open; what an application
+    and its addons grant every signed-in user, they add by the hook, the
+    application declaring the class that joins them in the slot.
+    """
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        methods = self.project.auth.methods
+        return super()._get_permissions() | methods.get_signed_in_permissions()

@@ -25,7 +25,7 @@ class AuthStartSignUpParameters:
 
     method: str
     parameters: object
-    values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
+    attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

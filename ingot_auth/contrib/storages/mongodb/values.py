@@ -1,6 +1,6 @@
 """The values of the attributes in MongoDB, shared by the storages keeping them."""
 
-__all__ = ("build_bson_values", "build_values")
+__all__ = ("build_bson_attr_values", "build_attr_values")
 
 import decimal
 import typing as t
@@ -15,7 +15,9 @@ if t.TYPE_CHECKING:
     from .collection import Document
 
 
-def build_bson_values(values: "Mapping[int, AuthAttrValue]") -> "list[Document]":
+def build_bson_attr_values(
+    attr_values: "Mapping[int, AuthAttrValue]",
+) -> "list[Document]":
     """
     The values of the attributes for a document: a list of the ids of their
     attributes with them, as a key of a document is a string; a decimal is a
@@ -23,11 +25,11 @@ def build_bson_values(values: "Mapping[int, AuthAttrValue]") -> "list[Document]"
     """
     return [
         {"attr_id": attr_id, "value": _build_bson_value(value)}
-        for attr_id, value in values.items()
+        for attr_id, value in attr_values.items()
     ]
 
 
-def build_values(documents: "list[Document]") -> "dict[int, AuthAttrValue]":
+def build_attr_values(documents: "list[Document]") -> "dict[int, AuthAttrValue]":
     """The values of the attributes from a document, as given to it."""
     return {bound["attr_id"]: _build_value(bound["value"]) for bound in documents}
 

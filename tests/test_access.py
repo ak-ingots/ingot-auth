@@ -30,9 +30,12 @@ from ingot_auth.access.groups import (
     AuthGroupInfo,
     AuthGroupNotFoundError,
     AuthGroupsUnit,
+    AuthSignedInGroup,
 )
 from ingot_auth.access.members import AuthMembersPermissions
+from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
+from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingPermissions
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 
@@ -92,6 +95,13 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
         )
 
 
+# the shop grants every signed-in user
+class ShopSignedInGroup(AuthSignedInGroup):
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return super()._get_permissions() | Permissions(ShopPermissions.CAN_BUY)
+
+
 class AppGroupsUnit(ShopGroupsUnit, ArticlesGroupsUnit):
     admins = Slot(AppAdminsGroup)
 
@@ -117,7 +127,7 @@ class GroupsTestCase(unittest.TestCase):
     def test_the_groups_come_in_the_order_of_their_slots(self) -> None:
         # of the bases, the last first, as the slots of ingots go
         names = [group.get_name() for group in self.groups.get_all()]
-        self.assertEqual(names, ["admins", "editors", "buyers"])
+        self.assertEqual(names, ["signed_in", "admins", "editors", "buyers"])
 
     def test_a_group_is_got_by_its_name(self) -> None:
         self.assertIsInstance(self.groups.get("editors"), EditorsGroup)
@@ -139,9 +149,12 @@ class GroupsTestCase(unittest.TestCase):
             ),
         )
 
-    def test_the_core_declares_no_groups(self) -> None:
+    def test_the_core_declares_signed_in_alone(self) -> None:
         project = AuthMemoryProject()
-        self.assertEqual(project.auth.access.groups.get_all(), ())
+        groups = project.auth.access.groups
+        self.assertEqual(groups.get_all(), (groups.signed_in,))
+        self.assertIsInstance(groups.get("signed_in"), AuthSignedInGroup)
+        self.assertEqual(groups.signed_in.get_permissions(), Permissions())
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
         # refused by mypy too
@@ -177,10 +190,11 @@ class OperationsTestCase(unittest.TestCase):
             self.runner.run(self.access.groups.op_list, None, self.metadata)
         )
         self.assertEqual(
-            [group.name for group in groups], ["admins", "editors", "buyers"]
+            [group.name for group in groups],
+            ["signed_in", "admins", "editors", "buyers"],
         )
         self.assertEqual(
-            groups[2],
+            groups[3],
             AuthGroupInfo(
                 name="buyers", permissions=Permissions(ShopPermissions.CAN_BUY)
             ),
@@ -214,6 +228,20 @@ class OperationsTestCase(unittest.TestCase):
                 asyncio.run(call)
             self.assertEqual(error.exception.name, "guests")
 
+    def test_signed_in_keeps_no_members(self) -> None:
+        members = self.access.members
+        membership = AuthMembership(group="signed_in", uid="a1")
+        for call in (
+            self.runner.run(members.op_add, membership, self.metadata),
+            self.runner.run(members.op_remove, membership, self.metadata),
+            self.runner.run(members.op_list, "signed_in", self.metadata),
+        ):
+            with self.assertRaises(AuthGroupNotFoundError) as error:
+                asyncio.run(call)
+            self.assertEqual(
+                str(error.exception), "the group 'signed_in' has every signed-in user"
+            )
+
     def test_a_uid_of_no_profile_is_refused(self) -> None:
         members = self.access.members
         membership = AuthMembership(group="editors", uid="c3")
@@ -237,6 +265,8 @@ class OperationsTestCase(unittest.TestCase):
 
 
 class GroupsGrantsTestCase(unittest.TestCase):
+    project: AuthMemoryProject
+
     @t.override
     def setUp(self) -> None:
         self.project = AppProject()
@@ -253,6 +283,13 @@ class GroupsGrantsTestCase(unittest.TestCase):
     def test_a_user_of_no_group_has_nothing(self) -> None:
         self.assertEqual(self._get_permissions("b2"), Permissions())
 
+    def test_every_user_has_what_signed_in_grants(self) -> None:
+        self.project = SignedInProject()
+        self.assertEqual(
+            self._get_permissions("b2"),
+            Permissions(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN),
+        )
+
     def test_a_group_no_source_has_grants_nothing(self) -> None:
         for group in ("gone", "buyers"):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
@@ -262,6 +299,27 @@ class GroupsGrantsTestCase(unittest.TestCase):
 
     def _get_permissions(self, uid: str) -> Permissions:
         return asyncio.run(self.project.auth.access.permissions.get_permissions(uid))
+
+
+class SignedInGroupsUnit(AuthGroupsUnit):
+    signed_in = Slot(ShopSignedInGroup)
+
+
+class SignedInAccessUnit(AuthAccessUnit):
+    groups = Slot(SignedInGroupsUnit)
+
+
+class SignedInMethodsUnit(AuthMethodsUnit):
+    testing = Slot(AuthTestingMethod)
+
+
+class SignedInAuthUnit(AuthMemoryUnit):
+    access = Slot(SignedInAccessUnit)
+    methods = Slot(SignedInMethodsUnit)
+
+
+class SignedInProject(AuthMemoryProject):
+    auth = Slot(SignedInAuthUnit)
 
 
 class SeededProfilesStorage(AuthMemoryProfilesStorage):
@@ -312,6 +370,7 @@ class CommandsTestCase(unittest.TestCase):
             self.run_project("auth", "access", "groups", "list"),
             (
                 0,
+                "signed_in\n"
                 "admins\tarticles=1\tauth.access.members=3\tshop=2\n"
                 "editors\tarticles=2\n"
                 "buyers\tshop=1\n",

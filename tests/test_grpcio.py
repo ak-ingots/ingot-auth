@@ -433,7 +433,10 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         reply = await groups.ListGroups(groups_pb2.ListGroupsRequest())
         self.assertEqual(
             list(reply.groups),
-            [groups_pb2.Group(name="admins", permissions={"auth.access.members": 7})],
+            [
+                groups_pb2.Group(name="signed_in"),
+                groups_pb2.Group(name="admins", permissions={"auth.access.members": 7}),
+            ],
         )
 
     async def test_the_members_are_managed(self) -> None:

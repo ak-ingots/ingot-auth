@@ -8,6 +8,7 @@ happened on and the presets asking for them. Their storage is in
 __all__ = (
     "AuthFixedLifetime",
     "AuthSessionExpiredError",
+    "AuthSessionToken",
     "AuthSessionsUnit",
     "BaseAuthSessionLifetime",
 )
@@ -30,6 +31,7 @@ from ingot_auth.storages import (
 
 from .attrs import AuthSessionAttrsUnit
 from .errors import AuthSessionExpiredError
+from .items import AuthSessionToken
 from .lifetimes import AuthFixedLifetime, BaseAuthSessionLifetime
 from .presets import AuthSessionPresetsUnit
 
@@ -62,25 +64,25 @@ class AuthSessionsUnit(CliUnit):
 
     @t.final
     async def open(
-        self, uid: str, method: str, values: "Mapping[int, AuthAttrValue]"
-    ) -> str:
+        self, uid: str, method: str, attr_values: "Mapping[int, AuthAttrValue]"
+    ) -> AuthSessionToken:
         """
         Opens a session of a profile signed in by a method, with the values of
         the attributes of the session, checked by the caller, and gives its
-        token: 256 random bits, given once, kept by none but the client.
+        token, 256 random bits, given once, kept by none but the client, with
+        the id of the session.
         """
         token = secrets.token_urlsafe(32)
-        await self.project.auth.storage.sessions.open(
-            AuthSessionRecord(
-                id=self._create_id(),
-                uid=uid,
-                method=method,
-                token_hash=_hash_token(token),
-                values=values,
-                opened_at=self._get_now(),
-            )
+        session = AuthSessionRecord(
+            id=self._create_id(),
+            uid=uid,
+            method=method,
+            token_hash=_hash_token(token),
+            attr_values=attr_values,
+            opened_at=self._get_now(),
         )
-        return token
+        await self.project.auth.storage.sessions.open(session)
+        return AuthSessionToken(session_id=session.id, token=token)
 
     @t.final
     async def authenticate(self, token: str) -> AuthCaller:

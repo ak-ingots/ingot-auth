@@ -76,9 +76,12 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_a_token_gives_the_caller_of_its_session(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {1: "iPhone"})
-        caller = await self.sessions.authenticate(token)
-        session = await self.project.auth.storage.sessions.find(hash_token(token))
+        opened = await self.sessions.open("a1", "nickname", {1: "iPhone"})
+        caller = await self.sessions.authenticate(opened.token)
+        session = await self.project.auth.storage.sessions.find(
+            hash_token(opened.token)
+        )
+        self.assertEqual(session.id, opened.session_id)
         self.assertEqual(
             caller,
             AuthCaller(
@@ -88,17 +91,19 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             ),
         )
         self.assertEqual(
-            (session.uid, session.method, session.values),
+            (session.uid, session.method, session.attr_values),
             ("a1", "nickname", {1: "iPhone"}),
         )
 
     async def test_the_token_is_random_and_kept_by_its_hash_alone(self) -> None:
-        first = await self.sessions.open("a1", "nickname", {})
-        second = await self.sessions.open("a1", "nickname", {})
+        opened = await self.sessions.open("a1", "nickname", {})
+        first = opened.token
+        second = (await self.sessions.open("a1", "nickname", {})).token
         self.assertNotEqual(first, second)
         self.assertEqual(len(first), 43)  # 256 bits in base64
         session = await self.project.auth.storage.sessions.find(hash_token(first))
         self.assertNotIn(first, repr(session))
+        self.assertNotIn(first, repr(opened))
 
     async def test_an_unknown_token_is_not_found_and_not_told(self) -> None:
         await self.sessions.open("a1", "nickname", {})
@@ -107,7 +112,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn("unknown", str(error.exception))
 
     async def test_a_session_past_its_lifetime_expires_and_closes(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {})
+        token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         self.travel(31 * DAY)
         with self.assertRaises(AuthSessionExpiredError) as error:
@@ -121,7 +126,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             await self.sessions.authenticate(token)
 
     async def test_a_session_closed_meanwhile_expires_all_the_same(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {})
+        token = (await self.sessions.open("a1", "nickname", {})).token
         caller = await self.sessions.authenticate(token)
         now = datetime.datetime.now(datetime.UTC)
         await self.project.auth.storage.sessions.close(
@@ -134,7 +139,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
                 await self.sessions.authenticate(token)
 
     async def test_a_cached_request_reads_nothing_from_the_storage(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {})
+        token = (await self.sessions.open("a1", "nickname", {})).token
         caller = await self.sessions.authenticate(token)
         storage = self.project.auth.storage
         with (
@@ -146,7 +151,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(await self.sessions.authenticate(token), caller)
 
     async def test_a_caller_is_formed_again_past_the_ttl_of_the_cache(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {})
+        token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         await self.project.auth.storage.access.members.remove(
             AuthMembership(group="buyers", uid="a1")
@@ -159,7 +164,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_a_session_closed_in_the_storage_ends_past_the_cache(self) -> None:
-        token = await self.sessions.open("a1", "nickname", {})
+        token = (await self.sessions.open("a1", "nickname", {})).token
         caller = await self.sessions.authenticate(token)
         await self.project.auth.storage.sessions.close(
             caller.session_id,

@@ -19,7 +19,7 @@ from ingot_auth.storages import (
 )
 
 from ..collection import AuthMongoDbCollectionMixin
-from ..values import build_bson_values, build_values
+from ..values import build_bson_attr_values, build_attr_values
 from .attrs import AuthMongoDbSessionAttrsStorage
 from .presets import AuthMongoDbSessionPresetsStorage
 
@@ -50,7 +50,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
                 "uid": session.uid,
                 "method": session.method,
                 "token_hash": session.token_hash,
-                "values": build_bson_values(session.values),
+                "attr_values": build_bson_attr_values(session.attr_values),
                 "opened_at": session.opened_at,
                 "closed_at": None,
                 "close_reason": None,
@@ -72,7 +72,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
             uid=document["uid"],
             method=document["method"],
             token_hash=document["token_hash"],
-            values=build_values(document["values"]),
+            attr_values=build_attr_values(document["attr_values"]),
             opened_at=document["opened_at"],
         )
 

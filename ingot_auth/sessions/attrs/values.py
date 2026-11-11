@@ -1,6 +1,6 @@
 """The values of the attributes of a session, as a client gives them."""
 
-__all__ = ("check_client_values",)
+__all__ = ("check_client_attr_values",)
 
 import typing as t
 
@@ -19,8 +19,8 @@ if t.TYPE_CHECKING:
 REGISTRY: t.Final = "sessions.attrs"
 
 
-def check_client_values(
-    attrs: "Iterable[AuthSessionAttr]", values: "Mapping[int, AuthAttrValue]"
+def check_client_attr_values(
+    attrs: "Iterable[AuthSessionAttr]", attr_values: "Mapping[int, AuthAttrValue]"
 ) -> None:
     """
     Checks the values a client gives, by the id of their attributes: each of
@@ -32,7 +32,7 @@ def check_client_values(
         attribute, or the client is not its source.
     """
     by_id = {attr.id: attr for attr in attrs}
-    for attr_id, value in values.items():
+    for attr_id, value in attr_values.items():
         try:
             attr = by_id[attr_id]
         except KeyError:

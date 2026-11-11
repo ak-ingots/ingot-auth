@@ -6,7 +6,7 @@ happened on, the device, the IP, declared in a registry with their sources.
 __all__ = (
     "AuthSessionAttrsUnit",
     "AuthSessionAttrsPermissions",
-    "check_client_values",
+    "check_client_attr_values",
 )
 
 from ingots.puer import Factory, Slot
@@ -25,7 +25,7 @@ from .operations import (
     AuthRenameSessionAttrOperation,
 )
 from .permissions import AuthSessionAttrsPermissions
-from .values import check_client_values
+from .values import check_client_attr_values
 
 
 class AuthSessionAttrsUnit(CliUnit):

@@ -6,22 +6,12 @@ __all__ = (
     "BaseAuthSignUpOperation",
 )
 
-import dataclasses
-import datetime
 import os
-import secrets
 import typing as t
 
-from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
+from ingots.defaults.operations import OperationMetadata, Permissions
 
-from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError
-from ingot_auth.methods import (
-    AuthChallenge,
-    AuthMethodRefusedError,
-    AuthStep,
-    AuthVerified,
-)
-from ingot_auth.sessions.attrs import check_client_values
+from ingot_auth.methods import AuthStep, AuthVerified, BaseAuthFlowOperation
 from ingot_auth.storages import AuthIdentity, AuthProfile, AuthSignUpRecord
 
 from .items import (
@@ -37,77 +27,45 @@ if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
     from ingot_auth.methods import BaseAuthMethod
-    from ingot_auth.project import AuthProject
     from ingot_auth.storages import AuthAttrValue
-
-FLOW: t.Final = "sign_up"
 
 
 class BaseAuthSignUpOperation[ParametersType](
-    BaseOperation[ParametersType, AuthSignUpResult]
+    BaseAuthFlowOperation[ParametersType, AuthSignUpResult]
 ):
     """
     A step of the sign-up: a challenge keeps an attempt for the answer, the
-    verified subject ends the sign-up with a profile bound to it. The uid of
-    a new profile comes from :meth:`_create_uid`, the time from
-    :meth:`_get_now`. The runner checks the caller may sign up, the step
-    that it may by the method, as the runner cannot: one operation serves
-    every method.
+    verified subject ends the sign-up with a profile bound to it. A sign-up
+    by a method needs its ``CAN_SIGN_UP``. The uid of a new profile comes
+    from :meth:`_create_uid`, the time from :meth:`_get_now`.
     """
 
+    FLOW: t.ClassVar[str] = "sign_up"
     PERMISSIONS = Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
 
-    project: "AuthProject"
+    @t.override
+    def _get_method_permissions(
+        self, method: "BaseAuthMethod[t.Any, t.Any, t.Any]"
+    ) -> Permissions:
+        return method.get_sign_up_permissions()
 
-    @t.final
-    async def get_method(
-        self, name: str, metadata: OperationMetadata
-    ) -> "BaseAuthMethod[t.Any, t.Any, t.Any]":
-        """
-        The method of a name, which the caller may sign up by: it has its
-        ``CAN_SIGN_UP``, which the toggle of the method gives, checked by the
-        checker of the operations as the runner checks any.
+    @t.override
+    async def _start_method(
+        self, method: "BaseAuthMethod[t.Any, t.Any, t.Any]", parameters: object
+    ) -> AuthStep:
+        return await method.start_sign_up(parameters)
 
-        :raises AuthMethodNotFoundError: no method has the name.
-        :raises AuthMethodUnsupportedError: the method signs no one up.
-        :raises OperationPermissionsError: the caller may not sign up by it.
-        """
-        method = self.project.auth.methods.get(name)
-        await self.project.operations.checker.check(
-            type(self), method.get_sign_up_permissions(), metadata
-        )
-        return method
+    @t.override
+    def _create_challenge(self, attempt_id: str, challenge: object) -> AuthSignUpResult:
+        return AuthSignUpChallenge(attempt_id=attempt_id, challenge=challenge)
 
-    @t.final
-    async def proceed(
+    @t.override
+    async def _complete(
         self,
-        method: str,
-        step: AuthStep,
-        values: "Mapping[int, AuthAttrValue]",
-        failures: int = 0,
-    ) -> AuthSignUpResult:
-        """Goes on after a step of the method: to its challenge, or to the end."""
-        if isinstance(step, AuthChallenge):
-            attempt = AuthAttempt(
-                id=secrets.token_urlsafe(32),
-                flow=FLOW,
-                method=method,
-                state=step.state,
-                values=values,
-                expires_at=self._get_now() + self._get_attempt_ttl(),
-                failures=failures,
-            )
-            await self.project.auth.cache.attempts.put(attempt)
-            return AuthSignUpChallenge(attempt_id=attempt.id, challenge=step.challenge)
-        return await self.complete(method, step, values)
-
-    @t.final
-    async def complete(
-        self,
-        method: str,
+        method: "BaseAuthMethod[t.Any, t.Any, t.Any]",
         verified: AuthVerified,
-        values: "Mapping[int, AuthAttrValue]",
-    ) -> AuthSignedUp:
+        attr_values: "Mapping[int, AuthAttrValue]",
+    ) -> AuthSignUpResult:
         """
         Ends the sign-up, in one transaction of the storage: binds the
         subject, an identifier of the kind of the method, to a new profile,
@@ -121,10 +79,11 @@ class BaseAuthSignUpOperation[ParametersType](
         storage = self.project.auth.storage
         uid = self._create_uid()
         now = self._get_now()
-        kind = self.project.auth.methods.get(method).IDENTIFIER_KIND
-        identity = AuthIdentity(kind=kind, value=verified.subject, uid=uid)
+        identity = AuthIdentity(
+            kind=method.IDENTIFIER_KIND, value=verified.subject, uid=uid
+        )
         record = AuthSignUpRecord(
-            uid=uid, method=method, signed_up_at=now, values=values
+            uid=uid, method=method.get_name(), signed_up_at=now, attr_values=attr_values
         )
         async with storage.transaction():
             await storage.profiles.identities.create(identity)
@@ -140,13 +99,6 @@ class BaseAuthSignUpOperation[ParametersType](
         32 hexadecimal digits, as the uids of the runs of ingots.
         """
         return os.urandom(16).hex()
-
-    def _get_now(self) -> datetime.datetime:
-        return datetime.datetime.now(datetime.UTC)
-
-    def _get_attempt_ttl(self) -> datetime.timedelta:
-        configs = self.project.settings.configs
-        return datetime.timedelta(seconds=configs.AUTH_ATTEMPT_TTL)
 
 
 class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
@@ -168,11 +120,9 @@ class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters
     async def _run(
         self, parameters: AuthStartSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
-        method = await self.get_method(parameters.method, metadata)
-        attrs = await self.project.auth.storage.sessions.attrs.get_all()
-        check_client_values(attrs, parameters.values)
-        step = await method.start_sign_up(parameters.parameters)
-        return await self.proceed(parameters.method, step, parameters.values)
+        return await self.start(
+            parameters.method, parameters.parameters, parameters.attr_values, metadata
+        )
 
 
 class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParameters]):
@@ -192,19 +142,4 @@ class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParamete
     async def _run(
         self, parameters: AuthAnswerSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
-        attempts = self.project.auth.cache.attempts
-        attempt = await attempts.take(parameters.attempt_id)
-        if attempt.flow != FLOW:
-            raise AuthAttemptNotFoundError.create()
-        method = await self.get_method(attempt.method, metadata)
-        try:
-            step = await method.answer(attempt.state, parameters.answer)
-        except AuthMethodRefusedError:
-            failures = attempt.failures + 1
-            configs = self.project.settings.configs
-            if failures < configs.AUTH_ATTEMPT_MAX_FAILURES:
-                await attempts.put(dataclasses.replace(attempt, failures=failures))
-            raise
-        return await self.proceed(
-            attempt.method, step, attempt.values, attempt.failures
-        )
+        return await self.answer(parameters.attempt_id, parameters.answer, metadata)

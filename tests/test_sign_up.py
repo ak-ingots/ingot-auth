@@ -136,12 +136,14 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def start(
-        self, parameters: object, method: str = "testing", **values: t.Any
+        self, parameters: object, method: str = "testing", **attr_values: t.Any
     ) -> AuthSignUpResult:
         start = AuthStartSignUpParameters(
             method=method,
             parameters=parameters,
-            values={int(key.removeprefix("a")): value for key, value in values.items()},
+            attr_values={
+                int(key.removeprefix("a")): value for key, value in attr_values.items()
+            },
         )
         return await self.project.operations.runner.run(
             self.project.auth.sign_up.op_start, start, self.metadata
@@ -168,7 +170,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
                 uid=result.uid,
                 method="testing",
                 signed_up_at=profile.created_at,
-                values={1: "iPhone"},
+                attr_values={1: "iPhone"},
             ),
         )
 
@@ -181,7 +183,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         result = await self.answer(challenge.attempt_id, "1234")
         assert isinstance(result, AuthSignedUp)
         record = await self.project.auth.storage.sign_up.records.get(result.uid)
-        self.assertEqual(record.values, {1: "iPhone"})
+        self.assertEqual(record.attr_values, {1: "iPhone"})
         with self.assertRaises(AuthAttemptNotFoundError):
             await self.answer(challenge.attempt_id, "1234")
 
@@ -268,7 +270,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
                 flow="sign_in",
                 method="testing",
                 state=None,
-                values={},
+                attr_values={},
                 expires_at=datetime.datetime.now(datetime.UTC)
                 + datetime.timedelta(minutes=1),
             )
@@ -302,13 +304,13 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(error.exception.name, "password")
 
     async def test_the_values_are_the_clients_and_of_their_types(self) -> None:
-        for values, error_cls in (
+        for attr_values, error_cls in (
             ({"a3": "x"}, AuthItemNotFoundError),
             ({"a2": "10.0.0.1"}, AuthItemInvalidError),
             ({"a1": 7}, AuthItemInvalidError),
         ):
             with self.assertRaises(error_cls):
-                await self.start(AuthTestingStart(subject="a"), **values)
+                await self.start(AuthTestingStart(subject="a"), **attr_values)
 
     async def test_a_method_of_one_step_takes_no_answer(self) -> None:
         method = self.project.auth.methods.get("one_step")

@@ -18,8 +18,9 @@ of their token, their lifetime a strategy in the slot `lifetime`, none by
 default, and `authenticate()` turning a token into an `AuthCaller`, the
 session and the caller cached apart; the `access/`, its `groups/` entities
 in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its
-`members/` the memberships in the storage, and `AuthGroupsGrants`, the
-permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
+`members/` the memberships in the storage, `signed_in` of the core, of every
+signed-in user, none stored, granting the sign-in of each method open, and
+`AuthGroupsGrants`, the permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
@@ -34,7 +35,9 @@ profile in `methods/password/`, the slot `password` of the methods, not a
 method, its hash the secret of the uid in `storages/profiles/secrets.py`, its preset
 `preset_set` of a new one by any method; the `policies/`, rules a value is checked
 against, each taking a part of a context by its protocol, bound to a preset
-by class with a config; the `sign_up/` flow; the storages `storages/`, the
+by class with a config; the `sign_up/` and `sign_in/` flows, over the base
+of the flows of the methods, `methods/operations.py`, the sign-in opening a
+session; the storages `storages/`, the
 interfaces a backend implements with what they keep and raise, depending on
 no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
 with the transactions of a backend over all its storages; and the caches

@@ -5,6 +5,9 @@ source, the first: an application declares them as slots of
 
     class AppGroupsUnit(AuthGroupsUnit):
         admins = Slot(AdminsGroup)
+
+The core declares one, ``signed_in``, :class:`AuthSignedInGroup`, of every
+signed-in user.
 """
 
 __all__ = (
@@ -16,6 +19,7 @@ __all__ = (
     "AuthGroupsPermissions",
     "AuthListGroupsOperation",
     "AuthListGroupsCommand",
+    "AuthSignedInGroup",
 )
 
 import re
@@ -25,7 +29,7 @@ from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from .commands import AuthListGroupsCommand
-from .entities import AuthGroup
+from .entities import AuthGroup, AuthSignedInGroup
 from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
 from .operations import AuthListGroupsOperation
@@ -37,9 +41,10 @@ NAME_PATTERN: t.Final = re.compile(r"[a-z][a-z0-9_]*")
 
 class AuthGroupsUnit(CliUnit):
     """
-    The groups, none here: whatever their source, they come by :meth:`get`
-    and :meth:`get_all`. A name of a group is lowercase letters, digits and
-    ``_``, checked when the class is created.
+    The groups, ``signed_in`` here, of every signed-in user: whatever their
+    source, they come by :meth:`get` and :meth:`get_all`. A name of a group
+    is lowercase letters, digits and ``_``, checked when the class is
+    created.
     """
 
     cli_name = "groups"
@@ -48,6 +53,8 @@ class AuthGroupsUnit(CliUnit):
     op_list = Factory(AuthListGroupsOperation)
 
     cmd_list = Slot(AuthListGroupsCommand)
+
+    signed_in = Slot(AuthSignedInGroup)
 
     @t.override
     @classmethod
