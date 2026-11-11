@@ -40,7 +40,15 @@ class BaseAuthGrpcServicer(GrpcServicer):
 
     def _get_caller(self, context: Context) -> Caller:
         """
-        The caller of a call: anonymous, so that a call may do only what
-        needs no permissions, until a subclass tells who is calling.
+        The caller of a call: the anonymous one, until a subclass tells who
+        is calling.
+        """
+        return self._get_anonymous_caller()
+
+    def _get_anonymous_caller(self) -> Caller:
+        """
+        The caller of a call that tells no one: with no permissions, so that
+        it may do only what needs none, until a servicer open to anyone gives
+        what anyone may.
         """
         return ANONYMOUS_CALLER

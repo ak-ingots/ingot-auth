@@ -2,6 +2,8 @@
 
 __all__ = ("AuthGrpcSessionAttrsServicer",)
 
+import datetime
+import decimal
 import typing as t
 
 from ingot_auth.registry import AuthItemInvalidError
@@ -9,10 +11,18 @@ from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.storages import AuthAttrType, AuthSessionAttr, AuthSessionAttrSource
+from ingot_auth.storages import (
+    AuthAttrType,
+    AuthAttrValue,
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+)
 
 from ..base import BaseAuthGrpcServicer, Context
 from ingot_auth.sessions.attrs.v1 import attrs_pb2, attrs_pb2_grpc
+
+if t.TYPE_CHECKING:
+    from collections.abc import Iterable
 
 REGISTRY: t.Final = "sessions.attrs"
 ATTR_TYPES: t.Final = {
@@ -121,3 +131,50 @@ def build_source(
         return SOURCES_BY_MESSAGE[message_source]
     except KeyError:
         raise AuthItemInvalidError.for_source(REGISTRY, message_source) from None
+
+
+def build_attr_values(
+    messages: "Iterable[attrs_pb2.AttrValue]",
+) -> dict[int, AuthAttrValue]:
+    """
+    Internal: the values of the attributes of the sessions a client gives, by
+    the ids of their attributes; whether each is of the type of its attribute,
+    and of the client, the core checks.
+
+    :raises AuthItemInvalidError: a value is not given, a decimal is not one,
+        or an attribute has two.
+    """
+    attr_values: dict[int, AuthAttrValue] = {}
+    for message in messages:
+        if message.attr_id in attr_values:
+            raise AuthItemInvalidError.for_value(REGISTRY, message.attr_id)
+        attr_values[message.attr_id] = build_attr_value(message)
+    return attr_values
+
+
+def build_attr_value(message: attrs_pb2.AttrValue) -> AuthAttrValue:
+    """
+    Internal: the value of an attribute of the sessions by its message.
+
+    :raises AuthItemInvalidError: no value is given, or a decimal is not one.
+    """
+    match message.WhichOneof("value"):
+        case "bool_value":
+            return message.bool_value
+        case "int_value":
+            return message.int_value
+        case "decimal_value":
+            try:
+                value = decimal.Decimal(message.decimal_value)
+            except decimal.InvalidOperation:
+                raise AuthItemInvalidError.for_value(
+                    REGISTRY, message.attr_id
+                ) from None
+            if not value.is_finite():
+                raise AuthItemInvalidError.for_value(REGISTRY, message.attr_id)
+            return value
+        case "datetime_value":
+            return message.datetime_value.ToDatetime(tzinfo=datetime.UTC)
+        case "str_value":
+            return message.str_value
+    raise AuthItemInvalidError.for_value(REGISTRY, message.attr_id)

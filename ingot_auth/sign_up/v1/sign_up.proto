@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ingot_auth.sign_up.v1;
+
+// The bits of the domain `auth.sign_up` a sign-up requires, besides the flag
+// of its method: an aid for a client building its interface, the server
+// checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_SIGN_UP = 1;
+}
+
+// What a step of a sign-up gives, by any method: the end of the sign-up. The
+// challenge of a method of more steps, field 1, comes with the first such
+// method of a contract.
+message SignUpResult {
+  oneof result {
+    SignedUp signed_up = 2;
+  }
+}
+
+// The sign-up is over: the profile is there.
+message SignedUp {
+  string uid = 1;
+}

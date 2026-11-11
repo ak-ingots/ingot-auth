@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ingot_auth.sessions.attrs.v1;
 
+import "google/protobuf/timestamp.proto";
+
 // The attributes of the sessions, as their administrator manages them.
 service Attrs {
   // Requires PERMISSION_CAN_CREATE.
@@ -48,6 +50,21 @@ message Attr {
   string name = 2;
   AttrType type = 3;
   AttrSource source = 4;
+}
+
+// A value of an attribute of the sessions a client gives, by the id of the
+// attribute, of the one variant of its type; the contracts of the methods take
+// them with a sign-up, a sign-in.
+message AttrValue {
+  uint32 attr_id = 1;
+  oneof value {
+    bool bool_value = 2;
+    int64 int_value = 3;
+    // a decimal as a string, to keep its digits: "1.50"
+    string decimal_value = 4;
+    google.protobuf.Timestamp datetime_value = 5;
+    string str_value = 6;
+  }
 }
 
 message CreateAttrRequest {

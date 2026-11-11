@@ -1,4 +1,6 @@
 import datetime
+import decimal
+import hashlib
 import os
 import socket
 import typing as t
@@ -19,13 +21,16 @@ from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
 from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
 from ingots.defaults.settings.configs import BoolConfig
+from google.protobuf.timestamp_pb2 import Timestamp
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
+from ingot_auth.__main__ import AuthMemorySessionsUnit, AuthMemorySignInUnit
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit, AuthGroupsPermissions
 from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.auth import AuthUnit
+from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcAdminBinding,
@@ -35,6 +40,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
     AuthGrpcMetadataServicer,
+    AuthGrpcNicknameBinding,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
     AuthGrpcTagsServicer,
@@ -47,10 +53,12 @@ from ingot_auth.access.members.v1 import (
     members_pb2,
     members_pb2_grpc,
 )
+from ingot_auth.contrib.transports.grpcio.sessions.attrs import build_attr_values
 from ingot_auth.metadata.v1 import (
     metadata_pb2,
     metadata_pb2_grpc,
 )
+from ingot_auth.methods.nickname.v1 import nickname_pb2
 from ingot_auth.profiles.attrs.v1 import (
     attrs_pb2 as profile_attrs_pb2,
 )
@@ -73,17 +81,41 @@ from ingot_auth.sessions.presets.v1 import (
     presets_pb2,
     presets_pb2_grpc,
 )
+from ingot_auth.sign_in.v1 import sign_in_pb2
+from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
-from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
+from ingot_auth.methods import (
+    AuthMethodDeniedError,
+    AuthMethodInvalidError,
+    AuthMethodNotFoundError,
+    AuthMethodRefusedError,
+    AuthMethodsUnit,
+    AuthMethodUnsupportedError,
+    BaseAuthMethod,
+)
+from ingot_auth.methods.nickname import (
+    AuthNicknameConfigs,
+    AuthNicknameMethod,
+    AuthNicknamePermissions,
+)
+from ingot_auth.methods.password import AuthPassword
+from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
-from ingot_auth.storages import AuthAttrType, AuthProfile, AuthSessionAttrSource
+from ingot_auth.sign_in import AuthSignInPermissions
+from ingot_auth.sign_up import AuthSignUpPermissions
+from ingot_auth.storages import (
+    AuthAttrType,
+    AuthIdentityConflictError,
+    AuthProfile,
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+)
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 ADMIN: t.Final = Caller(
@@ -161,7 +193,12 @@ class TstClosedServer(DefaultGrpcServer):
     auth_metadata = GrpcService(metadata_pb2_grpc.MetadataStub, ClosedMetadataServicer)
 
 
-class TstClient(AuthGrpcMetadataBinding, AuthGrpcAdminBinding, DefaultGrpcClient):
+class TstClient(
+    AuthGrpcMetadataBinding,
+    AuthGrpcAdminBinding,
+    AuthGrpcNicknameBinding,
+    DefaultGrpcClient,
+):
     pass
 
 
@@ -272,6 +309,48 @@ class TstMethodsSettingsUnit(TstSettingsUnit):
 class TstMethodsProject(TstAnonymousProject):
     settings = Slot(TstMethodsSettingsUnit)
     auth = Slot(TstMethodsAuthUnit)
+
+
+class CheapPassword(AuthPassword):
+    SCRYPT_LOG_N = 4
+
+
+class TstNicknameMethodsUnit(AuthMethodsUnit):
+    nickname = Slot(AuthNicknameMethod)
+    password = Slot(CheapPassword)
+
+
+class TstNicknameAuthUnit(TstAuthUnit):
+    cache = Slot(AuthMemoryCache)
+    sessions = Slot(AuthMemorySessionsUnit)
+    sign_in = Slot(AuthMemorySignInUnit)
+    methods = Slot(TstNicknameMethodsUnit)
+
+
+class TstNicknameConfigs(AuthNicknameConfigs, TstConfigs):
+    pass
+
+
+class TstNicknameSettingsUnit(TstSettingsUnit):
+    configs = Slot(TstNicknameConfigs)
+
+
+class TstNicknameServer(AuthGrpcNicknameBinding, DefaultGrpcServer):
+    pass
+
+
+class TstNicknameServersUnit(GrpcServersUnit):
+    default = Slot(TstNicknameServer)
+
+
+class TstNicknameGrpcUnit(TstGrpcUnit):
+    servers = Slot(TstNicknameServersUnit)
+
+
+class TstNicknameProject(TstProject):
+    settings = Slot(TstNicknameSettingsUnit)
+    auth = Slot(TstNicknameAuthUnit)
+    grpc = Slot(TstNicknameGrpcUnit)
 
 
 def find_free_port() -> int:
@@ -655,6 +734,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthMetadataPermissions, metadata_pb2.Permission),
             (AuthGroupsPermissions, groups_pb2.Permission),
             (AuthMembersPermissions, members_pb2.Permission),
+            (AuthNicknamePermissions, nickname_pb2.Permission),
+            (AuthSignUpPermissions, sign_up_pb2.Permission),
+            (AuthSignInPermissions, sign_in_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value
@@ -754,3 +836,198 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 await call
             self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
             self.assertEqual(error.exception.reason, "PERMISSION_DENIED")
+
+    async def test_a_nickname_signs_up_and_in_by_its_service(self) -> None:
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+            )
+        ).result.signed_up
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+            )
+        ).result.signed_in
+        caller = await self.project.auth.sessions.authenticate(signed_in.token)
+        self.assertEqual(
+            (caller.uid, caller.session_id), (signed_up.uid, signed_in.session_id)
+        )
+
+    async def test_the_values_of_the_attributes_go_with_the_flows(self) -> None:
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        attrs = self.project.auth.storage.sessions.attrs
+        for attr_id, attr_type in enumerate(AuthAttrType, start=1):
+            await attrs.create(
+                AuthSessionAttr(
+                    id=attr_id,
+                    name=attr_type.value,
+                    type=attr_type,
+                    source=AuthSessionAttrSource.CLIENT,
+                )
+            )
+        moment = datetime.datetime(2026, 11, 11, 12, 30, tzinfo=datetime.UTC)
+        timestamp = Timestamp()
+        timestamp.FromDatetime(moment)
+        attr_values = [
+            session_attrs_pb2.AttrValue(attr_id=1, bool_value=True),
+            session_attrs_pb2.AttrValue(attr_id=2, int_value=7),
+            session_attrs_pb2.AttrValue(attr_id=3, decimal_value="1.50"),
+            session_attrs_pb2.AttrValue(attr_id=4, datetime_value=timestamp),
+            session_attrs_pb2.AttrValue(attr_id=5, str_value="iPhone"),
+        ]
+        expected = {1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: moment, 5: "iPhone"}
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(
+                    nickname="alice", password="x", attr_values=attr_values
+                )
+            )
+        ).result.signed_up
+        record = await self.project.auth.storage.sign_up.records.get(signed_up.uid)
+        self.assertEqual(record.attr_values, expected)
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(
+                    nickname="alice", password="x", attr_values=attr_values
+                )
+            )
+        ).result.signed_in
+        token_hash = hashlib.sha256(signed_in.token.encode()).hexdigest()
+        session = await self.project.auth.storage.sessions.find(token_hash)
+        self.assertEqual(session.attr_values, expected)
+
+    async def test_the_flows_of_a_nickname_tell_their_errors(self) -> None:
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        await nickname.SignUp(
+            nickname_pb2.SignUpRequest(nickname="alice", password="x")
+        )
+        no_value = session_attrs_pb2.AttrValue(attr_id=1)
+        for call, code, reason, metadata in (
+            (
+                nickname.SignUp(
+                    nickname_pb2.SignUpRequest(nickname="Alice", password="y")
+                ),
+                grpc.StatusCode.ALREADY_EXISTS,
+                "IDENTITY_CONFLICT",
+                {"kind": "nickname"},
+            ),
+            (
+                nickname.SignIn(
+                    nickname_pb2.SignInRequest(nickname="alice", password="y")
+                ),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "METHOD_REFUSED",
+                {},
+            ),
+            (
+                nickname.SignIn(
+                    nickname_pb2.SignInRequest(nickname="bob", password="x")
+                ),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "METHOD_REFUSED",
+                {},
+            ),
+            (
+                nickname.SignIn(
+                    nickname_pb2.SignInRequest(
+                        nickname="alice", password="x", attr_values=[no_value]
+                    )
+                ),
+                grpc.StatusCode.INVALID_ARGUMENT,
+                "ITEM_INVALID",
+                {"registry": "sessions.attrs", "key": "1"},
+            ),
+        ):
+            with self.assertRaises(GrpcError) as error:
+                await call
+            self.assertEqual(
+                (
+                    error.exception.code,
+                    error.exception.reason,
+                    error.exception.metadata,
+                ),
+                (code, reason, metadata),
+            )
+
+    async def test_a_flow_its_toggle_closes_is_refused(self) -> None:
+        os.environ["INGOT_AUTH_SIGN_UP_NICKNAME_ENABLED"] = "off"
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        with self.assertRaises(GrpcError) as error:
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="a", password="x")
+            )
+        self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
+
+
+class ErrorPoliciesTestCase(unittest.TestCase):
+    def test_the_errors_of_the_methods_have_their_statuses(self) -> None:
+        project = TstProject()
+        errors = project.grpc.errors
+        for policy, error, code, reason, metadata in (
+            (
+                errors.auth_method_not_found,
+                AuthMethodNotFoundError.for_name("nickname"),
+                grpc.StatusCode.NOT_FOUND,
+                "METHOD_NOT_FOUND",
+                {"method": "nickname"},
+            ),
+            (
+                errors.auth_method_refused,
+                AuthMethodRefusedError.create(),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "METHOD_REFUSED",
+                {},
+            ),
+            (
+                errors.auth_method_denied,
+                AuthMethodDeniedError.for_name("nickname"),
+                grpc.StatusCode.PERMISSION_DENIED,
+                "METHOD_DENIED",
+                {"method": "nickname"},
+            ),
+            (
+                errors.auth_method_invalid,
+                AuthMethodInvalidError.for_field("password", "length"),
+                grpc.StatusCode.INVALID_ARGUMENT,
+                "METHOD_INVALID",
+                {"field": "password", "binding": "length"},
+            ),
+            (
+                errors.auth_method_unsupported,
+                AuthMethodUnsupportedError.for_flow("sign_up"),
+                grpc.StatusCode.FAILED_PRECONDITION,
+                "METHOD_UNSUPPORTED",
+                {"flow": "sign_up"},
+            ),
+            (
+                errors.auth_identity_conflict,
+                AuthIdentityConflictError.for_kind("nickname"),
+                grpc.StatusCode.ALREADY_EXISTS,
+                "IDENTITY_CONFLICT",
+                {"kind": "nickname"},
+            ),
+        ):
+            with self.subTest(reason=reason):
+                failure = GrpcError.from_status(policy.encode(error))
+                self.assertEqual(
+                    (failure.code, failure.domain, failure.reason, failure.metadata),
+                    (code, "ingot-auth", reason, metadata),
+                )
+
+
+class AttrValuesTestCase(unittest.TestCase):
+    def test_what_is_no_value_of_an_attribute_is_refused(self) -> None:
+        for attr_values in (
+            [session_attrs_pb2.AttrValue(attr_id=1)],
+            [session_attrs_pb2.AttrValue(attr_id=1, decimal_value="1,50")],
+            [session_attrs_pb2.AttrValue(attr_id=1, decimal_value="NaN")],
+            [
+                session_attrs_pb2.AttrValue(attr_id=1, int_value=1),
+                session_attrs_pb2.AttrValue(attr_id=1, int_value=2),
+            ],
+        ):
+            with self.subTest(attr_values=attr_values):
+                with self.assertRaises(AuthItemInvalidError) as error:
+                    build_attr_values(attr_values)
+                self.assertEqual(error.exception.key, 1)

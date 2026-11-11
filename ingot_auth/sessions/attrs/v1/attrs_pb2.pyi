@@ -6,6 +6,7 @@ isort:skip_file
 from collections import abc as _abc
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 import builtins as _builtins
@@ -117,6 +118,49 @@ class Attr(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___Attr: _TypeAlias = Attr  # noqa: Y015
+
+@_typing.final
+class AttrValue(_message.Message):
+    """A value of an attribute of the sessions a client gives, by the id of the
+    attribute, of the one variant of its type; the contracts of the methods take
+    them with a sign-up, a sign-in.
+    """
+
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ATTR_ID_FIELD_NUMBER: _builtins.int
+    BOOL_VALUE_FIELD_NUMBER: _builtins.int
+    INT_VALUE_FIELD_NUMBER: _builtins.int
+    DECIMAL_VALUE_FIELD_NUMBER: _builtins.int
+    DATETIME_VALUE_FIELD_NUMBER: _builtins.int
+    STR_VALUE_FIELD_NUMBER: _builtins.int
+    attr_id: _builtins.int
+    bool_value: _builtins.bool
+    int_value: _builtins.int
+    decimal_value: _builtins.str
+    """a decimal as a string, to keep its digits: "1.50" """
+    str_value: _builtins.str
+    @_builtins.property
+    def datetime_value(self) -> _timestamp_pb2.Timestamp: ...
+    def __init__(
+        self,
+        *,
+        attr_id: _builtins.int = ...,
+        bool_value: _builtins.bool = ...,
+        int_value: _builtins.int = ...,
+        decimal_value: _builtins.str = ...,
+        datetime_value: _timestamp_pb2.Timestamp | None = ...,
+        str_value: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["bool_value", b"bool_value", "datetime_value", b"datetime_value", "decimal_value", b"decimal_value", "int_value", b"int_value", "str_value", b"str_value", "value", b"value"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_id", b"attr_id", "bool_value", b"bool_value", "datetime_value", b"datetime_value", "decimal_value", b"decimal_value", "int_value", b"int_value", "str_value", b"str_value", "value", b"value"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_value: _TypeAlias = _typing.Literal["bool_value", "int_value", "decimal_value", "datetime_value", "str_value"]  # noqa: Y015
+    _WhichOneofArgType_value: _TypeAlias = _typing.Literal["value", b"value"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_value) -> _WhichOneofReturnType_value | None: ...
+
+Global___AttrValue: _TypeAlias = AttrValue  # noqa: Y015
 
 @_typing.final
 class CreateAttrRequest(_message.Message):

@@ -61,7 +61,11 @@ subdomain it serves, `ingot_auth/profiles/tags/v1/tags.proto` for
 `ingot_auth.profiles.tags.v1`, an RPC a verb then its subject,
 `ListTags(ListTagsRequest)`, as `buf.yaml` lints it; `make proto` generates
 the code next to it, committed, imported as `protoc` writes it, by
-`contrib/transports/grpcio/` alone: the core imports no `v1` module. A set of
+`contrib/transports/grpcio/` alone: the core imports no `v1` module. A method
+of the core has its service in its package, `ingot_auth/methods/nickname/v1/`,
+its servicer in `contrib/transports/grpcio/methods/`, the results of the flows
+in `ingot_auth/sign_up/v1/` and `ingot_auth/sign_in/v1/`, the values of the
+attributes of a session, `AttrValue`, in `ingot_auth/sessions/attrs/v1/`. A set of
 operations has its permissions in a `permissions.py` of its own, the enum
 `Permission` of its contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the

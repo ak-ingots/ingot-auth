@@ -3,9 +3,15 @@
 __all__ = (
     "AuthGrpcErrorsUnit",
     "AuthGrpcGroupNotFoundPolicy",
+    "AuthGrpcIdentityConflictPolicy",
     "AuthGrpcItemConflictPolicy",
     "AuthGrpcItemInvalidPolicy",
     "AuthGrpcItemNotFoundPolicy",
+    "AuthGrpcMethodDeniedPolicy",
+    "AuthGrpcMethodInvalidPolicy",
+    "AuthGrpcMethodNotFoundPolicy",
+    "AuthGrpcMethodRefusedPolicy",
+    "AuthGrpcMethodUnsupportedPolicy",
     "AuthGrpcPermissionsPolicy",
     "AuthGrpcProfileNotFoundPolicy",
     "BaseAuthGrpcErrorPolicy",
@@ -20,8 +26,17 @@ from ingots.defaults.operations import OperationPermissionsError
 from ingots.puer import Slot
 
 from ingot_auth.access.groups import AuthGroupError, AuthGroupNotFoundError
+from ingot_auth.methods import (
+    AuthMethodDeniedError,
+    AuthMethodInvalidError,
+    AuthMethodNotFoundError,
+    AuthMethodRefusedError,
+    AuthMethodUnsupportedError,
+)
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import (
+    AuthIdentityConflictError,
+    AuthIdentityError,
     AuthItemConflictError,
     AuthItemNotFoundError,
     AuthProfileError,
@@ -93,6 +108,81 @@ class AuthGrpcPermissionsPolicy(BaseAuthGrpcErrorPolicy):
     REASON = "PERMISSION_DENIED"
 
 
+class AuthGrpcMethodNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """No method has the name: tells it."""
+
+    EXCEPTION = AuthMethodNotFoundError
+    CODE = grpc.StatusCode.NOT_FOUND
+    REASON = "METHOD_NOT_FOUND"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"method": t.cast(AuthMethodNotFoundError, error).name}
+
+
+class AuthGrpcMethodRefusedPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    The method refuses what it is given, a wrong secret or no such user
+    alike: tells nothing more.
+    """
+
+    EXCEPTION = AuthMethodRefusedError
+    CODE = grpc.StatusCode.UNAUTHENTICATED
+    REASON = "METHOD_REFUSED"
+
+
+class AuthGrpcMethodDeniedPolicy(BaseAuthGrpcErrorPolicy):
+    """The profile may not sign in by the method: tells the method."""
+
+    EXCEPTION = AuthMethodDeniedError
+    CODE = grpc.StatusCode.PERMISSION_DENIED
+    REASON = "METHOD_DENIED"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"method": t.cast(AuthMethodDeniedError, error).name}
+
+
+class AuthGrpcMethodInvalidPolicy(BaseAuthGrpcErrorPolicy):
+    """A field breaks a policy of the method: tells the field and the binding."""
+
+    EXCEPTION = AuthMethodInvalidError
+    CODE = grpc.StatusCode.INVALID_ARGUMENT
+    REASON = "METHOD_INVALID"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        invalid = t.cast(AuthMethodInvalidError, error)
+        return {"field": invalid.field, "binding": invalid.binding}
+
+
+class AuthGrpcMethodUnsupportedPolicy(BaseAuthGrpcErrorPolicy):
+    """The method takes no part in the flow: tells the flow."""
+
+    EXCEPTION = AuthMethodUnsupportedError
+    CODE = grpc.StatusCode.FAILED_PRECONDITION
+    REASON = "METHOD_UNSUPPORTED"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"flow": t.cast(AuthMethodUnsupportedError, error).flow}
+
+
+class AuthGrpcIdentityConflictPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    The identifier is bound already, told on a sign-up as the user picks
+    another: tells its kind, never the identifier.
+    """
+
+    EXCEPTION = AuthIdentityConflictError
+    CODE = grpc.StatusCode.ALREADY_EXISTS
+    REASON = "IDENTITY_CONFLICT"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"kind": t.cast(AuthIdentityError, error).kind}
+
+
 class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     """The policies of the auth: the errors unit of the gRPC takes it as a base."""
 
@@ -102,3 +192,9 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_group_not_found = Slot(AuthGrpcGroupNotFoundPolicy)
     auth_profile_not_found = Slot(AuthGrpcProfileNotFoundPolicy)
     auth_permissions = Slot(AuthGrpcPermissionsPolicy)
+    auth_method_not_found = Slot(AuthGrpcMethodNotFoundPolicy)
+    auth_method_refused = Slot(AuthGrpcMethodRefusedPolicy)
+    auth_method_denied = Slot(AuthGrpcMethodDeniedPolicy)
+    auth_method_invalid = Slot(AuthGrpcMethodInvalidPolicy)
+    auth_method_unsupported = Slot(AuthGrpcMethodUnsupportedPolicy)
+    auth_identity_conflict = Slot(AuthGrpcIdentityConflictPolicy)
