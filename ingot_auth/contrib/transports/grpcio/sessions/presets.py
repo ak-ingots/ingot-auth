@@ -8,8 +8,8 @@ from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.sessions.presets import AuthSessionPreset, AuthSessionPresetBinding
 from ingot_auth.sessions.presets.operations import AuthUnbindSessionAttrParameters
+from ingot_auth.storages import AuthSessionPreset, AuthSessionPresetBinding
 
 from ..base import BaseAuthGrpcServicer, Context
 from ingot_auth.sessions.presets.v1 import presets_pb2, presets_pb2_grpc

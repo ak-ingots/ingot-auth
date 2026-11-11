@@ -4,7 +4,7 @@ __all__ = ("AuthMemorySecretsStorage",)
 
 import typing as t
 
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError, BaseAuthSecretsStorage
+from ingot_auth.storages import AuthSecretNotFoundError, BaseAuthSecretsStorage
 
 from ..state import AuthMemoryStateMixin
 

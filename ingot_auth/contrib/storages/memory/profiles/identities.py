@@ -4,7 +4,7 @@ __all__ = ("AuthMemoryIdentitiesStorage",)
 
 import typing as t
 
-from ingot_auth.profiles.identities import (
+from ingot_auth.storages import (
     AuthIdentity,
     AuthIdentityConflictError,
     AuthIdentityNotFoundError,

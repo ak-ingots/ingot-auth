@@ -11,7 +11,7 @@ import typing as t
 
 from ingots.puer import Slot
 
-from ingot_auth.sessions import (
+from ingot_auth.storages import (
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
     AuthSessionRecord,

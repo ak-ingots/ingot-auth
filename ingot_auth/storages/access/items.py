@@ -1,4 +1,4 @@
-"""The membership: a user bound to a group."""
+"""What the storage of the access keeps: a user bound to a group."""
 
 __all__ = ("AuthMembership",)
 

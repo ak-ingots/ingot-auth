@@ -20,7 +20,7 @@ import unicodedata
 
 from ingots.puer import Slot, Unit
 
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError
+from ingot_auth.storages import AuthSecretNotFoundError
 
 from .contexts import AuthHasIdentifiers, AuthPasswordSetContext
 from .presets import AuthPasswordSetPreset

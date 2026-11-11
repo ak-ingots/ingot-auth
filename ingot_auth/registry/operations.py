@@ -17,9 +17,9 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata
 
+from ingot_auth.storages import AuthItem, BaseAuthRegistryStorage
+
 from .errors import AuthItemInvalidError
-from .items import AuthItem
-from .storage import BaseAuthRegistryStorage
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

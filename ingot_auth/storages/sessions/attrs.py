@@ -4,8 +4,7 @@ __all__ = ("BaseAuthSessionAttrsStorage",)
 
 import typing as t
 
-from ingot_auth.registry import BaseAuthRegistryStorage
-
+from ..registry import BaseAuthRegistryStorage
 from .items import AuthSessionAttr
 
 

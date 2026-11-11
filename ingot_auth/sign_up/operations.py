@@ -22,15 +22,13 @@ from ingot_auth.methods import (
     AuthStep,
     AuthVerified,
 )
-from ingot_auth.profiles.identities import AuthIdentity
-from ingot_auth.profiles import AuthProfile
 from ingot_auth.sessions.attrs import check_client_values
+from ingot_auth.storages import AuthIdentity, AuthProfile, AuthSignUpRecord
 
 from .items import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
     AuthSignUpChallenge,
-    AuthSignUpRecord,
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
@@ -40,7 +38,7 @@ if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
     from ingot_auth.project import AuthProject
-    from ingot_auth.registry import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue
 
 FLOW: t.Final = "sign_up"
 

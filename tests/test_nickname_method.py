@@ -35,12 +35,12 @@ from ingot_auth.policies import (
     AuthPolicyBinding,
     BaseAuthPolicy,
 )
-from ingot_auth.profiles.identities import AuthIdentity
 from ingot_auth.sign_up import (
     AuthSignedUp,
     AuthSignUpPermissions,
     AuthStartSignUpParameters,
 )
+from ingot_auth.storages import AuthIdentity
 
 SIGNING_UP: t.Final = Caller(
     uid="anonymous", permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)

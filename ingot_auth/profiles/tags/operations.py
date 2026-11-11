@@ -21,10 +21,9 @@ from ingot_auth.registry.operations import (
     BaseAuthRegistryOperation,
     BaseAuthRenameItemOperation,
 )
+from ingot_auth.storages import AuthTag, BaseAuthTagsStorage
 
-from .items import AuthTag
 from .permissions import AuthTagsPermissions
-from .storage import BaseAuthTagsStorage
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject

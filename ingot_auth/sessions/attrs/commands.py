@@ -10,7 +10,6 @@ __all__ = (
 import argparse
 import typing as t
 
-from ingot_auth.registry import AuthAttrType
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
     BaseAuthDeleteItemCommand,
@@ -22,8 +21,8 @@ from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
+from ingot_auth.storages import AuthAttrType, AuthSessionAttr, AuthSessionAttrSource
 
-from .items import AuthSessionAttr, AuthSessionAttrSource
 from .operations import (
     AuthCreateSessionAttrOperation,
     AuthDeleteSessionAttrOperation,

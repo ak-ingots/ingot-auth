@@ -1,10 +1,8 @@
 """The attributes: typed values of the profiles, declared in a registry."""
 
 __all__ = (
-    "AuthAttr",
     "AuthAttrsUnit",
     "AuthAttrsPermissions",
-    "BaseAuthAttrsStorage",
 )
 
 from ingots.puer import Factory, Slot
@@ -16,7 +14,6 @@ from .commands import (
     AuthListAttrsCommand,
     AuthRenameAttrCommand,
 )
-from .items import AuthAttr
 from .operations import (
     AuthCreateAttrOperation,
     AuthDeleteAttrOperation,
@@ -24,7 +21,6 @@ from .operations import (
     AuthRenameAttrOperation,
 )
 from .permissions import AuthAttrsPermissions
-from .storage import BaseAuthAttrsStorage
 
 
 class AuthAttrsUnit(CliUnit):

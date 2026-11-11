@@ -2,10 +2,13 @@
 
 __all__ = ("AuthStorageTransactionsContract",)
 
-from ingot_auth.profiles.tags import AuthTag
-from ingot_auth.registry import AuthAttrType
-from ingot_auth.sessions.attrs import AuthSessionAttr, AuthSessionAttrSource
-from ingot_auth.storage import AuthTransactionError
+from ingot_auth.storages import (
+    AuthAttrType,
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+    AuthTag,
+    AuthTransactionError,
+)
 
 from .base import BaseAuthContract
 

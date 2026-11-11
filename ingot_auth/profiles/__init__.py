@@ -1,24 +1,15 @@
 """
-The profiles: the registries of what they hold, the tags and the attributes,
-the profiles themselves with their identities, and their storage.
+The profiles: the registries of what they hold, the tags and the attributes.
+The profiles themselves, their identities and their secrets are kept by the
+storages, :mod:`ingot_auth.storages`.
 """
 
-__all__ = (
-    "AuthProfile",
-    "AuthProfileConflictError",
-    "AuthProfileError",
-    "AuthProfileNotFoundError",
-    "AuthProfilesUnit",
-    "AuthProfilesStorage",
-)
+__all__ = ("AuthProfilesUnit",)
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
 from .attrs import AuthAttrsUnit
-from .errors import AuthProfileConflictError, AuthProfileError, AuthProfileNotFoundError
-from .items import AuthProfile
-from .storage import AuthProfilesStorage
 from .tags import AuthTagsUnit
 
 

@@ -1,18 +1,16 @@
 """
-The secrets: what a profile is verified by later, the hash of its password,
-one a profile, by its uid, whatever identifier it signs in by. Apart from the
-identities, so a profile signed up with no password has none, and a new one
-replaces the old alone.
+The storage of the secrets: what a profile is verified by later, the hash of
+its password, one a profile, by its uid, whatever identifier it signs in by.
+Apart from the identities, so a profile signed up with no password has none,
+and a new one replaces the old alone.
 """
 
-__all__ = ("AuthSecretNotFoundError", "BaseAuthSecretsStorage")
+__all__ = ("BaseAuthSecretsStorage",)
 
 import abc
 import typing as t
 
 from ingots.puer import Entity
-
-from .errors import AuthSecretNotFoundError
 
 
 class BaseAuthSecretsStorage(Entity):

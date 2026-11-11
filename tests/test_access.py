@@ -31,8 +31,8 @@ from ingot_auth.access.groups import (
     AuthGroupNotFoundError,
     AuthGroupsUnit,
 )
-from ingot_auth.access.members import AuthMembership, AuthMembersPermissions
-from ingot_auth.profiles import AuthProfile, AuthProfileNotFoundError
+from ingot_auth.access.members import AuthMembersPermissions
+from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 

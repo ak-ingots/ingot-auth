@@ -6,7 +6,7 @@ import typing as t
 
 from pymongo.errors import DuplicateKeyError
 
-from ingot_auth.profiles.identities import (
+from ingot_auth.storages import (
     AuthIdentity,
     AuthIdentityConflictError,
     AuthIdentityNotFoundError,

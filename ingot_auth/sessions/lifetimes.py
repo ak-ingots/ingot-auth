@@ -8,12 +8,11 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthSessionCloseReason
+from ingot_auth.storages import AuthSessionCloseReason
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
-
-    from .items import AuthSessionRecord
+    from ingot_auth.storages import AuthSessionRecord
 
 
 class BaseAuthSessionLifetime(Entity):

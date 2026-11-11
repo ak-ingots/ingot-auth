@@ -31,7 +31,7 @@ from ingot_auth.methods import (
     BaseAuthMethod,
 )
 from ingot_auth.methods.password import AuthPasswordSetContext
-from ingot_auth.profiles.identities import AuthIdentityNotFoundError
+from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthNicknameConfigs
 from .contexts import AuthNicknameSignUpContext

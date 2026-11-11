@@ -13,7 +13,9 @@ import typing as t
 from ingots.puer import Entity
 
 if t.TYPE_CHECKING:
-    from .items import AuthCaller, AuthSessionRecord
+    from ingot_auth.storages import AuthSessionRecord
+
+    from .items import AuthCaller
 
 
 class BaseAuthSessionsCache(Entity):

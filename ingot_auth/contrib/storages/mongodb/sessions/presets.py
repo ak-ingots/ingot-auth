@@ -4,8 +4,8 @@ __all__ = ("AuthMongoDbSessionPresetsStorage",)
 
 import typing as t
 
-from ingot_auth.registry import AuthItemNotFoundError
-from ingot_auth.sessions.presets import (
+from ingot_auth.storages import (
+    AuthItemNotFoundError,
     AuthSessionPreset,
     AuthSessionPresetBinding,
     BaseAuthSessionPresetsStorage,

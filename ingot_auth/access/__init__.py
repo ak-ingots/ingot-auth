@@ -8,14 +8,13 @@ its groups in its own :class:`AuthGroupsUnit`::
         groups = Slot(AppGroupsUnit)
 """
 
-__all__ = ("AuthAccessUnit", "AuthAccessStorage", "AuthGroupsGrants")
+__all__ = ("AuthAccessUnit", "AuthGroupsGrants")
 
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
 from .groups import AuthGroupsUnit
 from .members import AuthMembersUnit
-from .storage import AuthAccessStorage
 from .strategies import AuthGroupsGrants
 
 

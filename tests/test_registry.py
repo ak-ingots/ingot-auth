@@ -23,28 +23,26 @@ from ingot_auth.contrib.storages.memory import (
     AuthMemoryStorage,
 )
 from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.profiles.attrs import AuthAttr, AuthAttrsPermissions
-from ingot_auth.profiles.tags import AuthTag, AuthTagsPermissions
-from ingot_auth.registry import (
-    AuthAttrType,
-    AuthItemInvalidError,
-    AuthItemNotFoundError,
-)
+from ingot_auth.profiles.attrs import AuthAttrsPermissions
+from ingot_auth.profiles.tags import AuthTagsPermissions
+from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.sessions.attrs import (
+from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
+from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
+from ingot_auth.sessions.presets.operations import AuthUnbindSessionAttrParameters
+from ingot_auth.storages import (
+    AuthAttr,
+    AuthAttrType,
+    AuthItemNotFoundError,
     AuthSessionAttr,
     AuthSessionAttrSource,
-    AuthSessionAttrsPermissions,
-)
-from ingot_auth.sessions.presets import (
     AuthSessionPreset,
     AuthSessionPresetBinding,
-    AuthSessionPresetsPermissions,
+    AuthTag,
 )
-from ingot_auth.sessions.presets.operations import AuthUnbindSessionAttrParameters
 
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")

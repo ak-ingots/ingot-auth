@@ -14,7 +14,7 @@ from ingot_auth.metadata import (
     AuthProfileMetadata,
     AuthSessionMetadata,
 )
-from ingot_auth.registry import AuthAttrType
+from ingot_auth.storages import AuthAttrType
 
 from .base import BaseAuthGrpcServicer, Context
 from ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc

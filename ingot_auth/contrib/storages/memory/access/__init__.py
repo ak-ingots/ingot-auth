@@ -4,7 +4,7 @@ __all__ = ("AuthMemoryAccessStorage", "AuthMemoryMembersStorage")
 
 from ingots.puer import Slot
 
-from ingot_auth.access import AuthAccessStorage
+from ingot_auth.storages import AuthAccessStorage
 
 from .members import AuthMemoryMembersStorage
 

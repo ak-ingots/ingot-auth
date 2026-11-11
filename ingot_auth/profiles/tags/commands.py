@@ -16,8 +16,8 @@ from ingot_auth.registry.commands import (
     BaseAuthListItemsCommand,
     BaseAuthRenameItemCommand,
 )
+from ingot_auth.storages import AuthTag
 
-from .items import AuthTag
 from .operations import (
     AuthCreateTagOperation,
     AuthDeleteTagOperation,

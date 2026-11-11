@@ -13,7 +13,7 @@ from ingot_auth.policies import AuthPoliciesUnit
 from ingot_auth.profiles import AuthProfilesUnit
 from ingot_auth.sessions import AuthSessionsUnit
 from ingot_auth.sign_up import AuthSignUpUnit
-from ingot_auth.storage import AuthStorage
+from ingot_auth.storages import AuthStorage
 
 
 class AuthUnit(CliUnit):

@@ -22,9 +22,6 @@ from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.methods import AuthMethodsUnit
-from ingot_auth.profiles.identities import AuthIdentityNotFoundError
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError
-from ingot_auth.profiles.tags import AuthTag
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.sign_up import (
@@ -34,6 +31,11 @@ from ingot_auth.sign_up import (
     AuthStartSignUpParameters,
 )
 from ingot_auth.sign_up.operations import BaseAuthSignUpOperation
+from ingot_auth.storages import (
+    AuthIdentityNotFoundError,
+    AuthSecretNotFoundError,
+    AuthTag,
+)
 from ingot_auth.testing.contracts import (
     AuthAttrsStorageContract,
     AuthIdentitiesStorageContract,

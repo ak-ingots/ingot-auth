@@ -1,6 +1,18 @@
 """The storage of the sessions."""
 
-__all__ = ("AuthSessionsStorage",)
+__all__ = (
+    "AuthSessionAttr",
+    "AuthSessionAttrSource",
+    "AuthSessionCloseReason",
+    "AuthSessionError",
+    "AuthSessionNotFoundError",
+    "AuthSessionPreset",
+    "AuthSessionPresetBinding",
+    "AuthSessionRecord",
+    "AuthSessionsStorage",
+    "BaseAuthSessionAttrsStorage",
+    "BaseAuthSessionPresetsStorage",
+)
 
 import abc
 import datetime
@@ -9,7 +21,15 @@ import typing as t
 from ingots.puer import Slot, Unit
 
 from .attrs import BaseAuthSessionAttrsStorage
-from .items import AuthSessionCloseReason, AuthSessionRecord
+from .errors import AuthSessionError, AuthSessionNotFoundError
+from .items import (
+    AuthSessionAttr,
+    AuthSessionAttrSource,
+    AuthSessionCloseReason,
+    AuthSessionPreset,
+    AuthSessionPresetBinding,
+    AuthSessionRecord,
+)
 from .presets import BaseAuthSessionPresetsStorage
 
 

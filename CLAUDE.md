@@ -29,12 +29,14 @@ the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
 the policies their slots `preset_<flow>_<field>`, each of a class and a
 context of its own, the context made by the method; the password of the
 profile in `methods/password/`, the slot `password` of the methods, not a
-method, its hash the secret of the uid in `profiles/secrets/`, its preset
+method, its hash the secret of the uid in `storages/profiles/secrets.py`, its preset
 `preset_set` of a new one by any method; the `policies/`, rules a value is checked
 against, each taking a part of a context by its protocol, bound to a preset
-by class with a config; the `sign_up/` flow; the storage `storage/`, with the
-transactions of a backend over all its storages, and the cache `cache/`,
-abstract, a unit a subdomain); a unit lives in the
+by class with a config; the `sign_up/` flow; the storages `storages/`, the
+interfaces a backend implements with what they keep and raise, depending on
+no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
+with the transactions of a backend over all its storages; and the cache
+`cache/`, abstract, a unit a subdomain); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking

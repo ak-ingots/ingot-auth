@@ -4,14 +4,14 @@ __all__ = ("check_client_values",)
 
 import typing as t
 
-from ingot_auth.registry import (
+from ingot_auth.registry import AuthItemInvalidError
+from ingot_auth.storages import (
     ATTR_VALUE_TYPES,
     AuthAttrValue,
-    AuthItemInvalidError,
     AuthItemNotFoundError,
+    AuthSessionAttr,
+    AuthSessionAttrSource,
 )
-
-from .items import AuthSessionAttr, AuthSessionAttrSource
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterable, Mapping

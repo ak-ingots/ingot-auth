@@ -1,10 +1,8 @@
 """The tags: marks on the profiles, declared in a registry."""
 
 __all__ = (
-    "AuthTag",
     "AuthTagsUnit",
     "AuthTagsPermissions",
-    "BaseAuthTagsStorage",
 )
 
 from ingots.puer import Factory, Slot
@@ -16,7 +14,6 @@ from .commands import (
     AuthListTagsCommand,
     AuthRenameTagCommand,
 )
-from .items import AuthTag
 from .operations import (
     AuthCreateTagOperation,
     AuthDeleteTagOperation,
@@ -24,7 +21,6 @@ from .operations import (
     AuthRenameTagOperation,
 )
 from .permissions import AuthTagsPermissions
-from .storage import BaseAuthTagsStorage
 
 
 class AuthTagsUnit(CliUnit):

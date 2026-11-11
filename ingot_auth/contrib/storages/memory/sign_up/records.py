@@ -4,7 +4,7 @@ __all__ = ("AuthMemorySignUpRecordsStorage",)
 
 import typing as t
 
-from ingot_auth.sign_up import (
+from ingot_auth.storages import (
     AuthSignUpRecord,
     AuthSignUpRecordNotFoundError,
     BaseAuthSignUpRecordsStorage,

@@ -37,7 +37,7 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-from ingot_auth.profiles.identities import AuthIdentityNotFoundError
+from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthEmailCodeConfigs
 from .contexts import AuthEmailSignUpContext

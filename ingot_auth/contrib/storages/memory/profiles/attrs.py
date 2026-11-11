@@ -2,7 +2,7 @@
 
 __all__ = ("AuthMemoryAttrsStorage",)
 
-from ingot_auth.profiles.attrs import AuthAttr, BaseAuthAttrsStorage
+from ingot_auth.storages import AuthAttr, BaseAuthAttrsStorage
 
 from ..registry import AuthMemoryRegistryStorage
 

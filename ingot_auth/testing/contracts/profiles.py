@@ -13,17 +13,15 @@ import asyncio
 import datetime
 import typing as t
 
-from ingot_auth.profiles.identities import (
+from ingot_auth.storages import (
     AuthIdentity,
     AuthIdentityConflictError,
     AuthIdentityNotFoundError,
-)
-from ingot_auth.profiles import (
     AuthProfile,
     AuthProfileConflictError,
     AuthProfileNotFoundError,
+    AuthSecretNotFoundError,
 )
-from ingot_auth.profiles.secrets import AuthSecretNotFoundError
 
 from .base import BaseAuthContract
 
