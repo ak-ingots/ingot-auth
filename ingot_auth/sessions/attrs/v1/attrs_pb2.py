@@ -22,39 +22,42 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(ingot_auth/sessions/attrs/v1/attrs.proto\x12\x1cingot_auth.sessions.attrs.v1\"\x90\x01\n\x04\x41ttr\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x34\n\x04type\x18\x03 \x01(\x0e\x32&.ingot_auth.sessions.attrs.v1.AttrType\x12\x38\n\x06source\x18\x04 \x01(\x0e\x32(.ingot_auth.sessions.attrs.v1.AttrSource\"E\n\x11\x43reateAttrRequest\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"F\n\x12\x43reateAttrResponse\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"\x12\n\x10ListAttrsRequest\"F\n\x11ListAttrsResponse\x12\x31\n\x05\x61ttrs\x18\x01 \x03(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"-\n\x11RenameAttrRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"F\n\x12RenameAttrResponse\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"\x1f\n\x11\x44\x65leteAttrRequest\x12\n\n\x02id\x18\x01 \x01(\r\"\x14\n\x12\x44\x65leteAttrResponse*\x92\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_RENAME\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08*\x8e\x01\n\x08\x41ttrType\x12\x19\n\x15\x41TTR_TYPE_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x41TTR_TYPE_BOOL\x10\x01\x12\x11\n\rATTR_TYPE_INT\x10\x02\x12\x15\n\x11\x41TTR_TYPE_DECIMAL\x10\x03\x12\x16\n\x12\x41TTR_TYPE_DATETIME\x10\x04\x12\x11\n\rATTR_TYPE_STR\x10\x05*\x8f\x01\n\nAttrSource\x12\x1b\n\x17\x41TTR_SOURCE_UNSPECIFIED\x10\x00\x12\x19\n\x15\x41TTR_SOURCE_TRANSPORT\x10\x01\x12\x16\n\x12\x41TTR_SOURCE_CLIENT\x10\x02\x12\x18\n\x14\x41TTR_SOURCE_PROVIDER\x10\x03\x12\x17\n\x13\x41TTR_SOURCE_DERIVED\x10\x04\x32\xc8\x03\n\x05\x41ttrs\x12o\n\nCreateAttr\x12/.ingot_auth.sessions.attrs.v1.CreateAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.CreateAttrResponse\x12l\n\tListAttrs\x12..ingot_auth.sessions.attrs.v1.ListAttrsRequest\x1a/.ingot_auth.sessions.attrs.v1.ListAttrsResponse\x12o\n\nRenameAttr\x12/.ingot_auth.sessions.attrs.v1.RenameAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.RenameAttrResponse\x12o\n\nDeleteAttr\x12/.ingot_auth.sessions.attrs.v1.DeleteAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.DeleteAttrResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(ingot_auth/sessions/attrs/v1/attrs.proto\x12\x1cingot_auth.sessions.attrs.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n\x04\x41ttr\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x34\n\x04type\x18\x03 \x01(\x0e\x32&.ingot_auth.sessions.attrs.v1.AttrType\x12\x38\n\x06source\x18\x04 \x01(\x0e\x32(.ingot_auth.sessions.attrs.v1.AttrSource\"\xb4\x01\n\tAttrValue\x12\x0f\n\x07\x61ttr_id\x18\x01 \x01(\r\x12\x14\n\nbool_value\x18\x02 \x01(\x08H\x00\x12\x13\n\tint_value\x18\x03 \x01(\x03H\x00\x12\x17\n\rdecimal_value\x18\x04 \x01(\tH\x00\x12\x34\n\x0e\x64\x61tetime_value\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x00\x12\x13\n\tstr_value\x18\x06 \x01(\tH\x00\x42\x07\n\x05value\"E\n\x11\x43reateAttrRequest\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"F\n\x12\x43reateAttrResponse\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"\x12\n\x10ListAttrsRequest\"F\n\x11ListAttrsResponse\x12\x31\n\x05\x61ttrs\x18\x01 \x03(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"-\n\x11RenameAttrRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"F\n\x12RenameAttrResponse\x12\x30\n\x04\x61ttr\x18\x01 \x01(\x0b\x32\".ingot_auth.sessions.attrs.v1.Attr\"\x1f\n\x11\x44\x65leteAttrRequest\x12\n\n\x02id\x18\x01 \x01(\r\"\x14\n\x12\x44\x65leteAttrResponse*\x92\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_RENAME\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08*\x8e\x01\n\x08\x41ttrType\x12\x19\n\x15\x41TTR_TYPE_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x41TTR_TYPE_BOOL\x10\x01\x12\x11\n\rATTR_TYPE_INT\x10\x02\x12\x15\n\x11\x41TTR_TYPE_DECIMAL\x10\x03\x12\x16\n\x12\x41TTR_TYPE_DATETIME\x10\x04\x12\x11\n\rATTR_TYPE_STR\x10\x05*\x8f\x01\n\nAttrSource\x12\x1b\n\x17\x41TTR_SOURCE_UNSPECIFIED\x10\x00\x12\x19\n\x15\x41TTR_SOURCE_TRANSPORT\x10\x01\x12\x16\n\x12\x41TTR_SOURCE_CLIENT\x10\x02\x12\x18\n\x14\x41TTR_SOURCE_PROVIDER\x10\x03\x12\x17\n\x13\x41TTR_SOURCE_DERIVED\x10\x04\x32\xc8\x03\n\x05\x41ttrs\x12o\n\nCreateAttr\x12/.ingot_auth.sessions.attrs.v1.CreateAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.CreateAttrResponse\x12l\n\tListAttrs\x12..ingot_auth.sessions.attrs.v1.ListAttrsRequest\x1a/.ingot_auth.sessions.attrs.v1.ListAttrsResponse\x12o\n\nRenameAttr\x12/.ingot_auth.sessions.attrs.v1.RenameAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.RenameAttrResponse\x12o\n\nDeleteAttr\x12/.ingot_auth.sessions.attrs.v1.DeleteAttrRequest\x1a\x30.ingot_auth.sessions.attrs.v1.DeleteAttrResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sessions.attrs.v1.attrs_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=631
-  _globals['_PERMISSION']._serialized_end=777
-  _globals['_ATTRTYPE']._serialized_start=780
-  _globals['_ATTRTYPE']._serialized_end=922
-  _globals['_ATTRSOURCE']._serialized_start=925
-  _globals['_ATTRSOURCE']._serialized_end=1068
-  _globals['_ATTR']._serialized_start=75
-  _globals['_ATTR']._serialized_end=219
-  _globals['_CREATEATTRREQUEST']._serialized_start=221
-  _globals['_CREATEATTRREQUEST']._serialized_end=290
-  _globals['_CREATEATTRRESPONSE']._serialized_start=292
-  _globals['_CREATEATTRRESPONSE']._serialized_end=362
-  _globals['_LISTATTRSREQUEST']._serialized_start=364
-  _globals['_LISTATTRSREQUEST']._serialized_end=382
-  _globals['_LISTATTRSRESPONSE']._serialized_start=384
-  _globals['_LISTATTRSRESPONSE']._serialized_end=454
-  _globals['_RENAMEATTRREQUEST']._serialized_start=456
-  _globals['_RENAMEATTRREQUEST']._serialized_end=501
-  _globals['_RENAMEATTRRESPONSE']._serialized_start=503
-  _globals['_RENAMEATTRRESPONSE']._serialized_end=573
-  _globals['_DELETEATTRREQUEST']._serialized_start=575
-  _globals['_DELETEATTRREQUEST']._serialized_end=606
-  _globals['_DELETEATTRRESPONSE']._serialized_start=608
-  _globals['_DELETEATTRRESPONSE']._serialized_end=628
-  _globals['_ATTRS']._serialized_start=1071
-  _globals['_ATTRS']._serialized_end=1527
+  _globals['_PERMISSION']._serialized_start=847
+  _globals['_PERMISSION']._serialized_end=993
+  _globals['_ATTRTYPE']._serialized_start=996
+  _globals['_ATTRTYPE']._serialized_end=1138
+  _globals['_ATTRSOURCE']._serialized_start=1141
+  _globals['_ATTRSOURCE']._serialized_end=1284
+  _globals['_ATTR']._serialized_start=108
+  _globals['_ATTR']._serialized_end=252
+  _globals['_ATTRVALUE']._serialized_start=255
+  _globals['_ATTRVALUE']._serialized_end=435
+  _globals['_CREATEATTRREQUEST']._serialized_start=437
+  _globals['_CREATEATTRREQUEST']._serialized_end=506
+  _globals['_CREATEATTRRESPONSE']._serialized_start=508
+  _globals['_CREATEATTRRESPONSE']._serialized_end=578
+  _globals['_LISTATTRSREQUEST']._serialized_start=580
+  _globals['_LISTATTRSREQUEST']._serialized_end=598
+  _globals['_LISTATTRSRESPONSE']._serialized_start=600
+  _globals['_LISTATTRSRESPONSE']._serialized_end=670
+  _globals['_RENAMEATTRREQUEST']._serialized_start=672
+  _globals['_RENAMEATTRREQUEST']._serialized_end=717
+  _globals['_RENAMEATTRRESPONSE']._serialized_start=719
+  _globals['_RENAMEATTRRESPONSE']._serialized_end=789
+  _globals['_DELETEATTRREQUEST']._serialized_start=791
+  _globals['_DELETEATTRREQUEST']._serialized_end=822
+  _globals['_DELETEATTRRESPONSE']._serialized_start=824
+  _globals['_DELETEATTRRESPONSE']._serialized_end=844
+  _globals['_ATTRS']._serialized_start=1287
+  _globals['_ATTRS']._serialized_end=1743
 # @@protoc_insertion_point(module_scope)

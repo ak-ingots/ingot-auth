@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package ingot_auth.sign_in.v1;
+
+// The bits of the domain `auth.sign_in` a sign-in requires, besides the flag
+// of its method: an aid for a client building its interface, the server
+// checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_SIGN_IN = 1;
+}
+
+// What a step of a sign-in gives, by any method: the end of the sign-in. The
+// challenge of a method of more steps or of a second factor, field 1, comes
+// with the first such method of a contract.
+message SignInResult {
+  oneof result {
+    SignedIn signed_in = 2;
+  }
+}
+
+// The sign-in is over: a session is open, its token given once, which the
+// client sends with each call, and its id, public.
+message SignedIn {
+  string session_id = 1;
+  string token = 2;
+}

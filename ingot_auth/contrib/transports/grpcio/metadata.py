@@ -34,7 +34,7 @@ class AuthGrpcMetadataServicer(
     """
     The metadata, public unless told otherwise: a client asks for it before
     signing in, so anyone may read it until a subclass overrides
-    :meth:`_get_caller`.
+    :meth:`_get_anonymous_caller` or :meth:`_get_caller`.
     """
 
     @t.override
@@ -51,7 +51,7 @@ class AuthGrpcMetadataServicer(
         )
 
     @t.override
-    def _get_caller(self, context: Context) -> Caller:
+    def _get_anonymous_caller(self) -> Caller:
         return dataclasses.replace(
             ANONYMOUS_CALLER, permissions=Permissions(AuthMetadataPermissions.CAN_READ)
         )

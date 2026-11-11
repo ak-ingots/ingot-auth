@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package ingot_auth.methods.nickname.v1;
+
+import "ingot_auth/sessions/attrs/v1/attrs.proto";
+import "ingot_auth/sign_in/v1/sign_in.proto";
+import "ingot_auth/sign_up/v1/sign_up.proto";
+
+// The method of a nickname and a password, of one step: its flows, each with
+// the values of the attributes of the session the client gives.
+service Nickname {
+  // Requires PERMISSION_CAN_SIGN_UP, and that of the sign-up.
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  // Requires PERMISSION_CAN_SIGN_IN, and that of the sign-in.
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+}
+
+// The bits of the domain `auth.methods.nickname` the RPCs require, which the
+// toggles of the method give: an aid for a client building its interface,
+// the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_SIGN_UP = 1;
+  PERMISSION_CAN_SIGN_IN = 2;
+}
+
+message SignUpRequest {
+  string nickname = 1;
+  string password = 2;
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 3;
+}
+
+message SignUpResponse {
+  ingot_auth.sign_up.v1.SignUpResult result = 1;
+}
+
+message SignInRequest {
+  string nickname = 1;
+  string password = 2;
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 3;
+}
+
+message SignInResponse {
+  ingot_auth.sign_in.v1.SignInResult result = 1;
+}

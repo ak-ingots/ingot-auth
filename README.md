@@ -10,12 +10,13 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
-metadata for the consumers, all of it over gRPC; the sign-up by pluggable
-methods in steps, a nickname and a password, and an email and a code sent
-to it; the policies of what a user types, bound to their presets; the groups
-of the users, declared in the code, and their members, on the command line
-and over gRPC; the sessions, a token turned into a caller, with no sign-in
-opening them yet; all of it stored in memory or in MongoDB.
+metadata for the consumers, all of it over gRPC; the sign-up and the
+sign-in by pluggable methods in steps, a nickname and a password, over gRPC
+too, and an email and a code sent to it; the policies of what a user types,
+bound to their presets; the groups of the users, declared in the code, and
+their members, on the command line and over gRPC; the sessions a sign-in
+opens, a token turned into a caller; all of it stored in memory or in
+MongoDB.
 
 ## For Consumers
 
@@ -136,6 +137,22 @@ seconds, over the slowest branch; `AuthNoTiming` holds none.
 ```python
 class AppSignInUnit(AuthSignInUnit):
     timing = Slot(AuthFloorTiming)
+```
+
+Over gRPC a method has a service of its own, its binding taken with the
+method: `AuthGrpcNicknameBinding` serves `Nickname.SignUp` and
+`Nickname.SignIn`, each with the values of the attributes of the session the
+client gives, `AttrValue` of `ingot_auth.sessions.attrs.v1`, and runs them
+for the anonymous caller, given the flags of the flows and of the methods
+open by their toggles. A wrong password or no such nickname is
+`UNAUTHENTICATED`, a nickname taken `ALREADY_EXISTS`, a policy broken
+`INVALID_ARGUMENT`, a flow closed `PERMISSION_DENIED`:
+
+```python
+class AppGrpcServer(
+    AuthGrpcMetadataBinding, AuthGrpcNicknameBinding, DefaultGrpcServer
+):
+    pass
 ```
 
 A signed-in user has what its groups grant, `signed_in` first, a group of
