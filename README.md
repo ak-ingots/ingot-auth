@@ -127,6 +127,17 @@ if isinstance(result, AuthSignedIn):
     token = result.token  # the client sends it with each call
 ```
 
+A step of the sign-in replies no sooner than the strategy of its timing
+says, which the application declares, as the sign-in has none, so that the
+time of a reply tells nothing of who signed up: `AuthFloorTiming` holds
+every reply, a refusal as a success, to `AUTH_SIGN_IN_MIN_DURATION`
+seconds, over the slowest branch; `AuthNoTiming` holds none.
+
+```python
+class AppSignInUnit(AuthSignInUnit):
+    timing = Slot(AuthFloorTiming)
+```
+
 A signed-in user has what its groups grant, `signed_in` first, a group of
 the core every signed-in user is a member of, none stored, granting the
 `CAN_SIGN_IN` of each method open; an application grants every signed-in
@@ -193,6 +204,7 @@ Set as environment variables with the prefix of the project
 | `AUTH_ATTEMPT_MAX_FAILURES` | `5` | the answers refused before an attempt is over |
 | `AUTH_SESSION_TTL` | `2592000` | the seconds a session of `AuthFixedLifetime` lives, 30 days |
 | `AUTH_SESSION_CACHE_TTL` | `300` | the seconds a session and its caller stay in the cache |
+| `AUTH_SIGN_IN_MIN_DURATION` | `0.3` | the seconds a step of the sign-in replies no sooner than, with `AuthFloorTiming` |
 
 ## Development
 
