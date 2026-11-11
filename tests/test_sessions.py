@@ -10,8 +10,8 @@ from ingots.puer import Slot
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit
+from ingot_auth.caches import AuthCaller
 from ingot_auth.sessions import (
-    AuthCaller,
     AuthFixedLifetime,
     AuthSessionExpiredError,
     AuthSessionsUnit,

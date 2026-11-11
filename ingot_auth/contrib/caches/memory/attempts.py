@@ -5,7 +5,7 @@ __all__ = ("AuthMemoryAttemptsCache",)
 import datetime
 import typing as t
 
-from ingot_auth.methods import (
+from ingot_auth.caches import (
     AuthAttempt,
     AuthAttemptNotFoundError,
     BaseAuthAttemptsCache,

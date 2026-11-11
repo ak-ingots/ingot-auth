@@ -12,10 +12,9 @@ from ingots.defaults.operations import (
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
+from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError
 from ingot_auth.contrib.caches.memory import AuthMemoryAttemptsCache
 from ingot_auth.methods import (
-    AuthAttempt,
-    AuthAttemptNotFoundError,
     AuthMethodInvalidError,
     AuthMethodNotFoundError,
     AuthMethodRefusedError,

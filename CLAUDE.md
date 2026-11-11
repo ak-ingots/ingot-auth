@@ -35,8 +35,10 @@ against, each taking a part of a context by its protocol, bound to a preset
 by class with a config; the `sign_up/` flow; the storages `storages/`, the
 interfaces a backend implements with what they keep and raise, depending on
 no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
-with the transactions of a backend over all its storages; and the cache
-`cache/`, abstract, a unit a subdomain); a unit lives in the
+with the transactions of a backend over all its storages; and the caches
+`caches/`, the same for what lives minutes, the attempts, the sessions and
+their callers, `AuthCache` the facade, depending on the storages alone, for
+the records they keep too); a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking

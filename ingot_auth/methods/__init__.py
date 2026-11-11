@@ -11,8 +11,6 @@ catalogue an application takes from, declaring those it takes as slots of
 """
 
 __all__ = (
-    "AuthAttempt",
-    "AuthAttemptNotFoundError",
     "AuthChallenge",
     "AuthMethodError",
     "AuthMethodInvalidError",
@@ -22,7 +20,6 @@ __all__ = (
     "AuthMethodsUnit",
     "AuthStep",
     "AuthVerified",
-    "BaseAuthAttemptsCache",
     "BaseAuthMethod",
 )
 
@@ -30,10 +27,8 @@ import typing as t
 
 from ingots.puer import Slot, Unit
 
-from .attempts import AuthAttempt, BaseAuthAttemptsCache
 from .base import BaseAuthMethod
 from .errors import (
-    AuthAttemptNotFoundError,
     AuthMethodError,
     AuthMethodInvalidError,
     AuthMethodNotFoundError,

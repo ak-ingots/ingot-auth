@@ -5,7 +5,7 @@ __all__ = ("AuthMemoryCallersCache",)
 import datetime
 import typing as t
 
-from ingot_auth.sessions import AuthCaller, BaseAuthCallersCache
+from ingot_auth.caches import AuthCaller, BaseAuthCallersCache
 
 if t.TYPE_CHECKING:
     from ingots.puer import Project
