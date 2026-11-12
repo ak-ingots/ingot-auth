@@ -114,29 +114,39 @@ class AuthSessionsCacheContract(BaseAuthContract):
 
 
 class AuthCallersCacheContract(BaseAuthContract):
-    """The callers of a cache, by the hashes of the tokens of their sessions."""
+    """
+    The callers of a cache, by the hashes of the tokens of their sessions and
+    the digests of the groups they were formed by.
+    """
 
     async def test_a_caller_is_got_as_put(self) -> None:
         callers = self.project.auth.cache.callers
-        await callers.put("h1", CALLER, in_seconds(60))
-        self.assertEqual(await callers.get("h1"), CALLER)
+        await callers.put("h1", "g1", CALLER, in_seconds(60))
+        self.assertEqual(await callers.get("h1", "g1"), CALLER)
 
     async def test_a_caller_missed_is_none(self) -> None:
         callers = self.project.auth.cache.callers
-        await callers.put("h1", CALLER, in_seconds(60))
-        self.assertIsNone(await callers.get("h2"))
+        await callers.put("h1", "g1", CALLER, in_seconds(60))
+        self.assertIsNone(await callers.get("h2", "g1"))
+
+    async def test_a_caller_of_other_groups_is_none(self) -> None:
+        callers = self.project.auth.cache.callers
+        await callers.put("h1", "g1", CALLER, in_seconds(60))
+        self.assertIsNone(await callers.get("h1", "g2"))
 
     async def test_an_expired_caller_is_none(self) -> None:
         callers = self.project.auth.cache.callers
-        await callers.put("h1", CALLER, in_seconds(-1))
-        self.assertIsNone(await callers.get("h1"))
+        await callers.put("h1", "g1", CALLER, in_seconds(-1))
+        self.assertIsNone(await callers.get("h1", "g1"))
 
     async def test_a_forgotten_caller_is_none(self) -> None:
         callers = self.project.auth.cache.callers
-        await callers.put("h1", CALLER, in_seconds(60))
-        await callers.forget("h1")
-        await callers.forget("h2")
-        self.assertIsNone(await callers.get("h1"))
+        await callers.put("h1", "g1", CALLER, in_seconds(60))
+        await callers.put("h2", "g1", CALLER, in_seconds(60))
+        await callers.forget("h1", "g1")
+        await callers.forget("h3", "g1")
+        self.assertIsNone(await callers.get("h1", "g1"))
+        self.assertEqual(await callers.get("h2", "g1"), CALLER)
 
 
 def in_seconds(seconds: float) -> datetime.datetime:

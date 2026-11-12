@@ -60,6 +60,11 @@ class AuthSessionsStorage(Unit):
         return await self._find(token_hash)
 
     @t.final
+    async def get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        """The open sessions of a profile, by the time they opened."""
+        return await self._get_open(uid)
+
+    @t.final
     async def close(
         self,
         session_id: str,
@@ -80,6 +85,10 @@ class AuthSessionsStorage(Unit):
     @abc.abstractmethod
     async def _find(self, token_hash: str) -> AuthSessionRecord:
         raise NotImplementedError(f"{type(self).__qualname__}._find")
+
+    @abc.abstractmethod
+    async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        raise NotImplementedError(f"{type(self).__qualname__}._get_open")
 
     @abc.abstractmethod
     async def _close(

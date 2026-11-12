@@ -48,7 +48,9 @@ class AuthSessionsUnit(CliUnit):
     the strategy of their lifetime in the slot ``lifetime``, none by default,
     which a project declares. A sign-in opens a session and gives its token;
     a request brings the token, and :meth:`authenticate` turns it into the
-    caller, from the cache, or from the storage and the access on a miss.
+    caller, from the cache, or from the storage and the access on a miss. A
+    change of what a caller holds forgets the callers of the profile,
+    :meth:`forget_callers`.
     """
 
     cli_name = "sessions"
@@ -104,16 +106,30 @@ class AuthSessionsUnit(CliUnit):
         if reason is not None:
             await self._expire(session, reason, now)
             raise AuthSessionExpiredError.for_reason(reason)
-        caller = await cache.callers.get(token_hash)
+        access = self.project.auth.access
+        groups_digest = access.groups.get_digest()
+        caller = await cache.callers.get(token_hash, groups_digest)
         if caller is None:
-            permissions = await self.project.auth.access.permissions.get_permissions(
-                session.uid
-            )
+            permissions = await access.permissions.get_permissions(session.uid)
             caller = AuthCaller(
                 uid=session.uid, session_id=session.id, permissions=permissions
             )
-            await cache.callers.put(token_hash, caller, now + self._get_cache_ttl())
+            expires_at = now + self._get_cache_ttl()
+            await cache.callers.put(token_hash, groups_digest, caller, expires_at)
         return caller
+
+    @t.final
+    async def forget_callers(self, uid: str) -> None:
+        """
+        Forgets the callers of the open sessions of a profile in the cache, the
+        sessions kept: the next request of each forms its caller again, signed
+        in still. Called once the storage keeps a change of what a caller
+        holds, a membership of a group.
+        """
+        groups_digest = self.project.auth.access.groups.get_digest()
+        callers = self.project.auth.cache.callers
+        for session in await self.project.auth.storage.sessions.get_open(uid):
+            await callers.forget(session.token_hash, groups_digest)
 
     def _create_id(self) -> str:
         """The id of a new session: random, as the uids are."""
@@ -139,7 +155,8 @@ class AuthSessionsUnit(CliUnit):
             pass  # closed meanwhile, by another request
         cache = self.project.auth.cache
         await cache.sessions.forget(session.token_hash)
-        await cache.callers.forget(session.token_hash)
+        groups_digest = self.project.auth.access.groups.get_digest()
+        await cache.callers.forget(session.token_hash, groups_digest)
 
 
 def _hash_token(token: str) -> str:

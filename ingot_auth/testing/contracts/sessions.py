@@ -15,20 +15,28 @@ from .base import BaseAuthContract
 from .profiles import NOW
 
 
-def create_session(session_id: str = "s1", token_hash: str = "h1") -> AuthSessionRecord:
+def create_session(
+    session_id: str = "s1",
+    token_hash: str = "h1",
+    uid: str = "a1",
+    opened_at: datetime.datetime = NOW,
+) -> AuthSessionRecord:
     """An open session, its values one of each type."""
     return AuthSessionRecord(
         id=session_id,
-        uid="a1",
+        uid=uid,
         method="nickname",
         token_hash=token_hash,
         attr_values={1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: NOW, 5: "iPhone"},
-        opened_at=NOW,
+        opened_at=opened_at,
     )
 
 
 class AuthSessionsStorageContract(BaseAuthContract):
-    """The sessions of a storage: found open by the hash of the token."""
+    """
+    The sessions of a storage: found open by the hash of the token, and by the
+    uid of their profile.
+    """
 
     async def test_an_open_session_is_found_as_opened(self) -> None:
         sessions = self.project.auth.storage.sessions
@@ -51,6 +59,18 @@ class AuthSessionsStorageContract(BaseAuthContract):
         with self.assertRaises(AuthSessionNotFoundError):
             await sessions.find("h1")
         self.assertEqual((await sessions.find("h2")).id, "s2")
+
+    async def test_the_open_sessions_of_a_profile_come_as_opened(self) -> None:
+        sessions = self.project.auth.storage.sessions
+        later = NOW + datetime.timedelta(hours=1)
+        first = create_session("s3", "h3")
+        second = create_session("s1", "h1", opened_at=later)
+        for session in (second, create_session("s2", "h2", uid="b2"), first):
+            await sessions.open(session)
+        await sessions.open(create_session("s4", "h4"))
+        await sessions.close("s4", AuthSessionCloseReason.SIGNED_OUT, later)
+        self.assertEqual(await sessions.get_open("a1"), (first, second))
+        self.assertEqual(await sessions.get_open("c3"), ())
 
     async def test_a_session_is_closed_once(self) -> None:
         sessions = self.project.auth.storage.sessions

@@ -49,6 +49,19 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
         raise AuthSessionNotFoundError.for_token()
 
     @t.override
+    async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        return tuple(
+            sorted(
+                (
+                    session
+                    for session in self._sessions.values()
+                    if session.uid == uid and session.closed_at is None
+                ),
+                key=lambda session: (session.opened_at, session.id),
+            )
+        )
+
+    @t.override
     async def _close(
         self,
         session_id: str,

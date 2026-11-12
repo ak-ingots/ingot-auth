@@ -33,7 +33,8 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
     """
     The storage of the sessions in MongoDB: a document a session, its id the
     ``_id``, a unique index over the hashes of the tokens, which a request
-    finds an open one by; and the storages of its slots.
+    finds an open one by, and one over the uids, which the open sessions of a
+    profile are found by; and the storages of its slots.
     """
 
     MONGODB_COLLECTION: t.ClassVar[str] = "auth_sessions"
@@ -67,14 +68,15 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         )
         if document is None:
             raise AuthSessionNotFoundError.for_token()
-        return AuthSessionRecord(
-            id=document["_id"],
-            uid=document["uid"],
-            method=document["method"],
-            token_hash=document["token_hash"],
-            attr_values=build_attr_values(document["attr_values"]),
-            opened_at=document["opened_at"],
-        )
+        return _build_open_session(document)
+
+    @t.override
+    async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        collection = await self._mongodb_get_collection()
+        documents = collection.find(
+            {"uid": uid, "closed_at": None}, session=self._mongodb_get_session()
+        ).sort([("opened_at", 1), ("_id", 1)])
+        return tuple([_build_open_session(document) async for document in documents])
 
     @t.override
     async def _close(
@@ -97,3 +99,15 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         self, collection: "AsyncCollection[Document]"
     ) -> None:
         await collection.create_index("token_hash", unique=True)
+        await collection.create_index([("uid", 1), ("closed_at", 1)])
+
+
+def _build_open_session(document: "Document") -> AuthSessionRecord:
+    return AuthSessionRecord(
+        id=document["_id"],
+        uid=document["uid"],
+        method=document["method"],
+        token_hash=document["token_hash"],
+        attr_values=build_attr_values(document["attr_values"]),
+        opened_at=document["opened_at"],
+    )

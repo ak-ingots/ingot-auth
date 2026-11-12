@@ -149,6 +149,22 @@ class GroupsTestCase(unittest.TestCase):
             ),
         )
 
+    def test_the_digest_is_of_what_the_groups_grant(self) -> None:
+        digest = self.groups.get_digest()
+        project: AuthMemoryProject = AppProject()
+        self.assertEqual(project.auth.access.groups.get_digest(), digest)
+        for project in (AuthMemoryProject(), SignedInProject()):
+            self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
+        refund = Permissions(ShopPermissions.CAN_REFUND)
+        with mock.patch.object(BuyersGroup, "_get_permissions", return_value=refund):
+            project = AppProject()
+            self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
+
+    def test_the_digest_is_computed_once(self) -> None:
+        digest = self.groups.get_digest()
+        with mock.patch.object(BuyersGroup, "_get_permissions", side_effect=OSError):
+            self.assertEqual(self.groups.get_digest(), digest)
+
     def test_the_core_declares_signed_in_alone(self) -> None:
         project = AuthMemoryProject()
         groups = project.auth.access.groups
