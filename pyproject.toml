@@ -29,6 +29,7 @@ pymongo = ["ingot-pymongo>=0.13.0,<0.14"]
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
 changelog = "https://github.com/ak-ingots/ingot-auth/blob/main/CHANGELOG.md"
+documentation = "https://ingots.readthedocs.io/projects/ingot-auth/"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14"]
