@@ -19,28 +19,33 @@ class AuthMemoryCallersCache(BaseAuthCallersCache):
 
     def __init__(self, project: "Project") -> None:
         super().__init__(project)
-        self._callers: dict[str, tuple[AuthCaller, datetime.datetime]] = {}
+        self._callers: dict[tuple[str, str], tuple[AuthCaller, datetime.datetime]] = {}
 
     @t.override
-    async def _get(self, token_hash: str) -> AuthCaller | None:
+    async def _get(self, token_hash: str, groups_digest: str) -> AuthCaller | None:
+        key = (token_hash, groups_digest)
         try:
-            caller, expires_at = self._callers[token_hash]
+            caller, expires_at = self._callers[key]
         except KeyError:
             return None
         if expires_at <= self._get_now():
-            del self._callers[token_hash]
+            del self._callers[key]
             return None
         return caller
 
     @t.override
     async def _put(
-        self, token_hash: str, caller: AuthCaller, expires_at: datetime.datetime
+        self,
+        token_hash: str,
+        groups_digest: str,
+        caller: AuthCaller,
+        expires_at: datetime.datetime,
     ) -> None:
-        self._callers[token_hash] = (caller, expires_at)
+        self._callers[token_hash, groups_digest] = (caller, expires_at)
 
     @t.override
-    async def _forget(self, token_hash: str) -> None:
-        self._callers.pop(token_hash, None)
+    async def _forget(self, token_hash: str, groups_digest: str) -> None:
+        self._callers.pop((token_hash, groups_digest), None)
 
     def _get_now(self) -> datetime.datetime:
         return datetime.datetime.now(datetime.UTC)

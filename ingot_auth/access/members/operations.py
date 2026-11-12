@@ -55,7 +55,8 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
 
 class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
-    Adds a user to a group; a member already stays one.
+    Adds a user to a group; a member already stays one. The callers of the
+    user are forgotten in the cache: its next request has the group.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
         ``signed_in``, of every signed-in user.
@@ -71,11 +72,14 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
         self._check_group(parameters.group)
         await self._check_uid(parameters.uid)
         await self._get_storage().add(parameters)
+        await self.project.auth.sessions.forget_callers(parameters.uid)
 
 
 class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     """
-    Removes a user from a group; one not a member is no error.
+    Removes a user from a group; one not a member is no error. The callers
+    of the user are forgotten in the cache: its next request has the group
+    no more.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
         ``signed_in``, of every signed-in user.
@@ -91,6 +95,7 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
         self._check_group(parameters.group)
         await self._check_uid(parameters.uid)
         await self._get_storage().remove(parameters)
+        await self.project.auth.sessions.forget_callers(parameters.uid)
 
 
 class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):

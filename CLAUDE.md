@@ -16,7 +16,9 @@ a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`, the sessions themselves kept by the hash
 of their token, their lifetime a strategy in the slot `lifetime`, none by
 default, and `authenticate()` turning a token into an `AuthCaller`, the
-session and the caller cached apart; the `access/`, its `groups/` entities
+session and the caller cached apart, the caller by the digest of the groups
+too, its callers forgotten by `forget_callers()` on a change of the
+memberships; the `access/`, its `groups/` entities
 in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its
 `members/` the memberships in the storage, `signed_in` of the core, of every
 signed-in user, none stored, granting the sign-in of each method open, and

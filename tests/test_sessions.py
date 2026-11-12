@@ -4,7 +4,7 @@ import typing as t
 import unittest
 from unittest import mock
 
-from ingots.defaults.operations import PermissionFlags, Permissions
+from ingots.defaults.operations import ROOT_CALLER, PermissionFlags, Permissions
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
@@ -19,11 +19,13 @@ from ingot_auth.sessions import (
 )
 from ingot_auth.storages import (
     AuthMembership,
+    AuthProfile,
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
 )
 
 DAY: t.Final = datetime.timedelta(days=1)
+NOW: t.Final = datetime.datetime(2026, 11, 12, tzinfo=datetime.UTC)
 
 
 class ShopPermissions(PermissionFlags, domain="shop"):
@@ -65,6 +67,12 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.storage.access.members.add(
             AuthMembership(group="buyers", uid="a1")
         )
+
+    async def run_operation(self, factory: t.Any, parameters: t.Any) -> t.Any:
+        """Runs an operation as the root."""
+        operations = self.project.operations
+        metadata = operations.create_metadata(ROOT_CALLER)
+        return await operations.runner.run(factory, parameters, metadata)
 
     def travel(self, delta: datetime.timedelta) -> None:
         """Makes the sessions and their caches see a time that far ahead."""
@@ -162,6 +170,50 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (await self.sessions.authenticate(token)).permissions, Permissions()
         )
+
+    async def test_a_change_of_the_groups_of_a_user_shows_on_its_next_request(
+        self,
+    ) -> None:
+        self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
+        storage = self.project.auth.storage
+        for uid in ("a1", "b2"):
+            await storage.profiles.create(AuthProfile(uid=uid, created_at=NOW))
+        await storage.access.members.add(AuthMembership(group="buyers", uid="b2"))
+        tokens = [
+            (await self.sessions.open(uid, "nickname", {})).token
+            for uid in ("a1", "a1", "b2")
+        ]
+        for token in tokens:
+            await self.sessions.authenticate(token)
+        members = self.project.auth.access.members
+        membership = AuthMembership(group="buyers", uid="a1")
+        buyer = Permissions(ShopPermissions.CAN_BUY)
+        for factory, permissions in (
+            (members.op_remove, Permissions()),
+            (members.op_add, buyer),
+        ):
+            await self.run_operation(factory, membership)
+            for token in tokens[:2]:
+                caller = await self.sessions.authenticate(token)
+                self.assertEqual(caller.permissions, permissions)
+            # the other user is not forgotten, its sessions are kept
+            with mock.patch.object(
+                type(storage.access.members), "_get_groups", side_effect=OSError
+            ):
+                caller = await self.sessions.authenticate(tokens[2])
+            self.assertEqual(caller.permissions, buyer)
+        self.assertEqual(len(await storage.sessions.get_open("a1")), 2)
+
+    async def test_a_caller_formed_by_other_groups_is_formed_again(self) -> None:
+        token = (await self.sessions.open("a1", "nickname", {})).token
+        await self.sessions.authenticate(token)
+        await self.project.auth.storage.access.members.remove(
+            AuthMembership(group="buyers", uid="a1")
+        )
+        groups = self.project.auth.access.groups
+        with mock.patch.object(type(groups), "get_digest", return_value="deployed"):
+            caller = await self.sessions.authenticate(token)
+        self.assertEqual(caller.permissions, Permissions())
 
     async def test_a_session_closed_in_the_storage_ends_past_the_cache(self) -> None:
         token = (await self.sessions.open("a1", "nickname", {})).token

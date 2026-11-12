@@ -22,6 +22,8 @@ __all__ = (
     "AuthSignedInGroup",
 )
 
+import hashlib
+import json
 import re
 import typing as t
 
@@ -56,6 +58,8 @@ class AuthGroupsUnit(CliUnit):
 
     signed_in = Slot(AuthSignedInGroup)
 
+    _digest: str
+
     @t.override
     @classmethod
     def __init_subclass__(cls, **kwargs: t.Any) -> None:
@@ -86,3 +90,22 @@ class AuthGroupsUnit(CliUnit):
             return self.slots_find_entity(name, AuthGroup)
         except LookupError:
             raise AuthGroupNotFoundError.for_name(name) from None
+
+    @t.final
+    def get_digest(self) -> str:
+        """
+        A digest of the groups and what each grants, computed once, as they
+        change with a deploy only: the key of a caller in the cache holds it,
+        so that a deploy changing them finds none of the callers formed
+        before.
+        """
+        try:
+            return self._digest
+        except AttributeError:
+            pass
+        grants = sorted(
+            (group.get_name(), sorted(group.get_permissions().items()))
+            for group in self.get_all()
+        )
+        self._digest = hashlib.sha256(json.dumps(grants).encode()).hexdigest()
+        return self._digest
