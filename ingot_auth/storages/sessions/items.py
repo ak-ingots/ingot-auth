@@ -41,8 +41,9 @@ class AuthSessionRecord:
     A session, open or closed, the record of a sign-in: ``id`` is public, and
     never authenticates; ``token_hash`` is the sha256 of the token, which the
     server never keeps. ``attr_values`` are the values of the attributes of
-    the session, by their ids. A closed one has the time and the reason it
-    closed at.
+    the session, by their ids. ``seen_at`` is the time it was seen at last,
+    that of its sign-in at first, written as the strategy of the lifetime
+    says. A closed one has the time and the reason it closed at.
     """
 
     id: str
@@ -51,6 +52,7 @@ class AuthSessionRecord:
     token_hash: str
     attr_values: "Mapping[int, AuthAttrValue]"
     opened_at: datetime.datetime
+    seen_at: datetime.datetime
     closed_at: datetime.datetime | None = None
     close_reason: AuthSessionCloseReason | None = None
 

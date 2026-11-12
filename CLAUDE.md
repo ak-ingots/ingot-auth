@@ -15,8 +15,9 @@ and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`, the sessions themselves kept by the hash
 of their token, their lifetime a strategy in the slot `lifetime`, none by
-default, and `authenticate()` turning a token into an `AuthCaller`, the
-session and the caller cached apart, the caller by the digest of the groups
+default, sliding, fixed or both, the time seen written once an interval,
+and `authenticate()` turning a token into an `AuthCaller`, the session and
+the caller cached apart, the caller by the digest of the groups
 too, its callers forgotten by `forget_callers()` on a change of the
 memberships; the `access/`, its `groups/` entities
 in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its

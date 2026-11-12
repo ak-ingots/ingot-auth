@@ -29,6 +29,7 @@ def create_session(
         token_hash=token_hash,
         attr_values={1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: NOW, 5: "iPhone"},
         opened_at=opened_at,
+        seen_at=opened_at,
     )
 
 
@@ -71,6 +72,25 @@ class AuthSessionsStorageContract(BaseAuthContract):
         await sessions.close("s4", AuthSessionCloseReason.SIGNED_OUT, later)
         self.assertEqual(await sessions.get_open("a1"), (first, second))
         self.assertEqual(await sessions.get_open("c3"), ())
+
+    async def test_an_open_session_is_found_as_seen(self) -> None:
+        sessions = self.project.auth.storage.sessions
+        await sessions.open(create_session())
+        await sessions.open(create_session("s2", "h2"))
+        seen_at = NOW + datetime.timedelta(hours=1)
+        await sessions.touch("s1", seen_at)
+        self.assertEqual((await sessions.find("h1")).seen_at, seen_at)
+        self.assertEqual((await sessions.get_open("a1"))[0].seen_at, seen_at)
+        self.assertEqual((await sessions.find("h2")).seen_at, NOW)
+
+    async def test_a_closed_session_is_not_seen(self) -> None:
+        sessions = self.project.auth.storage.sessions
+        await sessions.open(create_session())
+        await sessions.close("s1", AuthSessionCloseReason.SIGNED_OUT, NOW)
+        for session_id in ("s1", "s2"):
+            with self.assertRaises(AuthSessionNotFoundError) as error:
+                await sessions.touch(session_id, NOW)
+            self.assertIn(session_id, str(error.exception))
 
     async def test_a_session_is_closed_once(self) -> None:
         sessions = self.project.auth.storage.sessions

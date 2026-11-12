@@ -62,15 +62,25 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
         )
 
     @t.override
+    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+        session = self._find_open(session_id)
+        self._sessions[session_id] = dataclasses.replace(session, seen_at=seen_at)
+
+    @t.override
     async def _close(
         self,
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
     ) -> None:
-        session = self._sessions.get(session_id)
-        if session is None or session.closed_at is not None:
-            raise AuthSessionNotFoundError.for_id(session_id)
+        session = self._find_open(session_id)
         self._sessions[session_id] = dataclasses.replace(
             session, closed_at=closed_at, close_reason=reason
         )
+
+    def _find_open(self, session_id: str) -> AuthSessionRecord:
+        """:raises AuthSessionNotFoundError: no session of the id is open."""
+        session = self._sessions.get(session_id)
+        if session is None or session.closed_at is not None:
+            raise AuthSessionNotFoundError.for_id(session_id)
+        return session
