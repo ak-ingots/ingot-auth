@@ -11,8 +11,8 @@ from ingot_auth.metadata import AuthMetadata, AuthMethodMetadata
 from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
+    AuthEmailCodeMethod,
     AuthEmailCodePermissions,
-    BaseAuthEmailCodeMethod,
 )
 from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
@@ -23,19 +23,13 @@ from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 
 
-class EmailCodeMethod(BaseAuthEmailCodeMethod):
-    @t.override
-    async def _send_code(self, email: str, code: str) -> None:
-        pass
-
-
 class NoFlowMethod(BaseAuthMethod[str, str, None]):
     pass
 
 
 class TstMethodsUnit(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
-    email_code = Slot(EmailCodeMethod)
+    email_code = Slot(AuthEmailCodeMethod)
     no_flow = Slot(NoFlowMethod)
 
 
