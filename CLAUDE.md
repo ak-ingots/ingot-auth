@@ -28,14 +28,16 @@ steps kept by attempts, a hook to start each flow they take, their flows
 their permissions too, a domain a method, its flag a flow by a hook
 (`_get_<flow>_permissions`), given by the toggles, each naming
 the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
-`(kind, value)` bound to a profile once whatever method, their presets of
-the policies their slots `preset_<flow>_<field>`, each of a class and a
-context of its own, the context made by the method; the password of the
+`(kind, value)` bound to a profile once whatever method, their groups of
+the policies their slots `policies_<flow>_<field>`, each a `Factories` of
+ingots typed by its parameters, made by the method, which runs the group
+together (`run_group`); the password of the
 profile in `methods/password/`, the slot `password` of the methods, not a
-method, its hash the secret of the uid in `storages/profiles/secrets.py`, its preset
-`preset_set` of a new one by any method; the `policies/`, rules a value is checked
-against, each taking a part of a context by its protocol, bound to a preset
-by class with a config; the `sign_up/` and `sign_in/` flows, over the base
+method, its hash the secret of the uid in `storages/profiles/secrets.py`, its group
+`policies_set` of a new one by any method; the `policies/`, rules a value is checked
+against, each an operation taking a part of its parameters by a protocol,
+raising `AuthPolicyViolationError` with its name, configured by the `CONFIG`
+of its class; the `sign_up/` and `sign_in/` flows, over the base
 of the flows of the methods, `methods/operations.py`, the sign-in opening a
 session, its replies held by the strategy in its slot `timing`, none by
 default; the storages `storages/`, the

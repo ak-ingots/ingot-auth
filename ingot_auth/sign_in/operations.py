@@ -58,9 +58,12 @@ class BaseAuthSignInOperation[ParametersType](
 
     @t.override
     async def _start_method(
-        self, method: "BaseAuthMethod[t.Any, t.Any, t.Any]", parameters: object
+        self,
+        method: "BaseAuthMethod[t.Any, t.Any, t.Any]",
+        parameters: object,
+        metadata: OperationMetadata,
     ) -> AuthStep:
-        return await method.start_sign_in(parameters)
+        return await method.start_sign_in(parameters, metadata)
 
     @t.override
     def _create_challenge(self, attempt_id: str, challenge: object) -> AuthSignInResult:

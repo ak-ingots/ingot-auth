@@ -80,13 +80,13 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         :raises OperationPermissionsError: the caller may not run it by it.
         :raises AuthItemNotFoundError, AuthItemInvalidError: a value is not one
             of an attribute of the client, or not of its type.
-        :raises AuthMethodInvalidError: it breaks a policy of the method.
+        :raises AuthMethodInvalidError: it breaks policies of the method.
         :raises AuthMethodRefusedError: the method refuses what it starts with.
         """
         method = await self.get_method(name, metadata)
         attrs = await self.project.auth.storage.sessions.attrs.get_all()
         check_client_attr_values(attrs, attr_values)
-        step = await self._start_method(method, parameters)
+        step = await self._start_method(method, parameters, metadata)
         return await self.proceed(method, step, attr_values)
 
     @t.final
@@ -154,7 +154,10 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
 
     @abc.abstractmethod
     async def _start_method(
-        self, method: BaseAuthMethod[t.Any, t.Any, t.Any], parameters: object
+        self,
+        method: BaseAuthMethod[t.Any, t.Any, t.Any],
+        parameters: object,
+        metadata: OperationMetadata,
     ) -> AuthStep:
         """The start of the flow of a method, on what the client starts with."""
         raise NotImplementedError(f"{type(self).__qualname__}._start_method")

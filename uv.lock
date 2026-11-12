@@ -462,7 +462,7 @@ doc = [
 requires-dist = [
     { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.12.0,<0.13" },
     { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.13.0,<0.14" },
-    { name = "ingots", specifier = ">=0.33.0,<0.34" },
+    { name = "ingots", specifier = ">=0.33.1,<0.34" },
 ]
 provides-extras = ["grpcio", "pymongo"]
 
@@ -520,11 +520,11 @@ wheels = [
 
 [[package]]
 name = "ingots"
-version = "0.33.0"
+version = "0.33.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/84/21/3ddfbb8b025a5729766fa9dd21e11ab0684f3666df261eb2fb6fb6fdec62/ingots-0.33.0.tar.gz", hash = "sha256:fb857d7ea8d67418934da206f4960564e9a0fdd65749232e4eba1bd9cf6cc584", size = 40354, upload-time = "2026-11-09T20:38:04.88Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/0c/f043c41c028e7f5626d797f0e45ef2d9a60ed2be10dabe0959994aa71042/ingots-0.33.1.tar.gz", hash = "sha256:c8ffa76dafeda25bf16708f3f9b9bc7561d61087ef1ca71dbc99f50fadb00902", size = 42540, upload-time = "2026-11-12T05:11:11.577Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/59/78ae41c7930e826ca6daee7685a6e4e0c05dda9869bcc7dd29096b6518a3/ingots-0.33.0-py3-none-any.whl", hash = "sha256:e02d7cfbc2c9e8b5bb950b70015954d0bd5b6636d710e93d7aae50dda31e3db8", size = 59863, upload-time = "2026-11-09T20:38:03.434Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/b8/e6911cef4fe7d06136195b3a8a6bf1519cd4157b53e2a7829e7c6fdd37ba/ingots-0.33.1-py3-none-any.whl", hash = "sha256:5e0e72c55ec3de33616f1d5205cf4657f6ebd9957c63601c42d929b481579bd6", size = 62484, upload-time = "2026-11-12T05:11:10.032Z" },
 ]
 
 [[package]]

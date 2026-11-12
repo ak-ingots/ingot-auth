@@ -13,10 +13,10 @@ profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers, all of it over gRPC; the sign-up and the
 sign-in by pluggable methods in steps, a nickname and a password, over gRPC
 too, and an email and a code sent to it; the policies of what a user types,
-bound to their presets; the groups of the users, declared in the code, and
-their members, on the command line and over gRPC; the sessions a sign-in
-opens, a token turned into a caller; all of it stored in memory or in
-MongoDB.
+operations run together in groups; the groups of the users, declared in the
+code, and their members, on the command line and over gRPC; the sessions a
+sign-in opens, a token turned into a caller; all of it stored in memory or
+in MongoDB.
 
 ## For Consumers
 
@@ -46,16 +46,23 @@ class AppMethods(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
 ```
 
-the nickname of a sign-up checked by the preset of the policies of the
-method, its slot `preset_sign_up_nickname`, the password by that of the
+the nickname of a sign-up checked by the group of the policies of the
+method, its slot `policies_sign_up_nickname`, the password by that of the
 password, which is of the profile, one whatever identifier it signs in by:
-`preset_set` of `AuthPassword`, the slot `password` of the methods. Both are
-empty unless the application binds policies to them in a subclass, the
-parameters of the hash of the password, scrypt, changed by subclassing too:
+`policies_set` of `AuthPassword`, the slot `password` of the methods. Both
+are empty unless the application gives policies to them in a subclass, each
+an operation, run together, so that a client learns every policy broken at
+once; the parameters of the hash of the password, scrypt, are changed by
+subclassing too:
 
 ```python
+class AppPasswordLength(AuthLengthPolicy):
+    CONFIG = AuthLengthConfig(min=12)
+
+
 class AppPassword(AuthPassword):
-    preset_set = Slot(AppPasswordSetPreset)  # a new password, by any method
+    # a new password, by any method
+    policies_set = AuthPasswordSetPolicies(AppPasswordLength)
 
 
 class AppMethods(AuthMethodsUnit):
@@ -82,7 +89,7 @@ class AppMethods(AuthMethodsUnit):
     email_code = Slot(AppEmailCodeMethod)
 ```
 
-its email checked on a sign-up by its preset `preset_sign_up_email`.
+its email checked on a sign-up by its group `policies_sign_up_email`.
 
 A method bound binds its configs too: the toggles of its flows, on by
 default, which the application mixes into its configs. A toggle closes a

@@ -2,23 +2,28 @@ import typing as t
 import unittest
 from unittest import mock
 
-from ingots.defaults.operations import Caller, Permissions
+from ingots.defaults.operations import (
+    BaseOperation,
+    Caller,
+    OperationMetadata,
+    OperationPermissionsError,
+    Permissions,
+)
 from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
-    AuthNicknameSignUpContext,
-    AuthNicknameSignUpPreset,
     AuthNicknameMethod,
     AuthNicknamePermissions,
+    AuthNicknameSignUpPolicies,
     AuthNicknameStart,
 )
 from ingot_auth.methods.password import (
     AuthHasIdentifiers,
     AuthPassword,
-    AuthPasswordSetContext,
-    AuthPasswordSetPreset,
+    AuthPasswordSetParameters,
+    AuthPasswordSetPolicies,
 )
 from ingot_auth.methods import (
     AuthMethodInvalidError,
@@ -33,9 +38,7 @@ from ingot_auth.policies import (
     AuthHasValue,
     AuthLengthConfig,
     AuthLengthPolicy,
-    AuthPoliciesUnit,
-    AuthPolicyBinding,
-    BaseAuthPolicy,
+    AuthPolicyViolationError,
 )
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
@@ -96,52 +99,37 @@ class TstProject(AuthMemoryProject):
     auth = Slot(TstAuthUnit)
 
 
-class NicknamePreset(AuthNicknameSignUpPreset):
-    @t.override
-    def _get_bindings(
-        self,
-    ) -> dict[str, AuthPolicyBinding[AuthNicknameSignUpContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["chars"] = AuthCharsPolicy.bind(
-            AuthCharsConfig(allowed=AuthChars.LETTERS | AuthChars.DIGITS)
-        )
-        return bindings
+class NicknameChars(AuthCharsPolicy):
+    CONFIG = AuthCharsConfig(allowed=AuthChars.LETTERS | AuthChars.DIGITS)
 
 
 class HasPasswordAndIdentifiers(AuthHasValue, AuthHasIdentifiers, t.Protocol):
     pass
 
 
-class NoIdentifierPolicy(BaseAuthPolicy[HasPasswordAndIdentifiers, None]):
-    """A policy of an application, of a part the context of the password gives."""
+class NoIdentifierPolicy(BaseOperation[HasPasswordAndIdentifiers, None]):
+    """A policy of an application, of a part the parameters of a password give."""
+
+    PERMISSIONS = Permissions()
 
     @t.override
-    async def _accepts(self, context: HasPasswordAndIdentifiers, config: None) -> bool:
-        password = await context.get_value()
-        return not any(i in password for i in await context.get_identifiers())
+    async def _run(
+        self, parameters: HasPasswordAndIdentifiers, metadata: OperationMetadata
+    ) -> None:
+        if any(i in parameters.value for i in parameters.identifiers):
+            raise AuthPolicyViolationError.for_policy("identifier")
 
 
-class PasswordPreset(AuthPasswordSetPreset):
-    @t.override
-    def _get_bindings(
-        self,
-    ) -> dict[str, AuthPolicyBinding[AuthPasswordSetContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=8))
-        bindings["identifier"] = NoIdentifierPolicy.bind(None)
-        return bindings
-
-
-class TstPoliciesUnit(AuthPoliciesUnit):
-    no_identifier = Slot(NoIdentifierPolicy)
+class PasswordLength(AuthLengthPolicy):
+    CONFIG = AuthLengthConfig(min=8)
 
 
 class PolicedNicknameMethod(AuthNicknameMethod):
-    preset_sign_up_nickname = Slot(NicknamePreset)
+    policies_sign_up_nickname = AuthNicknameSignUpPolicies(NicknameChars)
 
 
 class PolicedPassword(TstPassword):
-    preset_set = Slot(PasswordPreset)
+    policies_set = AuthPasswordSetPolicies(PasswordLength, NoIdentifierPolicy)
 
 
 class PolicedMethodsUnit(TstMethodsUnit):
@@ -151,7 +139,6 @@ class PolicedMethodsUnit(TstMethodsUnit):
 
 class TstPoliciesAuthUnit(TstAuthUnit):
     methods = Slot(PolicedMethodsUnit)
-    policies = Slot(TstPoliciesUnit)
 
 
 class TstPoliciesProject(TstProject):
@@ -197,7 +184,8 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def sign_in(self, nickname: str, password: str) -> object:
         start = AuthNicknameStart(nickname=nickname, password=password)
-        return await self.method.start_sign_in(start)
+        metadata = self.project.operations.create_metadata(SIGNING_IN)
+        return await self.method.start_sign_in(start, metadata)
 
     async def test_the_method_is_named_by_its_slot(self) -> None:
         self.assertEqual(self.method.get_name(), "nickname")
@@ -282,26 +270,56 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         secrets = {call.args[2] for call in verify.call_args_list}
         self.assertEqual(len(secrets), 1)
 
-    async def test_the_presets_of_the_core_take_any_nickname_and_password(
+    async def test_the_policies_of_the_core_take_any_nickname_and_password(
         self,
     ) -> None:
         for nickname, password in (("a", ""), ("al ice", "x" * 1000)):
             with self.subTest(nickname=nickname, password=password):
                 await self.sign_up(nickname, password)
 
-    async def test_a_sign_up_keeps_the_presets_of_the_application(self) -> None:
+    async def test_a_sign_up_keeps_the_policies_of_the_application(self) -> None:
         self.project = TstPoliciesProject()
-        for nickname, password, field, binding in (
-            ("al ice", "correct horse", "nickname", "chars"),
-            ("alice", "short", "password", "length"),
-            ("alice", "alice-in-wonderland", "password", "identifier"),
+        for nickname, password, field, policies in (
+            ("al ice", "correct horse", "nickname", ("chars",)),
+            ("alice", "short", "password", ("length",)),
+            ("alice", "alice-in-wonderland", "password", ("identifier",)),
+            ("alice", "alice", "password", ("length", "identifier")),
         ):
             with self.subTest(nickname=nickname, password=password):
                 with self.assertRaises(AuthMethodInvalidError) as error:
                     await self.sign_up(nickname, password)
                 self.assertEqual(error.exception.field, field)
-                self.assertEqual(error.exception.binding, binding)
+                self.assertEqual(error.exception.policies, policies)
         await self.sign_up("Ａlice", "correct horse")
+
+    async def test_the_violations_a_policy_nests_are_told_in_their_order(
+        self,
+    ) -> None:
+        self.project = TstPoliciesProject()
+        nested = ExceptionGroup(
+            "rules",
+            [
+                AuthPolicyViolationError.for_policy("digit"),
+                AuthPolicyViolationError.for_policy("upper"),
+            ],
+        )
+        with mock.patch.object(PasswordLength, "_run", side_effect=nested):
+            with self.assertRaises(AuthMethodInvalidError) as error:
+                await self.sign_up("alice", "alice")
+        self.assertEqual(error.exception.policies, ("digit", "upper", "identifier"))
+
+    async def test_a_policy_failing_otherwise_fails_the_sign_up_as_it_is(
+        self,
+    ) -> None:
+        self.project = TstPoliciesProject()
+        guarded = Permissions(AuthNicknamePermissions.CAN_SIGN_IN)
+        with mock.patch.object(PasswordLength, "PERMISSIONS", guarded):
+            with self.assertRaises(OperationPermissionsError):
+                await self.sign_up("alice", "correct horse")
+        with mock.patch.object(PasswordLength, "_run", side_effect=OSError("down")):
+            with self.assertRaises(ExceptionGroup) as error:
+                await self.sign_up("alice", "correct horse")
+        self.assertIsInstance(error.exception.exceptions[0], OSError)
 
     async def test_a_value_is_checked_normalized(self) -> None:
         self.project = TstPoliciesProject()
@@ -319,15 +337,17 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await profiles.secrets.put(result.uid, secret)
         method = costlier.auth.methods.get("nickname")
         start = AuthNicknameStart(nickname="alice", password="correct horse")
+        metadata = costlier.operations.create_metadata(SIGNING_IN)
         self.assertEqual(
-            await method.start_sign_in(start), AuthVerified(subject="alice")
+            await method.start_sign_in(start, metadata), AuthVerified(subject="alice")
         )
 
-    async def test_a_context_gives_its_parts_and_shows_none(self) -> None:
-        context = AuthPasswordSetContext("correct horse", ("alice",))
-        self.assertEqual(await context.get_value(), "correct horse")
-        self.assertEqual(await context.get_identifiers(), ("alice",))
-        self.assertNotIn("correct horse", repr(context))
+    def test_the_parameters_of_the_policies_show_none_of_their_parts(self) -> None:
+        parameters = AuthPasswordSetParameters(
+            value="correct horse", identifiers=("alice",)
+        )
+        self.assertNotIn("correct horse", repr(parameters))
+        self.assertNotIn("alice", repr(parameters))
 
     def test_the_password_is_not_in_the_repr(self) -> None:
         start = AuthNicknameStart(nickname="alice", password="correct horse")

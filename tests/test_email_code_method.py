@@ -9,10 +9,9 @@ from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.email_code import (
     AuthEmailCodeChallenge,
     AuthEmailCodePermissions,
-    AuthEmailSignUpContext,
-    AuthEmailSignUpPreset,
     AuthEmailCodeStart,
     AuthEmailCodeState,
+    AuthEmailSignUpPolicies,
     BaseAuthEmailCodeMethod,
 )
 from ingot_auth.methods import (
@@ -22,11 +21,7 @@ from ingot_auth.methods import (
     AuthMethodsUnit,
     AuthVerified,
 )
-from ingot_auth.policies import (
-    AuthLengthConfig,
-    AuthLengthPolicy,
-    AuthPolicyBinding,
-)
+from ingot_auth.policies import AuthLengthConfig, AuthLengthPolicy
 from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
@@ -44,20 +39,14 @@ SIGNING_UP: t.Final = Caller(
 )
 
 
-class EmailPreset(AuthEmailSignUpPreset):
-    @t.override
-    def _get_bindings(
-        self,
-    ) -> dict[str, AuthPolicyBinding[AuthEmailSignUpContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(max=20))
-        return bindings
+class EmailLength(AuthLengthPolicy):
+    CONFIG = AuthLengthConfig(max=20)
 
 
 class TstEmailCodeMethod(BaseAuthEmailCodeMethod):
     """Keeps the mail it sends, for the tests to read."""
 
-    preset_sign_up_email = Slot(EmailPreset)
+    policies_sign_up_email = AuthEmailSignUpPolicies(EmailLength)
 
     def __init__(self, project: Project) -> None:
         super().__init__(project)
@@ -145,16 +134,18 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         identities = self.project.auth.storage.profiles.identities
         await identities.find_uid("email", "alice@example.com")
 
-    async def test_a_sign_up_keeps_the_preset_of_the_email(self) -> None:
+    async def test_a_sign_up_keeps_the_policies_of_the_email(self) -> None:
         with self.assertRaises(AuthMethodInvalidError) as error:
             await self.start("alice.liddell@example.com")
         self.assertEqual(error.exception.field, "email")
-        self.assertEqual(error.exception.binding, "length")
+        self.assertEqual(error.exception.policies, ("length",))
         self.assertEqual(self.method.sent, [])
         await self.sign_up("al@b.c")
 
     async def test_the_state_keeps_no_code(self) -> None:
-        step = await self.method.start_sign_up(AuthEmailCodeStart(email="al@b.c"))
+        step = await self.method.start_sign_up(
+            AuthEmailCodeStart(email="al@b.c"), self.metadata
+        )
         assert isinstance(step, AuthChallenge)
         state = t.cast(AuthEmailCodeState, step.state)
         code = self.method.sent[-1][1]
@@ -163,7 +154,9 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_bound_email_signs_in_by_its_code(self) -> None:
         await self.sign_up("al@b.c")
-        step = await self.method.start_sign_in(AuthEmailCodeStart(email="AL@b.c"))
+        step = await self.method.start_sign_in(
+            AuthEmailCodeStart(email="AL@b.c"), self.metadata
+        )
         assert isinstance(step, AuthChallenge)
         code = self.method.sent[-1][1]
         self.assertEqual(
@@ -171,7 +164,9 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_an_unbound_email_is_asked_alike_but_sent_nothing(self) -> None:
-        step = await self.method.start_sign_in(AuthEmailCodeStart(email="al@b.c"))
+        step = await self.method.start_sign_in(
+            AuthEmailCodeStart(email="al@b.c"), self.metadata
+        )
         assert isinstance(step, AuthChallenge)
         self.assertEqual(step.challenge, AuthEmailCodeChallenge(length=6))
         self.assertEqual(self.method.sent, [])
