@@ -1051,10 +1051,10 @@ class ErrorPoliciesTestCase(unittest.TestCase):
             ),
             (
                 errors.auth_method_invalid,
-                AuthMethodInvalidError.for_field("password", "length"),
+                AuthMethodInvalidError.for_field("password", ("length", "chars")),
                 grpc.StatusCode.INVALID_ARGUMENT,
                 "METHOD_INVALID",
-                {"field": "password", "binding": "length"},
+                {"field": "password", "policies": "length,chars"},
             ),
             (
                 errors.auth_method_unsupported,

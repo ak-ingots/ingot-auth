@@ -148,7 +148,10 @@ class AuthGrpcMethodDeniedPolicy(BaseAuthGrpcErrorPolicy):
 
 
 class AuthGrpcMethodInvalidPolicy(BaseAuthGrpcErrorPolicy):
-    """A field breaks a policy of the method: tells the field and the binding."""
+    """
+    A field breaks policies of the method: tells the field and the policies,
+    separated by commas, in the order of their group.
+    """
 
     EXCEPTION = AuthMethodInvalidError
     CODE = grpc.StatusCode.INVALID_ARGUMENT
@@ -157,7 +160,7 @@ class AuthGrpcMethodInvalidPolicy(BaseAuthGrpcErrorPolicy):
     @t.override
     def _get_metadata(self, error: Exception) -> dict[str, str]:
         invalid = t.cast(AuthMethodInvalidError, error)
-        return {"field": invalid.field, "binding": invalid.binding}
+        return {"field": invalid.field, "policies": ",".join(invalid.policies)}
 
 
 class AuthGrpcMethodUnsupportedPolicy(BaseAuthGrpcErrorPolicy):

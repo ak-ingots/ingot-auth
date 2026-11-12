@@ -12,7 +12,7 @@ __all__ = ("AuthTestingMethod", "AuthTestingPermissions", "AuthTestingStart")
 import typing as t
 from dataclasses import dataclass
 
-from ingots.defaults.operations import PermissionFlags, Permissions
+from ingots.defaults.operations import OperationMetadata, PermissionFlags, Permissions
 
 from ingot_auth.methods import (
     AuthChallenge,
@@ -75,11 +75,15 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
         return Permissions(AuthTestingPermissions.CAN_SIGN_IN)
 
     @t.override
-    async def _start_sign_up(self, parameters: AuthTestingStart) -> AuthStep:
+    async def _start_sign_up(
+        self, parameters: AuthTestingStart, metadata: OperationMetadata
+    ) -> AuthStep:
         return self._testing_start(parameters)
 
     @t.override
-    async def _start_sign_in(self, parameters: AuthTestingStart) -> AuthStep:
+    async def _start_sign_in(
+        self, parameters: AuthTestingStart, metadata: OperationMetadata
+    ) -> AuthStep:
         return self._testing_start(parameters)
 
     @t.override

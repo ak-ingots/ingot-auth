@@ -1,8 +1,15 @@
 import typing as t
 import unittest
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from unittest import mock
 
-from ingots.puer import Slot, Unit
+from ingots.defaults.operations import (
+    BaseOperation,
+    Caller,
+    OperationMetadata,
+    Permissions,
+)
+from ingots.puer import BoundFactory, Factories, Factory, Slot, Unit
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.policies import (
@@ -12,185 +19,143 @@ from ingot_auth.policies import (
     AuthHasValue,
     AuthLengthConfig,
     AuthLengthPolicy,
-    AuthPoliciesUnit,
-    AuthPolicyBinding,
-    AuthPolicyNotFoundError,
-    AuthPolicyPreset,
     AuthPolicyViolationError,
-    AuthValueContext,
-    BaseAuthPolicy,
 )
 
 LETTERS_AND_DIGITS: t.Final = AuthChars.LETTERS | AuthChars.DIGITS
+ANONYMOUS: t.Final = Caller(uid="anonymous", permissions=Permissions())
 
 
-class HasCurrent(AuthHasValue, t.Protocol):
-    """A value replacing the current one."""
-
-    async def get_current(self) -> str: ...
-
-
-@dataclass(frozen=True, slots=True)
-class ChangeContext:
-    """The context of a change: the parts of the policies of its preset."""
-
-    value: str
-    current: str
-
-    async def get_value(self) -> str:
-        return self.value
-
-    async def get_current(self) -> str:
-        return self.current
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Value:
+    value: str = field(repr=False)
 
 
-class BannedWordsPolicy(BaseAuthPolicy[AuthHasValue, frozenset[str]]):
+class HasCurrent(t.Protocol):
+    """Parameters replacing a current value."""
+
+    @property
+    def current(self) -> str: ...
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class ChangeParameters:
+    """The parameters of a change: the parts of the policies of its group."""
+
+    value: str = field(repr=False)
+    current: str = field(repr=False)
+
+
+class HasValueAndCurrent(AuthHasValue, HasCurrent, t.Protocol):
+    pass
+
+
+class ChangedPolicy(BaseOperation[HasValueAndCurrent, None]):
+    """A policy of an application, of the parts a change gives."""
+
+    PERMISSIONS = Permissions()
+
     @t.override
-    async def _accepts(self, context: AuthHasValue, config: frozenset[str]) -> bool:
-        return await context.get_value() not in config
+    async def _run(
+        self, parameters: HasValueAndCurrent, metadata: OperationMetadata
+    ) -> None:
+        if parameters.value == parameters.current:
+            raise AuthPolicyViolationError.for_policy("changed")
 
 
-class ChangedPolicy(BaseAuthPolicy[HasCurrent, None]):
-    @t.override
-    async def _accepts(self, context: HasCurrent, config: None) -> bool:
-        return await context.get_value() != await context.get_current()
+class RangeLength(AuthLengthPolicy):
+    CONFIG = AuthLengthConfig(min=2, max=3)
 
 
-class UnboundPolicy(BaseAuthPolicy[AuthHasValue, None]):
-    @t.override
-    async def _accepts(self, context: AuthHasValue, config: None) -> bool:
-        return True
+class NicknameChars(AuthCharsPolicy):
+    CONFIG = AuthCharsConfig(allowed=LETTERS_AND_DIGITS, extra="_")
 
 
-class StrictLengthPolicy(AuthLengthPolicy):
-    @t.override
-    async def _accepts(self, context: AuthHasValue, config: AuthLengthConfig) -> bool:
-        value = await context.get_value()
-        return value.isascii() and await super()._accepts(context, config)
+class StrongChars(AuthCharsPolicy):
+    CONFIG = AuthCharsConfig(required=AuthChars.DIGITS | AuthChars.SYMBOLS)
 
 
-class NicknamePreset(AuthPolicyPreset[AuthValueContext]):
-    @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=3, max=8))
-        bindings["chars"] = AuthCharsPolicy.bind(
-            AuthCharsConfig(allowed=LETTERS_AND_DIGITS, extra="._-")
-        )
-        return bindings
+class TstPoliciesUnit(Unit):
+    """The policies and a group of them, as a method holds them."""
 
-
-class AppNicknamePreset(NicknamePreset):
-    @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=5))
-        del bindings["chars"]
-        bindings["banned"] = BannedWordsPolicy.bind(frozenset({"admin", "root"}))
-        return bindings
-
-
-class ChangePreset(AuthPolicyPreset[ChangeContext]):
-    @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[ChangeContext, t.Any]]:
-        bindings = super()._get_bindings()
-        bindings["length"] = AuthLengthPolicy.bind(AuthLengthConfig(min=3))
-        bindings["changed"] = ChangedPolicy.bind(None)
-        return bindings
-
-
-class BrokenPreset(AuthPolicyPreset[AuthValueContext]):
-    @t.override
-    def _get_bindings(self) -> dict[str, AuthPolicyBinding[AuthValueContext, t.Any]]:
-        return {"unbound": UnboundPolicy.bind(None)}
-
-
-class TstPoliciesUnit(AuthPoliciesUnit):
-    banned_words = Slot(BannedWordsPolicy)
-    changed = Slot(ChangedPolicy)
-
-
-class TstPresetsUnit(Unit):
-    """The presets, as a method holds them."""
-
-    preset_nickname = Slot(NicknamePreset)
-    preset_app_nickname = Slot(AppNicknamePreset)
-    preset_change = Slot(ChangePreset)
-    preset_broken = Slot(BrokenPreset)
+    length = Factory(AuthLengthPolicy)
+    range_length = Factory(RangeLength)
+    chars = Factory(AuthCharsPolicy)
+    nickname_chars = Factory(NicknameChars)
+    strong_chars = Factory(StrongChars)
+    policies_change = Factories[BaseOperation[ChangeParameters, t.Any]](
+        RangeLength, ChangedPolicy
+    )
 
 
 class TstAuthUnit(AuthMemoryUnit):
     policies = Slot(TstPoliciesUnit)
-    presets = Slot(TstPresetsUnit)
 
 
 class TstProject(AuthMemoryProject):
     auth = Slot(TstAuthUnit)
 
 
-class StrictPoliciesUnit(TstPoliciesUnit):
-    length = Slot(StrictLengthPolicy)
-
-
-class StrictAuthUnit(TstAuthUnit):
-    policies = Slot(StrictPoliciesUnit)
-
-
-class StrictProject(TstProject):
-    auth = Slot(StrictAuthUnit)
-
-
 class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
+    @property
+    def policies(self) -> TstPoliciesUnit:
+        return self.project.auth.policies
+
     @t.override
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
+        self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
         self.project = TstProject()
+        self.metadata = self.project.operations.create_metadata(ANONYMOUS)
 
-    async def assertAccepts[ConfigType](
+    async def get_broken(
+        self, policy: BoundFactory[BaseOperation[Value, None]], value: str
+    ) -> str | None:
+        """The name of the policy the value breaks, ``None`` if it keeps it."""
+        runner = self.project.operations.runner
+        try:
+            await runner.run(policy, Value(value=value), self.metadata)
+        except AuthPolicyViolationError as error:
+            return error.policy
+        return None
+
+    async def assertBroken(
         self,
-        policy: BaseAuthPolicy[AuthHasValue, ConfigType],
-        config: ConfigType,
-        values: dict[str, bool],
+        policy: BoundFactory[BaseOperation[Value, None]],
+        values: dict[str, str | None],
     ) -> None:
-        for value, accepted in values.items():
+        for value, broken in values.items():
             with self.subTest(value=value):
-                context = AuthValueContext(value)
-                self.assertEqual(await policy.accepts(context, config), accepted)
+                self.assertEqual(await self.get_broken(policy, value), broken)
 
     async def test_a_length_is_between_the_limits(self) -> None:
-        policy = self.project.auth.policies.find(AuthLengthPolicy)
-        await self.assertAccepts(
-            policy,
-            AuthLengthConfig(min=2, max=3),
-            {"a": False, "ab": True, "abc": True, "abcd": False},
+        await self.assertBroken(
+            self.policies.range_length,
+            {"a": "length", "ab": None, "abc": None, "abcd": "length"},
         )
-        await self.assertAccepts(policy, AuthLengthConfig(), {"a" * 1000: True})
+
+    async def test_any_length_is_allowed_unless_told(self) -> None:
+        await self.assertBroken(self.policies.length, {"": None, "a" * 1000: None})
 
     async def test_the_chars_are_of_the_sets_allowed_or_extra(self) -> None:
-        await self.assertAccepts(
-            self.project.auth.policies.find(AuthCharsPolicy),
-            AuthCharsConfig(allowed=LETTERS_AND_DIGITS, extra="_"),
+        await self.assertBroken(
+            self.policies.nickname_chars,
             {
-                "alice_7": True,
-                "алиса": True,
-                "ali ce": False,
-                "ali-ce": False,
-                "ali\tce": False,
+                "alice_7": None,
+                "алиса": None,
+                "ali ce": "chars",
+                "ali-ce": "chars",
+                "ali\tce": "chars",
             },
         )
 
     async def test_any_chars_are_allowed_unless_told(self) -> None:
-        await self.assertAccepts(
-            self.project.auth.policies.find(AuthCharsPolicy),
-            AuthCharsConfig(),
-            {"a b\t-": True},
-        )
+        await self.assertBroken(self.policies.chars, {"a b\t-": None})
 
     async def test_the_chars_required_are_there(self) -> None:
-        await self.assertAccepts(
-            self.project.auth.policies.find(AuthCharsPolicy),
-            AuthCharsConfig(required=AuthChars.DIGITS | AuthChars.SYMBOLS),
-            {"horse7!": True, "horse7": False, "horse!": False},
+        await self.assertBroken(
+            self.policies.strong_chars,
+            {"horse7!": None, "horse7": "chars", "horse!": "chars"},
         )
 
     def test_a_char_is_in_its_set(self) -> None:
@@ -200,98 +165,38 @@ class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
             ("²", AuthChars(0)),
             ("€", AuthChars.SYMBOLS),
             ("—", AuthChars.SYMBOLS),
-            (" ", AuthChars.SPACES),
+            (" ", AuthChars.SPACES),
             ("\n", AuthChars(0)),
         ):
             with self.subTest(char=char):
                 self.assertEqual(AuthChars.of(char), chars)
 
-    def test_a_policy_binds_itself_with_a_config(self) -> None:
-        config = AuthLengthConfig(min=3)
-        self.assertEqual(
-            AuthLengthPolicy.bind(config), AuthPolicyBinding(AuthLengthPolicy, config)
-        )
-
-    def test_a_policy_is_found_by_its_class(self) -> None:
-        policies = self.project.auth.policies
-        self.assertIs(policies.find(BannedWordsPolicy), policies.banned_words)
-
-    def test_a_subclass_in_the_slot_is_the_policy_of_its_base(self) -> None:
-        project = StrictProject()
-        policies = project.auth.policies
-        self.assertIsInstance(policies.find(AuthLengthPolicy), StrictLengthPolicy)
-
-    def test_a_policy_in_no_slot_is_not_found(self) -> None:
-        with self.assertRaises(AuthPolicyNotFoundError) as error:
-            self.project.auth.policies.find(UnboundPolicy)
-        name = f"{__name__}.UnboundPolicy"
-        self.assertEqual(error.exception.kind, name)
-        self.assertEqual(str(error.exception), f"no policy of {name}")
-
-
-class PresetsTestCase(unittest.IsolatedAsyncioTestCase):
-    @property
-    def presets(self) -> TstPresetsUnit:
-        return self.project.auth.presets
-
-    @t.override
-    async def asyncSetUp(self) -> None:
-        await super().asyncSetUp()
-        self.project = TstProject()
-
-    async def assertViolates[ContextType](
-        self, preset: AuthPolicyPreset[ContextType], context: ContextType, binding: str
+    async def test_a_group_of_parameters_of_parts_takes_the_policies_of_each(
+        self,
     ) -> None:
-        with self.assertRaises(AuthPolicyViolationError) as error:
-            await preset.check(context)
-        self.assertEqual(error.exception.binding, binding)
-
-    async def test_a_value_keeping_the_policies_passes(self) -> None:
-        await self.presets.preset_nickname.check(AuthValueContext("alice_7"))
-
-    async def test_the_first_broken_binding_is_told(self) -> None:
-        preset = self.presets.preset_nickname
-        await self.assertViolates(preset, AuthValueContext("a!"), "length")
-        await self.assertViolates(preset, AuthValueContext("alice!"), "chars")
-
-    async def test_the_bindings_are_given_in_their_order(self) -> None:
-        bindings = self.presets.preset_nickname.get_bindings()
-        self.assertEqual(list(bindings), ["length", "chars"])
-        self.assertEqual(
-            bindings["length"],
-            AuthLengthPolicy.bind(AuthLengthConfig(min=3, max=8)),
+        group = self.policies.policies_change
+        operations = self.project.operations
+        results = await operations.run_group(
+            group, ChangeParameters(value="al", current="bob"), self.metadata
         )
-        with self.assertRaises(TypeError):
-            bindings["length"] = bindings["chars"]  # type: ignore[index]
+        self.assertIsNone(results.get(ChangedPolicy))
+        for parameters, broken in (
+            (ChangeParameters(value="abcd", current="bob"), ["length"]),
+            (ChangeParameters(value="bob", current="bob"), ["changed"]),
+            (ChangeParameters(value="a", current="a"), ["length", "changed"]),
+        ):
+            with self.subTest(broken=broken):
+                with self.assertRaises(ExceptionGroup) as error:
+                    await operations.run_group(group, parameters, self.metadata)
+                self.assertEqual(
+                    [
+                        t.cast(AuthPolicyViolationError, violation).policy
+                        for violation in error.exception.exceptions
+                    ],
+                    broken,
+                )
 
-    async def test_a_subclass_replaces_drops_and_adds_bindings(self) -> None:
-        preset = self.presets.preset_app_nickname
-        self.assertEqual(list(preset.get_bindings()), ["length", "banned"])
-        await preset.check(AuthValueContext("alice!"))
-        await self.assertViolates(preset, AuthValueContext("bob"), "length")
-        await self.assertViolates(preset, AuthValueContext("admin"), "banned")
-
-    async def test_a_context_of_parts_takes_the_policies_of_each(self) -> None:
-        preset = self.presets.preset_change
-        await preset.check(ChangeContext("alice", current="bob"))
-        await self.assertViolates(preset, ChangeContext("al", "bob"), "length")
-        await self.assertViolates(preset, ChangeContext("bob", "bob"), "changed")
-
-    async def test_a_policy_replaced_in_its_slot_checks_the_bindings(self) -> None:
-        self.project = StrictProject()
-        preset = self.presets.preset_nickname
-        await preset.check(AuthValueContext("alice"))
-        await self.assertViolates(preset, AuthValueContext("алиса"), "length")
-
-    async def test_a_binding_of_a_policy_in_no_slot_fails(self) -> None:
-        with self.assertRaises(AuthPolicyNotFoundError):
-            await self.presets.preset_broken.check(AuthValueContext("a"))
-
-    async def test_a_preset_binds_nothing_unless_told(self) -> None:
-        preset = AuthPolicyPreset[AuthValueContext](self.project)
-        self.assertEqual(dict(preset.get_bindings()), {})
-        await preset.check(AuthValueContext("anything"))
-
-    def test_a_violation_tells_the_binding_only(self) -> None:
-        error = AuthPolicyViolationError.for_binding("length")
-        self.assertEqual(str(error), "the value breaks the policy of 'length'")
+    def test_a_violation_tells_the_policy_only(self) -> None:
+        error = AuthPolicyViolationError.for_policy("length")
+        self.assertEqual(str(error), "the value breaks the policy 'length'")
+        self.assertEqual(error.policy, "length")

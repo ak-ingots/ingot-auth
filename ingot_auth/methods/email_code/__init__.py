@@ -4,8 +4,8 @@ the code, the answer repeats it. The core sends no mail: an application
 extends :class:`BaseAuthEmailCodeMethod` with the sending, by the mail of its
 own, and declares it as a slot of its methods,
 ``email_code = Slot(AppEmailCodeMethod)``. The email of a sign-up is checked by the
-preset of the policies of the method, its slot ``preset_sign_up_email``,
-empty unless an application binds policies to it in its subclass. Its flows
+group of the policies of the method, its slot ``policies_sign_up_email``,
+empty unless an application gives policies to it in its subclass. Its flows
 are toggled by its configs, :class:`AuthEmailCodeConfigs`, which the project
 mixes into its own, and are its permissions, :class:`AuthEmailCodePermissions`.
 """
@@ -16,8 +16,8 @@ __all__ = (
     "AuthEmailCodePermissions",
     "AuthEmailCodeStart",
     "AuthEmailCodeState",
-    "AuthEmailSignUpContext",
-    "AuthEmailSignUpPreset",
+    "AuthEmailSignUpParameters",
+    "AuthEmailSignUpPolicies",
     "BaseAuthEmailCodeMethod",
 )
 
@@ -29,8 +29,7 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
-from ingots.defaults.operations import Permissions
-from ingots.puer import Slot
+from ingots.defaults.operations import OperationMetadata, Permissions
 
 from ingot_auth.methods import (
     AuthChallenge,
@@ -42,9 +41,8 @@ from ingot_auth.methods import (
 from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthEmailCodeConfigs
-from .contexts import AuthEmailSignUpContext
 from .permissions import AuthEmailCodePermissions
-from .presets import AuthEmailSignUpPreset
+from .policies import AuthEmailSignUpParameters, AuthEmailSignUpPolicies
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -90,7 +88,7 @@ class BaseAuthEmailCodeMethod(
     IDENTIFIER_KIND: t.ClassVar[str] = "email"
     CODE_LENGTH: t.ClassVar[int] = 6
 
-    preset_sign_up_email = Slot(AuthEmailSignUpPreset)
+    policies_sign_up_email = AuthEmailSignUpPolicies()
 
     @t.override
     def _get_sign_up_enabled(self) -> bool:
@@ -109,15 +107,22 @@ class BaseAuthEmailCodeMethod(
         return Permissions(AuthEmailCodePermissions.CAN_SIGN_IN)
 
     @t.override
-    async def _start_sign_up(self, parameters: AuthEmailCodeStart) -> AuthStep:
+    async def _start_sign_up(
+        self, parameters: AuthEmailCodeStart, metadata: OperationMetadata
+    ) -> AuthStep:
         email = self._normalize_email(parameters.email)
         await self._check(
-            "email", self.preset_sign_up_email, AuthEmailSignUpContext(email)
+            "email",
+            self.policies_sign_up_email,
+            AuthEmailSignUpParameters(value=email),
+            metadata,
         )
         return await self._send(email)
 
     @t.override
-    async def _start_sign_in(self, parameters: AuthEmailCodeStart) -> AuthStep:
+    async def _start_sign_in(
+        self, parameters: AuthEmailCodeStart, metadata: OperationMetadata
+    ) -> AuthStep:
         email = self._normalize_email(parameters.email)
         identities = self.project.auth.storage.profiles.identities
         try:

@@ -65,22 +65,23 @@ class AuthMethodDeniedError(AuthMethodError):
 
 class AuthMethodInvalidError(AuthMethodError):
     """
-    What a client starts a sign-up with breaks a policy of the method, a
-    password too short, say: the field and the binding of the policy broken
-    are named, the value is not.
+    What a client starts a sign-up with breaks policies of the method, a
+    password too short, say: the field and the policies broken are named, in
+    the order of their group, the value is not.
     """
 
     @classmethod
-    def for_field(cls, field: str, binding: str) -> t.Self:
-        return cls(f"the {field} breaks the policy of {binding!r}", field, binding)
+    def for_field(cls, field: str, policies: tuple[str, ...]) -> t.Self:
+        names = ", ".join(map(repr, policies))
+        return cls(f"the {field} breaks the policies {names}", field, policies)
 
     @property
     def field(self) -> str:
         return t.cast(str, self.args[1])
 
     @property
-    def binding(self) -> str:
-        return t.cast(str, self.args[2])
+    def policies(self) -> tuple[str, ...]:
+        return t.cast(tuple[str, ...], self.args[2])
 
 
 class AuthMethodUnsupportedError(AuthMethodError):

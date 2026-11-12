@@ -7,6 +7,7 @@ from unittest import mock
 from ingots.defaults.operations import (
     ANONYMOUS_CALLER,
     Caller,
+    OperationMetadata,
     OperationPermissionsError,
     PermissionFlags,
     Permissions,
@@ -73,7 +74,9 @@ class OneStepMethod(BaseAuthMethod[str, str, None]):
         return Permissions(OneStepPermissions.CAN_SIGN_UP)
 
     @t.override
-    async def _start_sign_up(self, parameters: str) -> AuthStep:
+    async def _start_sign_up(
+        self, parameters: str, metadata: OperationMetadata
+    ) -> AuthStep:
         return AuthVerified(subject=parameters)
 
 
@@ -86,7 +89,9 @@ class NoFlagMethod(BaseAuthMethod[str, str, None]):
     IDENTIFIER_KIND = "testing"
 
     @t.override
-    async def _start_sign_up(self, parameters: str) -> AuthStep:
+    async def _start_sign_up(
+        self, parameters: str, metadata: OperationMetadata
+    ) -> AuthStep:
         return AuthVerified(subject=parameters)
 
 
@@ -219,10 +224,10 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(error.exception.flow, "sign_up")
         no_flow = self.project.auth.methods.get("no_flow")
         with self.assertRaises(AuthMethodUnsupportedError) as error:
-            await no_flow.start_sign_up("a")
+            await no_flow.start_sign_up("a", self.metadata)
         self.assertEqual(error.exception.flow, "sign_up")
         with self.assertRaises(AuthMethodUnsupportedError) as error:
-            await no_flow.start_sign_in("a")
+            await no_flow.start_sign_in("a", self.metadata)
         self.assertEqual(error.exception.flow, "sign_in")
 
     async def test_a_flow_whose_method_gives_no_flag_of_it_stays_closed(
@@ -234,7 +239,8 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_testing_method_signs_in_as_it_signs_up(self) -> None:
         method = self.project.auth.methods.get("testing")
-        step = await method.start_sign_in(AuthTestingStart(subject="a", secret="h"))
+        start = AuthTestingStart(subject="a", secret="h")
+        step = await method.start_sign_in(start, self.metadata)
         self.assertEqual(step, AuthVerified(subject="a", secret="h"))
 
     async def test_a_refused_answer_keeps_the_attempt_until_the_limit(self) -> None:
@@ -381,8 +387,8 @@ class ErrorsTestCase(unittest.TestCase):
             (AuthMethodNotFoundError.for_name("x"), "no method 'x'"),
             (AuthMethodRefusedError.create(), "the method refuses"),
             (
-                AuthMethodInvalidError.for_field("password", "length"),
-                "the password breaks the policy of 'length'",
+                AuthMethodInvalidError.for_field("password", ("length", "chars")),
+                "the password breaks the policies 'length', 'chars'",
             ),
             (
                 AuthMethodUnsupportedError.for_flow("sign_in"),

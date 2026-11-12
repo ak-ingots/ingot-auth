@@ -1,29 +1,32 @@
 """
 The password of a profile, one whatever identifier it signs in by, its hash
 the secret of the profile: what the methods of a password share, in the slot
-``password`` of the methods. A new password is checked by the preset
-``preset_set``, empty unless an application binds policies to it in a
-subclass, by whatever method it is set. How it hashes is changed by
+``password`` of the methods. A new password is checked by the group of the
+policies ``policies_set``, empty unless an application gives policies to it
+in a subclass, by whatever method it is set. How it hashes is changed by
 subclassing.
 """
 
 __all__ = (
     "AuthHasIdentifiers",
     "AuthPassword",
-    "AuthPasswordSetContext",
-    "AuthPasswordSetPreset",
+    "AuthPasswordSetParameters",
+    "AuthPasswordSetPolicies",
 )
 
 import asyncio
 import typing as t
 import unicodedata
 
-from ingots.puer import Slot, Unit
+from ingots.puer import Unit
 
 from ingot_auth.storages import AuthSecretNotFoundError
 
-from .contexts import AuthHasIdentifiers, AuthPasswordSetContext
-from .presets import AuthPasswordSetPreset
+from .policies import (
+    AuthHasIdentifiers,
+    AuthPasswordSetParameters,
+    AuthPasswordSetPolicies,
+)
 from .scrypt import hash_password, verify_password
 
 if t.TYPE_CHECKING:
@@ -33,7 +36,7 @@ if t.TYPE_CHECKING:
 class AuthPassword(Unit):
     """
     The password of a profile, normalized to NFKC first. A method of a password
-    checks a new one by :attr:`preset_set` and keeps its :meth:`hash` as the
+    checks a new one by :attr:`policies_set` and keeps its :meth:`hash` as the
     secret of the profile; a sign-in finds the profile by the identifier and
     :meth:`verify` the password against its secret. A profile not found, or
     with no secret, is verified against a hash of nothing all the same, so
@@ -49,7 +52,7 @@ class AuthPassword(Unit):
 
     project: "AuthProject"
 
-    preset_set = Slot(AuthPasswordSetPreset)
+    policies_set = AuthPasswordSetPolicies()
 
     _dummy_secret: str
 
