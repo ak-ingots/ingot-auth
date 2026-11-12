@@ -128,6 +128,11 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
 
 ## Rules
 
+- The guide of the consumers is in `docs/guide/`, published on Read the Docs
+  as a subproject of `ingots`, `https://ingots.readthedocs.io/projects/ingot-auth/`;
+  a change of what a consumer writes updates it. The README stays short,
+  the status, the install and the link, its links absolute, as PyPI renders
+  it; its status and that of `docs/index.md` go together.
 - Every change users should know about adds a fragment to `changelog.d/`
   (`<issue>.<type>.md` or `+<slug>.<type>.md`, see `changelog.d/README.md`);
   `cl-check` fails CI without one.
