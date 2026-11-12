@@ -49,7 +49,12 @@ no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
 with the transactions of a backend over all its storages; and the caches
 `caches/`, the same for what lives minutes, the attempts, the sessions and
 their callers, `AuthCache` the facade, depending on the storages alone, for
-the records they keep too); a unit lives in the
+the records they keep too; the dispatcher `dispatchers/`, operations run
+in the background, `BaseAuthDispatcher` the facade; and the mailer
+`mailers/`, `BaseAuthMailer` the facade delivering an `AuthMail`, the mail
+of the email code built by the method, sent by an operation of it); a
+method of the catalogue is whole, a plain default for what it sends, so
+that an application plugs only the backends; a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
@@ -57,7 +62,8 @@ their CLI names from `cli_name`. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in are bound by the application, the
 storage and the transport plug in. The core holds the facades; their
 implementations are in `contrib/` (`contrib/storages/<backend>/`,
-`contrib/transports/<addon>/`, `contrib/caches/<backend>/`), each under
+`contrib/transports/<addon>/`, `contrib/caches/<backend>/`,
+`contrib/dispatchers/<backend>/`, `contrib/mailers/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
 The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013: a file per

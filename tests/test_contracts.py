@@ -1,10 +1,14 @@
 """The contracts of the addon, on the storage in memory."""
 
+import typing as t
 import unittest
 
 from ingot_auth.__main__ import AuthMemoryProject
+from ingot_auth.contrib.mailers.memory import AuthMemoryMailer
+from ingot_auth.mailers import AuthMail
 from ingot_auth.project import AuthProject
 from ingot_auth.testing.contracts import (
+    AuthMailerContract,
     AuthAttemptsCacheContract,
     AuthAttrsStorageContract,
     AuthCallersCacheContract,
@@ -132,3 +136,11 @@ class MemoryCallersCacheTestCase(
     unittest.IsolatedAsyncioTestCase,
 ):
     pass
+
+
+class MemoryMailerTestCase(
+    MemoryStorageMixin, AuthMailerContract, unittest.IsolatedAsyncioTestCase
+):
+    @t.override
+    async def get_delivered(self) -> tuple[AuthMail, ...]:
+        return t.cast(AuthMemoryMailer, self.project.auth.mailer).get_sent()

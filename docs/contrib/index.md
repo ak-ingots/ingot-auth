@@ -1,8 +1,9 @@
 # Contrib
 
 The core of the addon holds the facades: `AuthStorage` of
-`ingot_auth.storages`, `AuthCache` of `ingot_auth.caches`, and the
-operations a transport runs. What implements them is in
+`ingot_auth.storages`, `AuthCache` of `ingot_auth.caches`,
+`BaseAuthDispatcher` of `ingot_auth.dispatchers`, `BaseAuthMailer` of
+`ingot_auth.mailers`, and the operations a transport runs. What implements them is in
 `ingot_auth.contrib`, each under its own extra when it needs more than the
 core. A contrib gives the class of the slot it fills, `AuthMemoryStorage`
 for the slot `storage` of the auth, no unit or project: the application
@@ -13,9 +14,12 @@ composes, and joins the project of the addon a backend is written against,
 |---|---|---|
 | {doc}`caches` | | the cache in memory |
 | {doc}`storages` | `pymongo` | the storage in memory; in MongoDB |
+| {doc}`dispatchers` | | the operations run in the background, in the process |
+| {doc}`mailers` | | the mail kept in memory |
 | {doc}`transports` | `grpcio` | the services of gRPC |
 
-The auth has no storage or cache by default: an application declares both.
+The auth has no storage, cache, dispatcher or mailer by default: an
+application declares them; a method of the catalogue needs nothing else.
 
 ## A backend of its own
 
@@ -40,5 +44,7 @@ class AppSessionsStorageTestCase(
 
 caches
 storages
+dispatchers
+mailers
 transports
 ```

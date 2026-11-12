@@ -42,24 +42,38 @@ class AppMethods(AuthMethodsUnit):
 
 An identifier is bound to a profile once, whatever method verifies it: a
 method names the kind of its identifier, `nickname`, `email`. An email and
-a code sent to it comes too, of two steps, the sending of the code the
-application's:
+a code sent to it comes too, of two steps, `AuthEmailCodeMethod`, whole as
+every method of the catalogue is: the application declares it and plugs a
+mailer into its auth ({doc}`../contrib/mailers`), nothing more.
 
 ```python
-from ingot_auth.methods.email_code import BaseAuthEmailCodeMethod
-
-
-class AppEmailCodeMethod(BaseAuthEmailCodeMethod):
-    @t.override
-    async def _send_code(self, email: str, code: str) -> None:
-        ...  # by the mail of the application
+from ingot_auth.methods.email_code import AuthEmailCodeMethod
 
 
 class AppMethods(AuthMethodsUnit):
-    email_code = Slot(AppEmailCodeMethod)
+    email_code = Slot(AuthEmailCodeMethod)
 ```
 
-its email checked on a sign-up by its group `policies_sign_up_email`.
+Its email is checked on a sign-up by its group `policies_sign_up_email`.
+A start replies at once and the mail goes in the background, its
+operations run by the dispatcher of the auth
+({doc}`../contrib/dispatchers`): an email bound and one not bound reply in
+the same time, and the client shows the form of the code without waiting
+for the mail. A sign-in sends nothing to an email bound to no profile,
+asking for the code all the same, no code then good; to the email of a
+profile that may not sign in by the method, it sends the word that the way
+is closed in place of the code, so that who owns the email learns it and
+who does not learns nothing.
+
+The mail is a plain text in English. A subclass changes it, its words,
+its language, a template, by the hooks that build it:
+
+```python
+class AppEmailCodeMethod(AuthEmailCodeMethod):
+    @t.override
+    def _build_code_mail(self, email: str, code: str) -> AuthMail:
+        return AuthMail(to=email, subject="Votre code", text=f"Code : {code}")
+```
 
 ## Toggles and permissions
 
