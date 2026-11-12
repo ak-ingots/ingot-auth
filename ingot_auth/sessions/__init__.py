@@ -8,11 +8,14 @@ happened on and the presets asking for them. Their storage is in
 __all__ = (
     "AuthFixedLifetime",
     "AuthSessionExpiredError",
+    "AuthSlidingFixedLifetime",
+    "AuthSlidingLifetime",
     "AuthSessionToken",
     "AuthSessionsUnit",
     "BaseAuthSessionLifetime",
 )
 
+import dataclasses
 import datetime
 import hashlib
 import os
@@ -32,7 +35,12 @@ from ingot_auth.storages import (
 from .attrs import AuthSessionAttrsUnit
 from .errors import AuthSessionExpiredError
 from .items import AuthSessionToken
-from .lifetimes import AuthFixedLifetime, BaseAuthSessionLifetime
+from .lifetimes import (
+    AuthFixedLifetime,
+    AuthSlidingFixedLifetime,
+    AuthSlidingLifetime,
+    BaseAuthSessionLifetime,
+)
 from .presets import AuthSessionPresetsUnit
 
 if t.TYPE_CHECKING:
@@ -75,13 +83,15 @@ class AuthSessionsUnit(CliUnit):
         the id of the session.
         """
         token = secrets.token_urlsafe(32)
+        now = self._get_now()
         session = AuthSessionRecord(
             id=self._create_id(),
             uid=uid,
             method=method,
             token_hash=_hash_token(token),
             attr_values=attr_values,
-            opened_at=self._get_now(),
+            opened_at=now,
+            seen_at=now,
         )
         await self.project.auth.storage.sessions.open(session)
         return AuthSessionToken(session_id=session.id, token=token)
@@ -90,7 +100,9 @@ class AuthSessionsUnit(CliUnit):
     async def authenticate(self, token: str) -> AuthCaller:
         """
         The caller of the session of a token: its uid, the id of the session and
-        the permissions of the access, from the cache, or formed on a miss.
+        the permissions of the access, from the cache, or formed on a miss. The
+        time the session is seen at is written as the strategy of its lifetime
+        says.
 
         :raises AuthSessionNotFoundError: no open session has the token.
         :raises AuthSessionExpiredError: its session expired, closed now.
@@ -100,12 +112,16 @@ class AuthSessionsUnit(CliUnit):
         now = self._get_now()
         session = await cache.sessions.get(token_hash)
         if session is None:
-            session = await self.project.auth.storage.sessions.find(token_hash)
-            await cache.sessions.put(session, now + self._get_cache_ttl())
+            session = await self._find(token_hash, now)
+        elif self.lifetime.check(session, now) is not None:
+            # the session cached may have been seen since, by another process
+            session = await self._find(token_hash, now)
         reason = self.lifetime.check(session, now)
         if reason is not None:
             await self._expire(session, reason, now)
             raise AuthSessionExpiredError.for_reason(reason)
+        if self.lifetime.is_touch_due(session, now):
+            session = await self._touch(session, now)
         access = self.project.auth.access
         groups_digest = access.groups.get_digest()
         caller = await cache.callers.get(token_hash, groups_digest)
@@ -142,6 +158,32 @@ class AuthSessionsUnit(CliUnit):
         configs = self.project.settings.configs
         return datetime.timedelta(seconds=configs.AUTH_SESSION_CACHE_TTL)
 
+    async def _find(self, token_hash: str, now: datetime.datetime) -> AuthSessionRecord:
+        """
+        The open session of the hash of a token from the storage, kept in the
+        cache; one not open is forgotten there.
+        """
+        try:
+            session = await self.project.auth.storage.sessions.find(token_hash)
+        except AuthSessionNotFoundError:
+            await self._forget(token_hash)
+            raise
+        await self.project.auth.cache.sessions.put(session, now + self._get_cache_ttl())
+        return session
+
+    async def _touch(
+        self, session: AuthSessionRecord, now: datetime.datetime
+    ) -> AuthSessionRecord:
+        """Writes the time a session is seen at, in the storage and the cache."""
+        try:
+            await self.project.auth.storage.sessions.touch(session.id, now)
+        except AuthSessionNotFoundError:
+            await self._forget(session.token_hash)
+            raise
+        session = dataclasses.replace(session, seen_at=now)
+        await self.project.auth.cache.sessions.put(session, now + self._get_cache_ttl())
+        return session
+
     async def _expire(
         self,
         session: AuthSessionRecord,
@@ -153,10 +195,14 @@ class AuthSessionsUnit(CliUnit):
             await self.project.auth.storage.sessions.close(session.id, reason, now)
         except AuthSessionNotFoundError:
             pass  # closed meanwhile, by another request
+        await self._forget(session.token_hash)
+
+    async def _forget(self, token_hash: str) -> None:
+        """Forgets the session of the hash of a token and its caller in the cache."""
         cache = self.project.auth.cache
-        await cache.sessions.forget(session.token_hash)
+        await cache.sessions.forget(token_hash)
         groups_digest = self.project.auth.access.groups.get_digest()
-        await cache.callers.forget(session.token_hash, groups_digest)
+        await cache.callers.forget(token_hash, groups_digest)
 
 
 def _hash_token(token: str) -> str:

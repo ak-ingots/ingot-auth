@@ -53,6 +53,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
                 "token_hash": session.token_hash,
                 "attr_values": build_bson_attr_values(session.attr_values),
                 "opened_at": session.opened_at,
+                "seen_at": session.seen_at,
                 "closed_at": None,
                 "close_reason": None,
             },
@@ -77,6 +78,17 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
             {"uid": uid, "closed_at": None}, session=self._mongodb_get_session()
         ).sort([("opened_at", 1), ("_id", 1)])
         return tuple([_build_open_session(document) async for document in documents])
+
+    @t.override
+    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+        collection = await self._mongodb_get_collection()
+        result = await collection.update_one(
+            {"_id": session_id, "closed_at": None},
+            {"$set": {"seen_at": seen_at}},
+            session=self._mongodb_get_session(),
+        )
+        if not result.matched_count:
+            raise AuthSessionNotFoundError.for_id(session_id)
 
     @t.override
     async def _close(
@@ -110,4 +122,6 @@ def _build_open_session(document: "Document") -> AuthSessionRecord:
         token_hash=document["token_hash"],
         attr_values=build_attr_values(document["attr_values"]),
         opened_at=document["opened_at"],
+        # a session opened by 0.1.0 has none: seen at its sign-in
+        seen_at=document.get("seen_at") or document["opened_at"],
     )

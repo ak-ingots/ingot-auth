@@ -65,6 +65,15 @@ class AuthSessionsStorage(Unit):
         return await self._get_open(uid)
 
     @t.final
+    async def touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+        """
+        Writes the time an open session was seen at.
+
+        :raises AuthSessionNotFoundError: no session of the id is open.
+        """
+        await self._touch(session_id, seen_at)
+
+    @t.final
     async def close(
         self,
         session_id: str,
@@ -89,6 +98,10 @@ class AuthSessionsStorage(Unit):
     @abc.abstractmethod
     async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         raise NotImplementedError(f"{type(self).__qualname__}._get_open")
+
+    @abc.abstractmethod
+    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+        raise NotImplementedError(f"{type(self).__qualname__}._touch")
 
     @abc.abstractmethod
     async def _close(

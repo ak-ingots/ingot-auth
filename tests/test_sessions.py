@@ -7,14 +7,24 @@ from unittest import mock
 from ingots.defaults.operations import ROOT_CALLER, PermissionFlags, Permissions
 from ingots.puer import Slot
 
-from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
+from ingot_auth import AuthProject
+from ingot_auth.__main__ import (
+    AuthMemoryProject,
+    AuthMemorySignInUnit,
+    AuthMemoryUnit,
+)
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit
+from ingot_auth.auth import AuthUnit
 from ingot_auth.caches import AuthCaller
+from ingot_auth.contrib.caches.memory import AuthMemoryCache
+from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.sessions import (
     AuthFixedLifetime,
     AuthSessionExpiredError,
     AuthSessionsUnit,
+    AuthSlidingFixedLifetime,
+    AuthSlidingLifetime,
     BaseAuthSessionLifetime,
 )
 from ingot_auth.storages import (
@@ -25,6 +35,7 @@ from ingot_auth.storages import (
 )
 
 DAY: t.Final = datetime.timedelta(days=1)
+MINUTE: t.Final = datetime.timedelta(minutes=1)
 NOW: t.Final = datetime.datetime(2026, 11, 12, tzinfo=datetime.UTC)
 
 
@@ -135,6 +146,15 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_session_closed_meanwhile_expires_all_the_same(self) -> None:
         token = (await self.sessions.open("a1", "nickname", {})).token
+        self.travel(31 * DAY)
+        storage = type(self.project.auth.storage.sessions)
+        closed = AuthSessionNotFoundError.for_id("s1")
+        with mock.patch.object(storage, "_close", side_effect=closed):
+            with self.assertRaises(AuthSessionExpiredError):
+                await self.sessions.authenticate(token)
+
+    async def test_a_cached_session_past_its_lifetime_is_found_again(self) -> None:
+        token = (await self.sessions.open("a1", "nickname", {})).token
         caller = await self.sessions.authenticate(token)
         now = datetime.datetime.now(datetime.UTC)
         await self.project.auth.storage.sessions.close(
@@ -143,8 +163,10 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         expired = AuthSessionCloseReason.EXPIRED_ABSOLUTE
         lifetime = type(self.sessions.lifetime)
         with mock.patch.object(lifetime, "_expire", return_value=expired):
-            with self.assertRaises(AuthSessionExpiredError):
+            with self.assertRaises(AuthSessionNotFoundError):
                 await self.sessions.authenticate(token)
+        # closed by another, so forgotten in the cache
+        self.assertIsNone(await self.project.auth.cache.sessions.get(hash_token(token)))
 
     async def test_a_cached_request_reads_nothing_from_the_storage(self) -> None:
         token = (await self.sessions.open("a1", "nickname", {})).token
@@ -226,6 +248,138 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         self.travel(datetime.timedelta(minutes=6))
         with self.assertRaises(AuthSessionNotFoundError):
             await self.sessions.authenticate(token)
+
+
+class SlidingSessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthSlidingLifetime)
+
+
+class SlidingAuthUnit(AuthUnit):
+    storage = Slot(AuthMemoryStorage)
+    cache = Slot(AuthMemoryCache)
+    sessions = Slot(SlidingSessionsUnit)
+    sign_in = Slot(AuthMemorySignInUnit)
+
+
+class SlidingProject(AuthProject):
+    auth = Slot(SlidingAuthUnit)
+
+
+class SlidingFixedSessionsUnit(SlidingSessionsUnit):
+    lifetime = Slot(AuthSlidingFixedLifetime)
+
+
+class SlidingFixedAuthUnit(SlidingAuthUnit):
+    sessions = Slot(SlidingFixedSessionsUnit)
+
+
+class SlidingFixedProject(SlidingProject):
+    auth = Slot(SlidingFixedAuthUnit)
+
+
+class SlidingTestCase(unittest.IsolatedAsyncioTestCase):
+    project: SlidingProject
+
+    @t.override
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.use(SlidingProject())
+        self.opened_at = datetime.datetime.now(datetime.UTC)
+
+    def use(self, project: SlidingProject) -> None:
+        """Runs the test on a project of a lifetime of its own."""
+        self.project = project
+        self.sessions = project.auth.sessions
+        self.storage = project.auth.storage.sessions
+
+    def travel(self, delta: datetime.timedelta) -> None:
+        """Makes the sessions and their caches see that long after the sign-in."""
+        later = self.opened_at + delta
+        cache = self.project.auth.cache
+        for owner in (self.sessions, cache.sessions, cache.callers):
+            self.enterContext(
+                mock.patch.object(type(owner), "_get_now", return_value=later)
+            )
+
+    async def open(self) -> str:
+        """Opens a session at the time of the test, giving its token."""
+        self.travel(datetime.timedelta())
+        return (await self.sessions.open("a1", "nickname", {})).token
+
+    async def get_seen_at(self, token: str) -> datetime.timedelta:
+        """How long after the sign-in the storage has the session seen."""
+        session = await self.storage.find(hash_token(token))
+        return session.seen_at - self.opened_at
+
+    async def test_a_session_used_lives_on(self) -> None:
+        token = await self.open()
+        for minutes in (50, 100, 150):
+            self.travel(minutes * MINUTE)
+            await self.sessions.authenticate(token)
+            self.assertEqual(await self.get_seen_at(token), minutes * MINUTE)
+
+    async def test_a_session_idle_expires(self) -> None:
+        token = await self.open()
+        self.travel(50 * MINUTE)
+        await self.sessions.authenticate(token)
+        self.travel(110 * MINUTE)
+        with self.assertRaises(AuthSessionExpiredError) as error:
+            await self.sessions.authenticate(token)
+        self.assertEqual(error.exception.reason, AuthSessionCloseReason.EXPIRED_IDLE)
+        with self.assertRaises(AuthSessionNotFoundError):
+            await self.storage.find(hash_token(token))
+
+    async def test_the_time_seen_is_written_once_an_interval(self) -> None:
+        token = await self.open()
+        for minutes, seen in ((3, 0), (6, 6), (9, 6), (12, 12)):
+            self.travel(minutes * MINUTE)
+            await self.sessions.authenticate(token)
+            self.assertEqual(await self.get_seen_at(token), seen * MINUTE)
+            # the cache has it too, not to write it again on the next request
+            cached = await self.project.auth.cache.sessions.get(hash_token(token))
+            assert cached is not None
+            self.assertEqual(cached.seen_at - self.opened_at, seen * MINUTE)
+
+    async def test_a_cached_session_seen_by_another_lives(self) -> None:
+        self.project.settings.configs.apply({"AUTH_SESSION_CACHE_TTL": 86400})
+        token = await self.open()
+        caller = await self.sessions.authenticate(token)
+        # another process saw it, its cache not this one
+        await self.storage.touch(caller.session_id, self.opened_at + 50 * MINUTE)
+        self.travel(70 * MINUTE)
+        self.assertEqual(await self.sessions.authenticate(token), caller)
+
+    async def test_a_session_closed_meanwhile_is_not_seen(self) -> None:
+        self.project.settings.configs.apply({"AUTH_SESSION_CACHE_TTL": 86400})
+        token = await self.open()
+        caller = await self.sessions.authenticate(token)
+        await self.storage.close(
+            caller.session_id, AuthSessionCloseReason.REVOKED, self.opened_at
+        )
+        self.travel(10 * MINUTE)
+        with self.assertRaises(AuthSessionNotFoundError):
+            await self.sessions.authenticate(token)
+        self.assertIsNone(await self.project.auth.cache.sessions.get(hash_token(token)))
+
+    async def test_both_expire_by_whichever_comes_first(self) -> None:
+        self.use(SlidingFixedProject())
+        self.project.settings.configs.apply({"AUTH_SESSION_TTL": 3 * 3600})
+        idle, used = await self.open(), await self.open()
+        expired = []
+        steps = ((50, used), (70, idle), (100, used), (150, used), (180, used))
+        for minutes, token in steps:
+            self.travel(minutes * MINUTE)
+            try:
+                await self.sessions.authenticate(token)
+            except AuthSessionExpiredError as error:
+                expired.append((minutes, error.reason))
+        self.assertEqual(
+            expired,
+            [
+                (70, AuthSessionCloseReason.EXPIRED_IDLE),
+                (180, AuthSessionCloseReason.EXPIRED_ABSOLUTE),
+            ],
+        )
 
 
 class LifetimeTestCase(unittest.TestCase):
