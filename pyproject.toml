@@ -1,6 +1,6 @@
 [project]
 name = "ingot-auth"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Sign-up, sign-in and sessions of the users of Ingots applications."
 readme = "README.md"
 requires-python = ">=3.14"
