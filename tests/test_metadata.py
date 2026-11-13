@@ -75,6 +75,18 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
+    async def test_the_sign_up_closed_closes_that_of_every_method(self) -> None:
+        self.project.settings.configs.apply({"AUTH_SIGN_UP_ENABLED": False})
+        metadata = await self.get(self.project)
+        self.assertEqual(
+            metadata.methods,
+            (
+                AuthMethodMetadata(name="nickname", sign_up=False, sign_in=True),
+                AuthMethodMetadata(name="email_code", sign_up=False, sign_in=True),
+                AuthMethodMetadata(name="no_flow", sign_up=False, sign_in=False),
+            ),
+        )
+
     async def test_a_toggle_closes_a_flow_by_the_settings(self) -> None:
         self.project.settings.configs.apply({"AUTH_SIGN_IN_EMAIL_CODE_ENABLED": False})
         method = self.project.auth.methods.email_code

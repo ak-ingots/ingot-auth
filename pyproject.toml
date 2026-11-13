@@ -20,10 +20,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 # Before 1.0 a minor version of ingots may break its addons.
-dependencies = ["ingots>=0.33.1,<0.34"]
+dependencies = ["ingots>=0.33.2,<0.34"]
 
 [project.optional-dependencies]
-grpcio = ["ingot-grpcio>=0.12.0,<0.13"]
+grpcio = ["ingot-grpcio>=0.12.1,<0.13"]
 pymongo = ["ingot-pymongo>=0.13.0,<0.14"]
 
 [project.urls]
@@ -52,7 +52,7 @@ dev = [
     "flake8-class-attributes-order",
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
-    "ingot-grpcio>=0.12.0,<0.13",
+    "ingot-grpcio>=0.12.1,<0.13",
     "ingot-pymongo>=0.13.0,<0.14",
     "mypy",
     "mypy-protobuf>=5.1.0",

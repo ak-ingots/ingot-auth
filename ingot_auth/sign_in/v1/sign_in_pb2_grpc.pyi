@@ -5,9 +5,16 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
+from ingot_auth.sign_in.v1 import sign_in_pb2 as _sign_in_pb2
 import abc as _abc_1
 import grpc as _grpc
+import sys
 import typing as _typing
+
+if sys.version_info >= (3, 11):
+    from typing import Self as _Self
+else:
+    from typing_extensions import Self as _Self
 
 _T = _typing.TypeVar("_T")
 
@@ -18,3 +25,40 @@ class _ServicerContext(_grpc.ServicerContext, _aio.ServicerContext):  # type: ig
 
 GRPC_GENERATED_VERSION: str
 GRPC_VERSION: str
+
+class SignInStub:
+    """The answers of a sign-in, by any method or factor: whose challenge it is,
+    the attempt knows.
+    """
+
+    @_typing.overload
+    def __new__(cls, channel: _grpc.Channel) -> _Self: ...
+    @_typing.overload
+    def __new__(cls, channel: _aio.Channel) -> SignInAsyncStub: ...
+    AnswerSignIn: _grpc.UnaryUnaryMultiCallable[_sign_in_pb2.AnswerSignInRequest, _sign_in_pb2.AnswerSignInResponse]
+    """Requires PERMISSION_CAN_SIGN_IN, and that of the method of the attempt."""
+
+@_typing.type_check_only
+class SignInAsyncStub(SignInStub):
+    """The answers of a sign-in, by any method or factor: whose challenge it is,
+    the attempt knows.
+    """
+
+    def __init__(self, channel: _aio.Channel) -> None: ...
+    AnswerSignIn: _aio.UnaryUnaryMultiCallable[_sign_in_pb2.AnswerSignInRequest, _sign_in_pb2.AnswerSignInResponse]  # type: ignore[assignment]
+    """Requires PERMISSION_CAN_SIGN_IN, and that of the method of the attempt."""
+
+class SignInServicer(metaclass=_abc_1.ABCMeta):
+    """The answers of a sign-in, by any method or factor: whose challenge it is,
+    the attempt knows.
+    """
+
+    @_abc_1.abstractmethod
+    def AnswerSignIn(
+        self,
+        request: _sign_in_pb2.AnswerSignInRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_sign_in_pb2.AnswerSignInResponse, _abc.Awaitable[_sign_in_pb2.AnswerSignInResponse]]:
+        """Requires PERMISSION_CAN_SIGN_IN, and that of the method of the attempt."""
+
+def add_SignInServicer_to_server(servicer: SignInServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...

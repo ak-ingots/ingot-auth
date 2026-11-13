@@ -28,7 +28,8 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
 ):
     """
     An operation of the memberships: the group is one of a source, but
-    ``signed_in``, which keeps none; the uid of a profile.
+    ``grp_anonymous`` and ``grp_signed_in``, which keep none; the uid of a
+    profile.
     """
 
     project: "AuthProject"
@@ -41,10 +42,10 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
     def _check_group(self, name: str) -> None:
         """
         :raises AuthGroupNotFoundError: no group has the name, or it is
-            ``signed_in``, of every signed-in user.
+            ``grp_anonymous`` or ``grp_signed_in``, which keep none.
         """
         groups = self.project.auth.access.groups
-        if groups.get(name) is groups.signed_in:
+        if groups.get(name) in (groups.grp_anonymous, groups.grp_signed_in):
             raise AuthGroupNotFoundError.for_members(name)
 
     @t.final
@@ -59,7 +60,7 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     user are forgotten in the cache: its next request has the group.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``signed_in``, of every signed-in user.
+        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -82,7 +83,7 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     no more.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``signed_in``, of every signed-in user.
+        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -103,7 +104,7 @@ class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
     The uids of the members of a group, sorted.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``signed_in``, of every signed-in user.
+        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
     """
 
     PERMISSIONS = Permissions(AuthMembersPermissions.CAN_READ)

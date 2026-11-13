@@ -12,8 +12,9 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers, all of it over gRPC; the sign-up and the
-sign-in by pluggable methods in steps, a nickname and a password, over gRPC
-too, and an email and a code sent to it; the policies of what a user types,
+sign-in by pluggable methods in steps, a nickname and a password, an email
+and a code sent to it by a mailer in the background, over gRPC too; the
+policies of what a user types,
 operations run together in groups; the groups of the users, declared in the
 code, and their members, on the command line and over gRPC; the sessions a
 sign-in opens, a token turned into a caller; all of it stored in memory or

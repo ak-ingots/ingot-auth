@@ -6,7 +6,6 @@ from unittest import mock
 
 from ingots.defaults.operations import (
     ANONYMOUS_CALLER,
-    Caller,
     OperationMetadata,
     OperationPermissionsError,
     PermissionFlags,
@@ -117,11 +116,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
         self.project = TstProject()
         # the anonymous caller of a server whose sign-up is open
-        self.caller = Caller(
-            uid="anonymous",
-            permissions=Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
-            | self.project.auth.methods.get_anonymous_permissions(),
-        )
+        self.caller = self.project.operations.callers.get_anonymous()
         self.metadata = self.project.operations.create_metadata(self.caller)
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
@@ -344,6 +339,25 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
                 AuthTestingPermissions.CAN_SIGN_UP | AuthTestingPermissions.CAN_SIGN_IN,
                 OneStepPermissions.CAN_SIGN_UP,
             ),
+        )
+
+    async def test_the_toggle_of_the_sign_up_closes_it_by_every_method(
+        self,
+    ) -> None:
+        auth = self.project.auth
+        self.assertEqual(
+            auth.sign_up.get_anonymous_permissions(),
+            Permissions(AuthSignUpPermissions.CAN_SIGN_UP),
+        )
+        self.project.settings.configs.apply({"AUTH_SIGN_UP_ENABLED": False})
+        self.assertFalse(auth.sign_up.get_enabled())
+        self.assertEqual(auth.sign_up.get_anonymous_permissions(), Permissions())
+        self.assertFalse(
+            any(method.get_sign_up_enabled() for method in auth.methods.get_all())
+        )
+        self.assertEqual(
+            auth.methods.get_anonymous_permissions(),
+            Permissions(AuthTestingPermissions.CAN_SIGN_IN),
         )
 
     async def test_signing_up_by_a_method_needs_its_flag(self) -> None:

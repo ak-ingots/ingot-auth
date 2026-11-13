@@ -6,11 +6,14 @@ source, the first: an application declares them as slots of
     class AppGroupsUnit(AuthGroupsUnit):
         admins = Slot(AdminsGroup)
 
-The core declares one, ``signed_in``, :class:`AuthSignedInGroup`, of every
-signed-in user.
+The core declares two, ``grp_anonymous``, :class:`AuthAnonymousGroup`, of
+every caller that tells no one, and ``grp_signed_in``,
+:class:`AuthSignedInGroup`, of every signed-in user, their slots prefixed
+``grp_`` as those of the operations are ``op_``.
 """
 
 __all__ = (
+    "AuthAnonymousGroup",
     "AuthGroup",
     "AuthGroupError",
     "AuthGroupInfo",
@@ -31,7 +34,7 @@ from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from .commands import AuthListGroupsCommand
-from .entities import AuthGroup, AuthSignedInGroup
+from .entities import AuthAnonymousGroup, AuthGroup, AuthSignedInGroup
 from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
 from .operations import AuthListGroupsOperation
@@ -43,10 +46,11 @@ NAME_PATTERN: t.Final = re.compile(r"[a-z][a-z0-9_]*")
 
 class AuthGroupsUnit(CliUnit):
     """
-    The groups, ``signed_in`` here, of every signed-in user: whatever their
-    source, they come by :meth:`get` and :meth:`get_all`. A name of a group
-    is lowercase letters, digits and ``_``, checked when the class is
-    created.
+    The groups, ``grp_anonymous`` and ``grp_signed_in`` here, of every caller
+    that tells no one and of every signed-in user, neither keeping members:
+    whatever their source, they come by :meth:`get` and :meth:`get_all`. A
+    name of a group is lowercase letters, digits and ``_``, checked when the
+    class is created.
     """
 
     cli_name = "groups"
@@ -56,7 +60,8 @@ class AuthGroupsUnit(CliUnit):
 
     cmd_list = Slot(AuthListGroupsCommand)
 
-    signed_in = Slot(AuthSignedInGroup)
+    grp_anonymous = Slot(AuthAnonymousGroup)
+    grp_signed_in = Slot(AuthSignedInGroup)
 
     _digest: str
 

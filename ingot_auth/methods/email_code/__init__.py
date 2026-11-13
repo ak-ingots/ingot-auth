@@ -13,7 +13,6 @@ mixes into its own, and are its permissions, :class:`AuthEmailCodePermissions`.
 """
 
 __all__ = (
-    "AuthEmailCodeChallenge",
     "AuthEmailCodeConfigs",
     "AuthEmailCodeMethod",
     "AuthEmailCodePermissions",
@@ -40,6 +39,7 @@ from ingots.puer import Factory
 from ingot_auth.mailers import AuthMail
 from ingot_auth.methods import (
     AuthChallenge,
+    AuthCodeChallenge,
     AuthMethodRefusedError,
     AuthStep,
     AuthVerified,
@@ -63,13 +63,6 @@ class AuthEmailCodeStart:
     """What a sign-up and a sign-in start with: an email."""
 
     email: str
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthEmailCodeChallenge:
-    """The code is sent: the client answers with it, of ``length`` digits."""
-
-    length: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -219,7 +212,7 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
     def _ask(self, email: str, code: str) -> AuthStep:
         state = AuthEmailCodeState(email=email, digest=self._digest(code))
         return AuthChallenge(
-            challenge=AuthEmailCodeChallenge(length=self.CODE_LENGTH), state=state
+            challenge=AuthCodeChallenge(length=self.CODE_LENGTH), state=state
         )
 
     @t.final

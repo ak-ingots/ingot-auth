@@ -1,9 +1,16 @@
 # Access
 
-A signed-in user has what its groups grant, `signed_in` first, a group of
+A signed-in user has what its groups grant, `grp_signed_in` first, a group of
 the core every signed-in user is a member of, none stored, granting the
 `CAN_SIGN_IN` of each method open; an application grants every signed-in
-user more by its own `AuthSignedInGroup` in the slot. The groups are
+user more by its own `AuthSignedInGroup` in the slot. A caller that tells
+no one has what the group `grp_anonymous` of the core grants, none stored
+either: what anyone may of the auth, the flags of the sign-up and of the
+sign-in, those of the methods open, the reading of the metadata; an
+application grants anyone more, or less, by its own `AuthAnonymousGroup`.
+A signed-in user is not a member of `grp_anonymous`: one its groups do not let
+in uses what is open to anyone until it signs in, refused once it has. The
+groups are
 declared in the code, slots of the groups of the access, each granting by
 its hook; the addons grant to a group as the application does, which
 declares the class joining them when two of its bases hold the group:

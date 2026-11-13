@@ -45,7 +45,6 @@ from ingot_auth.sign_in import (
 from ingot_auth.sign_up import (
     AuthSignedUp,
     AuthSignUpChallenge,
-    AuthSignUpPermissions,
     AuthStartSignUpParameters,
 )
 from ingot_auth.storages import (
@@ -103,7 +102,7 @@ class ClosedSignedInGroup(AuthSignedInGroup):
 
 
 class ClosedGroupsUnit(AuthGroupsUnit):
-    signed_in = Slot(ClosedSignedInGroup)
+    grp_signed_in = Slot(ClosedSignedInGroup)
 
 
 class ClosedAccessUnit(AuthAccessUnit):
@@ -142,13 +141,7 @@ class BaseSignInTestCase(unittest.IsolatedAsyncioTestCase):
 
     def create_caller(self) -> Caller:
         """The anonymous caller of a server whose flows are open."""
-        return Caller(
-            uid="anonymous",
-            permissions=Permissions(
-                AuthSignUpPermissions.CAN_SIGN_UP, AuthSignInPermissions.CAN_SIGN_IN
-            )
-            | self.project.auth.methods.get_anonymous_permissions(),
-        )
+        return self.project.operations.callers.get_anonymous()
 
     async def sign_up(self, subject: str) -> str:
         start = AuthStartSignUpParameters(
@@ -237,6 +230,12 @@ class SignInTestCase(BaseSignInTestCase):
         assert isinstance(challenge, AuthSignUpChallenge)
         with self.assertRaises(AuthAttemptNotFoundError):
             await self.answer(challenge.attempt_id, "1")
+
+    def test_the_anonymous_caller_gets_the_flag_of_the_sign_in(self) -> None:
+        self.assertEqual(
+            self.project.auth.sign_in.get_anonymous_permissions(),
+            Permissions(AuthSignInPermissions.CAN_SIGN_IN),
+        )
 
     async def test_signing_in_needs_the_flags_of_the_flow_and_the_method(
         self,

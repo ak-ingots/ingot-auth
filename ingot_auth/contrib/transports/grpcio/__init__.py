@@ -3,10 +3,15 @@ The auth over gRPC, with the extra ``grpcio``, laid out by the subdomains of the
 auth, ``profiles``, ``sessions``, ``access``, ``metadata`` and ``methods``: a
 service per registry and per method, each in a binding of its own, so that a
 server serves the ones it should; a public server the metadata and the
-methods the application takes, an internal one the administration too::
+methods the application takes, with the answers of the flows for a method
+of more steps, an internal one the administration too::
 
     class AppGrpcServer(
-        AuthGrpcMetadataBinding, AuthGrpcNicknameBinding, DefaultGrpcServer
+        AuthGrpcMetadataBinding,
+        AuthGrpcNicknameBinding,
+        AuthGrpcEmailCodeBinding,
+        AuthGrpcFlowsBinding,
+        DefaultGrpcServer,
     ):
         pass
 
@@ -17,8 +22,8 @@ methods the application takes, an internal one the administration too::
 A call bears the token of its session, ``authorization: Bearer <token>``, and
 runs for its caller, with the permissions its groups grant; a call with no
 token for the anonymous one, so that the administration lets in only the
-users of its groups (``_get_caller()``). The metadata and the methods run for
-the anonymous one, whatever the call bears.
+users of its groups (``_get_caller()``). The metadata, the methods and the
+answers of the flows run for the anonymous one, whatever the call bears.
 """
 
 __all__ = (
@@ -26,7 +31,10 @@ __all__ = (
     "AuthGrpcAdminBinding",
     "AuthGrpcAttrsBinding",
     "AuthGrpcAttrsServicer",
+    "AuthGrpcEmailCodeBinding",
+    "AuthGrpcEmailCodeServicer",
     "AuthGrpcErrorsUnit",
+    "AuthGrpcFlowsBinding",
     "AuthGrpcGroupsBinding",
     "AuthGrpcGroupsServicer",
     "AuthGrpcMembersBinding",
@@ -41,6 +49,10 @@ __all__ = (
     "AuthGrpcSessionsBinding",
     "AuthGrpcSessionPresetsBinding",
     "AuthGrpcSessionPresetsServicer",
+    "AuthGrpcSignInBinding",
+    "AuthGrpcSignInServicer",
+    "AuthGrpcSignUpBinding",
+    "AuthGrpcSignUpServicer",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
     "BaseAuthGrpcServicer",
@@ -56,7 +68,12 @@ from .access import (
 from .base import BaseAuthGrpcServicer
 from .errors import AuthGrpcErrorsUnit
 from .metadata import AuthGrpcMetadataBinding, AuthGrpcMetadataServicer
-from .methods import AuthGrpcNicknameBinding, AuthGrpcNicknameServicer
+from .methods import (
+    AuthGrpcEmailCodeBinding,
+    AuthGrpcEmailCodeServicer,
+    AuthGrpcNicknameBinding,
+    AuthGrpcNicknameServicer,
+)
 from .profiles import (
     AuthGrpcAttrsBinding,
     AuthGrpcAttrsServicer,
@@ -71,6 +88,12 @@ from .sessions import (
     AuthGrpcSessionPresetsBinding,
     AuthGrpcSessionPresetsServicer,
 )
+from .sign_in import AuthGrpcSignInBinding, AuthGrpcSignInServicer
+from .sign_up import AuthGrpcSignUpBinding, AuthGrpcSignUpServicer
+
+
+class AuthGrpcFlowsBinding(AuthGrpcSignUpBinding, AuthGrpcSignInBinding):
+    """The answers of the flows, for the methods of more steps."""
 
 
 class AuthGrpcAdminBinding(

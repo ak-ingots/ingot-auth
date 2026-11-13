@@ -2,22 +2,22 @@
 
 __all__ = ("AuthGrpcMetadataBinding", "AuthGrpcMetadataServicer")
 
-import dataclasses
 import typing as t
 
-from ingot_grpcio.grpc.services import GrpcService
-from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
+from ingot_grpcio.grpc.services import GrpcService, GrpcServicer
 
 from ingot_auth.metadata import (
-    AuthMetadataPermissions,
     AuthMethodMetadata,
     AuthProfileMetadata,
     AuthSessionMetadata,
 )
 from ingot_auth.storages import AuthAttrType
 
-from .base import BaseAuthGrpcServicer, Context
+from .base import Context
 from ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc
+
+if t.TYPE_CHECKING:
+    from ingot_auth.project import AuthProject
 
 ATTR_TYPES: t.Final = {
     AuthAttrType.BOOL: metadata_pb2.ATTR_TYPE_BOOL,
@@ -28,14 +28,15 @@ ATTR_TYPES: t.Final = {
 }
 
 
-class AuthGrpcMetadataServicer(
-    BaseAuthGrpcServicer, metadata_pb2_grpc.MetadataServicer
-):
+class AuthGrpcMetadataServicer(GrpcServicer, metadata_pb2_grpc.MetadataServicer):
     """
     The metadata, public unless told otherwise: a client asks for it before
-    signing in, so anyone may read it, signed in or not, until a subclass
-    overrides :meth:`_get_anonymous_caller` or :meth:`_get_caller`.
+    signing in, so it runs for the anonymous caller of the project, whatever
+    a call bears, whom the group ``grp_anonymous`` grants ``CAN_READ``; an
+    application closes it by taking the flag off in that group.
     """
+
+    project: "AuthProject"
 
     @t.override
     async def GetMetadata(
@@ -48,17 +49,6 @@ class AuthGrpcMetadataServicer(
             profile=build_profile_message(metadata.profile),
             session=build_session_message(metadata.session),
             methods=(build_method_message(method) for method in metadata.methods),
-        )
-
-    @t.override
-    async def _get_caller(self, context: Context) -> Caller:
-        # open to anyone: a token changes nothing
-        return self._get_anonymous_caller()
-
-    @t.override
-    def _get_anonymous_caller(self) -> Caller:
-        return dataclasses.replace(
-            ANONYMOUS_CALLER, permissions=Permissions(AuthMetadataPermissions.CAN_READ)
         )
 
 

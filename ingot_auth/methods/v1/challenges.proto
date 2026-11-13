@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ingot_auth.methods.v1;
+
+// What a step of a flow asks the client for, by any method or factor: the
+// attempt to answer to, and what the answer is, by its kind, as the answer of
+// the flow takes it.
+message Challenge {
+  string attempt_id = 1;
+  oneof challenge {
+    CodeChallenge code = 2;
+  }
+}
+
+// A code sent to the user, by mail, an SMS, an app: the client shows the form
+// of a code of `length` digits, and answers with the code typed.
+message CodeChallenge {
+  int32 length = 1;
+}

@@ -12,6 +12,7 @@ catalogue an application takes from, declaring those it takes as slots of
 
 __all__ = (
     "AuthChallenge",
+    "AuthCodeChallenge",
     "AuthMethodDeniedError",
     "AuthMethodError",
     "AuthMethodInvalidError",
@@ -41,7 +42,7 @@ from .errors import (
 )
 from .operations import BaseAuthFlowOperation
 from .password import AuthPassword
-from .steps import AuthChallenge, AuthStep, AuthVerified
+from .steps import AuthChallenge, AuthCodeChallenge, AuthStep, AuthVerified
 
 
 class AuthMethodsUnit(Unit):
@@ -80,7 +81,7 @@ class AuthMethodsUnit(Unit):
         What the methods give the anonymous caller, by their toggles: the
         flags of the sign-up and of the sign-in of each method that opens
         them. Those of the flows themselves, of every method, are of the
-        server, ``AuthSignUpPermissions.CAN_SIGN_UP``.
+        flows, ``auth.sign_up.get_anonymous_permissions()``.
         """
         permissions = Permissions()
         for method in self.get_all():
