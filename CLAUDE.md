@@ -80,7 +80,9 @@ subdomain it serves, `ingot_auth/profiles/tags/v1/tags.proto` for
 the code next to it, committed, imported as `protoc` writes it, by
 `contrib/transports/grpcio/` alone: the core imports no `v1` module. A method
 of the core has its service in its package, `ingot_auth/methods/nickname/v1/`,
-its servicer in `contrib/transports/grpcio/methods/`, what a step asks for,
+its servicer in `contrib/transports/grpcio/methods/`, extending
+`BaseAuthGrpcMethodServicer`, which gives the values of the attributes of
+the transport by their names, each bound to its reader (`ip`, the peer), what a step asks for,
 `Challenge` by the kind of its answer, in `ingot_auth/methods/v1/`, the
 results and the answers of the flows in `ingot_auth/sign_up/v1/` and
 `ingot_auth/sign_in/v1/`, the values of the

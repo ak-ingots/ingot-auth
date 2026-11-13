@@ -102,7 +102,7 @@ class BaseAuthSignInOperation[ParametersType](
 class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters]):
     """
     Starts a sign-in by a method, with the values of the attributes of the
-    session the client gives.
+    session the client and the transport give.
 
     :raises AuthMethodNotFoundError: no method has the name.
     :raises AuthMethodUnsupportedError: the method signs no one in.
@@ -123,6 +123,7 @@ class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters
                 parameters.method,
                 parameters.parameters,
                 parameters.attr_values,
+                parameters.transport_attr_values,
                 metadata,
             )
 

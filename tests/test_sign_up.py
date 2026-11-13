@@ -313,6 +313,53 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(error_cls):
                 await self.start(AuthTestingStart(subject="a"), **attr_values)
 
+    async def test_the_values_of_the_transport_are_kept_by_the_registry(
+        self,
+    ) -> None:
+        start = AuthStartSignUpParameters(
+            method="testing",
+            parameters=AuthTestingStart(subject="a@b.c", code="1234"),
+            attr_values={1: "iPhone"},
+            transport_attr_values={"ip": "10.0.0.1", "country": "BY"},
+        )
+        challenge = await self.project.operations.runner.run(
+            self.project.auth.sign_up.op_start, start, self.metadata
+        )
+        assert isinstance(challenge, AuthSignUpChallenge)
+        result = await self.answer(challenge.attempt_id, "1234")
+        assert isinstance(result, AuthSignedUp)
+        record = await self.project.auth.storage.sign_up.records.get(result.uid)
+        # country is of no attribute: the application keeps none
+        self.assertEqual(record.attr_values, {1: "iPhone", 2: "10.0.0.1"})
+
+    async def test_a_value_of_the_transport_the_registry_has_not_so_is_dropped(
+        self,
+    ) -> None:
+        for subject, transport_attr_values, message in (
+            (
+                "a",
+                {"device": "iPhone"},
+                "'device' of the sessions is of the source client",
+            ),
+            ("b", {"ip": 7}, "'ip' of the sessions is of the type str, the value "),
+        ):
+            with self.subTest(transport_attr_values=transport_attr_values):
+                start = AuthStartSignUpParameters(
+                    method="testing",
+                    parameters=AuthTestingStart(subject=subject),
+                    transport_attr_values=transport_attr_values,
+                )
+                with self.assertLogs(
+                    "ingot_auth.sessions.attrs.values", "WARNING"
+                ) as logs:
+                    result = await self.project.operations.runner.run(
+                        self.project.auth.sign_up.op_start, start, self.metadata
+                    )
+                assert isinstance(result, AuthSignedUp)
+                records = self.project.auth.storage.sign_up.records
+                self.assertEqual((await records.get(result.uid)).attr_values, {})
+                self.assertIn(message, logs.output[0])
+
     async def test_a_method_of_one_step_takes_no_answer(self) -> None:
         method = self.project.auth.methods.get("one_step")
         with self.assertRaises(AuthMethodRefusedError):

@@ -55,6 +55,7 @@ __all__ = (
     "AuthGrpcSignUpServicer",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
+    "BaseAuthGrpcMethodServicer",
     "BaseAuthGrpcServicer",
 )
 
@@ -73,6 +74,7 @@ from .methods import (
     AuthGrpcEmailCodeServicer,
     AuthGrpcNicknameBinding,
     AuthGrpcNicknameServicer,
+    BaseAuthGrpcMethodServicer,
 )
 from .profiles import (
     AuthGrpcAttrsBinding,

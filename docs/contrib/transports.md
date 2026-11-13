@@ -120,3 +120,34 @@ operation by `run_operation()` of ingot-grpcio, for the caller of its hook
 running for the anonymous caller whatever a call bears, the others
 `BaseAuthGrpcServicer`, for the caller of the token. A subclass overrides
 the hook to tell the caller otherwise.
+
+### The attributes of the transport
+
+The start of a flow gives the values of the attributes of the session of
+the transport, by their names, as the registry keeps them
+({doc}`../guide/sessions`): a servicer of a method,
+`BaseAuthGrpcMethodServicer`, binds each name to the function reading its
+value from the call in its hook `_get_transport_attr_values()`, `ip` to the
+IP of the peer here, `None` for a call without one. Behind a proxy the
+peer is the proxy: an application binds `ip` to a reader of the header the
+proxy sets, trusted from its proxy alone, and binds others the same way,
+in a mixin of its own mixed into each servicer of a method it serves:
+
+```python
+class AppTransportAttrs(BaseAuthGrpcMethodServicer):
+    @t.override
+    def _get_transport_attr_values(
+        self, context: Context
+    ) -> dict[str, AuthAttrValue | None]:
+        return super()._get_transport_attr_values(context) | {
+            "ip": get_forwarded_ip(context),
+        }
+
+
+class AppNicknameServicer(AppTransportAttrs, AuthGrpcNicknameServicer):
+    pass
+
+
+class AppNicknameBinding(AuthGrpcNicknameBinding):
+    auth_methods_nickname = GrpcService(NicknameStub, AppNicknameServicer)
+```

@@ -107,7 +107,7 @@ class BaseAuthSignUpOperation[ParametersType](
 class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
     """
     Starts a sign-up by a method, with the values of the attributes of the
-    session the client gives.
+    session the client and the transport give.
 
     :raises AuthMethodNotFoundError: no method has the name.
     :raises AuthMethodUnsupportedError: the method signs no one up.
@@ -124,7 +124,11 @@ class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters
         self, parameters: AuthStartSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
         return await self.start(
-            parameters.method, parameters.parameters, parameters.attr_values, metadata
+            parameters.method,
+            parameters.parameters,
+            parameters.attr_values,
+            parameters.transport_attr_values,
+            metadata,
         )
 
 

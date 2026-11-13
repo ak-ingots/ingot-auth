@@ -2,7 +2,9 @@
 
 __all__ = ("BaseAuthGrpcServicer", "Context")
 
+import ipaddress
 import typing as t
+import urllib.parse
 
 from grpc import aio
 from ingot_grpcio.grpc.services import GrpcServicer
@@ -64,3 +66,23 @@ def get_bearer_token(
             if scheme.lower() == "bearer" and token.strip():
                 return token.strip()
     return None
+
+
+def get_peer_ip(context: Context) -> str | None:
+    """
+    Internal: the IP of the peer of a call, as grpcio tells it,
+    ``ipv4:10.0.0.1:5000``, ``ipv6:[::1]:5000``, escaped by some versions,
+    ``ipv6:%5B::1%5D:5000``; an IPv4 mapped to IPv6 as the IPv4; ``None``
+    for a peer of no IP, a Unix socket. Behind a proxy it is the proxy.
+    """
+    scheme, _, address = urllib.parse.unquote(context.peer()).partition(":")
+    if scheme not in ("ipv4", "ipv6"):
+        return None
+    host = address.rpartition(":")[0].removeprefix("[").removesuffix("]")
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return None
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
+        return str(ip.ipv4_mapped)
+    return str(ip)

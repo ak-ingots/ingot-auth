@@ -11,7 +11,10 @@ import typing as t
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError
-from ingot_auth.sessions.attrs import check_client_attr_values
+from ingot_auth.sessions.attrs import (
+    build_transport_attr_values,
+    check_client_attr_values,
+)
 
 from .base import BaseAuthMethod
 from .errors import AuthMethodRefusedError
@@ -69,11 +72,15 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         name: str,
         parameters: object,
         attr_values: "Mapping[int, AuthAttrValue]",
+        transport_attr_values: "Mapping[str, AuthAttrValue]",
         metadata: OperationMetadata,
     ) -> ResultType:
         """
         Starts the flow by a method, with the values of the attributes of the
-        session the client gives.
+        session the client gives, by their ids, and those the transport gives,
+        by their names, kept if the registry has them of the transport
+        (:func:`~ingot_auth.sessions.attrs.build_transport_attr_values`): the
+        attempt keeps both for the end of the flow.
 
         :raises AuthMethodNotFoundError: no method has the name.
         :raises AuthMethodUnsupportedError: the method takes no such flow.
@@ -86,8 +93,12 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         method = await self.get_method(name, metadata)
         attrs = await self.project.auth.storage.sessions.attrs.get_all()
         check_client_attr_values(attrs, attr_values)
+        values = {
+            **attr_values,
+            **build_transport_attr_values(attrs, transport_attr_values),
+        }
         step = await self._start_method(method, parameters, metadata)
-        return await self.proceed(method, step, attr_values)
+        return await self.proceed(method, step, values)
 
     @t.final
     async def answer(

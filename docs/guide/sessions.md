@@ -35,6 +35,28 @@ its reason, and the request is refused. A strategy of the application's
 own extends `BaseAuthSessionLifetime`: a session of an operator living an
 hour, the others a month.
 
+## Attributes
+
+A session keeps the values of its attributes, what it was opened on, as
+the record of a sign-up does: the attributes are a registry of the
+storage, each with its type and its source. The client gives the values
+of the source `client`, its device, by their ids; the transport those of
+the source `transport`, the IP, by their names, which the client can
+never give. The registry tells what is kept: a transport gives what it
+reads, and a value of no attribute of its name is dropped, so that an
+application keeps the IP only once it registers it:
+
+```console
+$ python -m app auth sessions attrs create --id 1 --name ip --type str --source transport
+```
+
+The name binds the attribute to the transport: renamed, it is given no
+more. One of the name of another source or type is a mistake of the
+registry: its value is dropped, with a warning in the log. The values of
+the transport are those of the start of a flow, kept by its attempt to its
+end. Over gRPC, a servicer of a method gives `ip`, the IP of the peer of
+the call ({doc}`../contrib/transports`).
+
 ## Callers
 
 A request brings the token of its session, and

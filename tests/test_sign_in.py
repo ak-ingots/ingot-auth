@@ -202,6 +202,33 @@ class SignInTestCase(BaseSignInTestCase):
         )
         self.assertNotIn(result.token, repr(result))
 
+    async def test_the_session_keeps_the_values_of_the_transport(self) -> None:
+        await self.project.auth.storage.sessions.attrs.create(
+            AuthSessionAttr(
+                id=2,
+                name="ip",
+                type=AuthAttrType.STR,
+                source=AuthSessionAttrSource.TRANSPORT,
+            )
+        )
+        await self.sign_up("a@b.c")
+        parameters = AuthStartSignInParameters(
+            method="testing",
+            parameters=AuthTestingStart(subject="a@b.c"),
+            attr_values={1: "iPhone"},
+            transport_attr_values={"ip": "10.0.0.1"},
+        )
+        result = await self.project.operations.runner.run(
+            self.project.auth.sign_in.op_start,
+            parameters,
+            self.project.operations.create_metadata(self.create_caller()),
+        )
+        assert isinstance(result, AuthSignedIn)
+        session = await self.project.auth.storage.sessions.find(
+            hash_token(result.token)
+        )
+        self.assertEqual(session.attr_values, {1: "iPhone", 2: "10.0.0.1"})
+
     async def test_a_method_of_two_steps_signs_in_by_the_answer(self) -> None:
         uid = await self.sign_up("a@b.c")
         challenge = await self.start(AuthTestingStart(subject="a@b.c", code="1"))
