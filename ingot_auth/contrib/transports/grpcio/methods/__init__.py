@@ -9,10 +9,12 @@ __all__ = (
     "AuthGrpcEmailCodeServicer",
     "AuthGrpcNicknameBinding",
     "AuthGrpcNicknameServicer",
+    "BaseAuthGrpcMethodServicer",
 )
 
 from ingot_grpcio.grpc.services import GrpcService
 
+from .base import BaseAuthGrpcMethodServicer
 from .email_code import AuthGrpcEmailCodeServicer
 from .nickname import AuthGrpcNicknameServicer
 from ingot_auth.methods.email_code.v1 import email_code_pb2_grpc

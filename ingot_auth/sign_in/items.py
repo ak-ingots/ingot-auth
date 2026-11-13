@@ -20,13 +20,15 @@ if t.TYPE_CHECKING:
 class AuthStartSignInParameters:
     """
     A sign-in starting: the method, what the method starts with, and the
-    values of the attributes of the session the client gives, by their ids,
-    kept by the session.
+    values of the attributes of the session, kept by the session: those the
+    client gives, by their ids, and those the transport gives, by their
+    names, which the transport alone sets, never from what the client sends.
     """
 
     method: str
     parameters: object
     attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
+    transport_attr_values: "Mapping[str, AuthAttrValue]" = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

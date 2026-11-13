@@ -48,6 +48,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcNicknameServicer,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
     AuthGrpcTagsServicer,
@@ -60,10 +61,14 @@ from ingot_auth.access.members.v1 import (
     members_pb2,
     members_pb2_grpc,
 )
-from ingot_auth.contrib.transports.grpcio.base import get_bearer_token
+from ingot_auth.contrib.transports.grpcio.base import (
+    Context,
+    get_bearer_token,
+    get_peer_ip,
+)
 from ingot_auth.contrib.transports.grpcio.sessions.attrs import build_attr_values
 from ingot_auth.metadata.v1 import metadata_pb2
-from ingot_auth.methods.nickname.v1 import nickname_pb2
+from ingot_auth.methods.nickname.v1 import nickname_pb2, nickname_pb2_grpc
 from ingot_auth.profiles.attrs.v1 import (
     attrs_pb2 as profile_attrs_pb2,
 )
@@ -128,6 +133,7 @@ from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import (
     AuthAttrType,
+    AuthAttrValue,
     AuthIdentityConflictError,
     AuthMembership,
     AuthProfile,
@@ -425,6 +431,48 @@ class TstEmailCodeProject(TstProject):
     settings = Slot(TstEmailCodeSettingsUnit)
     auth = Slot(TstEmailCodeAuthUnit)
     grpc = Slot(TstEmailCodeGrpcUnit)
+
+
+def get_forwarded_ip(context: Context) -> str | None:
+    """The IP the proxy of a test sets."""
+    for key, value in context.invocation_metadata() or ():
+        if key == "x-forwarded-for" and isinstance(value, str):
+            return value
+    return None
+
+
+class ForwardedNicknameServicer(AuthGrpcNicknameServicer):
+    """Behind a proxy: the IP is of the header it sets."""
+
+    @t.override
+    def _get_transport_attr_values(
+        self, context: Context
+    ) -> dict[str, AuthAttrValue | None]:
+        return super()._get_transport_attr_values(context) | {
+            "ip": get_forwarded_ip(context)
+        }
+
+
+class ForwardedNicknameBinding(AuthGrpcNicknameBinding):
+    auth_methods_nickname = GrpcService(
+        nickname_pb2_grpc.NicknameStub, ForwardedNicknameServicer
+    )
+
+
+class TstForwardedServer(ForwardedNicknameBinding, TstNicknameServer):
+    pass
+
+
+class TstForwardedServersUnit(TstNicknameServersUnit):
+    default = Slot(TstForwardedServer)
+
+
+class TstForwardedGrpcUnit(TstNicknameGrpcUnit):
+    servers = Slot(TstForwardedServersUnit)
+
+
+class TstForwardedProject(TstNicknameProject):
+    grpc = Slot(TstForwardedGrpcUnit)
 
 
 def find_free_port() -> int:
@@ -980,6 +1028,58 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         session = await self.project.auth.storage.sessions.find(token_hash)
         self.assertEqual(session.attr_values, expected)
 
+    async def create_ip_attr(self) -> None:
+        await self.project.auth.storage.sessions.attrs.create(
+            AuthSessionAttr(
+                id=1,
+                name="ip",
+                type=AuthAttrType.STR,
+                source=AuthSessionAttrSource.TRANSPORT,
+            )
+        )
+
+    async def test_the_ip_of_the_peer_goes_with_the_flows(self) -> None:
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        await self.create_ip_attr()
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="a", password="x")
+            )
+        ).result.signed_up
+        record = await self.project.auth.storage.sign_up.records.get(signed_up.uid)
+        self.assertEqual(record.attr_values, {1: "127.0.0.1"})
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="a", password="x")
+            )
+        ).result.signed_in
+        token_hash = hashlib.sha256(signed_in.token.encode()).hexdigest()
+        session = await self.project.auth.storage.sessions.find(token_hash)
+        self.assertEqual(session.attr_values, {1: "127.0.0.1"})
+
+    async def test_an_application_binds_the_ip_to_the_header_of_its_proxy(
+        self,
+    ) -> None:
+        nickname = (await self.connect(TstForwardedProject)).auth_methods_nickname
+        await self.create_ip_attr()
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="a", password="x"),
+                metadata=(("x-forwarded-for", "203.0.113.7"),),
+            )
+        ).result.signed_up
+        record = await self.project.auth.storage.sign_up.records.get(signed_up.uid)
+        self.assertEqual(record.attr_values, {1: "203.0.113.7"})
+        # no header, no value: nothing kept
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="a", password="x")
+            )
+        ).result.signed_in
+        token_hash = hashlib.sha256(signed_in.token.encode()).hexdigest()
+        session = await self.project.auth.storage.sessions.find(token_hash)
+        self.assertEqual(session.attr_values, {})
+
     async def test_the_flows_of_a_nickname_tell_their_errors(self) -> None:
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         await nickname.SignUp(
@@ -1194,6 +1294,22 @@ class BearerTokenTestCase(unittest.TestCase):
         ):
             with self.subTest(metadata=metadata):
                 self.assertEqual(get_bearer_token(metadata), token)
+
+
+class PeerIpTestCase(unittest.TestCase):
+    def test_the_ip_is_that_of_the_peer_if_it_has_one(self) -> None:
+        for peer, ip in (
+            ("ipv4:10.0.0.1:5000", "10.0.0.1"),
+            ("ipv6:[2001:db8::1]:5000", "2001:db8::1"),
+            ("ipv6:%5B2001:db8::1%5D:5000", "2001:db8::1"),
+            ("ipv6:[::ffff:10.0.0.1]:5000", "10.0.0.1"),
+            ("unix:/run/app.sock", None),
+            ("ipv4:nowhere:5000", None),
+            ("", None),
+        ):
+            with self.subTest(peer=peer):
+                context = mock.Mock(**{"peer.return_value": peer})
+                self.assertEqual(get_peer_ip(context), ip)
 
 
 class ErrorPoliciesTestCase(unittest.TestCase):
