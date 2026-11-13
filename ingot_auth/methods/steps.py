@@ -1,6 +1,6 @@
 """The steps of a method: what each call of it ends with."""
 
-__all__ = ("AuthChallenge", "AuthStep", "AuthVerified")
+__all__ = ("AuthChallenge", "AuthCodeChallenge", "AuthStep", "AuthVerified")
 
 import typing as t
 from dataclasses import dataclass
@@ -15,6 +15,17 @@ class AuthChallenge[ChallengeType, StateType]:
 
     challenge: ChallengeType
     state: StateType
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthCodeChallenge:
+    """
+    What a step asks for, by any method or factor: a code of ``length`` digits
+    sent to the user, by mail, an SMS, an app, which the client shows the form
+    of; the client answers with the code typed.
+    """
+
+    length: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

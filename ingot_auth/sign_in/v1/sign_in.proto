@@ -2,6 +2,15 @@ syntax = "proto3";
 
 package ingot_auth.sign_in.v1;
 
+import "ingot_auth/methods/v1/challenges.proto";
+
+// The answers of a sign-in, by any method or factor: whose challenge it is,
+// the attempt knows.
+service SignIn {
+  // Requires PERMISSION_CAN_SIGN_IN, and that of the method of the attempt.
+  rpc AnswerSignIn(AnswerSignInRequest) returns (AnswerSignInResponse);
+}
+
 // The bits of the domain `auth.sign_in` a sign-in requires, besides the flag
 // of its method: an aid for a client building its interface, the server
 // checks them anyway.
@@ -10,11 +19,23 @@ enum Permission {
   PERMISSION_CAN_SIGN_IN = 1;
 }
 
-// What a step of a sign-in gives, by any method: the end of the sign-in. The
-// challenge of a method of more steps or of a second factor, field 1, comes
-// with the first such method of a contract.
+message AnswerSignInRequest {
+  string attempt_id = 1;
+  // the kind of the answer, as the challenge asks for it
+  oneof answer {
+    string code = 2;
+  }
+}
+
+message AnswerSignInResponse {
+  SignInResult result = 1;
+}
+
+// What a step of a sign-in gives, by any method: what the method or a second
+// factor asks for, or the end of the sign-in.
 message SignInResult {
   oneof result {
+    ingot_auth.methods.v1.Challenge challenge = 1;
     SignedIn signed_in = 2;
   }
 }

@@ -26,6 +26,7 @@ from ingot_auth.contrib.storages.memory import (
 )
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import (
+    AuthAnonymousGroup,
     AuthGroup,
     AuthGroupInfo,
     AuthGroupNotFoundError,
@@ -33,7 +34,10 @@ from ingot_auth.access.groups import (
     AuthSignedInGroup,
 )
 from ingot_auth.access.members import AuthMembersPermissions
+from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.sign_in import AuthSignInPermissions
+from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingPermissions
 
@@ -127,7 +131,9 @@ class GroupsTestCase(unittest.TestCase):
     def test_the_groups_come_in_the_order_of_their_slots(self) -> None:
         # of the bases, the last first, as the slots of ingots go
         names = [group.get_name() for group in self.groups.get_all()]
-        self.assertEqual(names, ["signed_in", "admins", "editors", "buyers"])
+        self.assertEqual(
+            names, ["grp_anonymous", "grp_signed_in", "admins", "editors", "buyers"]
+        )
 
     def test_a_group_is_got_by_its_name(self) -> None:
         self.assertIsInstance(self.groups.get("editors"), EditorsGroup)
@@ -165,12 +171,22 @@ class GroupsTestCase(unittest.TestCase):
         with mock.patch.object(BuyersGroup, "_get_permissions", side_effect=OSError):
             self.assertEqual(self.groups.get_digest(), digest)
 
-    def test_the_core_declares_signed_in_alone(self) -> None:
+    def test_the_core_declares_anonymous_and_signed_in(self) -> None:
         project = AuthMemoryProject()
         groups = project.auth.access.groups
-        self.assertEqual(groups.get_all(), (groups.signed_in,))
-        self.assertIsInstance(groups.get("signed_in"), AuthSignedInGroup)
-        self.assertEqual(groups.signed_in.get_permissions(), Permissions())
+        self.assertEqual(groups.get_all(), (groups.grp_anonymous, groups.grp_signed_in))
+        self.assertIsInstance(groups.get("grp_anonymous"), AuthAnonymousGroup)
+        self.assertIsInstance(groups.get("grp_signed_in"), AuthSignedInGroup)
+        # no method bound: the flows, the metadata
+        self.assertEqual(
+            groups.grp_anonymous.get_permissions(),
+            Permissions(
+                AuthSignUpPermissions.CAN_SIGN_UP,
+                AuthSignInPermissions.CAN_SIGN_IN,
+                AuthMetadataPermissions.CAN_READ,
+            ),
+        )
+        self.assertEqual(groups.grp_signed_in.get_permissions(), Permissions())
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
         # refused by mypy too
@@ -207,10 +223,10 @@ class OperationsTestCase(unittest.TestCase):
         )
         self.assertEqual(
             [group.name for group in groups],
-            ["signed_in", "admins", "editors", "buyers"],
+            ["grp_anonymous", "grp_signed_in", "admins", "editors", "buyers"],
         )
         self.assertEqual(
-            groups[3],
+            groups[4],
             AuthGroupInfo(
                 name="buyers", permissions=Permissions(ShopPermissions.CAN_BUY)
             ),
@@ -244,19 +260,20 @@ class OperationsTestCase(unittest.TestCase):
                 asyncio.run(call)
             self.assertEqual(error.exception.name, "guests")
 
-    def test_signed_in_keeps_no_members(self) -> None:
+    def test_anonymous_and_signed_in_keep_no_members(self) -> None:
         members = self.access.members
-        membership = AuthMembership(group="signed_in", uid="a1")
-        for call in (
-            self.runner.run(members.op_add, membership, self.metadata),
-            self.runner.run(members.op_remove, membership, self.metadata),
-            self.runner.run(members.op_list, "signed_in", self.metadata),
-        ):
-            with self.assertRaises(AuthGroupNotFoundError) as error:
-                asyncio.run(call)
-            self.assertEqual(
-                str(error.exception), "the group 'signed_in' has every signed-in user"
-            )
+        for group in ("grp_anonymous", "grp_signed_in"):
+            membership = AuthMembership(group=group, uid="a1")
+            for call in (
+                self.runner.run(members.op_add, membership, self.metadata),
+                self.runner.run(members.op_remove, membership, self.metadata),
+                self.runner.run(members.op_list, group, self.metadata),
+            ):
+                with self.assertRaises(AuthGroupNotFoundError) as error:
+                    asyncio.run(call)
+                self.assertEqual(
+                    str(error.exception), f"the group {group!r} keeps no members"
+                )
 
     def test_a_uid_of_no_profile_is_refused(self) -> None:
         members = self.access.members
@@ -318,7 +335,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
 
 
 class SignedInGroupsUnit(AuthGroupsUnit):
-    signed_in = Slot(ShopSignedInGroup)
+    grp_signed_in = Slot(ShopSignedInGroup)
 
 
 class SignedInAccessUnit(AuthAccessUnit):
@@ -386,7 +403,8 @@ class CommandsTestCase(unittest.TestCase):
             self.run_project("auth", "access", "groups", "list"),
             (
                 0,
-                "signed_in\n"
+                "grp_anonymous\tauth.metadata=1\tauth.sign_in=1\tauth.sign_up=1\n"
+                "grp_signed_in\n"
                 "admins\tarticles=1\tauth.access.members=3\tshop=2\n"
                 "editors\tarticles=2\n"
                 "buyers\tshop=1\n",

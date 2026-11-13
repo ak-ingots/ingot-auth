@@ -9,7 +9,6 @@ from ingots.puer import Slot
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.email_code import (
-    AuthEmailCodeChallenge,
     AuthEmailCodeConfigs,
     AuthEmailCodeMethod,
     AuthEmailCodePermissions,
@@ -21,6 +20,7 @@ from ingot_auth.methods.email_code import (
 from ingot_auth.mailers import AuthMail
 from ingot_auth.methods import (
     AuthChallenge,
+    AuthCodeChallenge,
     AuthMethodInvalidError,
     AuthMethodRefusedError,
     AuthMethodsUnit,
@@ -140,7 +140,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_sign_up_sends_a_code_and_takes_it_back(self) -> None:
         challenge = await self.start("alice@example.com")
-        self.assertEqual(challenge.challenge, AuthEmailCodeChallenge(length=6))
+        self.assertEqual(challenge.challenge, AuthCodeChallenge(length=6))
         [(email, code)] = self.get_codes()
         self.assertEqual(email, "alice@example.com")
         self.assertRegex(code, r"^\d{6}$")
@@ -208,7 +208,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
         challenge = await runner.run(sign_in.op_start, start, metadata)
         assert isinstance(challenge, AuthSignInChallenge)
-        self.assertEqual(challenge.challenge, AuthEmailCodeChallenge(length=6))
+        self.assertEqual(challenge.challenge, AuthCodeChallenge(length=6))
         await self.project.auth.dispatcher.join()
         answer = AuthAnswerSignInParameters(
             attempt_id=challenge.attempt_id, answer=self.get_codes()[-1][1]
@@ -230,7 +230,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         get_permissions.assert_called_once()
         assert isinstance(step, AuthChallenge)
         await self.project.auth.dispatcher.join()
-        self.assertEqual(step.challenge, AuthEmailCodeChallenge(length=6))
+        self.assertEqual(step.challenge, AuthCodeChallenge(length=6))
         self.assertEqual(self.project.auth.mailer.get_sent(), ())
         for code in ("000000", "123456"):
             with self.assertRaises(AuthMethodRefusedError):
@@ -245,7 +245,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
             )
         assert isinstance(step, AuthChallenge)
         await self.project.auth.dispatcher.join()
-        self.assertEqual(step.challenge, AuthEmailCodeChallenge(length=6))
+        self.assertEqual(step.challenge, AuthCodeChallenge(length=6))
         self.assertEqual(self.get_denials(), ["al@b.c"])
         [(_, code)] = self.get_codes()  # that of the sign-up alone
         with self.assertRaises(AuthMethodRefusedError):

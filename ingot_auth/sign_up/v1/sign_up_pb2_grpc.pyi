@@ -5,9 +5,16 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
+from ingot_auth.sign_up.v1 import sign_up_pb2 as _sign_up_pb2
 import abc as _abc_1
 import grpc as _grpc
+import sys
 import typing as _typing
+
+if sys.version_info >= (3, 11):
+    from typing import Self as _Self
+else:
+    from typing_extensions import Self as _Self
 
 _T = _typing.TypeVar("_T")
 
@@ -18,3 +25,40 @@ class _ServicerContext(_grpc.ServicerContext, _aio.ServicerContext):  # type: ig
 
 GRPC_GENERATED_VERSION: str
 GRPC_VERSION: str
+
+class SignUpStub:
+    """The answers of a sign-up, by any method: whose challenge it is, the attempt
+    knows.
+    """
+
+    @_typing.overload
+    def __new__(cls, channel: _grpc.Channel) -> _Self: ...
+    @_typing.overload
+    def __new__(cls, channel: _aio.Channel) -> SignUpAsyncStub: ...
+    AnswerSignUp: _grpc.UnaryUnaryMultiCallable[_sign_up_pb2.AnswerSignUpRequest, _sign_up_pb2.AnswerSignUpResponse]
+    """Requires PERMISSION_CAN_SIGN_UP, and that of the method of the attempt."""
+
+@_typing.type_check_only
+class SignUpAsyncStub(SignUpStub):
+    """The answers of a sign-up, by any method: whose challenge it is, the attempt
+    knows.
+    """
+
+    def __init__(self, channel: _aio.Channel) -> None: ...
+    AnswerSignUp: _aio.UnaryUnaryMultiCallable[_sign_up_pb2.AnswerSignUpRequest, _sign_up_pb2.AnswerSignUpResponse]  # type: ignore[assignment]
+    """Requires PERMISSION_CAN_SIGN_UP, and that of the method of the attempt."""
+
+class SignUpServicer(metaclass=_abc_1.ABCMeta):
+    """The answers of a sign-up, by any method: whose challenge it is, the attempt
+    knows.
+    """
+
+    @_abc_1.abstractmethod
+    def AnswerSignUp(
+        self,
+        request: _sign_up_pb2.AnswerSignUpRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_sign_up_pb2.AnswerSignUpResponse, _abc.Awaitable[_sign_up_pb2.AnswerSignUpResponse]]:
+        """Requires PERMISSION_CAN_SIGN_UP, and that of the method of the attempt."""
+
+def add_SignUpServicer_to_server(servicer: SignUpServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...

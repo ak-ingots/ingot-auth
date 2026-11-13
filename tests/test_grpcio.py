@@ -2,6 +2,7 @@ import datetime
 import decimal
 import hashlib
 import os
+import re
 import socket
 import typing as t
 import unittest
@@ -19,7 +20,7 @@ from ingot_grpcio.grpc.services.export import build_descriptor_set
 from ingot_grpcio.logging import GrpcLoggingUnit
 from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
-from ingots.defaults.operations import ANONYMOUS_CALLER, Caller, Permissions
+from ingots.defaults.operations import Caller, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from google.protobuf.timestamp_pb2 import Timestamp
 from ingots.puer import Slot
@@ -27,7 +28,12 @@ from ingots.puer import Slot
 from ingot_auth import AuthProject
 from ingot_auth.__main__ import AuthMemorySessionsUnit, AuthMemorySignInUnit
 from ingot_auth.access import AuthAccessUnit
-from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit, AuthGroupsPermissions
+from ingot_auth.access.groups import (
+    AuthAnonymousGroup,
+    AuthGroup,
+    AuthGroupsUnit,
+    AuthGroupsPermissions,
+)
 from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
@@ -35,11 +41,12 @@ from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcAdminBinding,
     AuthGrpcAttrsServicer,
+    AuthGrpcEmailCodeBinding,
     AuthGrpcErrorsUnit,
+    AuthGrpcFlowsBinding,
     AuthGrpcGroupsServicer,
     AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
-    AuthGrpcMetadataServicer,
     AuthGrpcNicknameBinding,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
@@ -55,10 +62,7 @@ from ingot_auth.access.members.v1 import (
 )
 from ingot_auth.contrib.transports.grpcio.base import get_bearer_token
 from ingot_auth.contrib.transports.grpcio.sessions.attrs import build_attr_values
-from ingot_auth.metadata.v1 import (
-    metadata_pb2,
-    metadata_pb2_grpc,
-)
+from ingot_auth.metadata.v1 import metadata_pb2
 from ingot_auth.methods.nickname.v1 import nickname_pb2
 from ingot_auth.profiles.attrs.v1 import (
     attrs_pb2 as profile_attrs_pb2,
@@ -84,6 +88,17 @@ from ingot_auth.sessions.presets.v1 import (
 )
 from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_up.v1 import sign_up_pb2
+from ingot_auth.caches import AuthAttemptNotFoundError
+from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
+from ingot_auth.contrib.mailers.memory import AuthMemoryMailer
+from ingot_auth.contrib.transports.grpcio.challenges import build_challenge
+from ingot_auth.methods.email_code import (
+    AuthEmailCodeConfigs,
+    AuthEmailCodeMethod,
+    AuthEmailCodePermissions,
+)
+from ingot_auth.methods.email_code.v1 import email_code_pb2
+from ingot_auth.methods.v1 import challenges_pb2
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods import (
@@ -188,20 +203,12 @@ class TstServer(AuthGrpcMetadataBinding, TstAdminBinding, DefaultGrpcServer):
     pass
 
 
-class ClosedMetadataServicer(AuthGrpcMetadataServicer):
-    @t.override
-    async def _get_caller(self, context: aio.ServicerContext[t.Any, t.Any]) -> Caller:
-        return ANONYMOUS_CALLER
-
-
-class TstClosedServer(DefaultGrpcServer):
-    auth_metadata = GrpcService(metadata_pb2_grpc.MetadataStub, ClosedMetadataServicer)
-
-
 class TstClient(
     AuthGrpcMetadataBinding,
     AuthGrpcAdminBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcEmailCodeBinding,
+    AuthGrpcFlowsBinding,
     DefaultGrpcClient,
 ):
     pass
@@ -250,10 +257,6 @@ class TstAnonymousServersUnit(GrpcServersUnit):
     default = Slot(TstAnonymousServer)
 
 
-class TstClosedServersUnit(GrpcServersUnit):
-    default = Slot(TstClosedServer)
-
-
 class TstGrpcUnit(GrpcUnit):
     errors = Slot(AuthGrpcErrorsUnit)
     clients = Slot(TstClientsUnit)
@@ -265,10 +268,6 @@ class TstAdminGrpcUnit(TstGrpcUnit):
 
 class TstAnonymousGrpcUnit(TstGrpcUnit):
     servers = Slot(TstAnonymousServersUnit)
-
-
-class TstClosedGrpcUnit(TstGrpcUnit):
-    servers = Slot(TstClosedServersUnit)
 
 
 class TstProject(AuthProject, GrpcProject):
@@ -286,8 +285,29 @@ class TstAnonymousProject(TstProject):
     grpc = Slot(TstAnonymousGrpcUnit)
 
 
-class TstClosedProject(TstProject):
-    grpc = Slot(TstClosedGrpcUnit)
+class ClosedAnonymousGroup(AuthAnonymousGroup):
+    """The metadata closed to anyone."""
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        readers = Permissions(AuthMetadataPermissions.CAN_READ)
+        return super()._get_permissions() - readers
+
+
+class ClosedGroupsUnit(TstGroupsUnit):
+    grp_anonymous = Slot(ClosedAnonymousGroup)
+
+
+class ClosedAccessUnit(TstAccessUnit):
+    groups = Slot(ClosedGroupsUnit)
+
+
+class ClosedAuthUnit(TstAuthUnit):
+    access = Slot(ClosedAccessUnit)
+
+
+class TstClosedProject(TstAnonymousProject):
+    auth = Slot(ClosedAuthUnit)
 
 
 class NoFlowMethod(BaseAuthMethod[str, str, None]):
@@ -363,6 +383,50 @@ class TstNicknameProject(TstProject):
     grpc = Slot(TstNicknameGrpcUnit)
 
 
+class TstEmailCodeMethodsUnit(AuthMethodsUnit):
+    email_code = Slot(AuthEmailCodeMethod)
+
+
+class TstEmailCodeAuthUnit(TstAuthUnit):
+    cache = Slot(AuthMemoryCache)
+    dispatcher = Slot(AuthMemoryDispatcher)
+    mailer = Slot(AuthMemoryMailer)
+    sessions = Slot(AuthMemorySessionsUnit)
+    sign_in = Slot(AuthMemorySignInUnit)
+    methods = Slot(TstEmailCodeMethodsUnit)
+
+
+class TstEmailCodeConfigs(AuthEmailCodeConfigs, TstConfigs):
+    pass
+
+
+class TstEmailCodeSettingsUnit(TstSettingsUnit):
+    configs = Slot(TstEmailCodeConfigs)
+
+
+class TstEmailCodeServer(
+    AuthGrpcMetadataBinding,
+    AuthGrpcEmailCodeBinding,
+    AuthGrpcFlowsBinding,
+    DefaultGrpcServer,
+):
+    pass
+
+
+class TstEmailCodeServersUnit(GrpcServersUnit):
+    default = Slot(TstEmailCodeServer)
+
+
+class TstEmailCodeGrpcUnit(TstGrpcUnit):
+    servers = Slot(TstEmailCodeServersUnit)
+
+
+class TstEmailCodeProject(TstProject):
+    settings = Slot(TstEmailCodeSettingsUnit)
+    auth = Slot(TstEmailCodeAuthUnit)
+    grpc = Slot(TstEmailCodeGrpcUnit)
+
+
 def find_free_port() -> int:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -403,7 +467,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
-    async def test_a_servicer_may_close_the_metadata(self) -> None:
+    async def test_an_application_may_close_the_metadata(self) -> None:
         client = await self.connect(TstClosedProject)
         with self.assertRaises(GrpcError) as error:
             await client.auth_metadata.GetMetadata(metadata_pb2.GetMetadataRequest())
@@ -523,7 +587,15 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             list(reply.groups),
             [
-                groups_pb2.Group(name="signed_in"),
+                groups_pb2.Group(
+                    name="grp_anonymous",
+                    permissions={
+                        "auth.metadata": 1,
+                        "auth.sign_in": 1,
+                        "auth.sign_up": 1,
+                    },
+                ),
+                groups_pb2.Group(name="grp_signed_in"),
                 groups_pb2.Group(name="admins", permissions={"auth.access.members": 7}),
             ],
         )
@@ -745,6 +817,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthGroupsPermissions, groups_pb2.Permission),
             (AuthMembersPermissions, members_pb2.Permission),
             (AuthNicknamePermissions, nickname_pb2.Permission),
+            (AuthEmailCodePermissions, email_code_pb2.Permission),
             (AuthSignUpPermissions, sign_up_pb2.Permission),
             (AuthSignInPermissions, sign_in_pb2.Permission),
         ):
@@ -960,6 +1033,87 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 (code, reason, metadata),
             )
 
+    async def get_code(self) -> str:
+        """The code of the last mail, once the mail is out."""
+        auth = t.cast(TstEmailCodeAuthUnit, self.project.auth)
+        await auth.dispatcher.join()
+        text = auth.mailer.get_sent()[-1].text
+        match = re.match(r"Your code is (\d+)\.", text)
+        assert match is not None
+        return match[1]
+
+    async def test_an_email_signs_up_and_in_by_its_code(self) -> None:
+        client = await self.connect(TstEmailCodeProject)
+        email_code = client.auth_methods_email_code
+        challenge = (
+            await email_code.StartSignUp(
+                email_code_pb2.StartSignUpRequest(email="al@b.c")
+            )
+        ).result.challenge
+        self.assertEqual(challenge.code, challenges_pb2.CodeChallenge(length=6))
+        answer = sign_up_pb2.AnswerSignUpRequest(
+            attempt_id=challenge.attempt_id, code=await self.get_code()
+        )
+        signed_up = (await client.auth_sign_up.AnswerSignUp(answer)).result.signed_up
+        challenge = (
+            await email_code.StartSignIn(
+                email_code_pb2.StartSignInRequest(email="AL@b.c")
+            )
+        ).result.challenge
+        answer_in = sign_in_pb2.AnswerSignInRequest(
+            attempt_id=challenge.attempt_id, code=await self.get_code()
+        )
+        signed_in = (await client.auth_sign_in.AnswerSignIn(answer_in)).result.signed_in
+        caller = await self.project.auth.sessions.authenticate(signed_in.token)
+        self.assertEqual(
+            (caller.uid, caller.session_id), (signed_up.uid, signed_in.session_id)
+        )
+
+    async def test_the_answers_tell_their_errors(self) -> None:
+        client = await self.connect(TstEmailCodeProject)
+        start = email_code_pb2.StartSignUpRequest(email="al@b.c")
+        challenge = (
+            await client.auth_methods_email_code.StartSignUp(start)
+        ).result.challenge
+        code = await self.get_code()
+        wrong = f"{(int(code) + 1) % 10**6:06d}"
+        # a call starts once made: made in turn, so that the answer of another
+        # flow, taking the attempt, comes last
+        for call, code_of_status, reason in (
+            (
+                lambda: client.auth_sign_up.AnswerSignUp(
+                    sign_up_pb2.AnswerSignUpRequest(
+                        attempt_id=challenge.attempt_id, code=wrong
+                    )
+                ),
+                grpc.StatusCode.UNAUTHENTICATED,
+                "METHOD_REFUSED",
+            ),
+            (
+                lambda: client.auth_sign_up.AnswerSignUp(
+                    sign_up_pb2.AnswerSignUpRequest(attempt_id="gone", code=code)
+                ),
+                grpc.StatusCode.NOT_FOUND,
+                "ATTEMPT_NOT_FOUND",
+            ),
+            (
+                # an attempt of another flow
+                lambda: client.auth_sign_in.AnswerSignIn(
+                    sign_in_pb2.AnswerSignInRequest(
+                        attempt_id=challenge.attempt_id, code=code
+                    )
+                ),
+                grpc.StatusCode.NOT_FOUND,
+                "ATTEMPT_NOT_FOUND",
+            ),
+        ):
+            with self.assertRaises(GrpcError) as error:
+                await call()
+            self.assertEqual(
+                (error.exception.code, error.exception.reason),
+                (code_of_status, reason),
+            )
+
     async def test_a_flow_its_toggle_closes_is_refused(self) -> None:
         os.environ["INGOT_AUTH_SIGN_UP_NICKNAME_ENABLED"] = "off"
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
@@ -968,6 +1122,25 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 nickname_pb2.SignUpRequest(nickname="a", password="x")
             )
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
+
+    async def test_the_sign_up_its_toggle_closes_is_refused_the_sign_in_not(
+        self,
+    ) -> None:
+        os.environ["INGOT_AUTH_SIGN_UP_ENABLED"] = "off"
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        for call, code_of_status in (
+            (
+                nickname.SignUp(nickname_pb2.SignUpRequest(nickname="a", password="x")),
+                grpc.StatusCode.PERMISSION_DENIED,
+            ),
+            (
+                nickname.SignIn(nickname_pb2.SignInRequest(nickname="a", password="x")),
+                grpc.StatusCode.UNAUTHENTICATED,
+            ),
+        ):
+            with self.assertRaises(GrpcError) as error:
+                await call
+            self.assertEqual(error.exception.code, code_of_status)
 
     async def test_a_user_signs_up_and_in_then_calls_by_its_token(self) -> None:
         client = await self.connect(TstNicknameProject)
@@ -1057,6 +1230,13 @@ class ErrorPoliciesTestCase(unittest.TestCase):
                 {"field": "password", "policies": "length,chars"},
             ),
             (
+                errors.auth_attempt_not_found,
+                AuthAttemptNotFoundError.create(),
+                grpc.StatusCode.NOT_FOUND,
+                "ATTEMPT_NOT_FOUND",
+                {},
+            ),
+            (
                 errors.auth_method_unsupported,
                 AuthMethodUnsupportedError.for_flow("sign_up"),
                 grpc.StatusCode.FAILED_PRECONDITION,
@@ -1110,3 +1290,10 @@ class AttrValuesTestCase(unittest.TestCase):
                 with self.assertRaises(AuthItemInvalidError) as error:
                     build_attr_values(attr_values)
                 self.assertEqual(error.exception.key, 1)
+
+
+class ChallengesTestCase(unittest.TestCase):
+    def test_a_challenge_with_no_message_is_refused(self) -> None:
+        with self.assertRaises(TypeError) as error:
+            build_challenge("x", "a code")
+        self.assertEqual(str(error.exception), "no message of a challenge str")

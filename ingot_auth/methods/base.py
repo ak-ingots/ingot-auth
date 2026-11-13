@@ -42,7 +42,8 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
 
     Whether a flow is open is of a hook of its own, ``_get_<flow>_enabled``,
     closed here: a method opens the flows it takes, by the configs of its
-    package as a rule, which the project mixes into its own.
+    package as a rule, which the project mixes into its own. The sign-up
+    closed in the project closes that of every method.
 
     The flows of a method are permissions too, a domain of its own,
     ``auth.methods.nickname``, a flag a flow it takes, ``CAN_SIGN_UP``,
@@ -70,8 +71,11 @@ class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
 
     @t.final
     def get_sign_up_enabled(self) -> bool:
-        """Whether the method signs up, open in the project."""
-        return self._get_sign_up_enabled()
+        """
+        Whether the method signs up, open in the project: the sign-up open,
+        and the flow of the method.
+        """
+        return self.project.auth.sign_up.get_enabled() and self._get_sign_up_enabled()
 
     @t.final
     def get_sign_in_enabled(self) -> bool:

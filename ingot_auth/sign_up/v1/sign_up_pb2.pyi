@@ -6,6 +6,7 @@ isort:skip_file
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
+from ingot_auth.methods.v1 import challenges_pb2 as _challenges_pb2
 import builtins as _builtins
 import sys
 import typing as _typing
@@ -37,27 +38,74 @@ PERMISSION_CAN_SIGN_UP: Permission.ValueType  # 1
 Global___Permission: _TypeAlias = Permission  # noqa: Y015
 
 @_typing.final
+class AnswerSignUpRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ATTEMPT_ID_FIELD_NUMBER: _builtins.int
+    CODE_FIELD_NUMBER: _builtins.int
+    attempt_id: _builtins.str
+    code: _builtins.str
+    def __init__(
+        self,
+        *,
+        attempt_id: _builtins.str = ...,
+        code: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["answer", b"answer", "code", b"code"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["answer", b"answer", "attempt_id", b"attempt_id", "code", b"code"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    _WhichOneofReturnType_answer: _TypeAlias = _typing.Literal["code"]  # noqa: Y015
+    _WhichOneofArgType_answer: _TypeAlias = _typing.Literal["answer", b"answer"]  # noqa: Y015
+    def WhichOneof(self, oneof_group: _WhichOneofArgType_answer) -> _WhichOneofReturnType_answer | None: ...
+
+Global___AnswerSignUpRequest: _TypeAlias = AnswerSignUpRequest  # noqa: Y015
+
+@_typing.final
+class AnswerSignUpResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    RESULT_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def result(self) -> Global___SignUpResult: ...
+    def __init__(
+        self,
+        *,
+        result: Global___SignUpResult | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___AnswerSignUpResponse: _TypeAlias = AnswerSignUpResponse  # noqa: Y015
+
+@_typing.final
 class SignUpResult(_message.Message):
-    """What a step of a sign-up gives, by any method: the end of the sign-up. The
-    challenge of a method of more steps, field 1, comes with the first such
-    method of a contract.
+    """What a step of a sign-up gives, by any method: what the method asks for,
+    or the end of the sign-up.
     """
 
     DESCRIPTOR: _descriptor.Descriptor
 
+    CHALLENGE_FIELD_NUMBER: _builtins.int
     SIGNED_UP_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def challenge(self) -> _challenges_pb2.Challenge: ...
     @_builtins.property
     def signed_up(self) -> Global___SignedUp: ...
     def __init__(
         self,
         *,
+        challenge: _challenges_pb2.Challenge | None = ...,
         signed_up: Global___SignedUp | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["result", b"result", "signed_up", b"signed_up"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["challenge", b"challenge", "result", b"result", "signed_up", b"signed_up"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["result", b"result", "signed_up", b"signed_up"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["challenge", b"challenge", "result", b"result", "signed_up", b"signed_up"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["signed_up"]  # noqa: Y015
+    _WhichOneofReturnType_result: _TypeAlias = _typing.Literal["challenge", "signed_up"]  # noqa: Y015
     _WhichOneofArgType_result: _TypeAlias = _typing.Literal["result", b"result"]  # noqa: Y015
     def WhichOneof(self, oneof_group: _WhichOneofArgType_result) -> _WhichOneofReturnType_result | None: ...
 

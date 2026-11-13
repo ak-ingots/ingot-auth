@@ -1,6 +1,7 @@
 """The statuses of the exceptions of the auth."""
 
 __all__ = (
+    "AuthGrpcAttemptNotFoundPolicy",
     "AuthGrpcErrorsUnit",
     "AuthGrpcGroupNotFoundPolicy",
     "AuthGrpcIdentityConflictPolicy",
@@ -28,6 +29,7 @@ from ingots.defaults.operations import OperationPermissionsError
 from ingots.puer import Slot
 
 from ingot_auth.access.groups import AuthGroupError, AuthGroupNotFoundError
+from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.methods import (
     AuthMethodDeniedError,
     AuthMethodInvalidError,
@@ -175,6 +177,17 @@ class AuthGrpcMethodUnsupportedPolicy(BaseAuthGrpcErrorPolicy):
         return {"flow": t.cast(AuthMethodUnsupportedError, error).flow}
 
 
+class AuthGrpcAttemptNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    No attempt waits under the id of an answer: none was, it expired, it is
+    over, or it is of another flow. The client starts again.
+    """
+
+    EXCEPTION = AuthAttemptNotFoundError
+    CODE = grpc.StatusCode.NOT_FOUND
+    REASON = "ATTEMPT_NOT_FOUND"
+
+
 class AuthGrpcIdentityConflictPolicy(BaseAuthGrpcErrorPolicy):
     """
     The identifier is bound already, told on a sign-up as the user picks
@@ -227,6 +240,7 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_method_denied = Slot(AuthGrpcMethodDeniedPolicy)
     auth_method_invalid = Slot(AuthGrpcMethodInvalidPolicy)
     auth_method_unsupported = Slot(AuthGrpcMethodUnsupportedPolicy)
+    auth_attempt_not_found = Slot(AuthGrpcAttemptNotFoundPolicy)
     auth_identity_conflict = Slot(AuthGrpcIdentityConflictPolicy)
     auth_session_not_found = Slot(AuthGrpcSessionNotFoundPolicy)
     auth_session_expired = Slot(AuthGrpcSessionExpiredPolicy)

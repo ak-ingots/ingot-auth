@@ -21,6 +21,9 @@ __all__ = (
     "BaseAuthTiming",
 )
 
+import typing as t
+
+from ingots.defaults.operations import Permissions
 from ingots.puer import Factory, Slot, Unit
 
 from .items import (
@@ -47,3 +50,10 @@ class AuthSignInUnit(Unit):
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots
     timing = Slot(BaseAuthTiming)  # type: ignore[type-abstract]
+
+    @t.final
+    def get_anonymous_permissions(self) -> Permissions:
+        """What the sign-in gives the anonymous caller: its ``CAN_SIGN_IN``."""
+        # always for now: what limits the sign-ins, their number, their rate,
+        # comes later as a strategy in a slot, not as a toggle
+        return Permissions(AuthSignInPermissions.CAN_SIGN_IN)

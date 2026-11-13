@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package ingot_auth.methods.email_code.v1;
+
+import "ingot_auth/sessions/attrs/v1/attrs.proto";
+import "ingot_auth/sign_in/v1/sign_in.proto";
+import "ingot_auth/sign_up/v1/sign_up.proto";
+
+// The method of an email and a code sent to it, of two steps: its starts,
+// each with the values of the attributes of the session the client gives.
+// A start asks for the code, which the client gives by the answer of the
+// flow, SignUp.AnswerSignUp, SignIn.AnswerSignIn.
+service EmailCode {
+  // Requires PERMISSION_CAN_SIGN_UP, and that of the sign-up.
+  rpc StartSignUp(StartSignUpRequest) returns (StartSignUpResponse);
+  // Requires PERMISSION_CAN_SIGN_IN, and that of the sign-in.
+  rpc StartSignIn(StartSignInRequest) returns (StartSignInResponse);
+}
+
+// The bits of the domain `auth.methods.email_code` the RPCs require, which
+// the toggles of the method give: an aid for a client building its
+// interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_SIGN_UP = 1;
+  PERMISSION_CAN_SIGN_IN = 2;
+}
+
+message StartSignUpRequest {
+  string email = 1;
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 2;
+}
+
+message StartSignUpResponse {
+  ingot_auth.sign_up.v1.SignUpResult result = 1;
+}
+
+message StartSignInRequest {
+  string email = 1;
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 2;
+}
+
+message StartSignInResponse {
+  ingot_auth.sign_in.v1.SignInResult result = 1;
+}

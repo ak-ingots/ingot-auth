@@ -87,19 +87,38 @@ class AppConfigs(AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs):
     AUTH_SIGN_UP_NICKNAME_ENABLED = BoolConfig(False)  # by invitation only
 ```
 
+The sign-up has a toggle of its own, `AUTH_SIGN_UP_ENABLED`, on by
+default, of every method: off, it closes the sign-up of each method too,
+and the metadata lists them closed. The sign-in has none: what limits it
+comes later, as a strategy.
+
 The flows of a method are permissions too, a domain a method,
 `AuthNicknamePermissions` of `auth.methods.nickname`, a flag a flow: a
 sign-up by a method needs its `CAN_SIGN_UP` besides the `CAN_SIGN_UP` of
 the sign-up, and the toggles give the anonymous caller the flags of the
 flows open, so that a flow closed is refused as any operation the caller
-may not run:
+may not run. The anonymous caller is that of the project, of its
+`operations.callers`, `AuthCallersProvider` of `AuthProject`, with what the
+group `grp_anonymous` of the access grants ({doc}`access`): what the units of
+the auth give anyone, the flags of the flows and of the methods open and
+the reading of the metadata. A transport runs what is open to anyone for
+it:
 
 ```python
-anonymous = Caller(
-    uid="anonymous",
-    permissions=Permissions(
-        AuthSignUpPermissions.CAN_SIGN_UP, AuthSignInPermissions.CAN_SIGN_IN
-    )
-    | project.auth.methods.get_anonymous_permissions(),
-)
+anonymous = project.operations.callers.get_anonymous()
+```
+
+An application grants anyone more, or less, in its own group, `super()`
+first: the metadata closed, for one,
+
+```python
+class AppAnonymousGroup(AuthAnonymousGroup):
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        readers = Permissions(AuthMetadataPermissions.CAN_READ)
+        return super()._get_permissions() - readers
+
+
+class AppGroupsUnit(AuthGroupsUnit):
+    grp_anonymous = Slot(AppAnonymousGroup)
 ```

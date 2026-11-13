@@ -22,19 +22,26 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from ingot_auth.methods.v1 import challenges_pb2 as ingot__auth_dot_methods_dot_v1_dot_challenges__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#ingot_auth/sign_in/v1/sign_in.proto\x12\x15ingot_auth.sign_in.v1\"N\n\x0cSignInResult\x12\x34\n\tsigned_in\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.sign_in.v1.SignedInH\x00\x42\x08\n\x06result\"-\n\x08SignedIn\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t*D\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#ingot_auth/sign_in/v1/sign_in.proto\x12\x15ingot_auth.sign_in.v1\x1a&ingot_auth/methods/v1/challenges.proto\"C\n\x13\x41nswerSignInRequest\x12\x12\n\nattempt_id\x18\x01 \x01(\t\x12\x0e\n\x04\x63ode\x18\x02 \x01(\tH\x00\x42\x08\n\x06\x61nswer\"K\n\x14\x41nswerSignInResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_in.v1.SignInResult\"\x85\x01\n\x0cSignInResult\x12\x35\n\tchallenge\x18\x01 \x01(\x0b\x32 .ingot_auth.methods.v1.ChallengeH\x00\x12\x34\n\tsigned_in\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.sign_in.v1.SignedInH\x00\x42\x08\n\x06result\"-\n\x08SignedIn\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t*D\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x01\x32q\n\x06SignIn\x12g\n\x0c\x41nswerSignIn\x12*.ingot_auth.sign_in.v1.AnswerSignInRequest\x1a+.ingot_auth.sign_in.v1.AnswerSignInResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sign_in.v1.sign_in_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=189
-  _globals['_PERMISSION']._serialized_end=257
-  _globals['_SIGNINRESULT']._serialized_start=62
-  _globals['_SIGNINRESULT']._serialized_end=140
-  _globals['_SIGNEDIN']._serialized_start=142
-  _globals['_SIGNEDIN']._serialized_end=187
+  _globals['_PERMISSION']._serialized_start=431
+  _globals['_PERMISSION']._serialized_end=499
+  _globals['_ANSWERSIGNINREQUEST']._serialized_start=102
+  _globals['_ANSWERSIGNINREQUEST']._serialized_end=169
+  _globals['_ANSWERSIGNINRESPONSE']._serialized_start=171
+  _globals['_ANSWERSIGNINRESPONSE']._serialized_end=246
+  _globals['_SIGNINRESULT']._serialized_start=249
+  _globals['_SIGNINRESULT']._serialized_end=382
+  _globals['_SIGNEDIN']._serialized_start=384
+  _globals['_SIGNEDIN']._serialized_end=429
+  _globals['_SIGNIN']._serialized_start=501
+  _globals['_SIGNIN']._serialized_end=614
 # @@protoc_insertion_point(module_scope)
