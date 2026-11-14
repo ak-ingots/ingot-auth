@@ -45,15 +45,17 @@ from ingot_auth.sign_up import (
     AuthStartSignUpParameters,
 )
 
+from tests import masks
+
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
-    permissions=Permissions(
+    permissions=masks(
         AuthSignUpPermissions.CAN_SIGN_UP, AuthEmailCodePermissions.CAN_SIGN_UP
     ),
 )
 SIGNING_IN: t.Final = Caller(
     uid="anonymous",
-    permissions=Permissions(
+    permissions=masks(
         AuthSignInPermissions.CAN_SIGN_IN, AuthEmailCodePermissions.CAN_SIGN_IN
     ),
 )

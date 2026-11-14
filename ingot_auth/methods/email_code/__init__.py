@@ -33,7 +33,7 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
-from ingots.defaults.operations import OperationMetadata, Permissions
+from ingots.defaults.operations import OperationMetadata, Permissions, PermissionsSlot
 from ingots.puer import Factory
 
 from ingot_auth.mailers import AuthMail
@@ -94,6 +94,8 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
     IDENTIFIER_KIND: t.ClassVar[str] = "email"
     CODE_LENGTH: t.ClassVar[int] = 6
 
+    permissions = PermissionsSlot(AuthEmailCodePermissions)
+
     policies_sign_up_email = AuthEmailSignUpPolicies()
 
     op_send_code = Factory(AuthSendCodeOperation)
@@ -109,11 +111,11 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
 
     @t.override
     def _get_sign_up_permissions(self) -> Permissions:
-        return Permissions(AuthEmailCodePermissions.CAN_SIGN_UP)
+        return self.permissions(self.permissions.flags.CAN_SIGN_UP)
 
     @t.override
     def _get_sign_in_permissions(self) -> Permissions:
-        return Permissions(AuthEmailCodePermissions.CAN_SIGN_IN)
+        return self.permissions(self.permissions.flags.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(

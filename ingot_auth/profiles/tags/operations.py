@@ -23,9 +23,8 @@ from ingot_auth.registry.operations import (
 )
 from ingot_auth.storages import AuthTag, BaseAuthTagsStorage
 
-from .permissions import AuthTagsPermissions
-
 if t.TYPE_CHECKING:
+    from . import AuthTagsUnit
     from ingot_auth.project import AuthProject
 
 
@@ -44,25 +43,45 @@ class BaseAuthTagsOperation[ParametersType, ResultType](
 class AuthCreateTagOperation(
     BaseAuthCreateItemOperation[AuthTag], BaseAuthTagsOperation[AuthTag, AuthTag]
 ):
-    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_CREATE)
+    parent: "AuthTagsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_CREATE)
 
 
 class AuthListTagsOperation(
     BaseAuthListItemsOperation[AuthTag],
     BaseAuthTagsOperation[None, tuple[AuthTag, ...]],
 ):
-    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_READ)
+    parent: "AuthTagsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
 
 class AuthRenameTagOperation(
     BaseAuthRenameItemOperation[AuthTag],
     BaseAuthTagsOperation[AuthRenameItemParameters, AuthTag],
 ):
-    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_UPDATE)
+    parent: "AuthTagsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_UPDATE)
 
 
 class AuthDeleteTagOperation(
     BaseAuthDeleteItemOperation[AuthTag],
     BaseAuthTagsOperation[AuthDeleteItemParameters, None],
 ):
-    PERMISSIONS = Permissions(AuthTagsPermissions.CAN_DELETE)
+    parent: "AuthTagsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_DELETE)

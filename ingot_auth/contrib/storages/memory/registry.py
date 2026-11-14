@@ -14,9 +14,6 @@ from ingot_auth.storages import (
 
 from .state import AuthMemoryStateMixin
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryRegistryStorage[ItemType: AuthItem](
     AuthMemoryStateMixin, BaseAuthRegistryStorage[ItemType]
@@ -26,8 +23,8 @@ class AuthMemoryRegistryStorage[ItemType: AuthItem](
     with the project.
     """
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._items: dict[int, ItemType] = {}
         self._taken_ids: set[int] = set()
 

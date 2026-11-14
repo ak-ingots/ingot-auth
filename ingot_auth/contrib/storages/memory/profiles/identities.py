@@ -13,15 +13,12 @@ from ingot_auth.storages import (
 
 from ..state import AuthMemoryStateMixin
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryIdentitiesStorage(AuthMemoryStateMixin, BaseAuthIdentitiesStorage):
     """The identities in memory, by the kind and the value."""
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._uids: dict[tuple[str, str], str] = {}
 
     @t.override

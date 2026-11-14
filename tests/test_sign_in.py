@@ -58,6 +58,8 @@ from ingot_auth.testing.methods import (
     AuthTestingStart,
 )
 
+from tests import masks
+
 
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
@@ -190,9 +192,7 @@ class SignInTestCase(BaseSignInTestCase):
         assert isinstance(result, AuthSignedIn)
         caller = await self.project.auth.sessions.authenticate(result.token)
         self.assertEqual((caller.uid, caller.session_id), (uid, result.session_id))
-        self.assertEqual(
-            caller.permissions, Permissions(AuthTestingPermissions.CAN_SIGN_IN)
-        )
+        self.assertEqual(caller.permissions, masks(AuthTestingPermissions.CAN_SIGN_IN))
         session = await self.project.auth.storage.sessions.find(
             hash_token(result.token)
         )
@@ -261,7 +261,7 @@ class SignInTestCase(BaseSignInTestCase):
     def test_the_anonymous_caller_gets_the_flag_of_the_sign_in(self) -> None:
         self.assertEqual(
             self.project.auth.sign_in.get_anonymous_permissions(),
-            Permissions(AuthSignInPermissions.CAN_SIGN_IN),
+            masks(AuthSignInPermissions.CAN_SIGN_IN),
         )
 
     async def test_signing_in_needs_the_flags_of_the_flow_and_the_method(
@@ -271,7 +271,7 @@ class SignInTestCase(BaseSignInTestCase):
         sign_in = self.project.auth.sign_in
         for factory in (sign_in.op_start, sign_in.op_answer):
             self.assertEqual(
-                factory.cls.PERMISSIONS, Permissions(AuthSignInPermissions.CAN_SIGN_IN)
+                factory().get_permissions(), masks(AuthSignInPermissions.CAN_SIGN_IN)
             )
         caller = self.create_caller()
         for lacking in (
@@ -280,7 +280,7 @@ class SignInTestCase(BaseSignInTestCase):
         ):
             with self.subTest(lacking=lacking):
                 without = dataclasses.replace(
-                    caller, permissions=caller.permissions - Permissions(lacking)
+                    caller, permissions=caller.permissions - masks(lacking)
                 )
                 with self.assertRaises(OperationPermissionsError):
                     await self.start(AuthTestingStart(subject="a@b.c"), without)

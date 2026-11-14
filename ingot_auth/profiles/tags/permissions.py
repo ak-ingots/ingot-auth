@@ -5,7 +5,7 @@ __all__ = ("AuthTagsPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthTagsPermissions(PermissionFlags, domain="auth.profiles.tags"):
+class AuthTagsPermissions(PermissionFlags):
     """The operations on the tags."""
 
     CAN_CREATE = 1 << 0

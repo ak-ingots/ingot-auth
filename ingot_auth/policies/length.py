@@ -25,9 +25,12 @@ class AuthLengthPolicy(BaseOperation[AuthHasValue, None]):
     any here: a subclass replaces it.
     """
 
-    # a check of a value the flow running it has given, nothing to require
-    PERMISSIONS = Permissions()
     CONFIG: t.ClassVar[AuthLengthConfig] = AuthLengthConfig()
+
+    # a check of a value the flow running it has given, nothing to require
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(self, parameters: AuthHasValue, metadata: OperationMetadata) -> None:

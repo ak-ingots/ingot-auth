@@ -33,9 +33,8 @@ from ingot_auth.storages import (
     BaseAuthSessionPresetsStorage,
 )
 
-from .permissions import AuthSessionPresetsPermissions
-
 if t.TYPE_CHECKING:
+    from . import AuthSessionPresetsUnit
     from ingot_auth.project import AuthProject
 
 
@@ -66,21 +65,36 @@ class AuthCreateSessionPresetOperation(
     BaseAuthCreateItemOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[AuthSessionPreset, AuthSessionPreset],
 ):
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_CREATE)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_CREATE)
 
 
 class AuthListSessionPresetsOperation(
     BaseAuthListItemsOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[None, tuple[AuthSessionPreset, ...]],
 ):
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_READ)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
 
 class AuthRenameSessionPresetOperation(
     BaseAuthRenameItemOperation[AuthSessionPreset],
     BaseAuthSessionPresetsOperation[AuthRenameItemParameters, AuthSessionPreset],
 ):
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_RENAME)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_RENAME)
 
 
 class AuthDeleteSessionPresetOperation(
@@ -89,7 +103,12 @@ class AuthDeleteSessionPresetOperation(
 ):
     """Deletes a preset with its bindings; its id is never given again."""
 
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_DELETE)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_DELETE)
 
 
 class AuthBindSessionAttrOperation(
@@ -100,7 +119,12 @@ class AuthBindSessionAttrOperation(
     preset requires it, returning the binding.
     """
 
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_BIND)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_BIND)
 
     @t.override
     async def _run(
@@ -118,7 +142,12 @@ class AuthUnbindSessionAttrOperation(
 ):
     """Unbinds an attribute of the sessions from a preset."""
 
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_UNBIND)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_UNBIND)
 
     @t.override
     async def _run(
@@ -135,7 +164,12 @@ class AuthListSessionPresetBindingsOperation(
     deleted attribute is not in them: it is gone from the presets with it.
     """
 
-    PERMISSIONS = Permissions(AuthSessionPresetsPermissions.CAN_READ)
+    parent: "AuthSessionPresetsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
     @t.override
     async def _run(

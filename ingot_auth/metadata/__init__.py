@@ -15,7 +15,7 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import Permissions
+from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
 from ingots.puer import Factory, Unit
 
 from .items import (
@@ -28,8 +28,10 @@ from .operations import AuthGetMetadataOperation
 from .permissions import AuthMetadataPermissions
 
 
-class AuthMetadataUnit(Unit):
+class AuthMetadataUnit(OperationsOwner, Unit):
     """The operations of the metadata, open to anyone."""
+
+    permissions = PermissionsSlot(AuthMetadataPermissions)
 
     op_get = Factory(AuthGetMetadataOperation)
 
@@ -39,4 +41,4 @@ class AuthMetadataUnit(Unit):
         What the metadata gives the anonymous caller: its ``CAN_READ``, as a
         client reads it before signing in.
         """
-        return Permissions(AuthMetadataPermissions.CAN_READ)
+        return self.permissions(self.permissions.flags.CAN_READ)

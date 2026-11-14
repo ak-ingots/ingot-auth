@@ -7,12 +7,9 @@ import unittest
 from unittest import mock
 
 from ingots.defaults.operations import (
-    ANONYMOUS_CALLER,
-    ROOT_CALLER,
     OperationPermissionsError,
-    Permissions,
 )
-from ingots.puer import Project, Slot
+from ingots.puer import Slot
 from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
@@ -44,6 +41,8 @@ from ingot_auth.storages import (
     AuthTag,
 )
 
+from tests import ANONYMOUS, ROOT, masks
+
 BETA: t.Final = AuthTag(id=1, name="beta")
 STAFF: t.Final = AuthTag(id=2, name="staff")
 IP: t.Final = AuthSessionAttr(
@@ -53,15 +52,15 @@ SIGN_IN: t.Final = AuthSessionPreset(id=1, name="sign_in")
 
 
 class SeededSessionAttrsStorage(AuthMemorySessionAttrsStorage):
-    def __init__(self, project: Project) -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._items[IP.id] = IP
         self._taken_ids.add(IP.id)
 
 
 class SeededSessionPresetsStorage(AuthMemorySessionPresetsStorage):
-    def __init__(self, project: Project) -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._items[SIGN_IN.id] = SIGN_IN
         self._taken_ids.add(SIGN_IN.id)
 
@@ -89,7 +88,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
         self.project = AuthMemoryProject()
         operations = self.project.operations
         self.runner = operations.runner
-        self.metadata = operations.create_metadata(ROOT_CALLER)
+        self.metadata = operations.create_metadata(ROOT)
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
 
     def test_the_tags_are_created_listed_renamed_deleted(self) -> None:
@@ -203,7 +202,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
             asyncio.run(self.runner.run(tags.op_rename, parameters, self.metadata))
 
     def test_a_caller_needs_the_permissions(self) -> None:
-        metadata = self.project.operations.create_metadata(ANONYMOUS_CALLER)
+        metadata = self.project.operations.create_metadata(ANONYMOUS)
         run = self.runner.run(self.project.auth.profiles.tags.op_list, None, metadata)
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(run)
@@ -234,7 +233,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
             (presets.op_list_bindings, AuthSessionPresetsPermissions.CAN_READ),
             (self.project.auth.metadata.op_get, AuthMetadataPermissions.CAN_READ),
         ):
-            self.assertEqual(factory.cls.PERMISSIONS, Permissions(flag))
+            self.assertEqual(factory().get_permissions(), masks(flag))
 
 
 class RegistryCommandsTestCase(unittest.TestCase):

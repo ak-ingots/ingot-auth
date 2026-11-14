@@ -11,9 +11,6 @@ from ingot_auth.caches import (
     BaseAuthAttemptsCache,
 )
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryAttemptsCache(BaseAuthAttemptsCache):
     """
@@ -21,8 +18,8 @@ class AuthMemoryAttemptsCache(BaseAuthAttemptsCache):
     time from :meth:`_get_now`.
     """
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._attempts: dict[str, AuthAttempt] = {}
 
     @t.override

@@ -7,9 +7,6 @@ import typing as t
 
 from ingot_auth.caches import AuthCaller, BaseAuthCallersCache
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryCallersCache(BaseAuthCallersCache):
     """
@@ -17,8 +14,8 @@ class AuthMemoryCallersCache(BaseAuthCallersCache):
     forgotten when it is got, the time from :meth:`_get_now`.
     """
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._callers: dict[tuple[str, str], tuple[AuthCaller, datetime.datetime]] = {}
 
     @t.override

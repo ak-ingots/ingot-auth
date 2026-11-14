@@ -10,6 +10,7 @@ __all__ = (
     "AuthSessionPresetsPermissions",
 )
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -34,7 +35,7 @@ from .operations import (
 from .permissions import AuthSessionPresetsPermissions
 
 
-class AuthSessionPresetsUnit(CliUnit):
+class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
     """
     The registry of the presets of the sessions with their bindings: its
     operations, ``op_*``, and the commands running them, ``cmd_*``; the
@@ -43,6 +44,8 @@ class AuthSessionPresetsUnit(CliUnit):
 
     cli_name = "presets"
     cli_description = "The presets of the sessions."
+
+    permissions = PermissionsSlot(AuthSessionPresetsPermissions)
 
     op_create = Factory(AuthCreateSessionPresetOperation)
     op_list = Factory(AuthListSessionPresetsOperation)

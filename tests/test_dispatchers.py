@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from unittest import mock
 
 from ingots.defaults.operations import (
-    ROOT_CALLER,
     BaseOperation,
     OperationMetadata,
     Permissions,
@@ -14,6 +13,8 @@ from ingots.puer import Factory, Slot
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
 from ingot_auth.project import AuthProject
+
+from tests import ROOT
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -28,9 +29,11 @@ class Record:
 class RecordOperation(BaseOperation[Record, None]):
     """Records the name, then dispatches the records after it."""
 
-    PERMISSIONS = Permissions()
-
     project: "TstProject"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(self, parameters: Record, metadata: OperationMetadata) -> None:
@@ -59,7 +62,7 @@ class MemoryDispatcherTestCase(unittest.IsolatedAsyncioTestCase):
         )
         self.project = TstProject()
         self.dispatcher = self.project.auth.dispatcher
-        self.metadata = self.project.operations.create_metadata(ROOT_CALLER)
+        self.metadata = self.project.operations.create_metadata(ROOT)
         self.done: list[str] = []
 
     async def dispatch(self, record: Record) -> None:

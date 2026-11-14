@@ -8,15 +8,12 @@ from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
 
 from ..state import AuthMemoryStateMixin
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryMembersStorage(AuthMemoryStateMixin, BaseAuthMembersStorage):
     """The memberships in memory, a set of the pairs of a group and a uid."""
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._memberships: set[tuple[str, str]] = set()
 
     @t.override

@@ -21,7 +21,7 @@ from .sessions import create_session
 CALLER: t.Final = AuthCaller(
     uid="a1",
     session_id="s1",
-    permissions=Permissions(AuthGroupsPermissions.CAN_READ),
+    permissions=Permissions({"auth.access.groups": AuthGroupsPermissions.CAN_READ}),
 )
 
 

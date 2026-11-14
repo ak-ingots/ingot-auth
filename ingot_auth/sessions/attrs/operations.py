@@ -23,9 +23,8 @@ from ingot_auth.registry.operations import (
 )
 from ingot_auth.storages import AuthSessionAttr, BaseAuthSessionAttrsStorage
 
-from .permissions import AuthSessionAttrsPermissions
-
 if t.TYPE_CHECKING:
+    from . import AuthSessionAttrsUnit
     from ingot_auth.project import AuthProject
 
 
@@ -45,25 +44,45 @@ class AuthCreateSessionAttrOperation(
     BaseAuthCreateItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthSessionAttr, AuthSessionAttr],
 ):
-    PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_CREATE)
+    parent: "AuthSessionAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_CREATE)
 
 
 class AuthListSessionAttrsOperation(
     BaseAuthListItemsOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[None, tuple[AuthSessionAttr, ...]],
 ):
-    PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_READ)
+    parent: "AuthSessionAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
 
 class AuthRenameSessionAttrOperation(
     BaseAuthRenameItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthRenameItemParameters, AuthSessionAttr],
 ):
-    PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_RENAME)
+    parent: "AuthSessionAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_RENAME)
 
 
 class AuthDeleteSessionAttrOperation(
     BaseAuthDeleteItemOperation[AuthSessionAttr],
     BaseAuthSessionAttrsOperation[AuthDeleteItemParameters, None],
 ):
-    PERMISSIONS = Permissions(AuthSessionAttrsPermissions.CAN_DELETE)
+    parent: "AuthSessionAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_DELETE)

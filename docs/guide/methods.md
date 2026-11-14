@@ -115,8 +115,8 @@ first: the metadata closed, for one,
 class AppAnonymousGroup(AuthAnonymousGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        readers = Permissions(AuthMetadataPermissions.CAN_READ)
-        return super()._get_permissions() - readers
+        metadata = self.project.auth.metadata.permissions
+        return super()._get_permissions() - metadata(metadata.flags.CAN_READ)
 
 
 class AppGroupsUnit(AuthGroupsUnit):

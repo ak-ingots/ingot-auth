@@ -2,7 +2,6 @@ import typing as t
 import unittest
 from unittest import mock
 
-from ingots.defaults.operations import ROOT_CALLER, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from ingots.puer import Slot
 
@@ -21,6 +20,8 @@ from ingot_auth.methods.nickname import (
 )
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
+
+from tests import ROOT, masks
 
 
 class NoFlowMethod(BaseAuthMethod[str, str, None]):
@@ -61,7 +62,7 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         return await operations.runner.run(
             project.auth.metadata.op_get,
             None,
-            operations.create_metadata(ROOT_CALLER),
+            operations.create_metadata(ROOT),
         )
 
     async def test_the_methods_are_those_of_the_slots_with_their_flows(self) -> None:
@@ -99,7 +100,7 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         methods = self.project.auth.methods
         self.assertEqual(
             methods.get_anonymous_permissions(),
-            Permissions(
+            masks(
                 AuthNicknamePermissions.CAN_SIGN_IN,
                 AuthEmailCodePermissions.CAN_SIGN_UP
                 | AuthEmailCodePermissions.CAN_SIGN_IN,
@@ -108,14 +109,14 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         self.project.settings.configs.apply({"AUTH_SIGN_IN_EMAIL_CODE_ENABLED": False})
         self.assertEqual(
             methods.get_anonymous_permissions(),
-            Permissions(
+            masks(
                 AuthNicknamePermissions.CAN_SIGN_IN,
                 AuthEmailCodePermissions.CAN_SIGN_UP,
             ),
         )
         self.assertEqual(
             methods.get_signed_in_permissions(),
-            Permissions(AuthNicknamePermissions.CAN_SIGN_IN),
+            masks(AuthNicknamePermissions.CAN_SIGN_IN),
         )
 
     async def test_no_method_no_methods(self) -> None:

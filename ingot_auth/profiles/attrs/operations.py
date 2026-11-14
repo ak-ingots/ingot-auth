@@ -23,9 +23,8 @@ from ingot_auth.registry.operations import (
 )
 from ingot_auth.storages import AuthAttr, BaseAuthAttrsStorage
 
-from .permissions import AuthAttrsPermissions
-
 if t.TYPE_CHECKING:
+    from . import AuthAttrsUnit
     from ingot_auth.project import AuthProject
 
 
@@ -44,25 +43,45 @@ class BaseAuthAttrsOperation[ParametersType, ResultType](
 class AuthCreateAttrOperation(
     BaseAuthCreateItemOperation[AuthAttr], BaseAuthAttrsOperation[AuthAttr, AuthAttr]
 ):
-    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_CREATE)
+    parent: "AuthAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_CREATE)
 
 
 class AuthListAttrsOperation(
     BaseAuthListItemsOperation[AuthAttr],
     BaseAuthAttrsOperation[None, tuple[AuthAttr, ...]],
 ):
-    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_READ)
+    parent: "AuthAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
 
 class AuthRenameAttrOperation(
     BaseAuthRenameItemOperation[AuthAttr],
     BaseAuthAttrsOperation[AuthRenameItemParameters, AuthAttr],
 ):
-    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_UPDATE)
+    parent: "AuthAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_UPDATE)
 
 
 class AuthDeleteAttrOperation(
     BaseAuthDeleteItemOperation[AuthAttr],
     BaseAuthAttrsOperation[AuthDeleteItemParameters, None],
 ):
-    PERMISSIONS = Permissions(AuthAttrsPermissions.CAN_DELETE)
+    parent: "AuthAttrsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_DELETE)

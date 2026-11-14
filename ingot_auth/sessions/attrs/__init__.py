@@ -10,6 +10,7 @@ __all__ = (
     "check_client_attr_values",
 )
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -29,7 +30,7 @@ from .permissions import AuthSessionAttrsPermissions
 from .values import build_transport_attr_values, check_client_attr_values
 
 
-class AuthSessionAttrsUnit(CliUnit):
+class AuthSessionAttrsUnit(OperationsOwner, CliUnit):
     """
     The registry of the attributes of the sessions: its operations, ``op_*``,
     and the commands running them, ``cmd_*``; the attributes themselves are in
@@ -38,6 +39,8 @@ class AuthSessionAttrsUnit(CliUnit):
 
     cli_name = "attrs"
     cli_description = "The attributes of the sessions."
+
+    permissions = PermissionsSlot(AuthSessionAttrsPermissions)
 
     op_create = Factory(AuthCreateSessionAttrOperation)
     op_list = Factory(AuthListSessionAttrsOperation)

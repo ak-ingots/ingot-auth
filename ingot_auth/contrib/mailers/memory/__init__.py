@@ -10,15 +10,12 @@ import typing as t
 
 from ingot_auth.mailers import AuthMail, BaseAuthMailer
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryMailer(BaseAuthMailer):
     """The mail is kept, in the order it is sent, for the tests to read."""
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._sent: list[AuthMail] = []
 
     @t.final

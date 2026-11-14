@@ -13,7 +13,7 @@ from ingot_auth.dispatchers import BaseAuthDispatcher
 
 if t.TYPE_CHECKING:
     from ingots.defaults.operations import BaseOperation, OperationMetadata
-    from ingots.puer import BoundFactory, Project
+    from ingots.puer import BoundFactory
 
 
 class AuthMemoryDispatcher(BaseAuthDispatcher):
@@ -23,8 +23,8 @@ class AuthMemoryDispatcher(BaseAuthDispatcher):
     logged by the runner, and fails nothing else.
     """
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._tasks: set[asyncio.Task[None]] = set()
 
     @t.final

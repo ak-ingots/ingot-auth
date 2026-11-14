@@ -26,9 +26,9 @@ from .items import (
     AuthSignInResult,
     AuthStartSignInParameters,
 )
-from .permissions import AuthSignInPermissions
 
 if t.TYPE_CHECKING:
+    from . import AuthSignInUnit
     from collections.abc import Mapping
 
     from ingot_auth.methods import BaseAuthMethod
@@ -48,7 +48,12 @@ class BaseAuthSignInOperation[ParametersType](
     """
 
     FLOW: t.ClassVar[str] = "sign_in"
-    PERMISSIONS = Permissions(AuthSignInPermissions.CAN_SIGN_IN)
+    parent: "AuthSignInUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_SIGN_IN)
 
     @t.override
     def _get_method_permissions(

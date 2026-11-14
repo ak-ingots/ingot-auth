@@ -5,7 +5,7 @@ __all__ = ("AuthNicknamePermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthNicknamePermissions(PermissionFlags, domain="auth.methods.nickname"):
+class AuthNicknamePermissions(PermissionFlags):
     """
     The flows of the method: a caller signs up and in by a nickname with
     their flags, which the toggles of the method give while a flow is open.

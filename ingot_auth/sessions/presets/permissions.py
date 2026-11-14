@@ -5,7 +5,7 @@ __all__ = ("AuthSessionPresetsPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthSessionPresetsPermissions(PermissionFlags, domain="auth.sessions.presets"):
+class AuthSessionPresetsPermissions(PermissionFlags):
     """The operations on the presets of the sessions and their bindings."""
 
     CAN_CREATE = 1 << 0

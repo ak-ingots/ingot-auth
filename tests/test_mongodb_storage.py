@@ -13,7 +13,7 @@ from ingot_pymongo import MongoDbProject
 from ingot_pymongo.logging import MongoDbLoggingUnit
 from ingot_pymongo.settings import MongoDbSettingsUnit
 from ingot_pymongo.settings.configs import MongoDbConfigs
-from ingots.defaults.operations import Caller, Permissions
+from ingots.defaults.operations import Caller
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
@@ -59,10 +59,12 @@ from ingot_auth.testing.methods import (
     AuthTestingStart,
 )
 
+from tests import masks
+
 PORT = os.environ.get("INGOT_AUTH_TEST_PORT")
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
-    permissions=Permissions(
+    permissions=masks(
         AuthSignUpPermissions.CAN_SIGN_UP, AuthTestingPermissions.CAN_SIGN_UP
     ),
 )

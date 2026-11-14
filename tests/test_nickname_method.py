@@ -54,15 +54,17 @@ from ingot_auth.sign_up import (
 )
 from ingot_auth.storages import AuthIdentity
 
+from tests import masks
+
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
-    permissions=Permissions(
+    permissions=masks(
         AuthSignUpPermissions.CAN_SIGN_UP, AuthNicknamePermissions.CAN_SIGN_UP
     ),
 )
 SIGNING_IN: t.Final = Caller(
     uid="anonymous",
-    permissions=Permissions(
+    permissions=masks(
         AuthSignInPermissions.CAN_SIGN_IN, AuthNicknamePermissions.CAN_SIGN_IN
     ),
 )
@@ -110,7 +112,9 @@ class HasPasswordAndIdentifiers(AuthHasValue, AuthHasIdentifiers, t.Protocol):
 class NoIdentifierPolicy(BaseOperation[HasPasswordAndIdentifiers, None]):
     """A policy of an application, of a part the parameters of a password give."""
 
-    PERMISSIONS = Permissions()
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(
@@ -312,8 +316,10 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self,
     ) -> None:
         self.project = TstPoliciesProject()
-        guarded = Permissions(AuthNicknamePermissions.CAN_SIGN_IN)
-        with mock.patch.object(PasswordLength, "PERMISSIONS", guarded):
+        guarded = masks(AuthNicknamePermissions.CAN_SIGN_IN)
+        with mock.patch.object(
+            PasswordLength, "_get_permissions", return_value=guarded
+        ):
             with self.assertRaises(OperationPermissionsError):
                 await self.sign_up("alice", "correct horse")
         with mock.patch.object(PasswordLength, "_run", side_effect=OSError("down")):

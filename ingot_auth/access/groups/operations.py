@@ -7,18 +7,22 @@ import typing as t
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from .items import AuthGroupInfo
-from .permissions import AuthGroupsPermissions
 
 if t.TYPE_CHECKING:
+    from . import AuthGroupsUnit
     from ingot_auth.project import AuthProject
 
 
 class AuthListGroupsOperation(BaseOperation[None, tuple[AuthGroupInfo, ...]]):
     """The groups, in the order of their slots, each with what it grants."""
 
-    PERMISSIONS = Permissions(AuthGroupsPermissions.CAN_READ)
-
     project: "AuthProject"
+    parent: "AuthGroupsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
     @t.override
     async def _run(

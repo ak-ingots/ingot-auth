@@ -23,9 +23,6 @@ from ..state import AuthMemoryStateMixin
 from .attrs import AuthMemorySessionAttrsStorage
 from .presets import AuthMemorySessionPresetsStorage
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
     """The storage of the sessions in memory: the sessions by their ids."""
@@ -33,8 +30,8 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
     attrs = Slot(AuthMemorySessionAttrsStorage)
     presets = Slot(AuthMemorySessionPresetsStorage)
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._sessions: dict[str, AuthSessionRecord] = {}
 
     @t.override

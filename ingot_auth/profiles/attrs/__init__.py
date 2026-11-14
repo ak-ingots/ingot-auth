@@ -5,6 +5,7 @@ __all__ = (
     "AuthAttrsPermissions",
 )
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -23,7 +24,7 @@ from .operations import (
 from .permissions import AuthAttrsPermissions
 
 
-class AuthAttrsUnit(CliUnit):
+class AuthAttrsUnit(OperationsOwner, CliUnit):
     """
     The registry of the attributes: its operations, ``op_*``, and the
     commands running them, ``cmd_*``; the attributes themselves are in the
@@ -32,6 +33,8 @@ class AuthAttrsUnit(CliUnit):
 
     cli_name = "attrs"
     cli_description = "The attributes of the profiles."
+
+    permissions = PermissionsSlot(AuthAttrsPermissions)
 
     op_create = Factory(AuthCreateAttrOperation)
     op_list = Factory(AuthListAttrsOperation)

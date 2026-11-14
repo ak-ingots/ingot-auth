@@ -23,7 +23,7 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import Permissions
+from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
 from ingots.puer import Factory, Slot, Unit
 
 from .items import (
@@ -38,11 +38,13 @@ from .permissions import AuthSignInPermissions
 from .timings import AuthFloorTiming, AuthNoTiming, BaseAuthTiming
 
 
-class AuthSignInUnit(Unit):
+class AuthSignInUnit(OperationsOwner, Unit):
     """
     The operations of the sign-in, a start and the answers to it, and the
     strategy of their timing in the slot ``timing``, none by default.
     """
+
+    permissions = PermissionsSlot(AuthSignInPermissions)
 
     op_start = Factory(AuthStartSignInOperation)
     op_answer = Factory(AuthAnswerSignInOperation)
@@ -56,4 +58,4 @@ class AuthSignInUnit(Unit):
         """What the sign-in gives the anonymous caller: its ``CAN_SIGN_IN``."""
         # always for now: what limits the sign-ins, their number, their rate,
         # comes later as a strategy in a slot, not as a toggle
-        return Permissions(AuthSignInPermissions.CAN_SIGN_IN)
+        return self.permissions(self.permissions.flags.CAN_SIGN_IN)
