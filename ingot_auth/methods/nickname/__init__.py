@@ -23,7 +23,7 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
-from ingots.defaults.operations import OperationMetadata, Permissions
+from ingots.defaults.operations import OperationMetadata, Permissions, PermissionsSlot
 
 from ingot_auth.methods import (
     AuthMethodRefusedError,
@@ -60,6 +60,8 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
 
     IDENTIFIER_KIND: t.ClassVar[str] = "nickname"
 
+    permissions = PermissionsSlot(AuthNicknamePermissions)
+
     policies_sign_up_nickname = AuthNicknameSignUpPolicies()
 
     @t.override
@@ -72,11 +74,11 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
 
     @t.override
     def _get_sign_up_permissions(self) -> Permissions:
-        return Permissions(AuthNicknamePermissions.CAN_SIGN_UP)
+        return self.permissions(self.permissions.flags.CAN_SIGN_UP)
 
     @t.override
     def _get_sign_in_permissions(self) -> Permissions:
-        return Permissions(AuthNicknamePermissions.CAN_SIGN_IN)
+        return self.permissions(self.permissions.flags.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(

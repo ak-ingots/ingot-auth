@@ -14,9 +14,9 @@ from .items import (
     AuthProfileMetadata,
     AuthSessionMetadata,
 )
-from .permissions import AuthMetadataPermissions
 
 if t.TYPE_CHECKING:
+    from . import AuthMetadataUnit
     from ingot_auth.project import AuthProject
 
 
@@ -29,9 +29,13 @@ class AuthGetMetadataOperation(BaseOperation[None, AuthMetadata]):
     closed.
     """
 
-    PERMISSIONS = Permissions(AuthMetadataPermissions.CAN_READ)
-
     project: "AuthProject"
+    parent: "AuthMetadataUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
     @t.override
     async def _run(self, parameters: None, metadata: OperationMetadata) -> AuthMetadata:

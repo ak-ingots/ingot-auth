@@ -5,6 +5,7 @@ __all__ = (
     "AuthTagsPermissions",
 )
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -23,7 +24,7 @@ from .operations import (
 from .permissions import AuthTagsPermissions
 
 
-class AuthTagsUnit(CliUnit):
+class AuthTagsUnit(OperationsOwner, CliUnit):
     """
     The registry of the tags: its operations, ``op_*``, and the commands
     running them, ``cmd_*``; the tags themselves are in the storage of the
@@ -32,6 +33,8 @@ class AuthTagsUnit(CliUnit):
 
     cli_name = "tags"
     cli_description = "The tags of the profiles."
+
+    permissions = PermissionsSlot(AuthTagsPermissions)
 
     op_create = Factory(AuthCreateTagOperation)
     op_list = Factory(AuthListTagsOperation)

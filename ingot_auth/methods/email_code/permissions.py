@@ -5,7 +5,7 @@ __all__ = ("AuthEmailCodePermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthEmailCodePermissions(PermissionFlags, domain="auth.methods.email_code"):
+class AuthEmailCodePermissions(PermissionFlags):
     """
     The flows of the method: a caller signs up and in by a code by mail with
     their flags, which the toggles of the method give while a flow is open.

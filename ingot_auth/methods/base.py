@@ -4,7 +4,7 @@ __all__ = ("BaseAuthMethod",)
 
 import typing as t
 
-from ingots.defaults.operations import OperationMetadata, Permissions
+from ingots.defaults.operations import OperationMetadata, OperationsOwner, Permissions
 from ingots.puer import Unit
 
 from ingot_auth.policies import AuthPolicyViolationError
@@ -25,7 +25,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class BaseAuthMethod[StartType, AnswerType, StateType](Unit):
+class BaseAuthMethod[StartType, AnswerType, StateType](OperationsOwner, Unit):
     """
     A method of signing up and in: a password, a provider, a code by mail. It
     verifies who it is in steps, each ending with an :class:`AuthChallenge`,

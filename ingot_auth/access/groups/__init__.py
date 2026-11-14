@@ -30,6 +30,7 @@ import json
 import re
 import typing as t
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -44,7 +45,7 @@ from .permissions import AuthGroupsPermissions
 NAME_PATTERN: t.Final = re.compile(r"[a-z][a-z0-9_]*")
 
 
-class AuthGroupsUnit(CliUnit):
+class AuthGroupsUnit(OperationsOwner, CliUnit):
     """
     The groups, ``grp_anonymous`` and ``grp_signed_in`` here, of every caller
     that tells no one and of every signed-in user, neither keeping members:
@@ -55,6 +56,8 @@ class AuthGroupsUnit(CliUnit):
 
     cli_name = "groups"
     cli_description = "The groups of the users."
+
+    permissions = PermissionsSlot(AuthGroupsPermissions)
 
     op_list = Factory(AuthListGroupsOperation)
 

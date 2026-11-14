@@ -12,7 +12,12 @@ __all__ = ("AuthTestingMethod", "AuthTestingPermissions", "AuthTestingStart")
 import typing as t
 from dataclasses import dataclass
 
-from ingots.defaults.operations import OperationMetadata, PermissionFlags, Permissions
+from ingots.defaults.operations import (
+    OperationMetadata,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 
 from ingot_auth.methods import (
     AuthChallenge,
@@ -23,7 +28,7 @@ from ingot_auth.methods import (
 )
 
 
-class AuthTestingPermissions(PermissionFlags, domain="auth.methods.testing"):
+class AuthTestingPermissions(PermissionFlags):
     """The flows of the method of the tests, as those of any method."""
 
     CAN_SIGN_UP = 1 << 0
@@ -58,6 +63,8 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
 
     IDENTIFIER_KIND: t.ClassVar[str] = "testing"
 
+    permissions = PermissionsSlot(AuthTestingPermissions)
+
     @t.override
     def _get_sign_up_enabled(self) -> bool:
         return True
@@ -68,11 +75,11 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
 
     @t.override
     def _get_sign_up_permissions(self) -> Permissions:
-        return Permissions(AuthTestingPermissions.CAN_SIGN_UP)
+        return self.permissions(self.permissions.flags.CAN_SIGN_UP)
 
     @t.override
     def _get_sign_in_permissions(self) -> Permissions:
-        return Permissions(AuthTestingPermissions.CAN_SIGN_IN)
+        return self.permissions(self.permissions.flags.CAN_SIGN_IN)
 
     @t.override
     async def _start_sign_up(

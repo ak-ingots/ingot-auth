@@ -1,6 +1,5 @@
 import unittest
 
-from ingots.defaults.operations import Permissions
 
 from ingot_auth.__main__ import AuthMemoryProject
 from ingot_auth.metadata import AuthMetadataPermissions
@@ -9,6 +8,8 @@ from ingot_auth.methods.nickname import AuthNicknamePermissions
 from ingot_auth.operations import AuthCallersProvider
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
+
+from tests import masks
 
 from .test_metadata import TstProject
 
@@ -25,7 +26,7 @@ class AnonymousCallerTestCase(unittest.TestCase):
         self.assertEqual(anonymous.uid, "anonymous")
         self.assertEqual(
             anonymous.permissions,
-            Permissions(
+            masks(
                 AuthSignUpPermissions.CAN_SIGN_UP,
                 AuthSignInPermissions.CAN_SIGN_IN,
                 AuthNicknamePermissions.CAN_SIGN_IN,
@@ -40,7 +41,7 @@ class AnonymousCallerTestCase(unittest.TestCase):
         project.settings.configs.apply({"AUTH_SIGN_UP_ENABLED": False})
         self.assertEqual(
             project.operations.callers.get_anonymous().permissions,
-            Permissions(
+            masks(
                 AuthSignInPermissions.CAN_SIGN_IN,
                 AuthNicknamePermissions.CAN_SIGN_IN,
                 AuthEmailCodePermissions.CAN_SIGN_IN,

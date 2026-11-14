@@ -20,7 +20,7 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import Permissions
+from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
 from ingots.puer import Factory, Unit
 
 from .items import (
@@ -37,13 +37,15 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthSignUpUnit(Unit):
+class AuthSignUpUnit(OperationsOwner, Unit):
     """
     The operations of the sign-up, a start and the answers to it, open by
     the toggle of :meth:`_get_enabled`.
     """
 
     project: "AuthProject"
+
+    permissions = PermissionsSlot(AuthSignUpPermissions)
 
     op_start = Factory(AuthStartSignUpOperation)
     op_answer = Factory(AuthAnswerSignUpOperation)
@@ -60,7 +62,7 @@ class AuthSignUpUnit(Unit):
         ``CAN_SIGN_UP`` while it is open.
         """
         if self.get_enabled():
-            return Permissions(AuthSignUpPermissions.CAN_SIGN_UP)
+            return self.permissions(self.permissions.flags.CAN_SIGN_UP)
         return Permissions()
 
     def _get_enabled(self) -> bool:

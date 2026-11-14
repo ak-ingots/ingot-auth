@@ -20,11 +20,11 @@ classifiers = [
     "Typing :: Typed",
 ]
 # Before 1.0 a minor version of ingots may break its addons.
-dependencies = ["ingots>=0.33.2,<0.34"]
+dependencies = ["ingots>=0.34.0,<0.35"]
 
 [project.optional-dependencies]
-grpcio = ["ingot-grpcio>=0.12.1,<0.13"]
-pymongo = ["ingot-pymongo>=0.13.0,<0.14"]
+grpcio = ["ingot-grpcio>=0.13.0,<0.14"]
+pymongo = ["ingot-pymongo>=0.14.0,<0.15"]
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
@@ -52,8 +52,8 @@ dev = [
     "flake8-class-attributes-order",
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
-    "ingot-grpcio>=0.12.1,<0.13",
-    "ingot-pymongo>=0.13.0,<0.14",
+    "ingot-grpcio>=0.13.0,<0.14",
+    "ingot-pymongo>=0.14.0,<0.15",
     "mypy",
     "mypy-protobuf>=5.1.0",
     "types-grpcio>=1.84.0.20261021",

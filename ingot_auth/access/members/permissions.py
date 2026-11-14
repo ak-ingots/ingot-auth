@@ -5,7 +5,7 @@ __all__ = ("AuthMembersPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthMembersPermissions(PermissionFlags, domain="auth.access.members"):
+class AuthMembersPermissions(PermissionFlags):
     """The operations on the memberships of the users."""
 
     CAN_ADD = 1 << 0

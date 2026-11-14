@@ -143,10 +143,12 @@ from ingot_auth.storages import (
     AuthSessionNotFoundError,
 )
 
+from tests import masks
+
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 ADMIN: t.Final = Caller(
     uid="admin",
-    permissions=Permissions(
+    permissions=masks(
         *AuthTagsPermissions,
         *AuthAttrsPermissions,
         *AuthSessionAttrsPermissions,
@@ -235,7 +237,7 @@ class TstLoggingUnit(AuthLoggingUnit, GrpcLoggingUnit):
 class AdminsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(*AuthMembersPermissions)
+        return super()._get_permissions() | masks(*AuthMembersPermissions)
 
 
 class TstGroupsUnit(AuthGroupsUnit):
@@ -296,7 +298,7 @@ class ClosedAnonymousGroup(AuthAnonymousGroup):
 
     @t.override
     def _get_permissions(self) -> Permissions:
-        readers = Permissions(AuthMetadataPermissions.CAN_READ)
+        readers = masks(AuthMetadataPermissions.CAN_READ)
         return super()._get_permissions() - readers
 
 

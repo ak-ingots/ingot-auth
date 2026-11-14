@@ -87,8 +87,11 @@ the transport by their names, each bound to its reader (`ip`, the peer), what a 
 results and the answers of the flows in `ingot_auth/sign_up/v1/` and
 `ingot_auth/sign_in/v1/`, the values of the
 attributes of a session, `AttrValue`, in `ingot_auth/sessions/attrs/v1/`. A set of
-operations has its permissions in a `permissions.py` of its own, the enum
-`Permission` of its contract repeating them. A contrib gives the class of the slot it fills
+operations has its flags in a `permissions.py` of its own, bound by the slot
+`permissions` (`PermissionsSlot`) of its unit, an `OperationsOwner`, their
+domain the full name of the unit; an operation builds its permissions by its
+hook `_get_permissions()` through its parent; the enum `Permission` of its
+contract repeating them. A contrib gives the class of the slot it fills
 (`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
 application composes. What a backend chooses is changed by subclassing, not a config: a client by a
 hook, the names of its collections by a `ClassVar`; the

@@ -25,9 +25,6 @@ from .identities import AuthMemoryIdentitiesStorage
 from .secrets import AuthMemorySecretsStorage
 from .tags import AuthMemoryTagsStorage
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemoryProfilesStorage(AuthMemoryStateMixin, AuthProfilesStorage):
     """The storage of the profiles in memory."""
@@ -37,8 +34,8 @@ class AuthMemoryProfilesStorage(AuthMemoryStateMixin, AuthProfilesStorage):
     identities = Slot(AuthMemoryIdentitiesStorage)
     secrets = Slot(AuthMemorySecretsStorage)
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._profiles: dict[str, AuthProfile] = {}
 
     @t.override

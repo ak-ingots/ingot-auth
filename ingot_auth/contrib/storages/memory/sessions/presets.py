@@ -13,17 +13,14 @@ from ingot_auth.storages import (
 
 from ..registry import AuthMemoryRegistryStorage
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemorySessionPresetsStorage(
     AuthMemoryRegistryStorage[AuthSessionPreset], BaseAuthSessionPresetsStorage
 ):
     """The presets of the sessions in memory, each with its bindings."""
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         # the bindings by the preset: whether it requires each attribute
         self._bindings: dict[int, dict[int, bool]] = {}
 

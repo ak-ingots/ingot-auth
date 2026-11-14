@@ -8,9 +8,6 @@ import typing as t
 from ingot_auth.caches import BaseAuthSessionsCache
 from ingot_auth.storages import AuthSessionRecord
 
-if t.TYPE_CHECKING:
-    from ingots.puer import Project
-
 
 class AuthMemorySessionsCache(BaseAuthSessionsCache):
     """
@@ -18,8 +15,8 @@ class AuthMemorySessionsCache(BaseAuthSessionsCache):
     forgotten when it is got, the time from :meth:`_get_now`.
     """
 
-    def __init__(self, project: "Project") -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._sessions: dict[str, tuple[AuthSessionRecord, datetime.datetime]] = {}
 
     @t.override

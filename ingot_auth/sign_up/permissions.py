@@ -5,7 +5,7 @@ __all__ = ("AuthSignUpPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthSignUpPermissions(PermissionFlags, domain="auth.sign_up"):
+class AuthSignUpPermissions(PermissionFlags):
     """
     The operations of the sign-up: a server gives ``CAN_SIGN_UP`` to who may
     sign up, anyone while the sign-up is open.

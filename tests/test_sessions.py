@@ -4,7 +4,7 @@ import typing as t
 import unittest
 from unittest import mock
 
-from ingots.defaults.operations import ROOT_CALLER, PermissionFlags, Permissions
+from ingots.defaults.operations import PermissionFlags, Permissions
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
@@ -34,19 +34,24 @@ from ingot_auth.storages import (
     AuthSessionNotFoundError,
 )
 
+from tests import DOMAINS, ROOT, masks
+
 DAY: t.Final = datetime.timedelta(days=1)
 MINUTE: t.Final = datetime.timedelta(minutes=1)
 NOW: t.Final = datetime.datetime(2026, 11, 12, tzinfo=datetime.UTC)
 
 
-class ShopPermissions(PermissionFlags, domain="shop"):
+class ShopPermissions(PermissionFlags):
     CAN_BUY = 1 << 0
+
+
+DOMAINS[ShopPermissions] = "shop"  # of the unit of an addon of the tests
 
 
 class BuyersGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ShopPermissions.CAN_BUY)
+        return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
 class ShopGroupsUnit(AuthGroupsUnit):
@@ -82,7 +87,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
     async def run_operation(self, factory: t.Any, parameters: t.Any) -> t.Any:
         """Runs an operation as the root."""
         operations = self.project.operations
-        metadata = operations.create_metadata(ROOT_CALLER)
+        metadata = operations.create_metadata(ROOT)
         return await operations.runner.run(factory, parameters, metadata)
 
     def travel(self, delta: datetime.timedelta) -> None:
@@ -106,7 +111,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             AuthCaller(
                 uid="a1",
                 session_id=session.id,
-                permissions=Permissions(ShopPermissions.CAN_BUY),
+                permissions=masks(ShopPermissions.CAN_BUY),
             ),
         )
         self.assertEqual(
@@ -186,7 +191,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.storage.access.members.remove(
             AuthMembership(group="buyers", uid="a1")
         )
-        buyer = Permissions(ShopPermissions.CAN_BUY)
+        buyer = masks(ShopPermissions.CAN_BUY)
         self.assertEqual((await self.sessions.authenticate(token)).permissions, buyer)
         self.travel(datetime.timedelta(minutes=6))
         self.assertEqual(
@@ -209,7 +214,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             await self.sessions.authenticate(token)
         members = self.project.auth.access.members
         membership = AuthMembership(group="buyers", uid="a1")
-        buyer = Permissions(ShopPermissions.CAN_BUY)
+        buyer = masks(ShopPermissions.CAN_BUY)
         for factory, permissions in (
             (members.op_remove, Permissions()),
             (members.op_add, buyer),

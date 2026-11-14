@@ -15,9 +15,9 @@ from ingots.defaults.operations import BaseOperation, Permissions
 from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
 
 from ..groups import AuthGroupNotFoundError
-from .permissions import AuthMembersPermissions
 
 if t.TYPE_CHECKING:
+    from . import AuthMembersUnit
     from ingots.defaults.operations import OperationMetadata
 
     from ingot_auth.project import AuthProject
@@ -64,7 +64,12 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
-    PERMISSIONS = Permissions(AuthMembersPermissions.CAN_ADD)
+    parent: "AuthMembersUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_ADD)
 
     @t.override
     async def _run(
@@ -87,7 +92,12 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
-    PERMISSIONS = Permissions(AuthMembersPermissions.CAN_REMOVE)
+    parent: "AuthMembersUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_REMOVE)
 
     @t.override
     async def _run(
@@ -107,7 +117,12 @@ class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
         ``grp_anonymous`` or ``grp_signed_in``, which keep none.
     """
 
-    PERMISSIONS = Permissions(AuthMembersPermissions.CAN_READ)
+    parent: "AuthMembersUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
     @t.override
     async def _run(
@@ -125,7 +140,12 @@ class AuthListMemberGroupsOperation(BaseAuthMembersOperation[str, tuple[str, ...
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
-    PERMISSIONS = Permissions(AuthMembersPermissions.CAN_READ)
+    parent: "AuthMembersUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ)
 
     @t.override
     async def _run(

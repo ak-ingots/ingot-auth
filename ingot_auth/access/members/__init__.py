@@ -13,6 +13,7 @@ __all__ = (
     "AuthRemoveMemberCommand",
 )
 
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -32,7 +33,7 @@ from .operations import (
 from .permissions import AuthMembersPermissions
 
 
-class AuthMembersUnit(CliUnit):
+class AuthMembersUnit(OperationsOwner, CliUnit):
     """
     The operations of the memberships, ``op_*``, and the commands running
     them, ``cmd_*``; the memberships themselves are in the storage of the
@@ -41,6 +42,8 @@ class AuthMembersUnit(CliUnit):
 
     cli_name = "members"
     cli_description = "The members of the groups."
+
+    permissions = PermissionsSlot(AuthMembersPermissions)
 
     op_add = Factory(AuthAddMemberOperation)
     op_remove = Factory(AuthRemoveMemberOperation)

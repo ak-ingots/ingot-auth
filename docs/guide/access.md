@@ -19,8 +19,9 @@ declares the class joining them when two of its bases hold the group:
 class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(
-            AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE
+        members = self.project.auth.access.members.permissions
+        return super()._get_permissions() | members(
+            members.flags.CAN_ADD, members.flags.CAN_REMOVE
         )
 
 

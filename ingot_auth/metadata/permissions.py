@@ -5,7 +5,7 @@ __all__ = ("AuthMetadataPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthMetadataPermissions(PermissionFlags, domain="auth.metadata"):
+class AuthMetadataPermissions(PermissionFlags):
     """The operations on the metadata."""
 
     CAN_READ = 1 << 0

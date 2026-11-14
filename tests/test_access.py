@@ -8,13 +8,11 @@ import unittest
 from unittest import mock
 
 from ingots.defaults.operations import (
-    ANONYMOUS_CALLER,
-    ROOT_CALLER,
     OperationPermissionsError,
     PermissionFlags,
     Permissions,
 )
-from ingots.puer import Project, Slot
+from ingots.puer import Slot
 from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
@@ -41,30 +39,36 @@ from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingPermissions
 
+from tests import ANONYMOUS, DOMAINS, ROOT, masks
+
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 
 
-class ShopPermissions(PermissionFlags, domain="shop"):
+class ShopPermissions(PermissionFlags):
     CAN_BUY = 1 << 0
     CAN_REFUND = 1 << 1
 
 
-class ArticlesPermissions(PermissionFlags, domain="articles"):
+class ArticlesPermissions(PermissionFlags):
     CAN_READ = 1 << 0
     CAN_PUBLISH = 1 << 1
+
+
+# the domains of the units of two addons of the tests
+DOMAINS.update({ShopPermissions: "shop", ArticlesPermissions: "articles"})
 
 
 # an addon: grants to a group of the application, declares one of its own
 class ShopAdminsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ShopPermissions.CAN_REFUND)
+        return super()._get_permissions() | masks(ShopPermissions.CAN_REFUND)
 
 
 class BuyersGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ShopPermissions.CAN_BUY)
+        return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
 class ShopGroupsUnit(AuthGroupsUnit):
@@ -76,13 +80,13 @@ class ShopGroupsUnit(AuthGroupsUnit):
 class ArticlesAdminsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ArticlesPermissions.CAN_READ)
+        return super()._get_permissions() | masks(ArticlesPermissions.CAN_READ)
 
 
 class EditorsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ArticlesPermissions.CAN_PUBLISH)
+        return super()._get_permissions() | masks(ArticlesPermissions.CAN_PUBLISH)
 
 
 class ArticlesGroupsUnit(AuthGroupsUnit):
@@ -94,7 +98,7 @@ class ArticlesGroupsUnit(AuthGroupsUnit):
 class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(
+        return super()._get_permissions() | masks(
             AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE
         )
 
@@ -103,7 +107,7 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
 class ShopSignedInGroup(AuthSignedInGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | Permissions(ShopPermissions.CAN_BUY)
+        return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
 class AppGroupsUnit(ShopGroupsUnit, ArticlesGroupsUnit):
@@ -148,7 +152,7 @@ class GroupsTestCase(unittest.TestCase):
     def test_a_group_joins_what_the_addons_grant(self) -> None:
         self.assertEqual(
             self.groups.get("admins").get_permissions(),
-            Permissions(
+            masks(
                 ShopPermissions.CAN_REFUND,
                 ArticlesPermissions.CAN_READ,
                 AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE,
@@ -161,7 +165,7 @@ class GroupsTestCase(unittest.TestCase):
         self.assertEqual(project.auth.access.groups.get_digest(), digest)
         for project in (AuthMemoryProject(), SignedInProject()):
             self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
-        refund = Permissions(ShopPermissions.CAN_REFUND)
+        refund = masks(ShopPermissions.CAN_REFUND)
         with mock.patch.object(BuyersGroup, "_get_permissions", return_value=refund):
             project = AppProject()
             self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
@@ -180,7 +184,7 @@ class GroupsTestCase(unittest.TestCase):
         # no method bound: the flows, the metadata
         self.assertEqual(
             groups.grp_anonymous.get_permissions(),
-            Permissions(
+            masks(
                 AuthSignUpPermissions.CAN_SIGN_UP,
                 AuthSignInPermissions.CAN_SIGN_IN,
                 AuthMetadataPermissions.CAN_READ,
@@ -210,7 +214,7 @@ class OperationsTestCase(unittest.TestCase):
         self.project = AppProject()
         operations = self.project.operations
         self.runner = operations.runner
-        self.metadata = operations.create_metadata(ROOT_CALLER)
+        self.metadata = operations.create_metadata(ROOT)
         self.access = self.project.auth.access
         self.enterContext(mock.patch("ingots.defaults.operations.runner.logger"))
         profiles = self.project.auth.storage.profiles
@@ -227,9 +231,7 @@ class OperationsTestCase(unittest.TestCase):
         )
         self.assertEqual(
             groups[4],
-            AuthGroupInfo(
-                name="buyers", permissions=Permissions(ShopPermissions.CAN_BUY)
-            ),
+            AuthGroupInfo(name="buyers", permissions=masks(ShopPermissions.CAN_BUY)),
         )
 
     def test_the_members_are_added_listed_removed(self) -> None:
@@ -287,7 +289,7 @@ class OperationsTestCase(unittest.TestCase):
                 asyncio.run(call)
 
     def test_an_anonymous_caller_may_do_nothing(self) -> None:
-        metadata = self.project.operations.create_metadata(ANONYMOUS_CALLER)
+        metadata = self.project.operations.create_metadata(ANONYMOUS)
         membership = AuthMembership(group="editors", uid="a1")
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(
@@ -310,7 +312,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
         self.assertEqual(
             self._get_permissions("a1"),
-            Permissions(ShopPermissions.CAN_BUY, ArticlesPermissions.CAN_PUBLISH),
+            masks(ShopPermissions.CAN_BUY, ArticlesPermissions.CAN_PUBLISH),
         )
 
     def test_a_user_of_no_group_has_nothing(self) -> None:
@@ -320,15 +322,13 @@ class GroupsGrantsTestCase(unittest.TestCase):
         self.project = SignedInProject()
         self.assertEqual(
             self._get_permissions("b2"),
-            Permissions(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN),
+            masks(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN),
         )
 
     def test_a_group_no_source_has_grants_nothing(self) -> None:
         for group in ("gone", "buyers"):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
-        self.assertEqual(
-            self._get_permissions("a1"), Permissions(ShopPermissions.CAN_BUY)
-        )
+        self.assertEqual(self._get_permissions("a1"), masks(ShopPermissions.CAN_BUY))
 
     def _get_permissions(self, uid: str) -> Permissions:
         return asyncio.run(self.project.auth.access.permissions.get_permissions(uid))
@@ -356,14 +356,14 @@ class SignedInProject(AuthMemoryProject):
 
 
 class SeededProfilesStorage(AuthMemoryProfilesStorage):
-    def __init__(self, project: Project) -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._profiles["a1"] = AuthProfile(uid="a1", created_at=NOW)
 
 
 class SeededMembersStorage(AuthMemoryMembersStorage):
-    def __init__(self, project: Project) -> None:
-        super().__init__(project)
+    def __init__(self) -> None:
+        super().__init__()
         self._memberships.add(("editors", "a1"))
 
 

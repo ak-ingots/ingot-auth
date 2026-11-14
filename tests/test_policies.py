@@ -53,7 +53,9 @@ class HasValueAndCurrent(AuthHasValue, HasCurrent, t.Protocol):
 class ChangedPolicy(BaseOperation[HasValueAndCurrent, None]):
     """A policy of an application, of the parts a change gives."""
 
-    PERMISSIONS = Permissions()
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(

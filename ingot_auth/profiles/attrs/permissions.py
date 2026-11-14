@@ -5,7 +5,7 @@ __all__ = ("AuthAttrsPermissions",)
 from ingots.defaults.operations import PermissionFlags
 
 
-class AuthAttrsPermissions(PermissionFlags, domain="auth.profiles.attrs"):
+class AuthAttrsPermissions(PermissionFlags):
     """The operations on the attributes."""
 
     CAN_CREATE = 1 << 0

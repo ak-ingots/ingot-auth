@@ -48,10 +48,12 @@ class AuthSendDenialParameters:
 class AuthSendCodeOperation(BaseOperation[AuthSendCodeParameters, None]):
     """Sends a code to an email, the mail built by the method."""
 
-    # run by the method for the caller its flow checked, nothing to require
-    PERMISSIONS = Permissions()
-
     project: "AuthProject"
+
+    # run by the method for the caller its flow checked, nothing to require
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(
@@ -68,10 +70,12 @@ class AuthSendDenialOperation(BaseOperation[AuthSendDenialParameters, None]):
     the method.
     """
 
-    # run by the method for the caller its flow checked, nothing to require
-    PERMISSIONS = Permissions()
-
     project: "AuthProject"
+
+    # run by the method for the caller its flow checked, nothing to require
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return Permissions()
 
     @t.override
     async def _run(
