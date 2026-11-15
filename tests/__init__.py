@@ -19,6 +19,7 @@ from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods.email_code import AuthEmailCodePermissions
 from ingot_auth.methods.nickname import AuthNicknamePermissions
+from ingot_auth.profiles import AuthProfilesPermissions
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
@@ -39,6 +40,7 @@ DOMAINS: t.Final[dict[type[PermissionFlags], str]] = {
     AuthMembersPermissions: "auth.access.members",
     AuthMetadataPermissions: "auth.metadata",
     AuthNicknamePermissions: "auth.methods.nickname",
+    AuthProfilesPermissions: "auth.profiles",
     AuthSessionAttrsPermissions: "auth.sessions.attrs",
     AuthSessionPresetsPermissions: "auth.sessions.presets",
     AuthSessionsPermissions: "auth.sessions",

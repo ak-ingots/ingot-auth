@@ -34,6 +34,7 @@ from ingot_auth.access.groups import (
 from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.profiles import AuthProfilesPermissions
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
@@ -234,7 +235,11 @@ class GroupsTestCase(unittest.TestCase):
         )
         self.assertEqual(
             profiles.grp_managers.get_permissions(),
-            masks(*AuthTagsPermissions, *AuthAttrsPermissions),
+            masks(
+                AuthProfilesPermissions.CAN_UPDATE,
+                *AuthTagsPermissions,
+                *AuthAttrsPermissions,
+            ),
         )
 
     def test_the_sessions_have_their_readers_keepers_and_binders(self) -> None:
@@ -496,7 +501,7 @@ class CommandsTestCase(unittest.TestCase):
                 "auth.grp_signed_in\tauth.sessions=3\n"
                 "auth.profiles.grp_consumers\tauth.profiles.attrs=2"
                 "\tauth.profiles.tags=2\n"
-                "auth.profiles.grp_managers\tauth.profiles.attrs=15"
+                "auth.profiles.grp_managers\tauth.profiles=1\tauth.profiles.attrs=15"
                 "\tauth.profiles.tags=15\n"
                 "auth.sessions.grp_consumers\tauth.sessions.attrs=2"
                 "\tauth.sessions.presets=2\n"

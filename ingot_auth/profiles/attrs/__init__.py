@@ -22,6 +22,7 @@ from .operations import (
     AuthRenameAttrOperation,
 )
 from .permissions import AuthAttrsPermissions
+from .values import AuthProfileAttrValuesUnit
 
 
 class AuthAttrsUnit(OperationsOwner, CliUnit):
@@ -45,3 +46,5 @@ class AuthAttrsUnit(OperationsOwner, CliUnit):
     cmd_list = Slot(AuthListAttrsCommand)
     cmd_rename = Slot(AuthRenameAttrCommand)
     cmd_delete = Slot(AuthDeleteAttrCommand)
+
+    values = Slot(AuthProfileAttrValuesUnit)

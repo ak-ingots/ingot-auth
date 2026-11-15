@@ -13,6 +13,7 @@ among those of {doc}`../contrib/index`.
 methods
 sign-in
 access
+profiles
 sessions
 configs
 ```

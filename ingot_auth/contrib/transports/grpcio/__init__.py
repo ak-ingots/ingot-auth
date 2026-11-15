@@ -45,7 +45,9 @@ __all__ = (
     "AuthGrpcMetadataServicer",
     "AuthGrpcNicknameBinding",
     "AuthGrpcNicknameServicer",
+    "AuthGrpcProfileRegistriesBinding",
     "AuthGrpcProfilesBinding",
+    "AuthGrpcProfilesServicer",
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
     "AuthGrpcSessionRegistriesBinding",
@@ -85,7 +87,9 @@ from .methods import (
 from .profiles import (
     AuthGrpcAttrsBinding,
     AuthGrpcAttrsServicer,
+    AuthGrpcProfileRegistriesBinding,
     AuthGrpcProfilesBinding,
+    AuthGrpcProfilesServicer,
     AuthGrpcTagsBinding,
     AuthGrpcTagsServicer,
 )
@@ -110,6 +114,7 @@ class AuthGrpcFlowsBinding(
 
 
 class AuthGrpcAdminBinding(
+    AuthGrpcProfileRegistriesBinding,
     AuthGrpcProfilesBinding,
     AuthGrpcSessionRegistriesBinding,
     AuthGrpcSessionsBinding,

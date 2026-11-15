@@ -1,9 +1,14 @@
-"""The profiles over gRPC: the servicers of their registries and the bindings."""
+"""
+The profiles over gRPC: the servicer of their values, those of their
+registries, and the bindings.
+"""
 
 __all__ = (
     "AuthGrpcAttrsBinding",
     "AuthGrpcAttrsServicer",
+    "AuthGrpcProfileRegistriesBinding",
     "AuthGrpcProfilesBinding",
+    "AuthGrpcProfilesServicer",
     "AuthGrpcTagsBinding",
     "AuthGrpcTagsServicer",
 )
@@ -12,8 +17,16 @@ from ingot_grpcio.grpc.services import GrpcService
 
 from ingot_auth.profiles.attrs.v1 import attrs_pb2_grpc
 from ingot_auth.profiles.tags.v1 import tags_pb2_grpc
+from ingot_auth.profiles.v1 import profiles_pb2_grpc
 from .attrs import AuthGrpcAttrsServicer
+from .profiles import AuthGrpcProfilesServicer
 from .tags import AuthGrpcTagsServicer
+
+
+class AuthGrpcProfilesBinding:
+    auth_profiles = GrpcService(
+        profiles_pb2_grpc.ProfilesStub, AuthGrpcProfilesServicer
+    )
 
 
 class AuthGrpcTagsBinding:
@@ -24,5 +37,5 @@ class AuthGrpcAttrsBinding:
     auth_profiles_attrs = GrpcService(attrs_pb2_grpc.AttrsStub, AuthGrpcAttrsServicer)
 
 
-class AuthGrpcProfilesBinding(AuthGrpcTagsBinding, AuthGrpcAttrsBinding):
+class AuthGrpcProfileRegistriesBinding(AuthGrpcTagsBinding, AuthGrpcAttrsBinding):
     pass

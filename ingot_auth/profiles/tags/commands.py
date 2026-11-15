@@ -5,11 +5,14 @@ __all__ = (
     "AuthDeleteTagCommand",
     "AuthListTagsCommand",
     "AuthRenameTagCommand",
+    "AuthSetProfileTagsCommand",
 )
 
 import argparse
 import typing as t
 
+from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
+from ingot_auth.profiles.items import AuthSetProfileTagsParameters
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
     BaseAuthDeleteItemCommand,
@@ -28,6 +31,7 @@ from .operations import (
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
 
+    from ingot_auth.profiles.operations import AuthSetProfileTagsOperation
     from ingot_auth.project import AuthProject
 
 
@@ -70,3 +74,39 @@ class AuthDeleteTagCommand(BaseAuthDeleteItemCommand[AuthTag]):
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthDeleteTagOperation]":
         return self.project.auth.profiles.tags.op_delete
+
+
+class AuthSetProfileTagsCommand(
+    BaseAuthProfileValuesCommand[AuthSetProfileTagsParameters]
+):
+    """Sets the tags of a profile by their ids, then prints its values."""
+
+    cli_name = "set"
+    cli_description = (
+        "Sets the tags of a profile, all of them, by their ids: none takes them "
+        "all off."
+    )
+    cli_args: AuthSetProfileTagsParameters
+
+    @t.override
+    @classmethod
+    def _cli_prepare_parser(cls, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("profiles_uid", metavar="uid")
+        parser.add_argument("profiles_tags", metavar="tag", type=int, nargs="*")
+
+    @t.override
+    @classmethod
+    def _cli_build_args(
+        cls, namespace: argparse.Namespace
+    ) -> AuthSetProfileTagsParameters:
+        return AuthSetProfileTagsParameters(
+            uid=namespace.profiles_uid, tag_ids=frozenset(namespace.profiles_tags)
+        )
+
+    @t.override
+    def _get_operation(self) -> "BoundFactory[AuthSetProfileTagsOperation]":
+        return self.project.auth.profiles.op_set_tags
+
+    @t.override
+    async def _run(self) -> None:
+        self.print_values(await self.run_operation(self.cli_args))

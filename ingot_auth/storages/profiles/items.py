@@ -3,23 +3,41 @@ What the storage of the profiles keeps: the profiles, their identities, and
 the items of the registries of their tags and attributes.
 """
 
-__all__ = ("AuthAttr", "AuthIdentity", "AuthProfile", "AuthTag")
+__all__ = ("AuthAttr", "AuthIdentity", "AuthProfile", "AuthProfileValues", "AuthTag")
 
 import datetime
-from dataclasses import dataclass
+import typing as t
+from dataclasses import dataclass, field
 
 from ..items import AuthAttrType, AuthItem
+
+if t.TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from ..items import AuthAttrValue
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthProfile:
     """
     A profile: ``uid`` is what the rest of an application knows the user by.
-    The values of its tags and attributes come in another change.
+    The values of its tags and attributes are kept apart,
+    :class:`AuthProfileValues`.
     """
 
     uid: str
     created_at: datetime.datetime
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthProfileValues:
+    """
+    The values of a profile: the ids of the tags it has, and the values of
+    its attributes, by the ids of the attributes; empty for a profile of none.
+    """
+
+    tag_ids: frozenset[int] = frozenset()
+    attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

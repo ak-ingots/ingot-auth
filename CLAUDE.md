@@ -13,7 +13,7 @@ with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthOperationsUnit` (`operations/`, whose `AuthCallersProvider` gives the
 anonymous caller what the group `auth.grp_anonymous` grants) and `AuthUnit`
 (`auth/`, the auth of the project: the units `profiles/`, with the registries `tags/`
-and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
+and `attrs/` and the values of a profile an operator sets, the whole set each time, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`, the sessions themselves kept by the hash
 of their token, their lifetime a strategy in the slot `lifetime`, none by

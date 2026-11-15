@@ -11,6 +11,7 @@ __all__ = (
     "AuthMemoryMembersStorage",
     "AuthMemoryProfilesStorage",
     "AuthMemoryRegistryStorage",
+    "AuthMemoryProfileValuesStorage",
     "AuthMemorySecretsStorage",
     "AuthMemorySessionAttrsStorage",
     "AuthMemorySessionPresetsStorage",
@@ -33,6 +34,7 @@ from .profiles import (
     AuthMemoryAttrsStorage,
     AuthMemoryIdentitiesStorage,
     AuthMemoryProfilesStorage,
+    AuthMemoryProfileValuesStorage,
     AuthMemorySecretsStorage,
     AuthMemoryTagsStorage,
 )
