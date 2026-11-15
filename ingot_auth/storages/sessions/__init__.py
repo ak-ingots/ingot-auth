@@ -87,15 +87,14 @@ class AuthSessionsStorage(Unit):
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
-        closed_by: str | None = None,
     ) -> None:
         """
-        Closes an open session for a reason, at a time, by the uid of a caller,
-        none when it expired; it stays kept.
+        Closes an open session for a reason, at a time; it stays kept, who
+        closed it told by the activity log.
 
         :raises AuthSessionNotFoundError: no session of the id is open.
         """
-        await self._close(session_id, reason, closed_at, closed_by)
+        await self._close(session_id, reason, closed_at)
 
     @abc.abstractmethod
     async def _open(self, session: AuthSessionRecord) -> None:
@@ -123,6 +122,5 @@ class AuthSessionsStorage(Unit):
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
-        closed_by: str | None,
     ) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._close")

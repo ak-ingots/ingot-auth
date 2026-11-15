@@ -82,8 +82,9 @@ message SessionRecord {
   // unset while open
   google.protobuf.Timestamp closed_at = 7;
   CloseReason close_reason = 8;
-  // the uid of the caller that closed it, empty when it expired
-  string closed_by = 9;
+  // who closed it, the activity log tells: closed_by is gone
+  reserved 9;
+  reserved "closed_by";
 }
 
 message ListSessionsRequest {

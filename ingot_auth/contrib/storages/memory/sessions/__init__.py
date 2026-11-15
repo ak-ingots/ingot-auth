@@ -78,11 +78,10 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
-        closed_by: str | None,
     ) -> None:
         session = self._find_open(session_id)
         self._sessions[session_id] = dataclasses.replace(
-            session, closed_at=closed_at, close_reason=reason, closed_by=closed_by
+            session, closed_at=closed_at, close_reason=reason
         )
 
     def _find_open(self, session_id: str) -> AuthSessionRecord:

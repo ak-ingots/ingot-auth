@@ -1137,8 +1137,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
         ).sessions
         self.assertEqual(
-            [(s.uid, s.method, s.close_reason, s.closed_by) for s in record],
-            [(alice, "nickname", sessions_pb2.CLOSE_REASON_SIGNED_OUT, alice)],
+            [(s.uid, s.method, s.close_reason) for s in record],
+            [(alice, "nickname", sessions_pb2.CLOSE_REASON_SIGNED_OUT)],
         )
         self.assertTrue(record[0].HasField("closed_at"))
         # an open one has no time, reason nor closer
@@ -1149,8 +1149,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
         ).sessions
         self.assertEqual(
-            [(s.close_reason, s.closed_by) for s in open_only],
-            [(sessions_pb2.CLOSE_REASON_UNSPECIFIED, "")],
+            [s.close_reason for s in open_only],
+            [sessions_pb2.CLOSE_REASON_UNSPECIFIED],
         )
         self.assertFalse(open_only[0].HasField("closed_at"))
 

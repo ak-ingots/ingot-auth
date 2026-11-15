@@ -81,13 +81,10 @@ class AuthSessionsStorageContract(BaseAuthContract):
         second = create_session("s1", "h1", opened_at=later)
         for session in (second, create_session("s2", "h2", uid="b2"), first):
             await sessions.open(session)
-        await sessions.close("s3", AuthSessionCloseReason.REVOKED, later, "a1")
+        await sessions.close("s3", AuthSessionCloseReason.REVOKED, later)
         await sessions.close("s1", AuthSessionCloseReason.EXPIRED_IDLE, later)
         closed = dataclasses.replace(
-            first,
-            closed_at=later,
-            close_reason=AuthSessionCloseReason.REVOKED,
-            closed_by="a1",
+            first, closed_at=later, close_reason=AuthSessionCloseReason.REVOKED
         )
         expired = dataclasses.replace(
             second, closed_at=later, close_reason=AuthSessionCloseReason.EXPIRED_IDLE

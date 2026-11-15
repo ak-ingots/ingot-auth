@@ -42,7 +42,6 @@ class AuthSignOutOperation(BaseOperation[None, None]):
                     caller.uid,
                     caller.session_id,
                     AuthSessionCloseReason.SIGNED_OUT,
-                    closed_by=caller.uid,
                 )
                 await auth.activities.record(
                     auth.sessions,

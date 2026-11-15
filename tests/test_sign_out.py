@@ -72,7 +72,6 @@ class SignOutTestCase(unittest.IsolatedAsyncioTestCase):
                 "a1",
                 opened.session_id,
                 AuthSessionCloseReason.SIGNED_OUT,
-                closed_by="a1",
             )
         with self.assertRaises(AuthSessionNotFoundError):
             await self.sessions.authenticate(opened.token)
@@ -87,6 +86,5 @@ class SignOutTestCase(unittest.IsolatedAsyncioTestCase):
                 "b2",
                 opened.session_id,
                 AuthSessionCloseReason.SIGNED_OUT,
-                closed_by="b2",
             )
         self.assertIsNone(self.get_close_reason(opened.session_id))

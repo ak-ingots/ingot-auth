@@ -228,13 +228,10 @@ class SessionRecord(_message.Message):
     SEEN_AT_FIELD_NUMBER: _builtins.int
     CLOSED_AT_FIELD_NUMBER: _builtins.int
     CLOSE_REASON_FIELD_NUMBER: _builtins.int
-    CLOSED_BY_FIELD_NUMBER: _builtins.int
     id: _builtins.str
     uid: _builtins.str
     method: _builtins.str
     close_reason: Global___CloseReason.ValueType
-    closed_by: _builtins.str
-    """the uid of the caller that closed it, empty when it expired"""
     @_builtins.property
     def attr_values(self) -> _containers.RepeatedCompositeFieldContainer[_attrs_pb2.AttrValue]: ...
     @_builtins.property
@@ -256,11 +253,10 @@ class SessionRecord(_message.Message):
         seen_at: _timestamp_pb2.Timestamp | None = ...,
         closed_at: _timestamp_pb2.Timestamp | None = ...,
         close_reason: Global___CloseReason.ValueType = ...,
-        closed_by: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["closed_at", b"closed_at", "opened_at", b"opened_at", "seen_at", b"seen_at"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "close_reason", b"close_reason", "closed_at", b"closed_at", "closed_by", b"closed_by", "id", b"id", "method", b"method", "opened_at", b"opened_at", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "close_reason", b"close_reason", "closed_at", b"closed_at", "id", b"id", "method", b"method", "opened_at", b"opened_at", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

@@ -98,7 +98,6 @@ class AuthRevokeOwnSessionOperation(
                     caller.uid,
                     parameters.session_id,
                     AuthSessionCloseReason.REVOKED,
-                    closed_by=caller.uid,
                 )
                 await auth.activities.record(
                     self.parent,
@@ -139,7 +138,6 @@ class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
                         caller.uid,
                         session.id,
                         AuthSessionCloseReason.REVOKED,
-                        closed_by=caller.uid,
                     )
                     await self.project.auth.activities.record(
                         self.parent, session.id, AuthActivityAction.REVOKE, metadata
@@ -186,7 +184,6 @@ class AuthListSessionsOperation(
                 seen_at=session.seen_at,
                 closed_at=session.closed_at,
                 close_reason=session.close_reason,
-                closed_by=session.closed_by,
             )
             for session in sessions
         )

@@ -101,7 +101,6 @@ def build_session_record_message(
             build_attr_value_message(attr_id, value)
             for attr_id, value in session.attr_values.items()
         ],
-        closed_by=session.closed_by or "",
     )
     message.opened_at.FromDatetime(session.opened_at)
     message.seen_at.FromDatetime(session.seen_at)
