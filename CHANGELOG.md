@@ -2,6 +2,86 @@
 
 <!-- towncrier release notes start -->
 
+## [0.3.0] - 2026-11-15
+### Added
+- The profile of the caller: `auth.profiles.op_get_own`, `AuthOwnProfile`, its
+  tags, the values of its attributes, its permissions and its hash, by the
+  flag `CAN_READ_OWN` of `auth.profiles`, which `auth.grp_signed_in` grants;
+  over gRPC `GetOwnProfile` of the service `Profiles`. The hash, computed once
+  when the caller is formed, is carried by `AuthCaller`, `profile_hash`, and
+  told in the trailing metadata of every reply to a signed-in caller,
+  `ingot-auth-user-profile-hash`, by `BaseAuthGrpcServicer`, which the
+  servicers of an application extend: a client asks for the profile again
+  when it differs from its own.
+- The record of the sign-ins: a closed session keeps who closed it,
+  `closed_by` of `AuthSessionRecord`, the uid of the caller, none when it
+  expired; `storage.sessions.get_all()` gives the sessions of a profile, open
+  and closed. An operator reads them, `auth.sessions.op_list`, those open or
+  all of them, `AuthSessionInfo` with no token nor its hash, by the flag
+  `CAN_LIST` of `auth.sessions`, which `auth.sessions.grp_admins` grants; on
+  the command line `auth sessions list <uid> --closed`, over gRPC
+  `ListSessions` of the service `Sessions`, which `AuthGrpcAdminBinding`
+  serves too, the reason of a closed one a `CloseReason`.
+- The sessions of a user's own: `auth.sessions.op_list_own`, its open
+  sessions, each with its public id, the values of its attributes, the times
+  it opened and was seen at, the current one marked; `op_revoke_own`, closing
+  one, `REVOKED`, a session of another, closed or unknown not found,
+  `AuthOwnSessionNotFoundError`; `op_revoke_others`, closing all but the
+  current one and telling how many. The flags `CAN_LIST_OWN` and
+  `CAN_REVOKE_OWN` of `auth.sessions`, `AuthSessionsPermissions`, which
+  `auth.grp_signed_in` grants. Over gRPC, the service `Sessions` of
+  `ingot_auth.sessions.v1`, in `AuthGrpcSessionsBinding`, an own session not
+  found `NOT_FOUND`, `OWN_SESSION_NOT_FOUND`.
+- The sign-out: `auth.sign_out`, `AuthSignOutUnit`, its operation
+  `op_sign_out` closing the session of the caller, `SIGNED_OUT`, its token
+  working no more from the very next request. Any caller may, requiring no
+  permission: one of no session, the anonymous one of a token closed, expired
+  or unknown, signs out of nothing. Over gRPC, the service `SignOut` of
+  `ingot_auth.sign_out.v1`, in `AuthGrpcSignOutBinding`, which
+  `AuthGrpcFlowsBinding` takes. `auth.sessions.close()` closes an open
+  session of a profile for a reason, by the uid of a caller, and forgets it
+  in the cache.
+- The values of a profile: its tags and the values of its attributes, by the
+  ids of their registries, which an operator sets, the whole set each time,
+  `auth.profiles.op_set_tags` and `op_set_attr_values`, a tag or an attribute
+  out of its registry refused, a value of another type too; a change forgets
+  the callers of the profile. The flag `CAN_UPDATE` of `auth.profiles`,
+  `AuthProfilesPermissions`, which `auth.profiles.grp_managers` grants. On
+  the command line `auth profiles tags set <uid> <tag>…` and
+  `auth profiles attrs values set <uid> --value ID=VALUE`; over gRPC the service `Profiles`
+  of `ingot_auth.profiles.v1`, in `AuthGrpcProfilesBinding`, which
+  `AuthGrpcAdminBinding` takes. The storage `storage.profiles.values`,
+  `BaseAuthProfileValuesStorage`, in memory and in MongoDB, with its contract.
+- The values of the attributes of a session of the source `derived`, the
+  place from the IP: the strategy in the slot `deriver` of the sessions,
+  `BaseAuthSessionAttrsDeriver`, derives them at the start of a flow from the
+  values of the client and of the transport, by their names, kept as those of
+  the transport are, once the registry has them derived;
+  `AuthNoSessionAttrsDeriver` derives none.
+
+### Changed
+- A storage of the sessions implements `_get_all()`, the sessions of a
+  profile, open and closed, and keeps who closed one, `closed_by` of
+  `_close()`; the contract of the storages checks both. A session of MongoDB
+  closed by 0.2.0 is closed by none known.
+- An application declares the strategy deriving the attributes of its
+  sessions in the slot `deriver` of `AuthSessionsUnit`, as it declares their
+  lifetime, `AuthNoSessionAttrsDeriver` for none. The composite binding of the
+  registries of the sessions is `AuthGrpcSessionRegistriesBinding`,
+  `AuthGrpcSessionsBinding` now the one of the service `Sessions`;
+  `build_transport_attr_values()` of `ingot_auth.sessions.attrs` is
+  `build_attr_values()`, of the values of a source.
+- The composite binding of the registries of the profiles is
+  `AuthGrpcProfileRegistriesBinding`, `AuthGrpcProfilesBinding` now the one of
+  the service `Profiles`. A storage of the profiles declares the storage of
+  their values in the slot `values`.
+- The message of a value of an attribute, `AttrValue`, moved from
+  `ingot_auth.sessions.attrs.v1` to `ingot_auth.attrs.v1`, of the attributes
+  of the profiles and of the sessions alike: a client regenerates its code,
+  the encoding of its fields unchanged. The converters of the contrib of
+  gRPC are in `ingot_auth.contrib.transports.grpcio.attrs`, by the registry
+  the values are of.
+
 ## [0.2.0] - 2026-11-15
 ### Added
 - The dispatcher of the auth, the slot `dispatcher` of `AuthUnit`,
