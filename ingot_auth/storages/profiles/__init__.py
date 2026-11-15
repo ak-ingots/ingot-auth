@@ -10,11 +10,13 @@ __all__ = (
     "AuthProfileConflictError",
     "AuthProfileError",
     "AuthProfileNotFoundError",
+    "AuthProfileValues",
     "AuthProfilesStorage",
     "AuthSecretNotFoundError",
     "AuthTag",
     "BaseAuthAttrsStorage",
     "BaseAuthIdentitiesStorage",
+    "BaseAuthProfileValuesStorage",
     "BaseAuthSecretsStorage",
     "BaseAuthTagsStorage",
 )
@@ -35,16 +37,17 @@ from .errors import (
     AuthSecretNotFoundError,
 )
 from .identities import BaseAuthIdentitiesStorage
-from .items import AuthAttr, AuthIdentity, AuthProfile, AuthTag
+from .items import AuthAttr, AuthIdentity, AuthProfile, AuthProfileValues, AuthTag
 from .secrets import BaseAuthSecretsStorage
 from .tags import BaseAuthTagsStorage
+from .values import BaseAuthProfileValuesStorage
 
 
 class AuthProfilesStorage(Unit):
     """
     The storage of the profiles: the profiles themselves, what a backend
-    implements, and as slots the registries, the identities of the profiles
-    and the secrets of these, each abstract.
+    implements, and as slots the registries, the identities of the profiles,
+    the secrets of these and their values, each abstract.
     """
 
     # mypy refuses an abstract class where a type is expected: a slot of
@@ -53,6 +56,7 @@ class AuthProfilesStorage(Unit):
     attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
     identities = Slot(BaseAuthIdentitiesStorage)  # type: ignore[type-abstract]
     secrets = Slot(BaseAuthSecretsStorage)  # type: ignore[type-abstract]
+    values = Slot(BaseAuthProfileValuesStorage)  # type: ignore[type-abstract]
 
     @t.final
     async def create(self, profile: AuthProfile) -> None:

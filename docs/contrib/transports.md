@@ -23,11 +23,12 @@ methods the application takes, an internal one the administration too.
 | `AuthGrpcNicknameBinding` | `Nickname` of `ingot_auth.methods.nickname.v1`: `SignUp`, `SignIn` |
 | `AuthGrpcEmailCodeBinding` | `EmailCode` of `ingot_auth.methods.email_code.v1`: `StartSignUp`, `StartSignIn` |
 | `AuthGrpcFlowsBinding` | `SignUp` of `ingot_auth.sign_up.v1` and `SignIn` of `ingot_auth.sign_in.v1`: `AnswerSignUp`, `AnswerSignIn`, the answers of a method of more steps; `SignOut` of `ingot_auth.sign_out.v1`, the sign-out of the caller of the token, open to any; `AuthGrpcSignUpBinding`, `AuthGrpcSignInBinding`, `AuthGrpcSignOutBinding` apart |
-| `AuthGrpcProfilesBinding` | `Tags` and `Attrs` of `ingot_auth.profiles.*.v1`; `AuthGrpcTagsBinding`, `AuthGrpcAttrsBinding` apart |
+| `AuthGrpcProfilesBinding` | `Profiles` of `ingot_auth.profiles.v1`: `SetProfileTags`, `SetProfileAttrValues`, the values of a profile |
+| `AuthGrpcProfileRegistriesBinding` | `Tags` and `Attrs` of `ingot_auth.profiles.*.v1`; `AuthGrpcTagsBinding`, `AuthGrpcAttrsBinding` apart |
 | `AuthGrpcSessionsBinding` | `Sessions` of `ingot_auth.sessions.v1`: `ListOwnSessions`, `RevokeOwnSession`, `RevokeOtherSessions`, the sessions of the caller's own; `ListSessions`, those of a profile, the record of its sign-ins |
 | `AuthGrpcSessionRegistriesBinding` | `Attrs` and `Presets` of `ingot_auth.sessions.*.v1`; `AuthGrpcSessionAttrsBinding`, `AuthGrpcSessionPresetsBinding` apart |
 | `AuthGrpcAccessBinding` | `Groups` and `Members` of `ingot_auth.access.*.v1`; `AuthGrpcGroupsBinding`, `AuthGrpcMembersBinding` apart |
-| `AuthGrpcAdminBinding` | those of the profiles, the sessions, their registries and the service, and the access |
+| `AuthGrpcAdminBinding` | those of the profiles and of the sessions, their registries and their services, and the access |
 
 The errors unit of the gRPC takes `AuthGrpcErrorsUnit` as a base, the statuses of the errors of the
 auth. The public server is the default one here; an internal one, serving

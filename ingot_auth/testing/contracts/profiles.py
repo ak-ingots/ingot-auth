@@ -5,21 +5,25 @@ the secrets of these.
 
 __all__ = (
     "AuthIdentitiesStorageContract",
+    "AuthProfileValuesStorageContract",
     "AuthProfilesStorageContract",
     "AuthSecretsStorageContract",
 )
 
 import asyncio
 import datetime
+import decimal
 import typing as t
 
 from ingot_auth.storages import (
+    AuthAttrValue,
     AuthIdentity,
     AuthIdentityConflictError,
     AuthIdentityNotFoundError,
     AuthProfile,
     AuthProfileConflictError,
     AuthProfileNotFoundError,
+    AuthProfileValues,
     AuthSecretNotFoundError,
 )
 
@@ -110,3 +114,41 @@ class AuthSecretsStorageContract(BaseAuthContract):
         with self.assertRaises(AuthSecretNotFoundError) as error:
             await secrets.get("b2")
         self.assertEqual(error.exception.uid, "b2")
+
+
+class AuthProfileValuesStorageContract(BaseAuthContract):
+    """The values of the profiles of a storage: the tags, those of the attributes."""
+
+    async def test_a_profile_of_none_has_empty_values(self) -> None:
+        values = await self.project.auth.storage.profiles.values.get("a1")
+        self.assertEqual(values, AuthProfileValues())
+
+    async def test_the_values_are_kept_each_set_apart(self) -> None:
+        values = self.project.auth.storage.profiles.values
+        attr_values: dict[int, AuthAttrValue] = {
+            1: True,
+            2: 7,
+            3: decimal.Decimal("1.50"),
+            4: NOW,
+            5: "x",
+        }
+        await values.set_tags("a1", frozenset({2, 1}))
+        await values.set_attr_values("a1", attr_values)
+        await values.set_tags("b2", frozenset({3}))
+        self.assertEqual(
+            await values.get("a1"),
+            AuthProfileValues(tag_ids=frozenset({1, 2}), attr_values=attr_values),
+        )
+        self.assertEqual(
+            await values.get("b2"), AuthProfileValues(tag_ids=frozenset({3}))
+        )
+
+    async def test_a_set_replaces_the_whole_set(self) -> None:
+        values = self.project.auth.storage.profiles.values
+        await values.set_tags("a1", frozenset({1, 2}))
+        await values.set_attr_values("a1", {1: "x", 2: "y"})
+        await values.set_tags("a1", frozenset({3}))
+        await values.set_attr_values("a1", {})
+        self.assertEqual(
+            await values.get("a1"), AuthProfileValues(tag_ids=frozenset({3}))
+        )

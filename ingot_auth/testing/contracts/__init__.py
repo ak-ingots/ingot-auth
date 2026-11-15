@@ -17,6 +17,7 @@ __all__ = (
     "AuthIdentitiesStorageContract",
     "AuthMailerContract",
     "AuthMembersStorageContract",
+    "AuthProfileValuesStorageContract",
     "AuthProfilesStorageContract",
     "AuthSecretsStorageContract",
     "AuthSessionAttrsStorageContract",
@@ -37,6 +38,7 @@ from .cache import (
 from .mailer import AuthMailerContract
 from .profiles import (
     AuthIdentitiesStorageContract,
+    AuthProfileValuesStorageContract,
     AuthProfilesStorageContract,
     AuthSecretsStorageContract,
 )

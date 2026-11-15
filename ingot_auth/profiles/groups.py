@@ -31,17 +31,20 @@ class AuthProfilesConsumersGroup(AuthGroup):
 class AuthProfilesManagersGroup(AuthGroup):
     """
     Who keeps the registries of the profiles, the tags and the attributes:
-    creates, reads, updates and deletes their items.
+    creates, reads, updates and deletes their items; and sets the values of
+    the profiles.
     """
 
     parent: "AuthProfilesUnit"
 
     @t.override
     def _get_permissions(self) -> Permissions:
+        profiles = self.parent.permissions
         tags = self.parent.tags.permissions
         attrs = self.parent.attrs.permissions
         return (
             super()._get_permissions()
+            | profiles(profiles.flags.CAN_UPDATE)
             | tags(
                 tags.flags.CAN_CREATE,
                 tags.flags.CAN_READ,

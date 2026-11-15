@@ -4,6 +4,7 @@ __all__ = (
     "AuthMemoryAttrsStorage",
     "AuthMemoryIdentitiesStorage",
     "AuthMemoryProfilesStorage",
+    "AuthMemoryProfileValuesStorage",
     "AuthMemorySecretsStorage",
     "AuthMemoryTagsStorage",
 )
@@ -23,6 +24,7 @@ from ..state import AuthMemoryStateMixin
 from .attrs import AuthMemoryAttrsStorage
 from .identities import AuthMemoryIdentitiesStorage
 from .secrets import AuthMemorySecretsStorage
+from .values import AuthMemoryProfileValuesStorage
 from .tags import AuthMemoryTagsStorage
 
 
@@ -33,6 +35,7 @@ class AuthMemoryProfilesStorage(AuthMemoryStateMixin, AuthProfilesStorage):
     attrs = Slot(AuthMemoryAttrsStorage)
     identities = Slot(AuthMemoryIdentitiesStorage)
     secrets = Slot(AuthMemorySecretsStorage)
+    values = Slot(AuthMemoryProfileValuesStorage)
 
     def __init__(self) -> None:
         super().__init__()

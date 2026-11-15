@@ -14,6 +14,7 @@ from .commands import (
     AuthDeleteTagCommand,
     AuthListTagsCommand,
     AuthRenameTagCommand,
+    AuthSetProfileTagsCommand,
 )
 from .operations import (
     AuthCreateTagOperation,
@@ -45,3 +46,4 @@ class AuthTagsUnit(OperationsOwner, CliUnit):
     cmd_list = Slot(AuthListTagsCommand)
     cmd_rename = Slot(AuthRenameTagCommand)
     cmd_delete = Slot(AuthDeleteTagCommand)
+    cmd_set = Slot(AuthSetProfileTagsCommand)

@@ -101,6 +101,8 @@ from ingot_auth.sessions.presets.v1 import (
 from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_out.v1 import sign_out_pb2
 from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.profiles.v1 import profiles_pb2
+from ingot_auth.profiles import AuthProfilesPermissions
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -141,6 +143,7 @@ from ingot_auth.sessions import AuthSessionExpiredError, AuthSessionsPermissions
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import (
+    AuthAttr,
     AuthAttrType,
     AuthAttrValue,
     AuthIdentityConflictError,
@@ -150,6 +153,7 @@ from ingot_auth.storages import (
     AuthSessionAttrSource,
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
+    AuthTag,
 )
 
 from tests import masks
@@ -654,7 +658,11 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 ),
                 groups_pb2.Group(
                     name="auth.profiles.grp_managers",
-                    permissions={"auth.profiles.attrs": 15, "auth.profiles.tags": 15},
+                    permissions={
+                        "auth.profiles": 1,
+                        "auth.profiles.attrs": 15,
+                        "auth.profiles.tags": 15,
+                    },
                 ),
                 groups_pb2.Group(
                     name="auth.sessions.grp_consumers",
@@ -902,6 +910,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthSignUpPermissions, sign_up_pb2.Permission),
             (AuthSignInPermissions, sign_in_pb2.Permission),
             (AuthSessionsPermissions, sessions_pb2.Permission),
+            (AuthProfilesPermissions, profiles_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value
@@ -1131,6 +1140,60 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             [(sessions_pb2.CLOSE_REASON_UNSPECIFIED, "")],
         )
         self.assertFalse(open_only[0].HasField("closed_at"))
+
+    async def test_an_operator_sets_the_values_of_a_profile(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        uids, tokens = [], []
+        for name in ("Alice", "Eve"):
+            uids.append(
+                (
+                    await nickname.SignUp(
+                        nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                    )
+                ).result.signed_up.uid
+            )
+            tokens.append(
+                (
+                    await nickname.SignIn(
+                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                    )
+                ).result.signed_in.token
+            )
+        storage = self.project.auth.storage
+        await storage.profiles.tags.create(AuthTag(id=1, name="beta"))
+        await storage.profiles.attrs.create(
+            AuthAttr(id=1, name="first_name", type=AuthAttrType.STR)
+        )
+        await storage.access.members.add(
+            AuthMembership(group="auth.profiles.grp_managers", uid=uids[1])
+        )
+        bearer = [("authorization", f"Bearer {tokens[1]}")]
+        profiles = client.auth_profiles
+        await profiles.SetProfileTags(
+            profiles_pb2.SetProfileTagsRequest(uid=uids[0], tag_ids=[1]),
+            metadata=bearer,
+        )
+        reply = await profiles.SetProfileAttrValues(
+            profiles_pb2.SetProfileAttrValuesRequest(
+                uid=uids[0],
+                attr_values=[attrs_pb2.AttrValue(attr_id=1, str_value="Alice")],
+            ),
+            metadata=bearer,
+        )
+        self.assertEqual(
+            (list(reply.values.tag_ids), list(reply.values.attr_values)),
+            ([1], [attrs_pb2.AttrValue(attr_id=1, str_value="Alice")]),
+        )
+        with self.assertRaises(GrpcError) as error:
+            await profiles.SetProfileTags(
+                profiles_pb2.SetProfileTagsRequest(uid=uids[0], tag_ids=[9]),
+                metadata=bearer,
+            )
+        self.assertEqual(
+            (error.exception.code, error.exception.reason),
+            (grpc.StatusCode.NOT_FOUND, "ITEM_NOT_FOUND"),
+        )
 
     async def test_every_close_reason_has_its_message(self) -> None:
         self.assertEqual(set(CLOSE_REASONS), set(AuthSessionCloseReason))

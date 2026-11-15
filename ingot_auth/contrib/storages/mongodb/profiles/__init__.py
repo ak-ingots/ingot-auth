@@ -4,6 +4,7 @@ __all__ = (
     "AuthMongoDbAttrsStorage",
     "AuthMongoDbIdentitiesStorage",
     "AuthMongoDbProfilesStorage",
+    "AuthMongoDbProfileValuesStorage",
     "AuthMongoDbSecretsStorage",
     "AuthMongoDbTagsStorage",
 )
@@ -24,6 +25,7 @@ from ..collection import AuthMongoDbCollectionMixin
 from .attrs import AuthMongoDbAttrsStorage
 from .identities import AuthMongoDbIdentitiesStorage
 from .secrets import AuthMongoDbSecretsStorage
+from .values import AuthMongoDbProfileValuesStorage
 from .tags import AuthMongoDbTagsStorage
 
 
@@ -39,6 +41,7 @@ class AuthMongoDbProfilesStorage(AuthMongoDbCollectionMixin, AuthProfilesStorage
     attrs = Slot(AuthMongoDbAttrsStorage)
     identities = Slot(AuthMongoDbIdentitiesStorage)
     secrets = Slot(AuthMongoDbSecretsStorage)
+    values = Slot(AuthMongoDbProfileValuesStorage)
 
     @t.override
     async def _create(self, profile: AuthProfile) -> None:

@@ -13,6 +13,7 @@ __all__ = (
     "AuthMongoDbMembersStorage",
     "AuthMongoDbProfilesStorage",
     "AuthMongoDbRegistryStorage",
+    "AuthMongoDbProfileValuesStorage",
     "AuthMongoDbSecretsStorage",
     "AuthMongoDbSessionAttrsStorage",
     "AuthMongoDbSessionPresetsStorage",
@@ -35,6 +36,7 @@ from .profiles import (
     AuthMongoDbAttrsStorage,
     AuthMongoDbIdentitiesStorage,
     AuthMongoDbProfilesStorage,
+    AuthMongoDbProfileValuesStorage,
     AuthMongoDbSecretsStorage,
     AuthMongoDbTagsStorage,
 )
