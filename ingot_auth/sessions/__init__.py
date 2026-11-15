@@ -45,6 +45,7 @@ from ingots.puer.cli import CliUnit
 
 from ingot_auth.access.groups import AuthGroupsOwner
 from ingot_auth.caches import AuthCaller
+from ingot_auth.profiles.hashes import build_profile_hash
 from ingot_auth.storages import (
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
@@ -187,8 +188,12 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         caller = await cache.callers.get(token_hash, groups_digest)
         if caller is None:
             permissions = await access.permissions.get_permissions(session.uid)
+            values = await self.project.auth.storage.profiles.values.get(session.uid)
             caller = AuthCaller(
-                uid=session.uid, session_id=session.id, permissions=permissions
+                uid=session.uid,
+                session_id=session.id,
+                permissions=permissions,
+                profile_hash=build_profile_hash(values, permissions),
             )
             expires_at = now + self._get_cache_ttl()
             await cache.callers.put(token_hash, groups_digest, caller, expires_at)

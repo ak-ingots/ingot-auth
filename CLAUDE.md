@@ -25,7 +25,9 @@ kept with who closed it, the record of the sign-ins an operator reads,
 and `authenticate()` turning a token into an `AuthCaller`, the session and
 the caller cached apart, the caller by the digest of the groups
 too, its callers forgotten by `forget_callers()` on a change of the
-memberships; the `access/`, its `groups/` entities
+memberships or of the values of the profile, each carrying the hash of its
+profile, `profile_hash`, which `BaseAuthGrpcServicer` tells in the trailing
+metadata of every reply; the `access/`, its `groups/` entities
 in slots `grp_*` of the units of their domains, `AuthGroupsOwner`, found by a
 walk from the project down the owners alone by `AuthGroupsUnit`, declared in
 the code, each named by its full name (`auth.profiles.grp_managers`, as the

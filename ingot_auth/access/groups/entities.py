@@ -46,7 +46,8 @@ class AuthSignedInGroup(AuthGroup):
     The group of every signed-in user, of the core, a member none stored,
     in the slot ``grp_signed_in`` of the auth. It grants what the methods
     give a signed-in user by their toggles, the ``CAN_SIGN_IN`` of each
-    method open, and the listing and the revoking of its own sessions; what
+    method open, the listing and the revoking of its own sessions and the
+    reading of its own profile; what
     an application and its addons grant every signed-in
     user, they add by the hook, the application declaring the class that
     joins them in the slot.
@@ -56,10 +57,12 @@ class AuthSignedInGroup(AuthGroup):
     def _get_permissions(self) -> Permissions:
         auth = self.project.auth
         sessions = auth.sessions.permissions
+        profiles = auth.profiles.permissions
         return (
             super()._get_permissions()
             | auth.methods.get_signed_in_permissions()
             | sessions(sessions.flags.CAN_LIST_OWN, sessions.flags.CAN_REVOKE_OWN)
+            | profiles(profiles.flags.CAN_READ_OWN)
         )
 
 

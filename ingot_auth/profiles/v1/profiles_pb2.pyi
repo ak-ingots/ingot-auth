@@ -28,6 +28,7 @@ class _PermissionEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Permission
     DESCRIPTOR: _descriptor.EnumDescriptor
     PERMISSION_UNSPECIFIED: _Permission.ValueType  # 0
     PERMISSION_CAN_UPDATE: _Permission.ValueType  # 1
+    PERMISSION_CAN_READ_OWN: _Permission.ValueType  # 2
 
 class Permission(_Permission, metaclass=_PermissionEnumTypeWrapper):
     """The bits of the domain `auth.profiles` its operations require: an aid for
@@ -36,6 +37,7 @@ class Permission(_Permission, metaclass=_PermissionEnumTypeWrapper):
 
 PERMISSION_UNSPECIFIED: Permission.ValueType  # 0
 PERMISSION_CAN_UPDATE: Permission.ValueType  # 1
+PERMISSION_CAN_READ_OWN: Permission.ValueType  # 2
 Global___Permission: _TypeAlias = Permission  # noqa: Y015
 
 @_typing.final
@@ -63,6 +65,71 @@ class ProfileValues(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___ProfileValues: _TypeAlias = ProfileValues  # noqa: Y015
+
+@_typing.final
+class GetOwnProfileRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___GetOwnProfileRequest: _TypeAlias = GetOwnProfileRequest  # noqa: Y015
+
+@_typing.final
+class GetOwnProfileResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    @_typing.final
+    class PermissionsEntry(_message.Message):
+        DESCRIPTOR: _descriptor.Descriptor
+
+        KEY_FIELD_NUMBER: _builtins.int
+        VALUE_FIELD_NUMBER: _builtins.int
+        key: _builtins.str
+        value: _builtins.int
+        def __init__(
+            self,
+            *,
+            key: _builtins.str = ...,
+            value: _builtins.int = ...,
+        ) -> None: ...
+        _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+        def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+        _ClearFieldArgType: _TypeAlias = _typing.Literal["key", b"key", "value", b"value"]  # noqa: Y015
+        def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+        def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+    VALUES_FIELD_NUMBER: _builtins.int
+    PERMISSIONS_FIELD_NUMBER: _builtins.int
+    HASH_FIELD_NUMBER: _builtins.int
+    hash: _builtins.str
+    """that of the trailing metadata of the replies"""
+    @_builtins.property
+    def values(self) -> Global___ProfileValues: ...
+    @_builtins.property
+    def permissions(self) -> _containers.ScalarMap[_builtins.str, _builtins.int]:
+        """a mask per domain"""
+
+    def __init__(
+        self,
+        *,
+        values: Global___ProfileValues | None = ...,
+        permissions: _abc.Mapping[_builtins.str, _builtins.int] | None = ...,
+        hash: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["values", b"values"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["hash", b"hash", "permissions", b"permissions", "values", b"values"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___GetOwnProfileResponse: _TypeAlias = GetOwnProfileResponse  # noqa: Y015
 
 @_typing.final
 class SetProfileTagsRequest(_message.Message):

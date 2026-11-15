@@ -27,14 +27,20 @@ GRPC_GENERATED_VERSION: str
 GRPC_VERSION: str
 
 class ProfilesStub:
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
 
     @_typing.overload
     def __new__(cls, channel: _grpc.Channel) -> _Self: ...
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> ProfilesAsyncStub: ...
+    GetOwnProfile: _grpc.UnaryUnaryMultiCallable[_profiles_pb2.GetOwnProfileRequest, _profiles_pb2.GetOwnProfileResponse]
+    """Requires PERMISSION_CAN_READ_OWN."""
     SetProfileTags: _grpc.UnaryUnaryMultiCallable[_profiles_pb2.SetProfileTagsRequest, _profiles_pb2.SetProfileTagsResponse]
     """Requires PERMISSION_CAN_UPDATE."""
     SetProfileAttrValues: _grpc.UnaryUnaryMultiCallable[_profiles_pb2.SetProfileAttrValuesRequest, _profiles_pb2.SetProfileAttrValuesResponse]
@@ -42,20 +48,38 @@ class ProfilesStub:
 
 @_typing.type_check_only
 class ProfilesAsyncStub(ProfilesStub):
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
 
     def __init__(self, channel: _aio.Channel) -> None: ...
+    GetOwnProfile: _aio.UnaryUnaryMultiCallable[_profiles_pb2.GetOwnProfileRequest, _profiles_pb2.GetOwnProfileResponse]  # type: ignore[assignment]
+    """Requires PERMISSION_CAN_READ_OWN."""
     SetProfileTags: _aio.UnaryUnaryMultiCallable[_profiles_pb2.SetProfileTagsRequest, _profiles_pb2.SetProfileTagsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_UPDATE."""
     SetProfileAttrValues: _aio.UnaryUnaryMultiCallable[_profiles_pb2.SetProfileAttrValuesRequest, _profiles_pb2.SetProfileAttrValuesResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_UPDATE."""
 
 class ProfilesServicer(metaclass=_abc_1.ABCMeta):
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
+
+    @_abc_1.abstractmethod
+    def GetOwnProfile(
+        self,
+        request: _profiles_pb2.GetOwnProfileRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_profiles_pb2.GetOwnProfileResponse, _abc.Awaitable[_profiles_pb2.GetOwnProfileResponse]]:
+        """Requires PERMISSION_CAN_READ_OWN."""
 
     @_abc_1.abstractmethod
     def SetProfileTags(

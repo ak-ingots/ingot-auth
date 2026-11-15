@@ -22,6 +22,7 @@ CALLER: t.Final = AuthCaller(
     uid="a1",
     session_id="s1",
     permissions=Permissions({"auth.access.groups": AuthGroupsPermissions.CAN_READ}),
+    profile_hash="9f86d0",
 )
 
 

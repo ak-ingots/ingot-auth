@@ -12,6 +12,7 @@ from ingot_auth.__main__ import AuthMemoryProject, AuthMemorySignInUnit
 from ingot_auth.access.groups import AuthGroup, AuthGroupsOwner
 from ingot_auth.auth import AuthUnit
 from ingot_auth.caches import AuthCaller
+from ingot_auth.profiles.hashes import build_profile_hash
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.sessions import (
@@ -23,6 +24,7 @@ from ingot_auth.sessions import (
     BaseAuthSessionLifetime,
 )
 from ingot_auth.storages import (
+    AuthProfileValues,
     AuthMembership,
     AuthProfile,
     AuthSessionCloseReason,
@@ -99,6 +101,9 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
                 uid="a1",
                 session_id=session.id,
                 permissions=masks(ShopPermissions.CAN_BUY) | OWN,
+                profile_hash=build_profile_hash(
+                    AuthProfileValues(), masks(ShopPermissions.CAN_BUY) | OWN
+                ),
             ),
         )
         self.assertEqual(

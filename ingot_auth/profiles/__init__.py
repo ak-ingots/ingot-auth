@@ -6,6 +6,8 @@ their values are kept by the storages, :mod:`ingot_auth.storages`.
 """
 
 __all__ = (
+    "AuthGetOwnProfileOperation",
+    "AuthOwnProfile",
     "AuthProfilesConsumersGroup",
     "AuthProfilesManagersGroup",
     "AuthProfilesPermissions",
@@ -24,8 +26,16 @@ from ingot_auth.access.groups import AuthGroupsOwner
 
 from .attrs import AuthAttrsUnit
 from .groups import AuthProfilesConsumersGroup, AuthProfilesManagersGroup
-from .items import AuthSetProfileAttrValuesParameters, AuthSetProfileTagsParameters
-from .operations import AuthSetProfileAttrValuesOperation, AuthSetProfileTagsOperation
+from .items import (
+    AuthOwnProfile,
+    AuthSetProfileAttrValuesParameters,
+    AuthSetProfileTagsParameters,
+)
+from .operations import (
+    AuthGetOwnProfileOperation,
+    AuthSetProfileAttrValuesOperation,
+    AuthSetProfileTagsOperation,
+)
 from .permissions import AuthProfilesPermissions
 from .tags import AuthTagsUnit
 
@@ -49,6 +59,7 @@ class AuthProfilesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
     op_set_tags = Factory(AuthSetProfileTagsOperation)
     op_set_attr_values = Factory(AuthSetProfileAttrValuesOperation)
+    op_get_own = Factory(AuthGetOwnProfileOperation)
 
     tags = Slot(AuthTagsUnit)
     attrs = Slot(AuthAttrsUnit)

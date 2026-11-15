@@ -1,19 +1,29 @@
 """The operations of the values of the profiles."""
 
-__all__ = ("AuthSetProfileAttrValuesOperation", "AuthSetProfileTagsOperation")
+__all__ = (
+    "AuthGetOwnProfileOperation",
+    "AuthSetProfileAttrValuesOperation",
+    "AuthSetProfileTagsOperation",
+)
 
 import typing as t
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
+from ingot_auth.caches import AuthCaller
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import (
     ATTR_VALUE_TYPES,
     AuthItemNotFoundError,
+    AuthProfileNotFoundError,
     AuthProfileValues,
 )
 
-from .items import AuthSetProfileAttrValuesParameters, AuthSetProfileTagsParameters
+from .items import (
+    AuthOwnProfile,
+    AuthSetProfileAttrValuesParameters,
+    AuthSetProfileTagsParameters,
+)
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -95,3 +105,35 @@ class AuthSetProfileAttrValuesOperation(
         await storage.values.set_attr_values(parameters.uid, parameters.attr_values)
         await self.project.auth.sessions.forget_callers(parameters.uid)
         return await storage.values.get(parameters.uid)
+
+
+class AuthGetOwnProfileOperation(BaseOperation[None, AuthOwnProfile]):
+    """
+    The profile of the caller, its values, its permissions and the hash its
+    replies tell.
+
+    :raises AuthProfileNotFoundError: the caller has no profile, the root.
+    """
+
+    project: "AuthProject"
+    parent: "AuthProfilesUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_READ_OWN)
+
+    @t.override
+    async def _run(
+        self, parameters: None, metadata: OperationMetadata
+    ) -> AuthOwnProfile:
+        caller = metadata.caller
+        if not isinstance(caller, AuthCaller):
+            raise AuthProfileNotFoundError.for_uid(caller.uid)
+        values = await self.project.auth.storage.profiles.values.get(caller.uid)
+        return AuthOwnProfile(
+            tag_ids=values.tag_ids,
+            attr_values=values.attr_values,
+            permissions=dict(caller.permissions),
+            hash=caller.profile_hash,
+        )

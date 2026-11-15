@@ -31,3 +31,30 @@ Over gRPC, `SetProfileTags` and `SetProfileAttrValues` of the service
 `AuthGrpcAdminBinding` takes. `auth.profiles.grp_managers` grants the flag,
 `CAN_UPDATE` of `auth.profiles`. A change forgets the callers of the
 profile, as a change of its memberships does.
+
+## The profile of the caller
+
+A client builds its interface from the profile of its user: its tags, the
+values of its attributes and its permissions, `auth.profiles.op_get_own`,
+over gRPC `GetOwnProfile` of the service `Profiles`, with its hash.
+`auth.grp_signed_in` grants the flag, `CAN_READ_OWN` of `auth.profiles`.
+The server stays the truth; the profile a client holds is an aid to its
+interface.
+
+The hash is computed once, when the caller is formed, and carried by
+`AuthCaller`, `profile_hash`: a change of the values, of the memberships, of
+what the groups grant forms the caller again, a new hash. Every reply to a
+signed-in caller tells it in its trailing metadata,
+`ingot-auth-user-profile-hash`: `BaseAuthGrpcServicer` puts it there, which
+every servicer of a signed-in caller extends, those of the application too.
+The client compares it with its own and asks for the profile again when it
+differs, so that a button the server would refuse hides before a refusal; a
+refusal, `PERMISSION_DENIED`, stays the safety net.
+
+```python
+profile = await profiles.GetOwnProfile(GetOwnProfileRequest(), metadata=auth)
+call = shop.Buy(request, metadata=auth)
+reply = await call
+if dict(await call.trailing_metadata())["ingot-auth-user-profile-hash"] != profile.hash:
+    profile = await profiles.GetOwnProfile(GetOwnProfileRequest(), metadata=auth)
+```
