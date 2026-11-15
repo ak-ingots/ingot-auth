@@ -56,7 +56,6 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
                 "seen_at": session.seen_at,
                 "closed_at": None,
                 "close_reason": None,
-                "closed_by": None,
             },
             session=self._mongodb_get_session(),
         )
@@ -105,14 +104,9 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
-        closed_by: str | None,
     ) -> None:
         collection = await self._mongodb_get_collection()
-        changes = {
-            "closed_at": closed_at,
-            "close_reason": reason.value,
-            "closed_by": closed_by,
-        }
+        changes = {"closed_at": closed_at, "close_reason": reason.value}
         result = await collection.update_one(
             {"_id": session_id, "closed_at": None},
             {"$set": changes},
@@ -142,6 +136,4 @@ def _build_session(document: "Document") -> AuthSessionRecord:
         seen_at=document.get("seen_at") or document["opened_at"],
         closed_at=document.get("closed_at"),
         close_reason=close_reason and AuthSessionCloseReason(close_reason),
-        # a session closed by 0.2.0 has none: by whom is not known
-        closed_by=document.get("closed_by"),
     )

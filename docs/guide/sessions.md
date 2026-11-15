@@ -117,9 +117,11 @@ answers of the flows, `AuthGrpcSignOutBinding` apart.
 
 ## The record of the sign-ins
 
-A session closed stays kept, with the time, the reason and who closed it,
-`closed_by`, the uid of the caller, its own user signing out or revoking,
-none when it expired: the record of a sign-in. An operator reads the
+A session closed stays kept, with the time and the reason it closed: the
+record of a sign-in. Who closed it, its own user signing out or revoking,
+the server when it expired, the activity log tells, by the id of the
+session, `auth activities list --entity auth.sessions:<id>`
+({doc}`activities`). An operator reads the
 sessions of a profile, `auth.sessions.op_list`, those open, or all of them
 with the closed ones, by the time they opened, never a token nor its hash:
 

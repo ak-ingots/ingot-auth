@@ -226,14 +226,12 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         uid: str,
         session_id: str,
         reason: AuthSessionCloseReason,
-        *,
-        closed_by: str | None,
     ) -> None:
         """
-        Closes an open session of a profile for a reason, by the uid of a
-        caller, kept, then forgets it in the cache, once the storage keeps it
-        closed: the next request of its token misses the cache and finds it
-        closed.
+        Closes an open session of a profile for a reason, kept, then forgets
+        it in the cache, once the storage keeps it closed: the next request of
+        its token misses the cache and finds it closed. Who closed it, the
+        activity log tells.
 
         :raises AuthSessionNotFoundError: no open session of the profile has
             the id.
@@ -245,7 +243,7 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
             raise AuthSessionNotFoundError.for_id(session_id)
         try:
             await self.project.auth.storage.sessions.close(
-                session.id, reason, self._get_now(), closed_by
+                session.id, reason, self._get_now()
             )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile, by another request

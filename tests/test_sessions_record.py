@@ -13,6 +13,7 @@ from ingots.puer.cli import CommandRunner
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.storages.memory.sessions import AuthMemorySessionsStorage
+from ingot_auth.activities import AuthListActivitiesParameters
 from ingot_auth.sessions import AuthListSessionsParameters
 from ingot_auth.storages import (
     AuthMembership,
@@ -46,7 +47,7 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         opened = await self.sessions.open(uid, "nickname", {})
         return await self.sessions.authenticate(opened.token)
 
-    async def test_the_record_tells_who_closed_each_session(self) -> None:
+    async def test_the_record_tells_when_and_why_the_log_who(self) -> None:
         phone = await self.sessions.open("a1", "nickname", {1: "phone"})
         tablet = await self.sessions.open("a1", "nickname", {1: "tablet"})
         user = await self.caller_of("a1")
@@ -60,22 +61,29 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
             operator,
         )
         self.assertEqual(
-            [(s.id, s.close_reason, s.closed_by) for s in record],
+            [(s.id, s.close_reason) for s in record],
             [
-                (phone.session_id, AuthSessionCloseReason.REVOKED, "a1"),
-                (tablet.session_id, AuthSessionCloseReason.REVOKED, "a1"),
-                (record[2].id, AuthSessionCloseReason.SIGNED_OUT, "a1"),
-                (kept.session_id, None, None),
+                (phone.session_id, AuthSessionCloseReason.REVOKED),
+                (tablet.session_id, AuthSessionCloseReason.REVOKED),
+                (record[2].id, AuthSessionCloseReason.SIGNED_OUT),
+                (kept.session_id, None),
             ],
         )
         self.assertEqual(record[0].attr_values, {1: "phone"})
         self.assertNotIn(phone.token, repr(record))
+        log = self.project.auth.storage.activities
+        for session in record[:3]:
+            query = AuthListActivitiesParameters(
+                entity_type="auth.sessions", entity_id=session.id
+            )
+            (closed,) = await log.find(query)
+            self.assertEqual(closed.who, "a1")
         open_only = await self.run_operation(
             self.sessions.op_list, AuthListSessionsParameters(uid="a1"), operator
         )
         self.assertEqual([s.id for s in open_only], [kept.session_id])
 
-    async def test_an_expired_session_is_closed_by_none(self) -> None:
+    async def test_an_expired_session_is_closed_by_the_server(self) -> None:
         opened = await self.sessions.open("a1", "nickname", {})
         later = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=31)
         with mock.patch.object(type(self.sessions), "_get_now", return_value=later):
@@ -87,9 +95,11 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
             ROOT,
         )
         self.assertEqual(
-            (record[0].close_reason, record[0].closed_by),
-            (AuthSessionCloseReason.EXPIRED_ABSOLUTE, None),
+            record[0].close_reason, AuthSessionCloseReason.EXPIRED_ABSOLUTE
         )
+        query = AuthListActivitiesParameters(entity_id=opened.session_id)
+        (expired,) = await self.project.auth.storage.activities.find(query)
+        self.assertEqual(expired.who, "system")
 
     async def test_the_user_may_not_read_the_record(self) -> None:
         user = await self.caller_of("a1")
@@ -114,7 +124,6 @@ class SeededSessionsStorage(AuthMemorySessionsStorage):
                 seen_at=NOW,
                 closed_at=later,
                 close_reason=AuthSessionCloseReason.REVOKED,
-                closed_by="a1",
             ),
             AuthSessionRecord(
                 id="s2",
@@ -172,9 +181,9 @@ class CommandsTestCase(unittest.TestCase):
             (
                 0,
                 "s1\tnickname\t2026-11-15T12:00:00+00:00\t2026-11-15T12:00:00+00:00"
-                "\t2026-11-15T13:00:00+00:00\trevoked\ta1\t1=iPhone\t2=PL\n"
+                "\t2026-11-15T13:00:00+00:00\trevoked\t1=iPhone\t2=PL\n"
                 "s2\temail_code\t2026-11-15T13:00:00+00:00\t2026-11-15T13:00:00+00:00"
-                "\t2026-11-15T13:00:00+00:00\texpired_idle\t-\n"
+                "\t2026-11-15T13:00:00+00:00\texpired_idle\n"
                 "s3\tnickname\t2026-11-15T13:00:00+00:00\t2026-11-15T13:00:00+00:00\n",
             ),
         )

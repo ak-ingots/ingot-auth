@@ -67,8 +67,8 @@ class AuthListSessionsParameters:
 class AuthSessionInfo:
     """
     A session of a profile as an operator sees it, open or closed, the record
-    of a sign-in: never its token nor its hash. A closed one tells when, why
-    and by whom, the uid of the caller that closed it, none when it expired.
+    of a sign-in: never its token nor its hash. A closed one tells when and
+    why; by whom, the activity log tells, by the id of the session.
     """
 
     id: str
@@ -79,7 +79,6 @@ class AuthSessionInfo:
     seen_at: datetime.datetime
     closed_at: datetime.datetime | None
     close_reason: "AuthSessionCloseReason | None"
-    closed_by: str | None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

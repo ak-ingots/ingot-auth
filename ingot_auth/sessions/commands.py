@@ -61,7 +61,6 @@ class AuthListSessionsCommand(
                 (
                     session.closed_at.isoformat(),
                     str(session.close_reason),
-                    session.closed_by or "-",
                 )
                 if session.closed_at
                 else ()
