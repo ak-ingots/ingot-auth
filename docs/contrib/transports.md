@@ -22,7 +22,7 @@ methods the application takes, an internal one the administration too.
 | `AuthGrpcMetadataBinding` | `Metadata` of `ingot_auth.metadata.v1` |
 | `AuthGrpcNicknameBinding` | `Nickname` of `ingot_auth.methods.nickname.v1`: `SignUp`, `SignIn` |
 | `AuthGrpcEmailCodeBinding` | `EmailCode` of `ingot_auth.methods.email_code.v1`: `StartSignUp`, `StartSignIn` |
-| `AuthGrpcFlowsBinding` | `SignUp` of `ingot_auth.sign_up.v1` and `SignIn` of `ingot_auth.sign_in.v1`: `AnswerSignUp`, `AnswerSignIn`, the answers of a method of more steps; `AuthGrpcSignUpBinding`, `AuthGrpcSignInBinding` apart |
+| `AuthGrpcFlowsBinding` | `SignUp` of `ingot_auth.sign_up.v1` and `SignIn` of `ingot_auth.sign_in.v1`: `AnswerSignUp`, `AnswerSignIn`, the answers of a method of more steps; `SignOut` of `ingot_auth.sign_out.v1`, the sign-out of the caller of the token, open to any; `AuthGrpcSignUpBinding`, `AuthGrpcSignInBinding`, `AuthGrpcSignOutBinding` apart |
 | `AuthGrpcProfilesBinding` | `Tags` and `Attrs` of `ingot_auth.profiles.*.v1`; `AuthGrpcTagsBinding`, `AuthGrpcAttrsBinding` apart |
 | `AuthGrpcSessionsBinding` | `Attrs` and `Presets` of `ingot_auth.sessions.*.v1`; `AuthGrpcSessionAttrsBinding`, `AuthGrpcSessionPresetsBinding` apart |
 | `AuthGrpcAccessBinding` | `Groups` and `Members` of `ingot_auth.access.*.v1`; `AuthGrpcGroupsBinding`, `AuthGrpcMembersBinding` apart |

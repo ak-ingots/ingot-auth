@@ -19,6 +19,7 @@ from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.profiles import AuthProfilesUnit
 from ingot_auth.sessions import AuthSessionsUnit
 from ingot_auth.sign_in import AuthSignInUnit
+from ingot_auth.sign_out import AuthSignOutUnit
 from ingot_auth.sign_up import AuthSignUpUnit
 from ingot_auth.storages import AuthStorage
 
@@ -28,12 +29,12 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
     The auth of the project: the profiles and the sessions, each with its
     registries, the access, the groups of the users and their members, the
     methods, none here, with the policies of what a user types, the sign-up,
-    the sign-in, the metadata, and the storage, the cache, the dispatcher of
-    the operations run in the background and the mailer, abstract here: the
-    project declares them with a backend in a subclass. Its groups are of
-    the whole auth: ``auth.grp_anonymous``, of every caller that tells no one,
-    and ``auth.grp_signed_in``, of every signed-in user, neither keeping
-    members.
+    the sign-in, the sign-out, the metadata, and the storage, the cache, the
+    dispatcher of the operations run in the background and the mailer,
+    abstract here: the project declares them with a backend in a subclass. Its
+    groups are of the whole auth: ``auth.grp_anonymous``, of every caller that
+    tells no one, and ``auth.grp_signed_in``, of every signed-in user, neither
+    keeping members.
     """
 
     cli_name = "auth"
@@ -54,4 +55,5 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
     access = Slot(AuthAccessUnit)
     sign_up = Slot(AuthSignUpUnit)
     sign_in = Slot(AuthSignInUnit)
+    sign_out = Slot(AuthSignOutUnit)
     metadata = Slot(AuthMetadataUnit)

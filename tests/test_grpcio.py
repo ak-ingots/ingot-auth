@@ -50,6 +50,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcNicknameServicer,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
+    AuthGrpcSignOutBinding,
     AuthGrpcTagsServicer,
 )
 from ingot_auth.access.groups.v1 import (
@@ -91,6 +92,7 @@ from ingot_auth.sessions.presets.v1 import (
     presets_pb2_grpc,
 )
 from ingot_auth.sign_in.v1 import sign_in_pb2
+from ingot_auth.sign_out.v1 import sign_out_pb2
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -359,6 +361,7 @@ class TstNicknameServer(
     AuthGrpcMetadataBinding,
     AuthGrpcAdminBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcSignOutBinding,
     DefaultGrpcServer,
 ):
     pass
@@ -1001,6 +1004,27 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (caller.uid, caller.session_id), (signed_up.uid, signed_in.session_id)
         )
+
+    async def test_a_caller_signs_out_by_its_service(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        await nickname.SignUp(
+            nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+        )
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+            )
+        ).result.signed_in
+        bearer = [("authorization", f"Bearer {signed_in.token}")]
+        request = sign_out_pb2.SignOutRequest()
+        await client.auth_sign_out.SignOut(request, metadata=bearer)
+        with self.assertRaises(AuthSessionNotFoundError):
+            await self.project.auth.sessions.authenticate(signed_in.token)
+        # a token closed, unknown or none signs out of nothing: a client retries
+        for metadata in (bearer, [("authorization", "Bearer unknown")], []):
+            with self.subTest(metadata=metadata):
+                await client.auth_sign_out.SignOut(request, metadata=metadata)
 
     async def test_the_values_of_the_attributes_go_with_the_flows(self) -> None:
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname

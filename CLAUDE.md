@@ -53,7 +53,8 @@ of its class; the `sign_up/` and `sign_in/` flows, over the base
 of the flows of the methods, `methods/operations.py`, the sign-up open by
 its toggle, `AUTH_SIGN_UP_ENABLED`, of every method, the sign-in opening a
 session, its replies held by the strategy in its slot `timing`, none by
-default; the storages `storages/`, the
+default; the `sign_out/`, closing the session of the caller, open to any
+caller, the anonymous one signing out of nothing; the storages `storages/`, the
 interfaces a backend implements with what they keep and raise, depending on
 no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
 with the transactions of a backend over all its storages; and the caches

@@ -163,6 +163,31 @@ class AuthSessionsUnit(AuthGroupsOwner, CliUnit):
         for session in await self.project.auth.storage.sessions.get_open(uid):
             await callers.forget(session.token_hash, groups_digest)
 
+    @t.final
+    async def close(
+        self, uid: str, session_id: str, reason: AuthSessionCloseReason
+    ) -> None:
+        """
+        Closes an open session of a profile for a reason, kept, then forgets
+        it in the cache, once the storage keeps it closed: the next request of
+        its token misses the cache and finds it closed.
+
+        :raises AuthSessionNotFoundError: no open session of the profile has
+            the id.
+        """
+        for session in await self.project.auth.storage.sessions.get_open(uid):
+            if session.id == session_id:
+                break
+        else:
+            raise AuthSessionNotFoundError.for_id(session_id)
+        try:
+            await self.project.auth.storage.sessions.close(
+                session.id, reason, self._get_now()
+            )
+        except AuthSessionNotFoundError:
+            pass  # closed meanwhile, by another request
+        await self._forget(session.token_hash)
+
     def _create_id(self) -> str:
         """The id of a new session: random, as the uids are."""
         return os.urandom(16).hex()
