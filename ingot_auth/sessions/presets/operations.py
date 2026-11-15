@@ -17,6 +17,7 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
+from ingot_auth.activities import AuthActivityContext
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
@@ -27,6 +28,7 @@ from ingot_auth.registry.operations import (
     BaseAuthRenameItemOperation,
 )
 from ingot_auth.storages import (
+    AuthActivityAction,
     AuthItemNotFoundError,
     AuthSessionPreset,
     AuthSessionPresetBinding,
@@ -36,6 +38,21 @@ from ingot_auth.storages import (
 if t.TYPE_CHECKING:
     from . import AuthSessionPresetsUnit
     from ingot_auth.project import AuthProject
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSessionAttrBound(AuthActivityContext):
+    """The context of an attribute bound to a preset: which, and how required."""
+
+    attr_id: int
+    required: bool
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSessionAttrUnbound(AuthActivityContext):
+    """The context of an attribute unbound from a preset: which."""
+
+    attr_id: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -133,7 +150,16 @@ class AuthBindSessionAttrOperation(
         if parameters.attr_id not in await self._get_attr_ids():
             registry = self.project.auth.storage.sessions.attrs.REGISTRY
             raise AuthItemNotFoundError.for_id(registry, parameters.attr_id)
-        await self._get_storage().bind(parameters)
+        async with self.project.auth.storage.transaction():
+            await self._get_storage().bind(parameters)
+            await self._record(
+                parameters.preset_id,
+                AuthActivityAction.BIND,
+                metadata,
+                AuthSessionAttrBound(
+                    attr_id=parameters.attr_id, required=parameters.required
+                ),
+            )
         return parameters
 
 
@@ -153,7 +179,14 @@ class AuthUnbindSessionAttrOperation(
     async def _run(
         self, parameters: AuthUnbindSessionAttrParameters, metadata: OperationMetadata
     ) -> None:
-        await self._get_storage().unbind(parameters.preset_id, parameters.attr_id)
+        async with self.project.auth.storage.transaction():
+            await self._get_storage().unbind(parameters.preset_id, parameters.attr_id)
+            await self._record(
+                parameters.preset_id,
+                AuthActivityAction.UNBIND,
+                metadata,
+                AuthSessionAttrUnbound(attr_id=parameters.attr_id),
+            )
 
 
 class AuthListSessionPresetBindingsOperation(

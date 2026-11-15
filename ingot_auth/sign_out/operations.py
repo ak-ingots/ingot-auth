@@ -7,7 +7,11 @@ import typing as t
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from ingot_auth.caches import AuthCaller
-from ingot_auth.storages import AuthSessionCloseReason, AuthSessionNotFoundError
+from ingot_auth.storages import (
+    AuthActivityAction,
+    AuthSessionCloseReason,
+    AuthSessionNotFoundError,
+)
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -31,12 +35,20 @@ class AuthSignOutOperation(BaseOperation[None, None]):
         caller = metadata.caller
         if not isinstance(caller, AuthCaller):
             return
+        auth = self.project.auth
         try:
-            await self.project.auth.sessions.close(
-                caller.uid,
-                caller.session_id,
-                AuthSessionCloseReason.SIGNED_OUT,
-                closed_by=caller.uid,
-            )
+            async with auth.storage.transaction():
+                await auth.sessions.close(
+                    caller.uid,
+                    caller.session_id,
+                    AuthSessionCloseReason.SIGNED_OUT,
+                    closed_by=caller.uid,
+                )
+                await auth.activities.record(
+                    auth.sessions,
+                    caller.session_id,
+                    AuthActivityAction.SIGN_OUT,
+                    metadata,
+                )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile: nothing to tell

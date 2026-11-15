@@ -12,7 +12,11 @@ import typing as t
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from ingot_auth.caches import AuthCaller
-from ingot_auth.storages import AuthSessionCloseReason, AuthSessionNotFoundError
+from ingot_auth.storages import (
+    AuthActivityAction,
+    AuthSessionCloseReason,
+    AuthSessionNotFoundError,
+)
 
 from .errors import AuthOwnSessionNotFoundError
 from .items import (
@@ -72,6 +76,7 @@ class AuthRevokeOwnSessionOperation(
         id: one of another is not found either.
     """
 
+    project: "AuthProject"
     parent: "AuthSessionsUnit"
 
     @t.override
@@ -86,13 +91,21 @@ class AuthRevokeOwnSessionOperation(
         caller = metadata.caller
         if not isinstance(caller, AuthCaller):
             raise AuthOwnSessionNotFoundError.for_id(parameters.session_id)
+        auth = self.project.auth
         try:
-            await self.parent.close(
-                caller.uid,
-                parameters.session_id,
-                AuthSessionCloseReason.REVOKED,
-                closed_by=caller.uid,
-            )
+            async with auth.storage.transaction():
+                await self.parent.close(
+                    caller.uid,
+                    parameters.session_id,
+                    AuthSessionCloseReason.REVOKED,
+                    closed_by=caller.uid,
+                )
+                await auth.activities.record(
+                    self.parent,
+                    parameters.session_id,
+                    AuthActivityAction.REVOKE,
+                    metadata,
+                )
         except AuthSessionNotFoundError:
             raise AuthOwnSessionNotFoundError.for_id(parameters.session_id) from None
 
@@ -121,12 +134,16 @@ class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
             if session.id == caller.session_id:
                 continue
             try:
-                await self.parent.close(
-                    caller.uid,
-                    session.id,
-                    AuthSessionCloseReason.REVOKED,
-                    closed_by=caller.uid,
-                )
+                async with self.project.auth.storage.transaction():
+                    await self.parent.close(
+                        caller.uid,
+                        session.id,
+                        AuthSessionCloseReason.REVOKED,
+                        closed_by=caller.uid,
+                    )
+                    await self.project.auth.activities.record(
+                        self.parent, session.id, AuthActivityAction.REVOKE, metadata
+                    )
             except AuthSessionNotFoundError:
                 continue  # closed meanwhile, by another request
             closed += 1

@@ -9,10 +9,16 @@ __all__ = (
 )
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, Permissions
 
-from ingot_auth.storages import AuthMembership, BaseAuthMembersStorage
+from ingot_auth.activities import AuthActivityContext
+from ingot_auth.storages import (
+    AuthActivityAction,
+    AuthMembership,
+    BaseAuthMembersStorage,
+)
 
 from ..groups import AuthGroupNotFoundError
 
@@ -21,6 +27,13 @@ if t.TYPE_CHECKING:
     from ingots.defaults.operations import OperationMetadata
 
     from ingot_auth.project import AuthProject
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthMembershipChanged(AuthActivityContext):
+    """The context of a member bound to a group, or unbound: the group."""
+
+    group: str
 
 
 class BaseAuthMembersOperation[ParametersType, ResultType](
@@ -77,8 +90,17 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     ) -> None:
         self._check_group(parameters.group)
         await self._check_uid(parameters.uid)
-        await self._get_storage().add(parameters)
-        await self.project.auth.sessions.forget_callers(parameters.uid)
+        auth = self.project.auth
+        async with auth.storage.transaction():
+            await self._get_storage().add(parameters)
+            await auth.activities.record(
+                self.parent,
+                parameters.uid,
+                AuthActivityAction.BIND,
+                metadata,
+                context=AuthMembershipChanged(group=parameters.group),
+            )
+        await auth.sessions.forget_callers(parameters.uid)
 
 
 class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
@@ -105,8 +127,17 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     ) -> None:
         self._check_group(parameters.group)
         await self._check_uid(parameters.uid)
-        await self._get_storage().remove(parameters)
-        await self.project.auth.sessions.forget_callers(parameters.uid)
+        auth = self.project.auth
+        async with auth.storage.transaction():
+            await self._get_storage().remove(parameters)
+            await auth.activities.record(
+                self.parent,
+                parameters.uid,
+                AuthActivityAction.UNBIND,
+                metadata,
+                context=AuthMembershipChanged(group=parameters.group),
+            )
+        await auth.sessions.forget_callers(parameters.uid)
 
 
 class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
