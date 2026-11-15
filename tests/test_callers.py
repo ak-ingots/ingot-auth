@@ -2,12 +2,22 @@ import unittest
 
 
 from ingot_auth.__main__ import AuthMemoryProject
-from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.methods.email_code import AuthEmailCodePermissions
-from ingot_auth.methods.nickname import AuthNicknamePermissions
+from ingot_auth.metadata import (
+    AuthMetadataUnit,
+)
+from ingot_auth.methods.email_code import (
+    AuthEmailCodeMethod,
+)
+from ingot_auth.methods.nickname import (
+    AuthNicknameMethod,
+)
 from ingot_auth.operations import AuthCallersProvider
-from ingot_auth.sign_in import AuthSignInPermissions
-from ingot_auth.sign_up import AuthSignUpPermissions
+from ingot_auth.sign_in import (
+    AuthSignInUnit,
+)
+from ingot_auth.sign_up import (
+    AuthSignUpUnit,
+)
 
 from tests import masks
 
@@ -27,12 +37,12 @@ class AnonymousCallerTestCase(unittest.TestCase):
         self.assertEqual(
             anonymous.permissions,
             masks(
-                AuthSignUpPermissions.CAN_SIGN_UP,
-                AuthSignInPermissions.CAN_SIGN_IN,
-                AuthNicknamePermissions.CAN_SIGN_IN,
-                AuthEmailCodePermissions.CAN_SIGN_UP
-                | AuthEmailCodePermissions.CAN_SIGN_IN,
-                AuthMetadataPermissions.CAN_READ,
+                AuthSignUpUnit.Flags.CAN_SIGN_UP,
+                AuthSignInUnit.Flags.CAN_SIGN_IN,
+                AuthNicknameMethod.Flags.CAN_SIGN_IN,
+                AuthEmailCodeMethod.Flags.CAN_SIGN_UP
+                | AuthEmailCodeMethod.Flags.CAN_SIGN_IN,
+                AuthMetadataUnit.Flags.CAN_READ,
             ),
         )
 
@@ -42,9 +52,9 @@ class AnonymousCallerTestCase(unittest.TestCase):
         self.assertEqual(
             project.operations.callers.get_anonymous().permissions,
             masks(
-                AuthSignInPermissions.CAN_SIGN_IN,
-                AuthNicknamePermissions.CAN_SIGN_IN,
-                AuthEmailCodePermissions.CAN_SIGN_IN,
-                AuthMetadataPermissions.CAN_READ,
+                AuthSignInUnit.Flags.CAN_SIGN_IN,
+                AuthNicknameMethod.Flags.CAN_SIGN_IN,
+                AuthEmailCodeMethod.Flags.CAN_SIGN_IN,
+                AuthMetadataUnit.Flags.CAN_READ,
             ),
         )

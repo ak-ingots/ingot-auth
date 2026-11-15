@@ -14,7 +14,6 @@ thing by itself acts as :data:`AUTH_SYSTEM`, in a run of its own.
 __all__ = (
     "AUTH_SYSTEM",
     "AuthActivitiesAuditorsGroup",
-    "AuthActivitiesPermissions",
     "AuthActivitiesUnit",
     "AuthActivityContext",
     "AuthListActivitiesCommand",
@@ -33,6 +32,7 @@ from ingots.defaults.operations import (
     Caller,
     OperationMetadata,
     OperationsOwner,
+    PermissionFlags,
     PermissionsSlot,
 )
 from ingots.puer import Entity, Factory, Slot
@@ -51,7 +51,6 @@ from .failures import (
 from .groups import AuthActivitiesAuditorsGroup
 from .items import AuthActivityContext, AuthListActivitiesParameters
 from .operations import AuthListActivitiesOperation
-from .permissions import AuthActivitiesPermissions
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -69,6 +68,15 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     ``auth.activities.grp_auditors``.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The flags of the domain of the log, the full name of its unit,
+        ``auth.activities``: each kept for good. ``auth.activities.grp_auditors``
+        grants the reading of it.
+        """
+
+        CAN_READ = 1 << 0
+
     cli_name = "activities"
     cli_description = "The activity log: every change of state of the auth."
 
@@ -76,7 +84,7 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
     grp_auditors = Slot(AuthActivitiesAuditorsGroup)
 
-    permissions = PermissionsSlot(AuthActivitiesPermissions)
+    permissions = PermissionsSlot(Flags)
 
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots

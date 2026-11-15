@@ -12,7 +12,6 @@ __all__ = (
     "AuthFloorTiming",
     "AuthNoTiming",
     "AuthSignInChallenge",
-    "AuthSignInPermissions",
     "AuthSignInResult",
     "AuthSignInUnit",
     "AuthSignedIn",
@@ -23,7 +22,12 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot, Unit
 
 from .items import (
@@ -34,7 +38,6 @@ from .items import (
     AuthStartSignInParameters,
 )
 from .operations import AuthAnswerSignInOperation, AuthStartSignInOperation
-from .permissions import AuthSignInPermissions
 from .timings import AuthFloorTiming, AuthNoTiming, BaseAuthTiming
 
 
@@ -44,7 +47,15 @@ class AuthSignInUnit(OperationsOwner, Unit):
     strategy of their timing in the slot ``timing``, none by default.
     """
 
-    permissions = PermissionsSlot(AuthSignInPermissions)
+    class Flags(PermissionFlags):
+        """
+        The operations of the sign-in: a server gives ``CAN_SIGN_IN`` to who may
+        sign in, anyone while the sign-in is open.
+        """
+
+        CAN_SIGN_IN = 1 << 0
+
+    permissions = PermissionsSlot(Flags)
 
     op_start = Factory(AuthStartSignInOperation)
     op_answer = Factory(AuthAnswerSignInOperation)

@@ -5,12 +5,15 @@ happened on, the device, the IP, declared in a registry with their sources.
 
 __all__ = (
     "AuthSessionAttrsUnit",
-    "AuthSessionAttrsPermissions",
     "build_attr_values",
     "check_client_attr_values",
 )
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -26,7 +29,6 @@ from .operations import (
     AuthListSessionAttrsOperation,
     AuthRenameSessionAttrOperation,
 )
-from .permissions import AuthSessionAttrsPermissions
 from .values import build_attr_values, check_client_attr_values
 
 
@@ -37,10 +39,18 @@ class AuthSessionAttrsUnit(OperationsOwner, CliUnit):
     the storage of the auth.
     """
 
+    class Flags(PermissionFlags):
+        """The operations on the attributes of the sessions."""
+
+        CAN_CREATE = 1 << 0
+        CAN_READ = 1 << 1
+        CAN_RENAME = 1 << 2
+        CAN_DELETE = 1 << 3
+
     cli_name = "attrs"
     cli_description = "The attributes of the sessions."
 
-    permissions = PermissionsSlot(AuthSessionAttrsPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateSessionAttrOperation)
     op_list = Factory(AuthListSessionAttrsOperation)

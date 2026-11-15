@@ -31,19 +31,41 @@ from ingot_auth.access.groups import (
     AuthGroupsUnit,
     AuthSignedInGroup,
 )
-from ingot_auth.access.members import AuthMembersPermissions
-from ingot_auth.metadata import AuthMetadataPermissions
+from ingot_auth.access.members import (
+    AuthMembersUnit,
+)
+from ingot_auth.metadata import (
+    AuthMetadataUnit,
+)
 from ingot_auth.methods import AuthMethodsUnit
-from ingot_auth.profiles import AuthProfilesPermissions
-from ingot_auth.profiles.attrs import AuthAttrsPermissions
-from ingot_auth.profiles.tags import AuthTagsPermissions
-from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
-from ingot_auth.sessions import AuthSessionsPermissions
-from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
-from ingot_auth.sign_in import AuthSignInPermissions
-from ingot_auth.sign_up import AuthSignUpPermissions
+from ingot_auth.profiles import (
+    AuthProfilesUnit,
+)
+from ingot_auth.profiles.attrs import (
+    AuthAttrsUnit,
+)
+from ingot_auth.profiles.tags import (
+    AuthTagsUnit,
+)
+from ingot_auth.sessions.attrs import (
+    AuthSessionAttrsUnit,
+)
+from ingot_auth.sessions import (
+    AuthSessionsUnit,
+)
+from ingot_auth.sessions.presets import (
+    AuthSessionPresetsUnit,
+)
+from ingot_auth.sign_in import (
+    AuthSignInUnit,
+)
+from ingot_auth.sign_up import (
+    AuthSignUpUnit,
+)
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
-from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingPermissions
+from ingot_auth.testing.methods import (
+    AuthTestingMethod,
+)
 
 from tests import ANONYMOUS, DOMAINS, OWN, ROOT, masks
 
@@ -104,7 +126,7 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
         return super()._get_permissions() | masks(
-            AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE
+            AuthMembersUnit.Flags.CAN_ADD | AuthMembersUnit.Flags.CAN_REMOVE
         )
 
 
@@ -182,7 +204,7 @@ class GroupsTestCase(unittest.TestCase):
             masks(
                 ShopPermissions.CAN_REFUND,
                 ArticlesPermissions.CAN_READ,
-                AuthMembersPermissions.CAN_ADD | AuthMembersPermissions.CAN_REMOVE,
+                AuthMembersUnit.Flags.CAN_ADD | AuthMembersUnit.Flags.CAN_REMOVE,
             ),
         )
 
@@ -220,9 +242,9 @@ class GroupsTestCase(unittest.TestCase):
         self.assertEqual(
             auth.grp_anonymous.get_permissions(),
             masks(
-                AuthSignUpPermissions.CAN_SIGN_UP,
-                AuthSignInPermissions.CAN_SIGN_IN,
-                AuthMetadataPermissions.CAN_READ,
+                AuthSignUpUnit.Flags.CAN_SIGN_UP,
+                AuthSignInUnit.Flags.CAN_SIGN_IN,
+                AuthMetadataUnit.Flags.CAN_READ,
             ),
         )
         self.assertEqual(auth.grp_signed_in.get_permissions(), OWN)
@@ -232,14 +254,14 @@ class GroupsTestCase(unittest.TestCase):
         profiles = project.auth.profiles
         self.assertEqual(
             profiles.grp_consumers.get_permissions(),
-            masks(AuthTagsPermissions.CAN_READ, AuthAttrsPermissions.CAN_READ),
+            masks(AuthTagsUnit.Flags.CAN_READ, AuthAttrsUnit.Flags.CAN_READ),
         )
         self.assertEqual(
             profiles.grp_managers.get_permissions(),
             masks(
-                AuthProfilesPermissions.CAN_UPDATE,
-                *AuthTagsPermissions,
-                *AuthAttrsPermissions,
+                AuthProfilesUnit.Flags.CAN_UPDATE,
+                *AuthTagsUnit.Flags,
+                *AuthAttrsUnit.Flags,
             ),
         )
 
@@ -247,21 +269,21 @@ class GroupsTestCase(unittest.TestCase):
         project = AuthMemoryProject()
         sessions = project.auth.sessions
         binding = masks(
-            AuthSessionPresetsPermissions.CAN_BIND
-            | AuthSessionPresetsPermissions.CAN_UNBIND
+            AuthSessionPresetsUnit.Flags.CAN_BIND
+            | AuthSessionPresetsUnit.Flags.CAN_UNBIND
         )
-        everything = masks(*AuthSessionAttrsPermissions, *AuthSessionPresetsPermissions)
+        everything = masks(*AuthSessionAttrsUnit.Flags, *AuthSessionPresetsUnit.Flags)
         self.assertEqual(
             sessions.grp_consumers.get_permissions(),
             masks(
-                AuthSessionAttrsPermissions.CAN_READ,
-                AuthSessionPresetsPermissions.CAN_READ,
+                AuthSessionAttrsUnit.Flags.CAN_READ,
+                AuthSessionPresetsUnit.Flags.CAN_READ,
             ),
         )
         self.assertEqual(sessions.grp_managers.get_permissions(), everything - binding)
         self.assertEqual(
             sessions.grp_admins.get_permissions(),
-            everything | masks(AuthSessionsPermissions.CAN_LIST),
+            everything | masks(AuthSessionsUnit.Flags.CAN_LIST),
         )
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
@@ -423,7 +445,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
         self.project = SignedInProject()
         self.assertEqual(
             self._get_permissions("b2"),
-            masks(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN) | OWN,
+            masks(ShopPermissions.CAN_BUY, AuthTestingMethod.Flags.CAN_SIGN_IN) | OWN,
         )
 
     def test_a_group_no_source_has_grants_nothing(self) -> None:

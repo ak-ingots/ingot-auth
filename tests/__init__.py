@@ -14,40 +14,68 @@ from ingots.defaults.operations import (
     Permissions,
 )
 
-from ingot_auth.access.groups import AuthGroupsPermissions
-from ingot_auth.access.members import AuthMembersPermissions
-from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.methods.email_code import AuthEmailCodePermissions
-from ingot_auth.methods.nickname import AuthNicknamePermissions
-from ingot_auth.profiles import AuthProfilesPermissions
-from ingot_auth.profiles.attrs import AuthAttrsPermissions
-from ingot_auth.profiles.tags import AuthTagsPermissions
-from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
-from ingot_auth.sessions import AuthSessionsPermissions
-from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
-from ingot_auth.sign_in import AuthSignInPermissions
-from ingot_auth.sign_up import AuthSignUpPermissions
-from ingot_auth.testing.methods import AuthTestingPermissions
+from ingot_auth.access.groups import (
+    AuthGroupsUnit,
+)
+from ingot_auth.access.members import (
+    AuthMembersUnit,
+)
+from ingot_auth.metadata import (
+    AuthMetadataUnit,
+)
+from ingot_auth.methods.email_code import (
+    AuthEmailCodeMethod,
+)
+from ingot_auth.methods.nickname import (
+    AuthNicknameMethod,
+)
+from ingot_auth.profiles import (
+    AuthProfilesUnit,
+)
+from ingot_auth.profiles.attrs import (
+    AuthAttrsUnit,
+)
+from ingot_auth.profiles.tags import (
+    AuthTagsUnit,
+)
+from ingot_auth.sessions.attrs import (
+    AuthSessionAttrsUnit,
+)
+from ingot_auth.sessions import (
+    AuthSessionsUnit,
+)
+from ingot_auth.sessions.presets import (
+    AuthSessionPresetsUnit,
+)
+from ingot_auth.sign_in import (
+    AuthSignInUnit,
+)
+from ingot_auth.sign_up import (
+    AuthSignUpUnit,
+)
+from ingot_auth.testing.methods import (
+    AuthTestingMethod,
+)
 
 ROOT: t.Final = CallersProvider.ROOT
 ANONYMOUS: t.Final = Caller(uid="anonymous")
 
 # the domain of the flags of each unit, its full name; a test registers its own
 DOMAINS: t.Final[dict[type[PermissionFlags], str]] = {
-    AuthAttrsPermissions: "auth.profiles.attrs",
-    AuthEmailCodePermissions: "auth.methods.email_code",
-    AuthGroupsPermissions: "auth.access.groups",
-    AuthMembersPermissions: "auth.access.members",
-    AuthMetadataPermissions: "auth.metadata",
-    AuthNicknamePermissions: "auth.methods.nickname",
-    AuthProfilesPermissions: "auth.profiles",
-    AuthSessionAttrsPermissions: "auth.sessions.attrs",
-    AuthSessionPresetsPermissions: "auth.sessions.presets",
-    AuthSessionsPermissions: "auth.sessions",
-    AuthSignInPermissions: "auth.sign_in",
-    AuthSignUpPermissions: "auth.sign_up",
-    AuthTagsPermissions: "auth.profiles.tags",
-    AuthTestingPermissions: "auth.methods.testing",
+    AuthAttrsUnit.Flags: "auth.profiles.attrs",
+    AuthEmailCodeMethod.Flags: "auth.methods.email_code",
+    AuthGroupsUnit.Flags: "auth.access.groups",
+    AuthMembersUnit.Flags: "auth.access.members",
+    AuthMetadataUnit.Flags: "auth.metadata",
+    AuthNicknameMethod.Flags: "auth.methods.nickname",
+    AuthProfilesUnit.Flags: "auth.profiles",
+    AuthSessionAttrsUnit.Flags: "auth.sessions.attrs",
+    AuthSessionPresetsUnit.Flags: "auth.sessions.presets",
+    AuthSessionsUnit.Flags: "auth.sessions",
+    AuthSignInUnit.Flags: "auth.sign_in",
+    AuthSignUpUnit.Flags: "auth.sign_up",
+    AuthTagsUnit.Flags: "auth.profiles.tags",
+    AuthTestingMethod.Flags: "auth.methods.testing",
 }
 
 
@@ -64,7 +92,7 @@ def masks(*items: PermissionFlags | Mapping[str, int]) -> Permissions:
 # what auth.grp_signed_in grants every signed-in user of its own: its sessions,
 # its profile
 OWN: t.Final = masks(
-    AuthSessionsPermissions.CAN_LIST_OWN,
-    AuthSessionsPermissions.CAN_REVOKE_OWN,
-    AuthProfilesPermissions.CAN_READ_OWN,
+    AuthSessionsUnit.Flags.CAN_LIST_OWN,
+    AuthSessionsUnit.Flags.CAN_REVOKE_OWN,
+    AuthProfilesUnit.Flags.CAN_READ_OWN,
 )

@@ -8,12 +8,15 @@ __all__ = (
     "AuthListMembersOperation",
     "AuthListMembersCommand",
     "AuthMembersUnit",
-    "AuthMembersPermissions",
     "AuthRemoveMemberOperation",
     "AuthRemoveMemberCommand",
 )
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -30,7 +33,6 @@ from .operations import (
     AuthListMembersOperation,
     AuthRemoveMemberOperation,
 )
-from .permissions import AuthMembersPermissions
 
 
 class AuthMembersUnit(OperationsOwner, CliUnit):
@@ -40,10 +42,17 @@ class AuthMembersUnit(OperationsOwner, CliUnit):
     auth.
     """
 
+    class Flags(PermissionFlags):
+        """The operations on the memberships of the users."""
+
+        CAN_ADD = 1 << 0
+        CAN_REMOVE = 1 << 1
+        CAN_READ = 1 << 2
+
     cli_name = "members"
     cli_description = "The members of the groups."
 
-    permissions = PermissionsSlot(AuthMembersPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_add = Factory(AuthAddMemberOperation)
     op_remove = Factory(AuthRemoveMemberOperation)

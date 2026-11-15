@@ -36,7 +36,10 @@ class ShopBuyersGroup(AuthGroup):
 
 
 class ShopUnit(AuthGroupsOwner, OperationsOwner, Unit):
-    permissions = PermissionsSlot(ShopPermissions)
+    class Flags(PermissionFlags):
+        CAN_BUY = 1 << 0
+
+    permissions = PermissionsSlot(Flags)
 
     grp_buyers = Slot(ShopBuyersGroup)  # shop.grp_buyers
 ```

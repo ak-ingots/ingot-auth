@@ -19,16 +19,26 @@ from ingot_auth.contrib.storages.memory import (
     AuthMemorySessionsStorage,
     AuthMemoryStorage,
 )
-from ingot_auth.metadata import AuthMetadataPermissions
-from ingot_auth.profiles.attrs import AuthAttrsPermissions
-from ingot_auth.profiles.tags import AuthTagsPermissions
+from ingot_auth.metadata import (
+    AuthMetadataUnit,
+)
+from ingot_auth.profiles.attrs import (
+    AuthAttrsUnit,
+)
+from ingot_auth.profiles.tags import (
+    AuthTagsUnit,
+)
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
     AuthRenameItemParameters,
 )
-from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
-from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
+from ingot_auth.sessions.attrs import (
+    AuthSessionAttrsUnit,
+)
+from ingot_auth.sessions.presets import (
+    AuthSessionPresetsUnit,
+)
 from ingot_auth.sessions.presets.operations import AuthUnbindSessionAttrParameters
 from ingot_auth.storages import (
     AuthAttr,
@@ -214,26 +224,26 @@ class RegistryOperationsTestCase(unittest.TestCase):
         session_attrs = self.project.auth.sessions.attrs
         presets = self.project.auth.sessions.presets
         for factory, flag in (
-            (tags.op_create, AuthTagsPermissions.CAN_CREATE),
-            (tags.op_list, AuthTagsPermissions.CAN_READ),
-            (tags.op_rename, AuthTagsPermissions.CAN_UPDATE),
-            (tags.op_delete, AuthTagsPermissions.CAN_DELETE),
-            (attrs.op_create, AuthAttrsPermissions.CAN_CREATE),
-            (attrs.op_list, AuthAttrsPermissions.CAN_READ),
-            (attrs.op_rename, AuthAttrsPermissions.CAN_UPDATE),
-            (attrs.op_delete, AuthAttrsPermissions.CAN_DELETE),
-            (session_attrs.op_create, AuthSessionAttrsPermissions.CAN_CREATE),
-            (session_attrs.op_list, AuthSessionAttrsPermissions.CAN_READ),
-            (session_attrs.op_rename, AuthSessionAttrsPermissions.CAN_RENAME),
-            (session_attrs.op_delete, AuthSessionAttrsPermissions.CAN_DELETE),
-            (presets.op_create, AuthSessionPresetsPermissions.CAN_CREATE),
-            (presets.op_list, AuthSessionPresetsPermissions.CAN_READ),
-            (presets.op_rename, AuthSessionPresetsPermissions.CAN_RENAME),
-            (presets.op_delete, AuthSessionPresetsPermissions.CAN_DELETE),
-            (presets.op_bind, AuthSessionPresetsPermissions.CAN_BIND),
-            (presets.op_unbind, AuthSessionPresetsPermissions.CAN_UNBIND),
-            (presets.op_list_bindings, AuthSessionPresetsPermissions.CAN_READ),
-            (self.project.auth.metadata.op_get, AuthMetadataPermissions.CAN_READ),
+            (tags.op_create, AuthTagsUnit.Flags.CAN_CREATE),
+            (tags.op_list, AuthTagsUnit.Flags.CAN_READ),
+            (tags.op_rename, AuthTagsUnit.Flags.CAN_UPDATE),
+            (tags.op_delete, AuthTagsUnit.Flags.CAN_DELETE),
+            (attrs.op_create, AuthAttrsUnit.Flags.CAN_CREATE),
+            (attrs.op_list, AuthAttrsUnit.Flags.CAN_READ),
+            (attrs.op_rename, AuthAttrsUnit.Flags.CAN_UPDATE),
+            (attrs.op_delete, AuthAttrsUnit.Flags.CAN_DELETE),
+            (session_attrs.op_create, AuthSessionAttrsUnit.Flags.CAN_CREATE),
+            (session_attrs.op_list, AuthSessionAttrsUnit.Flags.CAN_READ),
+            (session_attrs.op_rename, AuthSessionAttrsUnit.Flags.CAN_RENAME),
+            (session_attrs.op_delete, AuthSessionAttrsUnit.Flags.CAN_DELETE),
+            (presets.op_create, AuthSessionPresetsUnit.Flags.CAN_CREATE),
+            (presets.op_list, AuthSessionPresetsUnit.Flags.CAN_READ),
+            (presets.op_rename, AuthSessionPresetsUnit.Flags.CAN_RENAME),
+            (presets.op_delete, AuthSessionPresetsUnit.Flags.CAN_DELETE),
+            (presets.op_bind, AuthSessionPresetsUnit.Flags.CAN_BIND),
+            (presets.op_unbind, AuthSessionPresetsUnit.Flags.CAN_UNBIND),
+            (presets.op_list_bindings, AuthSessionPresetsUnit.Flags.CAN_READ),
+            (self.project.auth.metadata.op_get, AuthMetadataUnit.Flags.CAN_READ),
         ):
             self.assertEqual(factory().get_permissions(), masks(flag))
 

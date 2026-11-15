@@ -31,9 +31,11 @@ from ingot_auth.access.groups import (
     AuthAnonymousGroup,
     AuthGroup,
     AuthGroupsOwner,
-    AuthGroupsPermissions,
+    AuthGroupsUnit,
 )
-from ingot_auth.access.members import AuthMembersPermissions
+from ingot_auth.access.members import (
+    AuthMembersUnit,
+)
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
@@ -102,12 +104,17 @@ from ingot_auth.sessions.presets.v1 import (
 from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_out.v1 import sign_out_pb2
 from ingot_auth.sessions.v1 import sessions_pb2
-from ingot_auth.activities import AuthActivitiesPermissions
+from ingot_auth.activities import (
+    AuthActivitiesUnit,
+)
 from ingot_auth.activities.v1 import activities_pb2
 from ingot_auth.contrib.transports.grpcio.activities import ACTIONS
 from ingot_auth.testing.contracts.activities import create_record
 from ingot_auth.profiles.v1 import profiles_pb2
-from ingot_auth.profiles import AuthProfilesPermissions, AuthSetProfileTagsParameters
+from ingot_auth.profiles import (
+    AuthProfilesUnit,
+    AuthSetProfileTagsParameters,
+)
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -116,12 +123,13 @@ from ingot_auth.contrib.transports.grpcio.challenges import build_challenge
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
     AuthEmailCodeMethod,
-    AuthEmailCodePermissions,
 )
 from ingot_auth.methods.email_code.v1 import email_code_pb2
 from ingot_auth.methods.v1 import challenges_pb2
 from ingot_auth.logging import AuthLoggingUnit
-from ingot_auth.metadata import AuthMetadataPermissions
+from ingot_auth.metadata import (
+    AuthMetadataUnit,
+)
 from ingot_auth.methods import (
     AuthMethodDeniedError,
     AuthMethodInvalidError,
@@ -134,19 +142,33 @@ from ingot_auth.methods import (
 from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
     AuthNicknameMethod,
-    AuthNicknamePermissions,
 )
 from ingot_auth.methods.password import AuthPassword
 from ingot_auth.registry import AuthItemInvalidError
-from ingot_auth.profiles.attrs import AuthAttrsPermissions
-from ingot_auth.profiles.tags import AuthTagsPermissions
-from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
-from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
+from ingot_auth.profiles.attrs import (
+    AuthAttrsUnit,
+)
+from ingot_auth.profiles.tags import (
+    AuthTagsUnit,
+)
+from ingot_auth.sessions.attrs import (
+    AuthSessionAttrsUnit,
+)
+from ingot_auth.sessions.presets import (
+    AuthSessionPresetsUnit,
+)
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
-from ingot_auth.sessions import AuthSessionExpiredError, AuthSessionsPermissions
-from ingot_auth.sign_in import AuthSignInPermissions
-from ingot_auth.sign_up import AuthSignUpPermissions
+from ingot_auth.sessions import (
+    AuthSessionExpiredError,
+    AuthSessionsUnit,
+)
+from ingot_auth.sign_in import (
+    AuthSignInUnit,
+)
+from ingot_auth.sign_up import (
+    AuthSignUpUnit,
+)
 from ingot_auth.storages import (
     AuthAttr,
     AuthAttrType,
@@ -169,12 +191,12 @@ HOUR: t.Final = datetime.timedelta(hours=1)
 ADMIN: t.Final = Caller(
     uid="admin",
     permissions=masks(
-        *AuthTagsPermissions,
-        *AuthAttrsPermissions,
-        *AuthSessionAttrsPermissions,
-        *AuthSessionPresetsPermissions,
-        *AuthGroupsPermissions,
-        *AuthMembersPermissions,
+        *AuthTagsUnit.Flags,
+        *AuthAttrsUnit.Flags,
+        *AuthSessionAttrsUnit.Flags,
+        *AuthSessionPresetsUnit.Flags,
+        *AuthGroupsUnit.Flags,
+        *AuthMembersUnit.Flags,
     ),
 )
 
@@ -258,7 +280,7 @@ class TstLoggingUnit(AuthLoggingUnit, GrpcLoggingUnit):
 class AdminsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
-        return super()._get_permissions() | masks(*AuthMembersPermissions)
+        return super()._get_permissions() | masks(*AuthMembersUnit.Flags)
 
 
 class TstAppUnit(AuthGroupsOwner):
@@ -315,7 +337,7 @@ class ClosedAnonymousGroup(AuthAnonymousGroup):
 
     @t.override
     def _get_permissions(self) -> Permissions:
-        readers = masks(AuthMetadataPermissions.CAN_READ)
+        readers = masks(AuthMetadataUnit.Flags.CAN_READ)
         return super()._get_permissions() - readers
 
 
@@ -914,20 +936,20 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_permissions_of_the_contract_are_those_of_the_auth(self) -> None:
         for flags, permission in (
-            (AuthTagsPermissions, profile_tags_pb2.Permission),
-            (AuthAttrsPermissions, profile_attrs_pb2.Permission),
-            (AuthSessionAttrsPermissions, session_attrs_pb2.Permission),
-            (AuthSessionPresetsPermissions, presets_pb2.Permission),
-            (AuthMetadataPermissions, metadata_pb2.Permission),
-            (AuthGroupsPermissions, groups_pb2.Permission),
-            (AuthMembersPermissions, members_pb2.Permission),
-            (AuthNicknamePermissions, nickname_pb2.Permission),
-            (AuthEmailCodePermissions, email_code_pb2.Permission),
-            (AuthSignUpPermissions, sign_up_pb2.Permission),
-            (AuthSignInPermissions, sign_in_pb2.Permission),
-            (AuthSessionsPermissions, sessions_pb2.Permission),
-            (AuthProfilesPermissions, profiles_pb2.Permission),
-            (AuthActivitiesPermissions, activities_pb2.Permission),
+            (AuthTagsUnit.Flags, profile_tags_pb2.Permission),
+            (AuthAttrsUnit.Flags, profile_attrs_pb2.Permission),
+            (AuthSessionAttrsUnit.Flags, session_attrs_pb2.Permission),
+            (AuthSessionPresetsUnit.Flags, presets_pb2.Permission),
+            (AuthMetadataUnit.Flags, metadata_pb2.Permission),
+            (AuthGroupsUnit.Flags, groups_pb2.Permission),
+            (AuthMembersUnit.Flags, members_pb2.Permission),
+            (AuthNicknameMethod.Flags, nickname_pb2.Permission),
+            (AuthEmailCodeMethod.Flags, email_code_pb2.Permission),
+            (AuthSignUpUnit.Flags, sign_up_pb2.Permission),
+            (AuthSignInUnit.Flags, sign_in_pb2.Permission),
+            (AuthSessionsUnit.Flags, sessions_pb2.Permission),
+            (AuthProfilesUnit.Flags, profiles_pb2.Permission),
+            (AuthActivitiesUnit.Flags, activities_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value

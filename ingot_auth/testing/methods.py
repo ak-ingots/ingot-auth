@@ -7,7 +7,7 @@ declares it as a slot of its methods::
         testing = Slot(AuthTestingMethod)
 """
 
-__all__ = ("AuthTestingMethod", "AuthTestingPermissions", "AuthTestingStart")
+__all__ = ("AuthTestingMethod", "AuthTestingStart")
 
 import typing as t
 from dataclasses import dataclass
@@ -26,13 +26,6 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthMethod,
 )
-
-
-class AuthTestingPermissions(PermissionFlags):
-    """The flows of the method of the tests, as those of any method."""
-
-    CAN_SIGN_UP = 1 << 0
-    CAN_SIGN_IN = 1 << 1
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -61,9 +54,15 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
     of a kind of their own, ``testing``.
     """
 
+    class Flags(PermissionFlags):
+        """The flows of the method of the tests, as those of any method."""
+
+        CAN_SIGN_UP = 1 << 0
+        CAN_SIGN_IN = 1 << 1
+
     IDENTIFIER_KIND: t.ClassVar[str] = "testing"
 
-    permissions = PermissionsSlot(AuthTestingPermissions)
+    permissions = PermissionsSlot(Flags)
 
     @t.override
     def _get_sign_up_enabled(self) -> bool:

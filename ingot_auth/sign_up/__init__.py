@@ -10,7 +10,6 @@ __all__ = (
     "AuthAnswerSignUpOperation",
     "AuthAnswerSignUpParameters",
     "AuthSignUpChallenge",
-    "AuthSignUpPermissions",
     "AuthSignUpResult",
     "AuthSignUpUnit",
     "AuthSignedUp",
@@ -20,7 +19,12 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Unit
 
 from .items import (
@@ -31,7 +35,6 @@ from .items import (
     AuthStartSignUpParameters,
 )
 from .operations import AuthAnswerSignUpOperation, AuthStartSignUpOperation
-from .permissions import AuthSignUpPermissions
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -43,9 +46,17 @@ class AuthSignUpUnit(OperationsOwner, Unit):
     the toggle of :meth:`_get_enabled`.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The operations of the sign-up: a server gives ``CAN_SIGN_UP`` to who may
+        sign up, anyone while the sign-up is open.
+        """
+
+        CAN_SIGN_UP = 1 << 0
+
     project: "AuthProject"
 
-    permissions = PermissionsSlot(AuthSignUpPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_start = Factory(AuthStartSignUpOperation)
     op_answer = Factory(AuthAnswerSignUpOperation)

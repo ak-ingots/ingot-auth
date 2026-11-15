@@ -11,12 +11,10 @@ from ingot_auth.methods import AuthMethodsUnit, BaseAuthMethod
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
     AuthEmailCodeMethod,
-    AuthEmailCodePermissions,
 )
 from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
     AuthNicknameMethod,
-    AuthNicknamePermissions,
 )
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
@@ -101,22 +99,22 @@ class MetadataOfTheMethodsTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             methods.get_anonymous_permissions(),
             masks(
-                AuthNicknamePermissions.CAN_SIGN_IN,
-                AuthEmailCodePermissions.CAN_SIGN_UP
-                | AuthEmailCodePermissions.CAN_SIGN_IN,
+                AuthNicknameMethod.Flags.CAN_SIGN_IN,
+                AuthEmailCodeMethod.Flags.CAN_SIGN_UP
+                | AuthEmailCodeMethod.Flags.CAN_SIGN_IN,
             ),
         )
         self.project.settings.configs.apply({"AUTH_SIGN_IN_EMAIL_CODE_ENABLED": False})
         self.assertEqual(
             methods.get_anonymous_permissions(),
             masks(
-                AuthNicknamePermissions.CAN_SIGN_IN,
-                AuthEmailCodePermissions.CAN_SIGN_UP,
+                AuthNicknameMethod.Flags.CAN_SIGN_IN,
+                AuthEmailCodeMethod.Flags.CAN_SIGN_UP,
             ),
         )
         self.assertEqual(
             methods.get_signed_in_permissions(),
-            masks(AuthNicknamePermissions.CAN_SIGN_IN),
+            masks(AuthNicknameMethod.Flags.CAN_SIGN_IN),
         )
 
     async def test_no_method_no_methods(self) -> None:

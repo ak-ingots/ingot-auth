@@ -7,13 +7,12 @@ the profile, ``policies_set`` of :class:`~ingot_auth.methods.password.AuthPasswo
 both empty unless an application gives policies to them in a subclass. The
 password is kept as its hash, the secret of the profile. Its flows are
 toggled by its configs, :class:`AuthNicknameConfigs`, which the project mixes
-into its own, and are its permissions, :class:`AuthNicknamePermissions`.
+into its own, and are its permissions, :class:`AuthNicknameMethod.Flags`.
 """
 
 __all__ = (
     "AuthNicknameConfigs",
     "AuthNicknameMethod",
-    "AuthNicknamePermissions",
     "AuthNicknameSignUpParameters",
     "AuthNicknameSignUpPolicies",
     "AuthNicknameStart",
@@ -23,7 +22,12 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
-from ingots.defaults.operations import OperationMetadata, Permissions, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationMetadata,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 
 from ingot_auth.methods import (
     AuthMethodRefusedError,
@@ -35,7 +39,6 @@ from ingot_auth.methods.password import AuthPasswordSetParameters
 from ingot_auth.storages import AuthIdentityNotFoundError
 
 from .configs import AuthNicknameConfigs
-from .permissions import AuthNicknamePermissions
 from .policies import AuthNicknameSignUpParameters, AuthNicknameSignUpPolicies
 
 
@@ -58,9 +61,18 @@ class AuthNicknameMethod(BaseAuthMethod[AuthNicknameStart, None, None]):
     to none against a hash of nothing all the same.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The flows of the method: a caller signs up and in by a nickname with
+        their flags, which the toggles of the method give while a flow is open.
+        """
+
+        CAN_SIGN_UP = 1 << 0
+        CAN_SIGN_IN = 1 << 1
+
     IDENTIFIER_KIND: t.ClassVar[str] = "nickname"
 
-    permissions = PermissionsSlot(AuthNicknamePermissions)
+    permissions = PermissionsSlot(Flags)
 
     policies_sign_up_nickname = AuthNicknameSignUpPolicies()
 
