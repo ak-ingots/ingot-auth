@@ -18,6 +18,9 @@ a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`, the sessions themselves kept by the hash
 of their token, their lifetime a strategy in the slot `lifetime`, none by
 default, sliding, fixed or both, the time seen written once an interval,
+the values of their attributes of the source `derived` given by the
+strategy in the slot `deriver`, none by default, a user listing and
+revoking its own by the flags `auth.grp_signed_in` grants,
 and `authenticate()` turning a token into an `AuthCaller`, the session and
 the caller cached apart, the caller by the digest of the groups
 too, its callers forgotten by `forget_callers()` on a change of the

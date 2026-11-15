@@ -43,7 +43,7 @@ from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingPermissions
 
-from tests import ANONYMOUS, DOMAINS, ROOT, masks
+from tests import ANONYMOUS, DOMAINS, OWN, ROOT, masks
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 
@@ -222,7 +222,7 @@ class GroupsTestCase(unittest.TestCase):
                 AuthMetadataPermissions.CAN_READ,
             ),
         )
-        self.assertEqual(auth.grp_signed_in.get_permissions(), Permissions())
+        self.assertEqual(auth.grp_signed_in.get_permissions(), OWN)
 
     def test_the_profiles_have_their_readers_and_keepers(self) -> None:
         project = AuthMemoryProject()
@@ -403,23 +403,25 @@ class GroupsGrantsTestCase(unittest.TestCase):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
         self.assertEqual(
             self._get_permissions("a1"),
-            masks(ShopPermissions.CAN_BUY, ArticlesPermissions.CAN_PUBLISH),
+            masks(ShopPermissions.CAN_BUY, ArticlesPermissions.CAN_PUBLISH) | OWN,
         )
 
     def test_a_user_of_no_group_has_nothing(self) -> None:
-        self.assertEqual(self._get_permissions("b2"), Permissions())
+        self.assertEqual(self._get_permissions("b2"), OWN)
 
     def test_every_user_has_what_signed_in_grants(self) -> None:
         self.project = SignedInProject()
         self.assertEqual(
             self._get_permissions("b2"),
-            masks(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN),
+            masks(ShopPermissions.CAN_BUY, AuthTestingPermissions.CAN_SIGN_IN) | OWN,
         )
 
     def test_a_group_no_source_has_grants_nothing(self) -> None:
         for group in ("gone", "shop.grp_buyers"):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
-        self.assertEqual(self._get_permissions("a1"), masks(ShopPermissions.CAN_BUY))
+        self.assertEqual(
+            self._get_permissions("a1"), masks(ShopPermissions.CAN_BUY) | OWN
+        )
 
     def _get_permissions(self, uid: str) -> Permissions:
         return asyncio.run(self.project.auth.access.permissions.get_permissions(uid))
@@ -487,7 +489,7 @@ class CommandsTestCase(unittest.TestCase):
                 0,
                 "auth.grp_anonymous\tauth.metadata=1\tauth.sign_in=1"
                 "\tauth.sign_up=1\n"
-                "auth.grp_signed_in\n"
+                "auth.grp_signed_in\tauth.sessions=3\n"
                 "auth.profiles.grp_consumers\tauth.profiles.attrs=2"
                 "\tauth.profiles.tags=2\n"
                 "auth.profiles.grp_managers\tauth.profiles.attrs=15"

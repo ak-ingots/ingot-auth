@@ -29,7 +29,7 @@ from ingot_auth.storages import (
     AuthSessionNotFoundError,
 )
 
-from tests import DOMAINS, ROOT, masks
+from tests import DOMAINS, OWN, ROOT, masks
 
 DAY: t.Final = datetime.timedelta(days=1)
 MINUTE: t.Final = datetime.timedelta(minutes=1)
@@ -98,7 +98,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             AuthCaller(
                 uid="a1",
                 session_id=session.id,
-                permissions=masks(ShopPermissions.CAN_BUY),
+                permissions=masks(ShopPermissions.CAN_BUY) | OWN,
             ),
         )
         self.assertEqual(
@@ -178,12 +178,10 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.storage.access.members.remove(
             AuthMembership(group="shop.grp_buyers", uid="a1")
         )
-        buyer = masks(ShopPermissions.CAN_BUY)
+        buyer = masks(ShopPermissions.CAN_BUY) | OWN
         self.assertEqual((await self.sessions.authenticate(token)).permissions, buyer)
         self.travel(datetime.timedelta(minutes=6))
-        self.assertEqual(
-            (await self.sessions.authenticate(token)).permissions, Permissions()
-        )
+        self.assertEqual((await self.sessions.authenticate(token)).permissions, OWN)
 
     async def test_a_change_of_the_groups_of_a_user_shows_on_its_next_request(
         self,
@@ -203,9 +201,9 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             await self.sessions.authenticate(token)
         members = self.project.auth.access.members
         membership = AuthMembership(group="shop.grp_buyers", uid="a1")
-        buyer = masks(ShopPermissions.CAN_BUY)
+        buyer = masks(ShopPermissions.CAN_BUY) | OWN
         for factory, permissions in (
-            (members.op_remove, Permissions()),
+            (members.op_remove, OWN),
             (members.op_add, buyer),
         ):
             await self.run_operation(factory, membership)
@@ -229,7 +227,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         groups = self.project.auth.access.groups
         with mock.patch.object(type(groups), "get_digest", return_value="deployed"):
             caller = await self.sessions.authenticate(token)
-        self.assertEqual(caller.permissions, Permissions())
+        self.assertEqual(caller.permissions, OWN)
 
     async def test_a_session_closed_in_the_storage_ends_past_the_cache(self) -> None:
         token = (await self.sessions.open("a1", "nickname", {})).token

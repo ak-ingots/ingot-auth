@@ -13,6 +13,7 @@ __all__ = (
     "AuthGrpcMethodNotFoundPolicy",
     "AuthGrpcMethodRefusedPolicy",
     "AuthGrpcMethodUnsupportedPolicy",
+    "AuthGrpcOwnSessionNotFoundPolicy",
     "AuthGrpcPermissionsPolicy",
     "AuthGrpcProfileNotFoundPolicy",
     "AuthGrpcSessionExpiredPolicy",
@@ -38,7 +39,7 @@ from ingot_auth.methods import (
     AuthMethodUnsupportedError,
 )
 from ingot_auth.registry import AuthItemInvalidError
-from ingot_auth.sessions import AuthSessionExpiredError
+from ingot_auth.sessions import AuthOwnSessionNotFoundError, AuthSessionExpiredError
 from ingot_auth.storages import (
     AuthIdentityConflictError,
     AuthIdentityError,
@@ -226,6 +227,21 @@ class AuthGrpcSessionExpiredPolicy(BaseAuthGrpcErrorPolicy):
         return {"reason": t.cast(AuthSessionExpiredError, error).reason.value}
 
 
+class AuthGrpcOwnSessionNotFoundPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    No open session of the caller has the id: its own, closed or never one,
+    or of another. The caller stays signed in, the session is not found.
+    """
+
+    EXCEPTION = AuthOwnSessionNotFoundError
+    CODE = grpc.StatusCode.NOT_FOUND
+    REASON = "OWN_SESSION_NOT_FOUND"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"session_id": t.cast(AuthOwnSessionNotFoundError, error).session_id}
+
+
 class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     """The policies of the auth: the errors unit of the gRPC takes it as a base."""
 
@@ -244,3 +260,4 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_identity_conflict = Slot(AuthGrpcIdentityConflictPolicy)
     auth_session_not_found = Slot(AuthGrpcSessionNotFoundPolicy)
     auth_session_expired = Slot(AuthGrpcSessionExpiredPolicy)
+    auth_own_session_not_found = Slot(AuthGrpcOwnSessionNotFoundPolicy)

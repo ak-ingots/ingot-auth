@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package ingot_auth.sessions.v1;
+
+import "google/protobuf/timestamp.proto";
+import "ingot_auth/sessions/attrs/v1/attrs.proto";
+
+// The sessions of the caller of the token of a call, its own: those open,
+// the current one marked, revoked one by one or all but the current one.
+service Sessions {
+  // Requires PERMISSION_CAN_LIST_OWN.
+  rpc ListOwnSessions(ListOwnSessionsRequest) returns (ListOwnSessionsResponse);
+  // Requires PERMISSION_CAN_REVOKE_OWN.
+  rpc RevokeOwnSession(RevokeOwnSessionRequest) returns (RevokeOwnSessionResponse);
+  // Requires PERMISSION_CAN_REVOKE_OWN.
+  rpc RevokeOtherSessions(RevokeOtherSessionsRequest)
+      returns (RevokeOtherSessionsResponse);
+}
+
+// The bits of the domain `auth.sessions` its operations require: an aid for
+// a client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_LIST_OWN = 1;
+  PERMISSION_CAN_REVOKE_OWN = 2;
+}
+
+// An open session as its user sees it: its public id, never its token.
+message Session {
+  string id = 1;
+  // the device, the place: the values of its attributes, by their ids
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 2;
+  google.protobuf.Timestamp opened_at = 3;
+  google.protobuf.Timestamp seen_at = 4;
+  // that of the caller
+  bool is_current = 5;
+}
+
+message ListOwnSessionsRequest {}
+
+message ListOwnSessionsResponse {
+  // by the time they opened
+  repeated Session sessions = 1;
+}
+
+message RevokeOwnSessionRequest {
+  string session_id = 1;
+}
+
+message RevokeOwnSessionResponse {}
+
+message RevokeOtherSessionsRequest {}
+
+message RevokeOtherSessionsResponse {
+  // how many it closed
+  uint32 count = 1;
+}

@@ -1,6 +1,9 @@
-"""The values of the attributes of a session, of a client and a transport."""
+"""
+The values of the attributes of a session: of a client, a transport, and
+derived from them.
+"""
 
-__all__ = ("build_transport_attr_values", "check_client_attr_values")
+__all__ = ("build_attr_values", "check_client_attr_values")
 
 import logging
 import typing as t
@@ -46,40 +49,43 @@ def check_client_attr_values(
             raise AuthItemInvalidError.for_value(REGISTRY, attr_id)
 
 
-def build_transport_attr_values(
+def build_attr_values(
     attrs: "Iterable[AuthSessionAttr]",
-    transport_attr_values: "Mapping[str, AuthAttrValue]",
+    attr_values: "Mapping[str, AuthAttrValue]",
+    source: AuthSessionAttrSource,
 ) -> dict[int, AuthAttrValue]:
     """
-    The values a transport gives, by the names of their attributes, kept by
-    the ids of the attributes of the registry: the transport gives what it
-    reads, the registry tells what is kept. A value of no attribute is
-    dropped, the application keeping none of it; one of an attribute of
-    another source or of another type is dropped too, with a warning, as
-    the registry is wrong then, not the call.
+    The values a transport gives, or the server derives, by the names of their
+    attributes, kept by the ids of the attributes of the registry of their
+    source: the source gives what it has, the registry tells what is kept. A
+    value of no attribute is dropped, the application keeping none of it;
+    one of an attribute of another source or of another type is dropped too,
+    with a warning, as the registry is wrong then, not the call.
     """
     by_name = {attr.name: attr for attr in attrs}
-    attr_values: dict[int, AuthAttrValue] = {}
-    for name, value in transport_attr_values.items():
+    kept: dict[int, AuthAttrValue] = {}
+    for name, value in attr_values.items():
         try:
             attr = by_name[name]
         except KeyError:
             continue
-        if attr.source is not AuthSessionAttrSource.TRANSPORT:
+        if attr.source is not source:
             logger.warning(
                 "the attribute %r of the sessions is of the source %s: "
-                "the value of the transport is dropped",
+                "the value of the %s is dropped",
                 name,
                 attr.source,
+                source,
             )
         elif type(value) is not ATTR_VALUE_TYPES[attr.type]:
             logger.warning(
                 "the attribute %r of the sessions is of the type %s, the value "
-                "of the transport a %s: it is dropped",
+                "of the %s a %s: it is dropped",
                 name,
                 attr.type,
+                source,
                 type(value).__name__,
             )
         else:
-            attr_values[attr.id] = value
-    return attr_values
+            kept[attr.id] = value
+    return kept

@@ -178,3 +178,19 @@ def build_attr_value(message: attrs_pb2.AttrValue) -> AuthAttrValue:
         case "str_value":
             return message.str_value
     raise AuthItemInvalidError.for_value(REGISTRY, message.attr_id)
+
+
+def build_attr_value_message(attr_id: int, value: AuthAttrValue) -> attrs_pb2.AttrValue:
+    """Internal: the message of the value of an attribute of the sessions."""
+    message = attrs_pb2.AttrValue(attr_id=attr_id)
+    if isinstance(value, bool):  # before int, a bool being one
+        message.bool_value = value
+    elif isinstance(value, int):
+        message.int_value = value
+    elif isinstance(value, decimal.Decimal):
+        message.decimal_value = str(value)
+    elif isinstance(value, datetime.datetime):
+        message.datetime_value.FromDatetime(value)
+    else:
+        message.str_value = value
+    return message
