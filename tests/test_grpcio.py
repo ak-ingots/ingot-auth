@@ -64,6 +64,7 @@ from ingot_auth.access.members.v1 import (
     members_pb2_grpc,
 )
 from ingot_auth.contrib.transports.grpcio.base import (
+    PROFILE_HASH_KEY,
     Context,
     get_bearer_token,
     get_peer_ip,
@@ -102,7 +103,7 @@ from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_out.v1 import sign_out_pb2
 from ingot_auth.sessions.v1 import sessions_pb2
 from ingot_auth.profiles.v1 import profiles_pb2
-from ingot_auth.profiles import AuthProfilesPermissions
+from ingot_auth.profiles import AuthProfilesPermissions, AuthSetProfileTagsParameters
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -156,7 +157,7 @@ from ingot_auth.storages import (
     AuthTag,
 )
 
-from tests import masks
+from tests import ROOT, masks
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 ADMIN: t.Final = Caller(
@@ -650,7 +651,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     },
                 ),
                 groups_pb2.Group(
-                    name="auth.grp_signed_in", permissions={"auth.sessions": 3}
+                    name="auth.grp_signed_in",
+                    permissions={"auth.profiles": 2, "auth.sessions": 3},
                 ),
                 groups_pb2.Group(
                     name="auth.profiles.grp_consumers",
@@ -1194,6 +1196,56 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (error.exception.code, error.exception.reason),
             (grpc.StatusCode.NOT_FOUND, "ITEM_NOT_FOUND"),
         )
+
+    async def test_every_reply_tells_the_hash_of_the_profile(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="Alice", password="pass word")
+            )
+        ).result.signed_up
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="alice", password="pass word")
+            )
+        ).result.signed_in
+        bearer = [("authorization", f"Bearer {signed_in.token}")]
+        call = client.auth_profiles.GetOwnProfile(
+            profiles_pb2.GetOwnProfileRequest(), metadata=bearer
+        )
+        profile = await call
+        told = dict(await call.trailing_metadata())[PROFILE_HASH_KEY]
+        self.assertEqual(told, profile.hash)
+        self.assertEqual(dict(profile.permissions)["auth.profiles"], 2)
+        await self.project.auth.storage.profiles.tags.create(AuthTag(id=1, name="beta"))
+        await self.run_as_root(
+            self.project.auth.profiles.op_set_tags,
+            AuthSetProfileTagsParameters(uid=signed_up.uid, tag_ids=frozenset({1})),
+        )
+        sessions_call = client.auth_sessions.ListOwnSessions(
+            sessions_pb2.ListOwnSessionsRequest(), metadata=bearer
+        )
+        await sessions_call
+        changed = dict(await sessions_call.trailing_metadata())[PROFILE_HASH_KEY]
+        self.assertNotEqual(changed, told)
+        profile = await client.auth_profiles.GetOwnProfile(
+            profiles_pb2.GetOwnProfileRequest(), metadata=bearer
+        )
+        self.assertEqual((list(profile.values.tag_ids), profile.hash), ([1], changed))
+        # the anonymous caller has no profile to tell
+        metadata_call = client.auth_metadata.GetMetadata(
+            metadata_pb2.GetMetadataRequest()
+        )
+        await metadata_call
+        self.assertNotIn(
+            PROFILE_HASH_KEY, dict(await metadata_call.trailing_metadata())
+        )
+
+    async def run_as_root(self, factory: t.Any, parameters: t.Any) -> t.Any:
+        operations = self.project.operations
+        metadata = operations.create_metadata(ROOT)
+        return await operations.runner.run(factory, parameters, metadata)
 
     async def test_every_close_reason_has_its_message(self) -> None:
         self.assertEqual(set(CLOSE_REASONS), set(AuthSessionCloseReason))

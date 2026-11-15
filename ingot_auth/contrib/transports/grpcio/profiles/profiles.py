@@ -1,4 +1,4 @@
-"""The profiles themselves over gRPC: their values."""
+"""The profiles themselves over gRPC: that of the caller, their values."""
 
 __all__ = ("AuthGrpcProfilesServicer",)
 
@@ -18,7 +18,23 @@ from ingot_auth.profiles.v1 import profiles_pb2, profiles_pb2_grpc
 class AuthGrpcProfilesServicer(
     BaseAuthGrpcServicer, profiles_pb2_grpc.ProfilesServicer
 ):
-    """The values of the profiles, which an operator sets."""
+    """The profile of the caller; the values of the profiles an operator sets."""
+
+    @t.override
+    async def GetOwnProfile(
+        self, request: profiles_pb2.GetOwnProfileRequest, context: Context
+    ) -> profiles_pb2.GetOwnProfileResponse:
+        factory = self.project.auth.profiles.op_get_own
+        profile = await self.run_operation(factory, None, context)
+        return profiles_pb2.GetOwnProfileResponse(
+            values=build_values_message(
+                AuthProfileValues(
+                    tag_ids=profile.tag_ids, attr_values=profile.attr_values
+                )
+            ),
+            permissions=profile.permissions,
+            hash=profile.hash,
+        )
 
     @t.override
     async def SetProfileTags(

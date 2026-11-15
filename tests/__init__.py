@@ -61,7 +61,10 @@ def masks(*items: PermissionFlags | Mapping[str, int]) -> Permissions:
     )
 
 
-# what auth.grp_signed_in grants every signed-in user of its own: its sessions
+# what auth.grp_signed_in grants every signed-in user of its own: its sessions,
+# its profile
 OWN: t.Final = masks(
-    AuthSessionsPermissions.CAN_LIST_OWN, AuthSessionsPermissions.CAN_REVOKE_OWN
+    AuthSessionsPermissions.CAN_LIST_OWN,
+    AuthSessionsPermissions.CAN_REVOKE_OWN,
+    AuthProfilesPermissions.CAN_READ_OWN,
 )

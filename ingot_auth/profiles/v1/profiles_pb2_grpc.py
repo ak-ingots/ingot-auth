@@ -26,8 +26,12 @@ if _version_not_supported:
 
 
 class ProfilesStub:
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
 
     def __init__(self, channel):
@@ -36,6 +40,11 @@ class ProfilesStub:
         Args:
             channel: A grpc.Channel.
         """
+        self.GetOwnProfile = channel.unary_unary(
+                '/ingot_auth.profiles.v1.Profiles/GetOwnProfile',
+                request_serializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileRequest.SerializeToString,
+                response_deserializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileResponse.FromString,
+                _registered_method=True)
         self.SetProfileTags = channel.unary_unary(
                 '/ingot_auth.profiles.v1.Profiles/SetProfileTags',
                 request_serializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.SetProfileTagsRequest.SerializeToString,
@@ -49,9 +58,20 @@ class ProfilesStub:
 
 
 class ProfilesServicer:
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
+
+    def GetOwnProfile(self, request, context):
+        """Requires PERMISSION_CAN_READ_OWN.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def SetProfileTags(self, request, context):
         """Requires PERMISSION_CAN_UPDATE.
@@ -70,6 +90,11 @@ class ProfilesServicer:
 
 def add_ProfilesServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'GetOwnProfile': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetOwnProfile,
+                    request_deserializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileRequest.FromString,
+                    response_serializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileResponse.SerializeToString,
+            ),
             'SetProfileTags': grpc.unary_unary_rpc_method_handler(
                     servicer.SetProfileTags,
                     request_deserializer=ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.SetProfileTagsRequest.FromString,
@@ -89,9 +114,40 @@ def add_ProfilesServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Profiles:
-    """The profiles themselves: the values an operator sets, the tags and the
-    values of the attributes of a profile, the whole set each time.
+    """The profiles themselves: the profile of the caller, as its client sees
+    it; the values an operator sets, the tags and the values of the attributes
+    of a profile, the whole set each time. Every reply to a signed-in caller,
+    of any service, tells the hash of its profile in its trailing metadata,
+    `ingot-auth-user-profile-hash`: a client asks for the profile again when
+    it differs from its own.
     """
+
+    @staticmethod
+    def GetOwnProfile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ingot_auth.profiles.v1.Profiles/GetOwnProfile',
+            ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileRequest.SerializeToString,
+            ingot__auth_dot_profiles_dot_v1_dot_profiles__pb2.GetOwnProfileResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def SetProfileTags(request,

@@ -22,6 +22,7 @@ from ingot_auth.profiles import (
     AuthSetProfileAttrValuesParameters,
     AuthSetProfileTagsParameters,
 )
+from ingot_auth.profiles.hashes import build_profile_hash
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import (
     AuthAttr,
@@ -34,7 +35,7 @@ from ingot_auth.storages import (
     AuthProfileValues,
     AuthTag,
 )
-from tests import ROOT
+from tests import ANONYMOUS, ROOT
 
 NOW = datetime.datetime(2026, 11, 15, 12, tzinfo=datetime.UTC)
 
@@ -148,6 +149,29 @@ class ProfileValuesTestCase(unittest.IsolatedAsyncioTestCase):
             await self.run_operation(self.profiles.op_set_tags, parameters, user)
 
 
+class OwnProfileTestCase(ProfileValuesTestCase):
+    async def test_a_user_reads_its_profile_and_its_hash(self) -> None:
+        sessions = self.project.auth.sessions
+        token = (await sessions.open("a1", "nickname", {})).token
+        caller = await sessions.authenticate(token)
+        tags = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({1}))
+        await self.run_operation(self.profiles.op_set_tags, tags)
+        changed = await sessions.authenticate(token)  # formed again
+        self.assertNotEqual(changed.profile_hash, caller.profile_hash)
+        profile = await self.run_operation(self.profiles.op_get_own, None, changed)
+        self.assertEqual(
+            (profile.tag_ids, profile.attr_values, profile.hash),
+            (frozenset({1}), {}, changed.profile_hash),
+        )
+        self.assertEqual(profile.permissions, dict(changed.permissions))
+
+    async def test_a_caller_of_no_profile_has_none(self) -> None:
+        with self.assertRaises(AuthProfileNotFoundError):
+            await self.run_operation(self.profiles.op_get_own, None, ROOT)
+        with self.assertRaises(OperationPermissionsError):
+            await self.run_operation(self.profiles.op_get_own, None, ANONYMOUS)
+
+
 class SeededProfilesStorage(AuthMemoryProfilesStorage):
     def __init__(self) -> None:
         super().__init__()
@@ -252,3 +276,28 @@ class CommandsTestCase(unittest.TestCase):
                     "auth", "profiles", "attrs", "values", "set", "a1", "--value", value
                 )
                 self.assertEqual(code, 2)
+
+
+class ProfileHashTestCase(unittest.TestCase):
+    def test_the_hash_changes_with_what_the_client_sees(self) -> None:
+        values = AuthProfileValues(
+            tag_ids=frozenset({1, 2}), attr_values={1: NOW, 2: 7}
+        )
+        known = build_profile_hash(values, {"shop": 1})
+        same = AuthProfileValues(tag_ids=frozenset({2, 1}), attr_values={2: 7, 1: NOW})
+        self.assertEqual(build_profile_hash(same, {"shop": 1}), known)
+        for other, permissions in (
+            (
+                AuthProfileValues(tag_ids=frozenset({1}), attr_values={1: NOW, 2: 7}),
+                {"shop": 1},
+            ),
+            (
+                AuthProfileValues(
+                    tag_ids=frozenset({1, 2}), attr_values={1: NOW, 2: "7"}
+                ),
+                {"shop": 1},
+            ),
+            (values, {"shop": 3}),
+        ):
+            with self.subTest(other=other, permissions=permissions):
+                self.assertNotEqual(build_profile_hash(other, permissions), known)

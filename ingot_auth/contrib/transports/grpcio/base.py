@@ -1,6 +1,6 @@
 """The base of the servicers."""
 
-__all__ = ("BaseAuthGrpcServicer", "Context")
+__all__ = ("PROFILE_HASH_KEY", "BaseAuthGrpcServicer", "Context")
 
 import ipaddress
 import typing as t
@@ -17,6 +17,11 @@ if t.TYPE_CHECKING:
 
 Context: t.TypeAlias = aio.ServicerContext[t.Any, t.Any]
 
+# the key of the trailing metadata telling the hash of the profile of the
+# caller, one for every transport: lowercase with hyphens, as gRPC takes no
+# other key, and no X- (RFC 6648)
+PROFILE_HASH_KEY: t.Final = "ingot-auth-user-profile-hash"
+
 
 class BaseAuthGrpcServicer(GrpcServicer):
     """
@@ -24,7 +29,11 @@ class BaseAuthGrpcServicer(GrpcServicer):
     an operation and the result into its reply, nothing else. The operation
     runs by ``run_operation()`` of the servicer for the caller of
     :meth:`_get_caller`; its exceptions reach the policies of
-    :class:`~..errors.AuthGrpcErrorsUnit`.
+    :class:`~..errors.AuthGrpcErrorsUnit`. A servicer of an application
+    serving signed-in callers extends it too: every reply to one tells the
+    hash of its profile in its trailing metadata, ``PROFILE_HASH_KEY``, no
+    interceptor, which would see no caller; a reply refused tells it not,
+    the refusal itself telling the client to ask again.
     """
 
     project: "AuthProject"
@@ -49,7 +58,9 @@ class BaseAuthGrpcServicer(GrpcServicer):
         token = get_bearer_token(context.invocation_metadata())
         if token is None:
             return await super()._get_caller(context)
-        return await self.project.auth.sessions.authenticate(token)
+        caller = await self.project.auth.sessions.authenticate(token)
+        context.set_trailing_metadata(((PROFILE_HASH_KEY, caller.profile_hash),))
+        return caller
 
 
 def get_bearer_token(

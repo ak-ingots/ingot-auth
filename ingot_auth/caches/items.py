@@ -39,8 +39,10 @@ class AuthAttempt:
 class AuthCaller(Caller):
     """
     A caller signed in: the uid of its profile, the permissions the access
-    gives it, and the id of its session, which only the operations of the
-    sessions read.
+    gives it, the id of its session, which only the operations of the
+    sessions read, and the hash of what its client sees of its profile,
+    computed once, when the caller is formed, and told in the replies.
     """
 
     session_id: str
+    profile_hash: str
