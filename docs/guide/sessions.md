@@ -67,3 +67,14 @@ operations of the members forget its callers. A deploy changing what the
 groups grant finds none of the callers formed before. A change made past
 the operations, by hand in the database, shows past
 `AUTH_SESSION_CACHE_TTL`.
+
+## Sign-out
+
+The caller signs out by `auth.sign_out.op_sign_out`, over gRPC
+`SignOut.SignOut` of `ingot_auth.sign_out.v1`: its session closes,
+`SIGNED_OUT`, kept, and its token works no more from the very next
+request, the cache forgetting it once the storage keeps it closed. Any
+caller may: one of no session, the anonymous one of a token closed,
+expired or unknown, signs out of nothing, so that a client retries safely
+and an attacker learns nothing. `AuthGrpcFlowsBinding` serves it with the
+answers of the flows, `AuthGrpcSignOutBinding` apart.
