@@ -147,6 +147,7 @@ CORE_GROUPS: t.Final = (
     "auth.sessions.grp_consumers",
     "auth.sessions.grp_managers",
     "auth.sessions.grp_admins",
+    "auth.activities.grp_auditors",
 )
 
 
@@ -320,7 +321,7 @@ class OperationsTestCase(unittest.TestCase):
             [*CORE_GROUPS, "shop.grp_buyers", "articles.grp_editors", "app.grp_admins"],
         )
         self.assertEqual(
-            groups[7],
+            groups[len(CORE_GROUPS)],
             AuthGroupInfo(
                 name="shop.grp_buyers", permissions=masks(ShopPermissions.CAN_BUY)
             ),
@@ -509,6 +510,7 @@ class CommandsTestCase(unittest.TestCase):
                 "\tauth.sessions.presets=15\n"
                 "auth.sessions.grp_admins\tauth.sessions=4\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=63\n"
+                "auth.activities.grp_auditors\tauth.activities=1\n"
                 "shop.grp_buyers\tshop=1\n"
                 "articles.grp_editors\tarticles=2\n"
                 "app.grp_admins\tarticles=1\tauth.access.members=3\tshop=2\n",

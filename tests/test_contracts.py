@@ -8,6 +8,7 @@ from ingot_auth.contrib.mailers.memory import AuthMemoryMailer
 from ingot_auth.mailers import AuthMail
 from ingot_auth.project import AuthProject
 from ingot_auth.testing.contracts import (
+    AuthActivitiesStorageContract,
     AuthMailerContract,
     AuthAttemptsCacheContract,
     AuthAttrsStorageContract,
@@ -80,6 +81,14 @@ class MemoryIdentitiesStorageTestCase(
 class MemoryProfileValuesStorageTestCase(
     MemoryStorageMixin,
     AuthProfileValuesStorageContract,
+    unittest.IsolatedAsyncioTestCase,
+):
+    pass
+
+
+class MemoryActivitiesStorageTestCase(
+    MemoryStorageMixin,
+    AuthActivitiesStorageContract,
     unittest.IsolatedAsyncioTestCase,
 ):
     pass

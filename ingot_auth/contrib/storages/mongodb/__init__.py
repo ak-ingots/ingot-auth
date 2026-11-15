@@ -7,6 +7,7 @@ chooses: the client by a hook, the names of the database and the collection.
 
 __all__ = (
     "AuthMongoDbAccessStorage",
+    "AuthMongoDbActivitiesStorage",
     "AuthMongoDbAttrsStorage",
     "AuthMongoDbCollectionMixin",
     "AuthMongoDbIdentitiesStorage",
@@ -30,6 +31,7 @@ from ingots.puer import Slot
 
 from ingot_auth.storages import AuthStorage
 
+from .activities import AuthMongoDbActivitiesStorage
 from .access import AuthMongoDbAccessStorage, AuthMongoDbMembersStorage
 from .collection import AuthMongoDbCollectionMixin
 from .profiles import (
@@ -69,6 +71,7 @@ class AuthMongoDbStorage(AuthStorage):
     sessions = Slot(AuthMongoDbSessionsStorage)
     sign_up = Slot(AuthMongoDbSignUpStorage)
     access = Slot(AuthMongoDbAccessStorage)
+    activities = Slot(AuthMongoDbActivitiesStorage)
 
     @t.override
     async def _begin(self) -> object:

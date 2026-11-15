@@ -3,12 +3,16 @@ The storages of the auth: the interfaces a backend in
 ``ingot_auth.contrib.storages`` implements, with what they keep and what they
 raise, depending on no other part of the auth. :class:`AuthStorage` is the
 facade, a unit a subdomain, the profiles, the sessions, the sign-up, the
-access, with the transactions of the backend over all of them.
+access, and the activity log, with the transactions of the backend over all
+of them.
 """
 
 __all__ = (
     "ATTR_VALUE_TYPES",
     "AuthAccessStorage",
+    "AuthActivityAction",
+    "AuthActivityQuery",
+    "AuthActivityRecord",
     "AuthAttr",
     "AuthAttrType",
     "AuthAttrValue",
@@ -43,6 +47,7 @@ __all__ = (
     "AuthStorage",
     "AuthTag",
     "AuthTransactionError",
+    "BaseAuthActivitiesStorage",
     "BaseAuthAttrsStorage",
     "BaseAuthIdentitiesStorage",
     "BaseAuthMembersStorage",
@@ -69,6 +74,12 @@ from .errors import (
     AuthItemNotFoundError,
     AuthRegistryError,
     AuthTransactionError,
+)
+from .activities import (
+    AuthActivityAction,
+    AuthActivityQuery,
+    AuthActivityRecord,
+    BaseAuthActivitiesStorage,
 )
 from .items import ATTR_VALUE_TYPES, AuthAttrType, AuthAttrValue, AuthItem
 from .profiles import (
@@ -145,6 +156,7 @@ class AuthStorage(Unit):
     sessions = Slot(AuthSessionsStorage)  # type: ignore[type-abstract]
     sign_up = Slot(AuthSignUpStorage)
     access = Slot(AuthAccessStorage)
+    activities = Slot(BaseAuthActivitiesStorage)  # type: ignore[type-abstract]
 
     @t.final
     def get_transaction(self) -> object | None:

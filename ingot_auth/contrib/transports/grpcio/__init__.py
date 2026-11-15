@@ -30,6 +30,8 @@ expired or unknown, which signs out of nothing.
 
 __all__ = (
     "AuthGrpcAccessBinding",
+    "AuthGrpcActivitiesBinding",
+    "AuthGrpcActivitiesServicer",
     "AuthGrpcAdminBinding",
     "AuthGrpcAttrsBinding",
     "AuthGrpcAttrsServicer",
@@ -67,6 +69,7 @@ __all__ = (
     "BaseAuthGrpcServicer",
 )
 
+from .activities import AuthGrpcActivitiesBinding, AuthGrpcActivitiesServicer
 from .access import (
     AuthGrpcAccessBinding,
     AuthGrpcGroupsBinding,
@@ -119,5 +122,6 @@ class AuthGrpcAdminBinding(
     AuthGrpcSessionRegistriesBinding,
     AuthGrpcSessionsBinding,
     AuthGrpcAccessBinding,
+    AuthGrpcActivitiesBinding,
 ):
     pass

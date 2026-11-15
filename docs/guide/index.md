@@ -15,5 +15,6 @@ sign-in
 access
 profiles
 sessions
+activities
 configs
 ```

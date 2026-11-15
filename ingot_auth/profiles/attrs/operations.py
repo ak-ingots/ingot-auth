@@ -9,8 +9,11 @@ __all__ = (
 )
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import Permissions
+
+from ingot_auth.activities import AuthActivityContext
 
 from ingot_auth.registry.operations import (
     AuthDeleteItemParameters,
@@ -40,6 +43,14 @@ class BaseAuthAttrsOperation[ParametersType, ResultType](
         return self.project.auth.storage.profiles.attrs
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthAttrCreated(AuthActivityContext):
+    """The context of an attribute created in the activity log."""
+
+    name: str
+    type: str
+
+
 class AuthCreateAttrOperation(
     BaseAuthCreateItemOperation[AuthAttr], BaseAuthAttrsOperation[AuthAttr, AuthAttr]
 ):
@@ -49,6 +60,10 @@ class AuthCreateAttrOperation(
     def _get_permissions(self) -> Permissions:
         permissions = self.parent.permissions
         return permissions(permissions.flags.CAN_CREATE)
+
+    @t.override
+    def _get_created_context(self, item: AuthAttr) -> AuthAttrCreated:
+        return AuthAttrCreated(name=item.name, type=item.type.value)
 
 
 class AuthListAttrsOperation(
