@@ -48,7 +48,9 @@ __all__ = (
     "AuthGrpcProfilesBinding",
     "AuthGrpcSessionAttrsBinding",
     "AuthGrpcSessionAttrsServicer",
+    "AuthGrpcSessionRegistriesBinding",
     "AuthGrpcSessionsBinding",
+    "AuthGrpcSessionsServicer",
     "AuthGrpcSessionPresetsBinding",
     "AuthGrpcSessionPresetsServicer",
     "AuthGrpcSignInBinding",
@@ -90,7 +92,9 @@ from .profiles import (
 from .sessions import (
     AuthGrpcSessionAttrsBinding,
     AuthGrpcSessionAttrsServicer,
+    AuthGrpcSessionRegistriesBinding,
     AuthGrpcSessionsBinding,
+    AuthGrpcSessionsServicer,
     AuthGrpcSessionPresetsBinding,
     AuthGrpcSessionPresetsServicer,
 )
@@ -106,6 +110,6 @@ class AuthGrpcFlowsBinding(
 
 
 class AuthGrpcAdminBinding(
-    AuthGrpcProfilesBinding, AuthGrpcSessionsBinding, AuthGrpcAccessBinding
+    AuthGrpcProfilesBinding, AuthGrpcSessionRegistriesBinding, AuthGrpcAccessBinding
 ):
     pass

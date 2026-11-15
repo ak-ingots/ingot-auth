@@ -16,12 +16,17 @@ from .contrib.dispatchers.memory import AuthMemoryDispatcher
 from .contrib.mailers.memory import AuthMemoryMailer
 from .contrib.storages.memory import AuthMemoryStorage
 from .project import AuthProject
-from .sessions import AuthFixedLifetime, AuthSessionsUnit
+from .sessions import (
+    AuthFixedLifetime,
+    AuthNoSessionAttrsDeriver,
+    AuthSessionsUnit,
+)
 from .sign_in import AuthNoTiming, AuthSignInUnit
 
 
 class AuthMemorySessionsUnit(AuthSessionsUnit):
     lifetime = Slot(AuthFixedLifetime)
+    deriver = Slot(AuthNoSessionAttrsDeriver)
 
 
 class AuthMemorySignInUnit(AuthSignInUnit):

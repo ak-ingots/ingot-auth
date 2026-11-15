@@ -16,6 +16,7 @@ from ingot_pymongo.settings.configs import MongoDbConfigs
 from ingots.defaults.operations import Caller
 from ingots.puer import Slot
 
+from ingot_auth.__main__ import AuthMemorySessionsUnit
 from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
@@ -89,6 +90,7 @@ class TstMethodsUnit(AuthMethodsUnit):
 class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMongoDbStorage)
     cache = Slot(AuthMemoryCache)
+    sessions = Slot(AuthMemorySessionsUnit)
     methods = Slot(TstMethodsUnit)
 
 

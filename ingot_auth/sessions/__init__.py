@@ -8,6 +8,13 @@ these registries. Their storage is in
 
 __all__ = (
     "AuthFixedLifetime",
+    "AuthListOwnSessionsOperation",
+    "AuthNoSessionAttrsDeriver",
+    "AuthOwnSessionNotFoundError",
+    "AuthOwnSession",
+    "AuthRevokeOtherSessionsOperation",
+    "AuthRevokeOwnSessionOperation",
+    "AuthRevokeOwnSessionParameters",
     "AuthSessionExpiredError",
     "AuthSessionsAdminsGroup",
     "AuthSessionsConsumersGroup",
@@ -15,7 +22,9 @@ __all__ = (
     "AuthSlidingFixedLifetime",
     "AuthSlidingLifetime",
     "AuthSessionToken",
+    "AuthSessionsPermissions",
     "AuthSessionsUnit",
+    "BaseAuthSessionAttrsDeriver",
     "BaseAuthSessionLifetime",
 )
 
@@ -26,7 +35,8 @@ import os
 import secrets
 import typing as t
 
-from ingots.puer import Slot
+from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from ingot_auth.access.groups import AuthGroupsOwner
@@ -38,19 +48,26 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
-from .errors import AuthSessionExpiredError
+from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
+from .errors import AuthOwnSessionNotFoundError, AuthSessionExpiredError
 from .groups import (
     AuthSessionsAdminsGroup,
     AuthSessionsConsumersGroup,
     AuthSessionsManagersGroup,
 )
-from .items import AuthSessionToken
+from .items import AuthOwnSession, AuthRevokeOwnSessionParameters, AuthSessionToken
 from .lifetimes import (
     AuthFixedLifetime,
     AuthSlidingFixedLifetime,
     AuthSlidingLifetime,
     BaseAuthSessionLifetime,
 )
+from .operations import (
+    AuthListOwnSessionsOperation,
+    AuthRevokeOtherSessionsOperation,
+    AuthRevokeOwnSessionOperation,
+)
+from .permissions import AuthSessionsPermissions
 from .presets import AuthSessionPresetsUnit
 
 if t.TYPE_CHECKING:
@@ -60,17 +77,20 @@ if t.TYPE_CHECKING:
     from ingot_auth.storages import AuthAttrValue
 
 
-class AuthSessionsUnit(AuthGroupsOwner, CliUnit):
+class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     """
-    The sessions: the registries of their attributes and of the presets, and
-    the strategy of their lifetime in the slot ``lifetime``, none by default,
-    which a project declares. A sign-in opens a session and gives its token;
+    The sessions: the registries of their attributes and of the presets, the
+    strategy of their lifetime in the slot ``lifetime`` and the one deriving
+    values of their attributes in the slot ``deriver``, none by default, which
+    a project declares. A sign-in opens a session and gives its token;
     a request brings the token, and :meth:`authenticate` turns it into the
     caller, from the cache, or from the storage and the access on a miss. A
     change of what a caller holds forgets the callers of the profile,
     :meth:`forget_callers`. The groups of the work of the registries:
     ``auth.sessions.grp_consumers``, who reads them, ``auth.sessions.grp_managers``,
     who keeps them, binding none, ``auth.sessions.grp_admins``, who binds too.
+    A signed-in user lists its own open sessions and revokes them, one by one
+    or all but the current one, by the flags ``auth.grp_signed_in`` grants.
     """
 
     cli_name = "sessions"
@@ -82,11 +102,18 @@ class AuthSessionsUnit(AuthGroupsOwner, CliUnit):
     grp_managers = Slot(AuthSessionsManagersGroup)
     grp_admins = Slot(AuthSessionsAdminsGroup)
 
+    permissions = PermissionsSlot(AuthSessionsPermissions)
+
+    op_list_own = Factory(AuthListOwnSessionsOperation)
+    op_revoke_own = Factory(AuthRevokeOwnSessionOperation)
+    op_revoke_others = Factory(AuthRevokeOtherSessionsOperation)
+
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots
     lifetime = Slot(BaseAuthSessionLifetime)  # type: ignore[type-abstract]
+    deriver = Slot(BaseAuthSessionAttrsDeriver)  # type: ignore[type-abstract]
 
     @t.final
     async def open(

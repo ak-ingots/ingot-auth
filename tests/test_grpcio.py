@@ -50,6 +50,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcNicknameServicer,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
+    AuthGrpcSessionsBinding,
     AuthGrpcSignOutBinding,
     AuthGrpcTagsServicer,
 )
@@ -66,7 +67,11 @@ from ingot_auth.contrib.transports.grpcio.base import (
     get_bearer_token,
     get_peer_ip,
 )
-from ingot_auth.contrib.transports.grpcio.sessions.attrs import build_attr_values
+from ingot_auth.contrib.transports.grpcio.sessions.attrs import (
+    build_attr_value,
+    build_attr_value_message,
+    build_attr_values,
+)
 from ingot_auth.metadata.v1 import metadata_pb2
 from ingot_auth.methods.nickname.v1 import nickname_pb2, nickname_pb2_grpc
 from ingot_auth.profiles.attrs.v1 import (
@@ -93,6 +98,7 @@ from ingot_auth.sessions.presets.v1 import (
 )
 from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_out.v1 import sign_out_pb2
+from ingot_auth.sessions.v1 import sessions_pb2
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -129,7 +135,7 @@ from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
-from ingot_auth.sessions import AuthSessionExpiredError
+from ingot_auth.sessions import AuthSessionExpiredError, AuthSessionsPermissions
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import (
@@ -218,6 +224,7 @@ class TstClient(
     AuthGrpcNicknameBinding,
     AuthGrpcEmailCodeBinding,
     AuthGrpcFlowsBinding,
+    AuthGrpcSessionsBinding,
     DefaultGrpcClient,
 ):
     pass
@@ -361,6 +368,7 @@ class TstNicknameServer(
     AuthGrpcMetadataBinding,
     AuthGrpcAdminBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcSessionsBinding,
     AuthGrpcSignOutBinding,
     DefaultGrpcServer,
 ):
@@ -635,7 +643,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                         "auth.sign_up": 1,
                     },
                 ),
-                groups_pb2.Group(name="auth.grp_signed_in"),
+                groups_pb2.Group(
+                    name="auth.grp_signed_in", permissions={"auth.sessions": 3}
+                ),
                 groups_pb2.Group(
                     name="auth.profiles.grp_consumers",
                     permissions={"auth.profiles.attrs": 2, "auth.profiles.tags": 2},
@@ -888,6 +898,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthEmailCodePermissions, email_code_pb2.Permission),
             (AuthSignUpPermissions, sign_up_pb2.Permission),
             (AuthSignInPermissions, sign_in_pb2.Permission),
+            (AuthSessionsPermissions, sessions_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value
@@ -1025,6 +1036,60 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         for metadata in (bearer, [("authorization", "Bearer unknown")], []):
             with self.subTest(metadata=metadata):
                 await client.auth_sign_out.SignOut(request, metadata=metadata)
+
+    async def test_a_user_lists_and_revokes_its_sessions_by_its_service(
+        self,
+    ) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        await nickname.SignUp(
+            nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+        )
+        sign_in = nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+        phone, laptop = [
+            (await nickname.SignIn(sign_in)).result.signed_in for _ in range(2)
+        ]
+        bearer = [("authorization", f"Bearer {laptop.token}")]
+        sessions = client.auth_sessions
+        own = (
+            await sessions.ListOwnSessions(
+                sessions_pb2.ListOwnSessionsRequest(), metadata=bearer
+            )
+        ).sessions
+        self.assertEqual(
+            [(s.id, s.is_current) for s in own],
+            [(phone.session_id, False), (laptop.session_id, True)],
+        )
+        self.assertTrue(own[0].opened_at.seconds and own[0].seen_at.seconds)
+        lost = sessions_pb2.RevokeOwnSessionRequest(session_id=phone.session_id)
+        await sessions.RevokeOwnSession(lost, metadata=bearer)
+        with self.assertRaises(GrpcError) as error:
+            await sessions.RevokeOwnSession(lost, metadata=bearer)
+        self.assertEqual(
+            (error.exception.code, error.exception.reason, error.exception.metadata),
+            (
+                grpc.StatusCode.NOT_FOUND,
+                "OWN_SESSION_NOT_FOUND",
+                {"session_id": phone.session_id},
+            ),
+        )
+        others = await sessions.RevokeOtherSessions(
+            sessions_pb2.RevokeOtherSessionsRequest(), metadata=bearer
+        )
+        self.assertEqual(others.count, 0)
+
+    async def test_every_value_of_an_attr_has_its_message(self) -> None:
+        for value in (
+            True,
+            7,
+            decimal.Decimal("1.50"),
+            datetime.datetime(2026, 11, 15, tzinfo=datetime.UTC),
+            "iPhone",
+        ):
+            with self.subTest(value=value):
+                message = build_attr_value_message(1, value)
+                self.assertEqual(build_attr_value(message), value)
+                self.assertIs(type(build_attr_value(message)), type(value))
 
     async def test_the_values_of_the_attributes_go_with_the_flows(self) -> None:
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname

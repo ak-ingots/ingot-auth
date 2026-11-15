@@ -11,10 +11,8 @@ import typing as t
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError
-from ingot_auth.sessions.attrs import (
-    build_transport_attr_values,
-    check_client_attr_values,
-)
+from ingot_auth.sessions.attrs import build_attr_values, check_client_attr_values
+from ingot_auth.storages import AuthSessionAttrSource
 
 from .base import BaseAuthMethod
 from .errors import AuthMethodRefusedError
@@ -79,8 +77,10 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         Starts the flow by a method, with the values of the attributes of the
         session the client gives, by their ids, and those the transport gives,
         by their names, kept if the registry has them of the transport
-        (:func:`~ingot_auth.sessions.attrs.build_transport_attr_values`): the
-        attempt keeps both for the end of the flow.
+        (:func:`~ingot_auth.sessions.attrs.build_attr_values`), with those the
+        strategy in the slot ``deriver`` of the sessions derives from them,
+        kept if the registry has them derived: the attempt keeps them all for
+        the end of the flow.
 
         :raises AuthMethodNotFoundError: no method has the name.
         :raises AuthMethodUnsupportedError: the method takes no such flow.
@@ -95,8 +95,15 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         check_client_attr_values(attrs, attr_values)
         values = {
             **attr_values,
-            **build_transport_attr_values(attrs, transport_attr_values),
+            **build_attr_values(
+                attrs, transport_attr_values, AuthSessionAttrSource.TRANSPORT
+            ),
         }
+        names = {attr.id: attr.name for attr in attrs}
+        derived = await self.project.auth.sessions.deriver.derive(
+            {names[attr_id]: value for attr_id, value in values.items()}
+        )
+        values |= build_attr_values(attrs, derived, AuthSessionAttrSource.DERIVED)
         step = await self._start_method(method, parameters, metadata)
         return await self.proceed(method, step, values)
 

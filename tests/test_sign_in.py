@@ -4,6 +4,7 @@ import dataclasses
 import hashlib
 import typing as t
 import unittest
+from collections.abc import Mapping
 from unittest import mock
 
 from ingots.defaults.operations import (
@@ -16,6 +17,7 @@ from ingots.puer import Slot
 from ingot_auth.__main__ import (
     AuthMemoryProject,
     AuthMemorySessionsUnit,
+    AuthMemorySignInUnit,
     AuthMemoryUnit,
 )
 from ingot_auth.auth import AuthUnit
@@ -28,6 +30,11 @@ from ingot_auth.methods import (
     AuthMethodDeniedError,
     AuthMethodRefusedError,
     AuthMethodsUnit,
+)
+from ingot_auth.sessions import (
+    AuthFixedLifetime,
+    AuthSessionsUnit,
+    BaseAuthSessionAttrsDeriver,
 )
 from ingot_auth.sign_in import (
     AuthAnswerSignInParameters,
@@ -48,6 +55,7 @@ from ingot_auth.sign_up import (
 )
 from ingot_auth.storages import (
     AuthAttrType,
+    AuthAttrValue,
     AuthSessionAttr,
     AuthSessionAttrSource,
 )
@@ -57,7 +65,7 @@ from ingot_auth.testing.methods import (
     AuthTestingStart,
 )
 
-from tests import masks
+from tests import OWN, masks
 
 
 def hash_token(token: str) -> str:
@@ -108,6 +116,35 @@ class ClosedAuthUnit(TstAuthUnit):
 
 class ClosedProject(AuthMemoryProject):
     auth = Slot(ClosedAuthUnit)
+
+
+class CountryDeriver(BaseAuthSessionAttrsDeriver):
+    """The country of an IP, as a base of GeoIP tells it, and wrong values."""
+
+    @t.override
+    async def _derive(
+        self, attr_values: "Mapping[str, AuthAttrValue]"
+    ) -> "Mapping[str, AuthAttrValue]":
+        if attr_values.get("ip") != "192.0.2.1":
+            return {}
+        return {"country": "PL", "device": "derived", "city": 7, "unknown": 1}
+
+
+class DerivingSessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthFixedLifetime)
+    deriver = Slot(CountryDeriver)
+
+
+class DerivingAuthUnit(AuthUnit):
+    storage = Slot(AuthMemoryStorage)
+    cache = Slot(AuthMemoryCache)
+    sessions = Slot(DerivingSessionsUnit)
+    methods = Slot(TstMethodsUnit)
+    sign_in = Slot(AuthMemorySignInUnit)
+
+
+class DerivingProject(AuthProject):
+    auth = Slot(DerivingAuthUnit)
 
 
 class BaseSignInTestCase(unittest.IsolatedAsyncioTestCase):
@@ -183,7 +220,9 @@ class SignInTestCase(BaseSignInTestCase):
         assert isinstance(result, AuthSignedIn)
         caller = await self.project.auth.sessions.authenticate(result.token)
         self.assertEqual((caller.uid, caller.session_id), (uid, result.session_id))
-        self.assertEqual(caller.permissions, masks(AuthTestingPermissions.CAN_SIGN_IN))
+        self.assertEqual(
+            caller.permissions, masks(AuthTestingPermissions.CAN_SIGN_IN) | OWN
+        )
         session = await self.project.auth.storage.sessions.find(
             hash_token(result.token)
         )
@@ -287,6 +326,47 @@ class SignInTestCase(BaseSignInTestCase):
         self.assertEqual(
             str(error.exception), "the method 'testing' is closed to the profile"
         )
+
+
+class DerivingTestCase(BaseSignInTestCase):
+    @t.override
+    def create_project(self) -> AuthProject:
+        return DerivingProject()
+
+    async def test_the_session_keeps_the_values_derived_from_the_others(
+        self,
+    ) -> None:
+        attrs = self.project.auth.storage.sessions.attrs
+        for attr_id, name, source in (
+            (2, "ip", AuthSessionAttrSource.TRANSPORT),
+            (3, "country", AuthSessionAttrSource.DERIVED),
+            (4, "city", AuthSessionAttrSource.DERIVED),
+        ):
+            await attrs.create(
+                AuthSessionAttr(
+                    id=attr_id, name=name, type=AuthAttrType.STR, source=source
+                )
+            )
+        await self.sign_up("a@b.c")
+        parameters = AuthStartSignInParameters(
+            method="testing",
+            parameters=AuthTestingStart(subject="a@b.c"),
+            attr_values={1: "iPhone"},
+            transport_attr_values={"ip": "192.0.2.1"},
+        )
+        with self.assertLogs("ingot_auth.sessions.attrs.values", "WARNING") as logs:
+            result = await self.project.operations.runner.run(
+                self.project.auth.sign_in.op_start,
+                parameters,
+                self.project.operations.create_metadata(self.create_caller()),
+            )
+        assert isinstance(result, AuthSignedIn)
+        session = await self.project.auth.storage.sessions.find(
+            hash_token(result.token)
+        )
+        # the device is of the client, the city a str: both dropped, warned
+        self.assertEqual(session.attr_values, {1: "iPhone", 2: "192.0.2.1", 3: "PL"})
+        self.assertEqual(len(logs.records), 2)
 
 
 class TimingTestCase(BaseSignInTestCase):

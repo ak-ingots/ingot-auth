@@ -57,6 +57,42 @@ the transport are those of the start of a flow, kept by its attempt to its
 end. Over gRPC, a servicer of a method gives `ip`, the IP of the peer of
 the call ({doc}`../contrib/transports`).
 
+The values of the source `derived` the server derives from the others,
+the place from the IP, by the strategy in the slot `deriver` of the
+sessions, which the application declares, as the sessions have none: it
+takes the values of the client and of the transport by their names, and
+gives its own by theirs, kept as those of the transport are, once the
+registry has them derived. `AuthNoSessionAttrsDeriver` derives none; an
+application telling the place writes its own, on a base of GeoIP:
+
+```python
+class AppDeriver(BaseAuthSessionAttrsDeriver):
+    @t.override
+    async def _derive(self, attr_values):
+        ip = attr_values.get("ip")
+        country = geoip.country(ip) if isinstance(ip, str) else None
+        return {"country": country} if country else {}
+
+
+class AppSessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthSlidingFixedLifetime)
+    deriver = Slot(AppDeriver)
+```
+
+## Own sessions
+
+A signed-in user lists its open sessions, `auth.sessions.op_list_own`, by
+the time they opened, each with its public id, never its token, the values
+of its attributes, the device and the place, the times it opened and was
+seen at, and the current one marked; it revokes one, `op_revoke_own`, a
+lost phone, closed `REVOKED`, or all but the current one,
+`op_revoke_others`, which tells how many. A session of another, closed or
+unknown, is not found, `AuthOwnSessionNotFoundError`, the caller signed in
+still. `auth.grp_signed_in` grants the flags, `CAN_LIST_OWN` and
+`CAN_REVOKE_OWN` of `auth.sessions`; an application takes them off by its
+class of the group, a kiosk. Over gRPC, the service `Sessions` of
+`ingot_auth.sessions.v1`, in `AuthGrpcSessionsBinding`.
+
 ## Callers
 
 A request brings the token of its session, and

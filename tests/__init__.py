@@ -22,6 +22,7 @@ from ingot_auth.methods.nickname import AuthNicknamePermissions
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
+from ingot_auth.sessions import AuthSessionsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
@@ -40,6 +41,7 @@ DOMAINS: t.Final[dict[type[PermissionFlags], str]] = {
     AuthNicknamePermissions: "auth.methods.nickname",
     AuthSessionAttrsPermissions: "auth.sessions.attrs",
     AuthSessionPresetsPermissions: "auth.sessions.presets",
+    AuthSessionsPermissions: "auth.sessions",
     AuthSignInPermissions: "auth.sign_in",
     AuthSignUpPermissions: "auth.sign_up",
     AuthTagsPermissions: "auth.profiles.tags",
@@ -55,3 +57,7 @@ def masks(*items: PermissionFlags | Mapping[str, int]) -> Permissions:
             for item in items
         )
     )
+
+
+# what auth.grp_signed_in grants every signed-in user of its own: its sessions
+OWN: t.Final = masks(*AuthSessionsPermissions)
