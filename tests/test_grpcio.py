@@ -102,6 +102,10 @@ from ingot_auth.sessions.presets.v1 import (
 from ingot_auth.sign_in.v1 import sign_in_pb2
 from ingot_auth.sign_out.v1 import sign_out_pb2
 from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.activities import AuthActivitiesPermissions
+from ingot_auth.activities.v1 import activities_pb2
+from ingot_auth.contrib.transports.grpcio.activities import ACTIONS
+from ingot_auth.testing.contracts.activities import create_record
 from ingot_auth.profiles.v1 import profiles_pb2
 from ingot_auth.profiles import AuthProfilesPermissions, AuthSetProfileTagsParameters
 from ingot_auth.sign_up.v1 import sign_up_pb2
@@ -146,6 +150,7 @@ from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import (
     AuthAttr,
     AuthAttrType,
+    AuthActivityAction,
     AuthAttrValue,
     AuthIdentityConflictError,
     AuthMembership,
@@ -160,6 +165,7 @@ from ingot_auth.storages import (
 from tests import ROOT, masks
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
+HOUR: t.Final = datetime.timedelta(hours=1)
 ADMIN: t.Final = Caller(
     uid="admin",
     permissions=masks(
@@ -686,6 +692,10 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     },
                 ),
                 groups_pb2.Group(
+                    name="auth.activities.grp_auditors",
+                    permissions={"auth.activities": 1},
+                ),
+                groups_pb2.Group(
                     name="app.grp_admins", permissions={"auth.access.members": 7}
                 ),
             ],
@@ -913,6 +923,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (AuthSignInPermissions, sign_in_pb2.Permission),
             (AuthSessionsPermissions, sessions_pb2.Permission),
             (AuthProfilesPermissions, profiles_pb2.Permission),
+            (AuthActivitiesPermissions, activities_pb2.Permission),
         ):
             expected = {
                 f"PERMISSION_{name}": item.value
@@ -1246,6 +1257,56 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         operations = self.project.operations
         metadata = operations.create_metadata(ROOT)
         return await operations.runner.run(factory, parameters, metadata)
+
+    async def test_the_auditors_read_the_log(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        signed_up = (
+            await nickname.SignUp(
+                nickname_pb2.SignUpRequest(nickname="Eve", password="pass word")
+            )
+        ).result.signed_up
+        signed_in = (
+            await nickname.SignIn(
+                nickname_pb2.SignInRequest(nickname="eve", password="pass word")
+            )
+        ).result.signed_in
+        storage = self.project.auth.storage
+        await storage.access.members.add(
+            AuthMembership(group="auth.activities.grp_auditors", uid=signed_up.uid)
+        )
+        context = {"price": decimal.Decimal("1.50"), "at": NOW, "ids": [1], "m": {}}
+        await storage.activities.append(create_record(context=context, when=NOW))
+        await storage.activities.append(
+            create_record(session_id="s1", entity_id="2", when=NOW + HOUR)
+        )
+        bearer = [("authorization", f"Bearer {signed_in.token}")]
+        request = activities_pb2.ListActivitiesRequest(
+            entity_type="auth.profiles.tags",
+            entity_id="1",
+            who="root",
+            action=activities_pb2.ACTION_CREATE,
+        )
+        request.since.FromDatetime(NOW)
+        request.until.FromDatetime(NOW + HOUR)
+        (activity,) = (
+            await client.auth_activities.ListActivities(request, metadata=bearer)
+        ).activities
+        self.assertEqual(
+            (activity.who, activity.session_id, activity.action, activity.run_uid),
+            ("root", "", activities_pb2.ACTION_CREATE, "r1"),
+        )
+        self.assertEqual(
+            dict(activity.context),
+            {"price": "1.50", "at": NOW.isoformat(), "ids": [1.0], "m": {}},
+        )
+        everything = await client.auth_activities.ListActivities(
+            activities_pb2.ListActivitiesRequest(session_id="s1"), metadata=bearer
+        )
+        self.assertEqual([a.entity_id for a in everything.activities], ["2"])
+
+    async def test_every_action_has_its_message(self) -> None:
+        self.assertEqual(set(ACTIONS), set(AuthActivityAction))
 
     async def test_every_close_reason_has_its_message(self) -> None:
         self.assertEqual(set(CLOSE_REASONS), set(AuthSessionCloseReason))

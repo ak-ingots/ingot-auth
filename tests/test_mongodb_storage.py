@@ -45,6 +45,7 @@ from ingot_auth.testing.contracts import (
     AuthIdentitiesStorageContract,
     AuthMembersStorageContract,
     AuthProfilesStorageContract,
+    AuthActivitiesStorageContract,
     AuthProfileValuesStorageContract,
     AuthSecretsStorageContract,
     AuthSessionAttrsStorageContract,
@@ -191,6 +192,13 @@ class MongoDbIdentitiesStorageTestCase(
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbProfileValuesStorageTestCase(
     ServerMixin, AuthProfileValuesStorageContract, unittest.IsolatedAsyncioTestCase
+):
+    pass
+
+
+@unittest.skipUnless(PORT, "no MongoDB: run make integration")
+class MongoDbActivitiesStorageTestCase(
+    ServerMixin, AuthActivitiesStorageContract, unittest.IsolatedAsyncioTestCase
 ):
     pass
 

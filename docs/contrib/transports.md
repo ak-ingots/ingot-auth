@@ -28,7 +28,8 @@ methods the application takes, an internal one the administration too.
 | `AuthGrpcSessionsBinding` | `Sessions` of `ingot_auth.sessions.v1`: `ListOwnSessions`, `RevokeOwnSession`, `RevokeOtherSessions`, the sessions of the caller's own; `ListSessions`, those of a profile, the record of its sign-ins |
 | `AuthGrpcSessionRegistriesBinding` | `Attrs` and `Presets` of `ingot_auth.sessions.*.v1`; `AuthGrpcSessionAttrsBinding`, `AuthGrpcSessionPresetsBinding` apart |
 | `AuthGrpcAccessBinding` | `Groups` and `Members` of `ingot_auth.access.*.v1`; `AuthGrpcGroupsBinding`, `AuthGrpcMembersBinding` apart |
-| `AuthGrpcAdminBinding` | those of the profiles and of the sessions, their registries and their services, and the access |
+| `AuthGrpcActivitiesBinding` | `Activities` of `ingot_auth.activities.v1`: `ListActivities`, the activity log, for the auditors |
+| `AuthGrpcAdminBinding` | those of the profiles and of the sessions, their registries and their services, the access and the activity log |
 
 The errors unit of the gRPC takes `AuthGrpcErrorsUnit` as a base, the statuses of the errors of the
 auth. The public server is the default one here; an internal one, serving

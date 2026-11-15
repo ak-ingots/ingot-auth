@@ -11,6 +11,7 @@ runtime. A test case takes a contract and tells what to run it on::
 """
 
 __all__ = (
+    "AuthActivitiesStorageContract",
     "AuthAttemptsCacheContract",
     "AuthAttrsStorageContract",
     "AuthCallersCacheContract",
@@ -29,6 +30,7 @@ __all__ = (
     "AuthTagsStorageContract",
 )
 
+from .activities import AuthActivitiesStorageContract
 from .access import AuthMembersStorageContract
 from .cache import (
     AuthAttemptsCacheContract,

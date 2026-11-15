@@ -10,6 +10,7 @@ from ingots.defaults.logging import configure_startup_logging
 from ingots.puer import Slot
 from ingots.puer.cli import CommandRunner
 
+from .activities import AuthActivitiesUnit, AuthStrictActivityFailure
 from .auth import AuthUnit
 from .contrib.caches.memory import AuthMemoryCache
 from .contrib.dispatchers.memory import AuthMemoryDispatcher
@@ -33,6 +34,10 @@ class AuthMemorySignInUnit(AuthSignInUnit):
     timing = Slot(AuthNoTiming)
 
 
+class AuthMemoryActivitiesUnit(AuthActivitiesUnit):
+    failure = Slot(AuthStrictActivityFailure)
+
+
 class AuthMemoryUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
     cache = Slot(AuthMemoryCache)
@@ -40,6 +45,7 @@ class AuthMemoryUnit(AuthUnit):
     mailer = Slot(AuthMemoryMailer)
     sessions = Slot(AuthMemorySessionsUnit)
     sign_in = Slot(AuthMemorySignInUnit)
+    activities = Slot(AuthMemoryActivitiesUnit)
 
 
 class AuthMemoryProject(AuthProject):

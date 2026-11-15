@@ -6,6 +6,7 @@ its auth: ``storage = Slot(AuthMemoryStorage)``.
 
 __all__ = (
     "AuthMemoryAccessStorage",
+    "AuthMemoryActivitiesStorage",
     "AuthMemoryAttrsStorage",
     "AuthMemoryIdentitiesStorage",
     "AuthMemoryMembersStorage",
@@ -29,6 +30,7 @@ from ingots.puer import Slot
 
 from ingot_auth.storages import AuthStorage
 
+from .activities import AuthMemoryActivitiesStorage
 from .access import AuthMemoryAccessStorage, AuthMemoryMembersStorage
 from .profiles import (
     AuthMemoryAttrsStorage,
@@ -63,6 +65,7 @@ class AuthMemoryStorage(AuthStorage):
     sessions = Slot(AuthMemorySessionsStorage)
     sign_up = Slot(AuthMemorySignUpStorage)
     access = Slot(AuthMemoryAccessStorage)
+    activities = Slot(AuthMemoryActivitiesStorage)
 
     @t.override
     async def _begin(self) -> object:

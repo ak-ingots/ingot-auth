@@ -38,7 +38,11 @@ every signed-in user, none stored, granting the sign-in of each method open,
 granting what anyone may of the auth as its units tell it, both in the
 auth, the profiles and the sessions with groups of the work of their
 registries, and
-`AuthGroupsGrants`, the permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
+`AuthGroupsGrants`, the permissions of a user from its groups; the `activities/`, the
+activity log of ADR 0015, a record a change of state written by its
+operation in its transaction by `record()`, the strategy of a failure in the
+slot `failure`, strict or swallow, none by default, read by
+`auth.activities.grp_auditors`; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
