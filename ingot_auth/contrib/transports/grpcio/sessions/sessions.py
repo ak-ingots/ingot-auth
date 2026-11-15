@@ -49,7 +49,7 @@ class AuthGrpcSessionsServicer(
     async def RevokeOwnSession(
         self, request: sessions_pb2.RevokeOwnSessionRequest, context: Context
     ) -> sessions_pb2.RevokeOwnSessionResponse:
-        parameters = AuthRevokeOwnSessionParameters(session_id=request.session_id)
+        parameters = AuthRevokeOwnSessionParameters(session_uid=request.session_uid)
         factory = self.project.auth.sessions.op_revoke_own
         await self.run_operation(factory, parameters, context)
         return sessions_pb2.RevokeOwnSessionResponse()
@@ -66,7 +66,9 @@ class AuthGrpcSessionsServicer(
     async def ListSessions(
         self, request: sessions_pb2.ListSessionsRequest, context: Context
     ) -> sessions_pb2.ListSessionsResponse:
-        parameters = AuthListSessionsParameters(uid=request.uid, closed=request.closed)
+        parameters = AuthListSessionsParameters(
+            profile_uid=request.profile_uid, closed=request.closed
+        )
         factory = self.project.auth.sessions.op_list
         sessions = await self.run_operation(factory, parameters, context)
         return sessions_pb2.ListSessionsResponse(
@@ -77,10 +79,10 @@ class AuthGrpcSessionsServicer(
 def build_session_message(session: AuthOwnSession) -> sessions_pb2.Session:
     """Internal: the message of an open session of the caller's own."""
     message = sessions_pb2.Session(
-        id=session.id,
+        uid=session.uid,
         attr_values=[
-            build_attr_value_message(attr_id, value)
-            for attr_id, value in session.attr_values.items()
+            build_attr_value_message(attr_uid, value)
+            for attr_uid, value in session.attr_values.items()
         ],
         is_current=session.is_current,
     )
@@ -94,12 +96,12 @@ def build_session_record_message(
 ) -> sessions_pb2.SessionRecord:
     """Internal: the message of a session of a profile, open or closed."""
     message = sessions_pb2.SessionRecord(
-        id=session.id,
         uid=session.uid,
+        profile_uid=session.profile_uid,
         method=session.method,
         attr_values=[
-            build_attr_value_message(attr_id, value)
-            for attr_id, value in session.attr_values.items()
+            build_attr_value_message(attr_uid, value)
+            for attr_uid, value in session.attr_values.items()
         ],
     )
     message.opened_at.FromDatetime(session.opened_at)

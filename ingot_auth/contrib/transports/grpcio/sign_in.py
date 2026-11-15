@@ -35,7 +35,7 @@ class AuthGrpcSignInServicer(GrpcServicer, sign_in_pb2_grpc.SignInServicer):
     ) -> sign_in_pb2.AnswerSignInResponse:
         # the one kind of an answer, a code: one not given is a wrong one
         parameters = AuthAnswerSignInParameters(
-            attempt_id=request.attempt_id, answer=request.code
+            attempt_uid=request.attempt_uid, answer=request.code
         )
         factory = self.project.auth.sign_in.op_answer
         result = await self.run_operation(factory, parameters, context)
@@ -51,9 +51,9 @@ def build_sign_in_result(result: AuthSignInResult) -> sign_in_pb2.SignInResult:
     if isinstance(result, AuthSignedIn):
         return sign_in_pb2.SignInResult(
             signed_in=sign_in_pb2.SignedIn(
-                session_id=result.session_id, token=result.token
+                session_uid=result.session_uid, token=result.token
             )
         )
     return sign_in_pb2.SignInResult(
-        challenge=build_challenge(result.attempt_id, result.challenge)
+        challenge=build_challenge(result.attempt_uid, result.challenge)
     )

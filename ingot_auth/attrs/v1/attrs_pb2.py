@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fingot_auth/attrs/v1/attrs.proto\x12\x13ingot_auth.attrs.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb4\x01\n\tAttrValue\x12\x0f\n\x07\x61ttr_id\x18\x01 \x01(\r\x12\x14\n\nbool_value\x18\x02 \x01(\x08H\x00\x12\x13\n\tint_value\x18\x03 \x01(\x03H\x00\x12\x17\n\rdecimal_value\x18\x04 \x01(\tH\x00\x12\x34\n\x0e\x64\x61tetime_value\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x00\x12\x13\n\tstr_value\x18\x06 \x01(\tH\x00\x42\x07\n\x05valueb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fingot_auth/attrs/v1/attrs.proto\x12\x13ingot_auth.attrs.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb5\x01\n\tAttrValue\x12\x10\n\x08\x61ttr_uid\x18\x01 \x01(\r\x12\x14\n\nbool_value\x18\x02 \x01(\x08H\x00\x12\x13\n\tint_value\x18\x03 \x01(\x03H\x00\x12\x17\n\rdecimal_value\x18\x04 \x01(\tH\x00\x12\x34\n\x0e\x64\x61tetime_value\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x00\x12\x13\n\tstr_value\x18\x06 \x01(\tH\x00\x42\x07\n\x05valueb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,5 +33,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.attrs.v1.attrs_p
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_ATTRVALUE']._serialized_start=90
-  _globals['_ATTRVALUE']._serialized_end=270
+  _globals['_ATTRVALUE']._serialized_end=271
 # @@protoc_insertion_point(module_scope)

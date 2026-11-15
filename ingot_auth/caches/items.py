@@ -26,7 +26,7 @@ class AuthAttempt:
     client started with; ``failures`` the answers refused so far.
     """
 
-    id: str
+    uid: str
     flow: str
     method: str
     state: object
@@ -39,10 +39,10 @@ class AuthAttempt:
 class AuthCaller(Caller):
     """
     A caller signed in: the uid of its profile, the permissions the access
-    gives it, the id of its session, which only the operations of the
+    gives it, the uid of its session, which only the operations of the
     sessions read, and the hash of what its client sees of its profile,
     computed once, when the caller is formed, and told in the replies.
     """
 
-    session_id: str
+    session_uid: str
     profile_hash: str

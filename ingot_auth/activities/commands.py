@@ -27,7 +27,7 @@ class AuthListActivitiesCommand(
     """
     Prints the activities, one a line, the newest first: the time, who, its
     session or ``-``, the action, the type and the id of the entity, the run,
-    then the context, ``tag_ids=[1, 3]``.
+    then the context, ``tag_uids=[1, 3]``.
     """
 
     project: "AuthProject"
@@ -63,12 +63,12 @@ class AuthListActivitiesCommand(
     def _cli_build_args(
         cls, namespace: argparse.Namespace
     ) -> AuthListActivitiesParameters:
-        entity_type, _, entity_id = (namespace.activities_entity or "").partition(":")
+        entity_type, _, entity_uid = (namespace.activities_entity or "").partition(":")
         return AuthListActivitiesParameters(
             entity_type=entity_type or None,
-            entity_id=entity_id or None,
+            entity_uid=entity_uid or None,
             who=namespace.activities_who,
-            session_id=namespace.activities_session,
+            session_uid=namespace.activities_session,
             action=namespace.activities_action,
             since=namespace.activities_since,
             until=namespace.activities_until,
@@ -91,10 +91,10 @@ class AuthListActivitiesCommand(
                     (
                         record.when.isoformat(),
                         record.who,
-                        record.session_id or "-",
+                        record.session_uid or "-",
                         record.action,
                         record.entity_type,
-                        record.entity_id,
+                        record.entity_uid,
                         record.run_uid,
                         *context,
                     )

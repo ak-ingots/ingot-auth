@@ -17,15 +17,15 @@ from .profiles import NOW
 
 
 def create_session(
-    session_id: str = "s1",
+    session_uid: str = "s1",
     token_hash: str = "h1",
     uid: str = "a1",
     opened_at: datetime.datetime = NOW,
 ) -> AuthSessionRecord:
     """An open session, its values one of each type."""
     return AuthSessionRecord(
-        id=session_id,
-        uid=uid,
+        uid=session_uid,
+        profile_uid=uid,
         method="nickname",
         token_hash=token_hash,
         attr_values={1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: NOW, 5: "iPhone"},
@@ -60,7 +60,7 @@ class AuthSessionsStorageContract(BaseAuthContract):
         await sessions.close("s1", AuthSessionCloseReason.EXPIRED_ABSOLUTE, closed_at)
         with self.assertRaises(AuthSessionNotFoundError):
             await sessions.find("h1")
-        self.assertEqual((await sessions.find("h2")).id, "s2")
+        self.assertEqual((await sessions.find("h2")).uid, "s2")
 
     async def test_the_open_sessions_of_a_profile_come_as_opened(self) -> None:
         sessions = self.project.auth.storage.sessions
@@ -107,17 +107,17 @@ class AuthSessionsStorageContract(BaseAuthContract):
         sessions = self.project.auth.storage.sessions
         await sessions.open(create_session())
         await sessions.close("s1", AuthSessionCloseReason.SIGNED_OUT, NOW)
-        for session_id in ("s1", "s2"):
+        for session_uid in ("s1", "s2"):
             with self.assertRaises(AuthSessionNotFoundError) as error:
-                await sessions.touch(session_id, NOW)
-            self.assertIn(session_id, str(error.exception))
+                await sessions.touch(session_uid, NOW)
+            self.assertIn(session_uid, str(error.exception))
 
     async def test_a_session_is_closed_once(self) -> None:
         sessions = self.project.auth.storage.sessions
         await sessions.open(create_session())
         reason = AuthSessionCloseReason.EXPIRED_ABSOLUTE
         await sessions.close("s1", reason, NOW)
-        for session_id in ("s1", "s2"):
+        for session_uid in ("s1", "s2"):
             with self.assertRaises(AuthSessionNotFoundError) as error:
-                await sessions.close(session_id, reason, NOW)
-            self.assertIn(session_id, str(error.exception))
+                await sessions.close(session_uid, reason, NOW)
+            self.assertIn(session_uid, str(error.exception))

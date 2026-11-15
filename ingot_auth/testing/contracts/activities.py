@@ -23,10 +23,10 @@ def create_record(**changes: t.Any) -> AuthActivityRecord:
     """A record of a tag created by root, its context one of each kind of value."""
     record = AuthActivityRecord(
         who="root",
-        session_id=None,
+        session_uid=None,
         action=AuthActivityAction.CREATE,
         entity_type="auth.profiles.tags",
-        entity_id="1",
+        entity_uid="1",
         context={},
         run_uid="r1",
         when=NOW,
@@ -51,7 +51,7 @@ class AuthActivitiesStorageContract(BaseAuthContract):
             "ids": [1, 3],
             "nested": {"kind": "email"},
         }
-        record = create_record(session_id="s1", context=context)
+        record = create_record(session_uid="s1", context=context)
         await activities.append(record)
         self.assertEqual(await activities.find(AuthActivityQuery()), (record,))
 
@@ -60,13 +60,13 @@ class AuthActivitiesStorageContract(BaseAuthContract):
         first = create_record()
         second = create_record(
             who="a1",
-            session_id="s1",
+            session_uid="s1",
             action=AuthActivityAction.UPDATE,
             entity_type="auth.profiles",
-            entity_id="a1",
+            entity_uid="a1",
             when=NOW + HOUR,
         )
-        third = create_record(entity_id="2", when=NOW + 2 * HOUR)
+        third = create_record(entity_uid="2", when=NOW + 2 * HOUR)
         for record in (first, second, third):
             await activities.append(record)
         for query, found in (
@@ -74,11 +74,11 @@ class AuthActivitiesStorageContract(BaseAuthContract):
             (AuthActivityQuery(limit=2), (third, second)),
             (AuthActivityQuery(entity_type="auth.profiles.tags"), (third, first)),
             (
-                AuthActivityQuery(entity_type="auth.profiles.tags", entity_id="1"),
+                AuthActivityQuery(entity_type="auth.profiles.tags", entity_uid="1"),
                 (first,),
             ),
             (AuthActivityQuery(who="a1"), (second,)),
-            (AuthActivityQuery(session_id="s1"), (second,)),
+            (AuthActivityQuery(session_uid="s1"), (second,)),
             (AuthActivityQuery(action=AuthActivityAction.CREATE), (third, first)),
             (AuthActivityQuery(since=NOW + HOUR), (third, second)),
             (AuthActivityQuery(until=NOW + HOUR), (first,)),

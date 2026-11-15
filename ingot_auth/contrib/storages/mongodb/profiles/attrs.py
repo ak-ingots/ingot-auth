@@ -26,7 +26,7 @@ class AuthMongoDbAttrsStorage(
     @t.override
     def _build_item(self, document: "Document") -> AuthAttr:
         return AuthAttr(
-            id=document["_id"],
+            uid=document["_id"],
             name=document["name"],
             type=AuthAttrType(document["type"]),
         )

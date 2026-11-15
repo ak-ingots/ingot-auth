@@ -7,7 +7,7 @@ transaction. A read is never recorded, nor a refusal.
 
 A record tells its actor, `who`, the uid of the caller, `root` on the
 command line, `system` for what the server does by itself, and the
-session of the caller, `session_id`, none of a caller of none; its
+session of the caller, `session_uid`, none of a caller of none; its
 `action`, create, update, delete, or a verb of the domain, `bind`,
 `sign_in`; the type of its entity, the full name of its unit,
 `auth.profiles.tags`, and its id; its `context`, what the change was, the
@@ -59,7 +59,7 @@ async with self.project.auth.storage.transaction():
     await storage.create(attr)
     await self.project.auth.activities.record(
         self.parent,
-        str(attr.id),
+        str(attr.uid),
         AuthActivityAction.CREATE,
         metadata,
         context=AuthAttrCreated(name=attr.name, type=attr.type.value),
@@ -72,7 +72,7 @@ async with self.project.auth.storage.transaction():
 |---|---|---|
 | `auth.profiles` | `create`, by a sign-up | the method, the kind of its identifier |
 | `auth.profiles` | `bind`, the identifier of a sign-up | its kind, never its value |
-| `auth.profiles` | `update`, the tags set | `tag_ids` |
+| `auth.profiles` | `update`, the tags set | `tag_uids` |
 | `auth.profiles` | `update`, the values set | `attr_values`, by the ids of the attributes |
 | `auth.sessions` | `sign_in` | the uid of the profile, the method |
 | `auth.sessions` | `sign_out`, `revoke` | none |

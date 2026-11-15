@@ -39,9 +39,9 @@ enum CloseReason {
   CLOSE_REASON_EXPIRED_ABSOLUTE = 5;
 }
 
-// An open session as its user sees it: its public id, never its token.
+// An open session as its user sees it: its public uid, never its token.
 message Session {
-  string id = 1;
+  string uid = 1;
   // the device, the place: the values of its attributes, by their ids
   repeated ingot_auth.attrs.v1.AttrValue attr_values = 2;
   google.protobuf.Timestamp opened_at = 3;
@@ -58,7 +58,7 @@ message ListOwnSessionsResponse {
 }
 
 message RevokeOwnSessionRequest {
-  string session_id = 1;
+  string session_uid = 1;
 }
 
 message RevokeOwnSessionResponse {}
@@ -73,8 +73,8 @@ message RevokeOtherSessionsResponse {
 // A session of a profile as an operator sees it, open or closed, the record
 // of a sign-in: never its token nor its hash.
 message SessionRecord {
-  string id = 1;
-  string uid = 2;
+  string uid = 1;
+  string profile_uid = 2;
   string method = 3;
   repeated ingot_auth.attrs.v1.AttrValue attr_values = 4;
   google.protobuf.Timestamp opened_at = 5;
@@ -88,7 +88,7 @@ message SessionRecord {
 }
 
 message ListSessionsRequest {
-  string uid = 1;
+  string profile_uid = 1;
   // the closed ones too, the record of the sign-ins
   bool closed = 2;
 }

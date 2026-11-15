@@ -1,7 +1,7 @@
 """The commands of a registry: its operations run by the administrator."""
 
 __all__ = (
-    "AuthItemIdCliArgs",
+    "AuthItemUidCliArgs",
     "AuthRenameItemCliArgs",
     "BaseAuthCreateItemCommand",
     "BaseAuthDeleteItemCommand",
@@ -22,13 +22,13 @@ from .operations import AuthDeleteItemParameters, AuthRenameItemParameters
 
 
 @dataclass(frozen=True, slots=True)
-class AuthItemIdCliArgs:
-    id: int
+class AuthItemUidCliArgs:
+    uid: int
 
 
 @dataclass(frozen=True, slots=True)
 class AuthRenameItemCliArgs:
-    id: int
+    uid: int
     name: str
 
 
@@ -49,7 +49,7 @@ class BaseAuthRegistryCommand[ItemType: AuthItem, ParametersType, ResultType](
 
     def _format_item(self, item: ItemType) -> str:
         """An item on its line: its id and its name."""
-        return f"{item.id}\t{item.name}"
+        return f"{item.uid}\t{item.name}"
 
 
 class BaseAuthCreateItemCommand[ItemType: AuthItem](
@@ -67,7 +67,7 @@ class BaseAuthCreateItemCommand[ItemType: AuthItem](
     @t.override
     @classmethod
     def _cli_prepare_parser(cls, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("--id", dest="registry_id", type=int, required=True)
+        parser.add_argument("--uid", dest="registry_uid", type=int, required=True)
         parser.add_argument("--name", dest="registry_name", required=True)
 
     @t.override
@@ -100,18 +100,18 @@ class BaseAuthRenameItemCommand[ItemType: AuthItem](
     @t.override
     @classmethod
     def _cli_prepare_parser(cls, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("--id", dest="registry_id", type=int, required=True)
+        parser.add_argument("--uid", dest="registry_uid", type=int, required=True)
         parser.add_argument("--name", dest="registry_name", required=True)
 
     @t.override
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthRenameItemCliArgs:
-        return AuthRenameItemCliArgs(namespace.registry_id, namespace.registry_name)
+        return AuthRenameItemCliArgs(namespace.registry_uid, namespace.registry_name)
 
     @t.override
     async def _run(self) -> None:
         parameters = AuthRenameItemParameters(
-            id=self.cli_args.id, name=self.cli_args.name
+            uid=self.cli_args.uid, name=self.cli_args.name
         )
         self.print_items(await self.run_operation(parameters))
 
@@ -123,19 +123,19 @@ class BaseAuthDeleteItemCommand[ItemType: AuthItem](
 
     cli_name = "delete"
     cli_description = "Deletes an item; its id is never given again."
-    cli_args: AuthItemIdCliArgs
+    cli_args: AuthItemUidCliArgs
 
     @t.override
     @classmethod
     def _cli_prepare_parser(cls, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("--id", dest="registry_id", type=int, required=True)
+        parser.add_argument("--uid", dest="registry_uid", type=int, required=True)
 
     @t.override
     @classmethod
-    def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthItemIdCliArgs:
-        return AuthItemIdCliArgs(namespace.registry_id)
+    def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthItemUidCliArgs:
+        return AuthItemUidCliArgs(namespace.registry_uid)
 
     @t.override
     async def _run(self) -> None:
-        parameters = AuthDeleteItemParameters(id=self.cli_args.id)
+        parameters = AuthDeleteItemParameters(uid=self.cli_args.uid)
         await self.run_operation(parameters)

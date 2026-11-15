@@ -30,34 +30,34 @@ class AuthMemoryRegistryStorage[ItemType: AuthItem](
 
     @t.override
     async def _create(self, item: ItemType) -> None:
-        if item.id in self._taken_ids:
-            raise AuthItemConflictError.for_id(self.REGISTRY, item.id)
+        if item.uid in self._taken_ids:
+            raise AuthItemConflictError.for_uid(self.REGISTRY, item.uid)
         self._check_name(item.name)
-        self._items[item.id] = item
-        self._taken_ids.add(item.id)
+        self._items[item.uid] = item
+        self._taken_ids.add(item.uid)
 
     @t.override
     async def _get_all(self) -> tuple[ItemType, ...]:
-        return tuple(self._items[item_id] for item_id in sorted(self._items))
+        return tuple(self._items[item_uid] for item_uid in sorted(self._items))
 
     @t.override
-    async def _rename(self, item_id: int, name: str) -> ItemType:
-        item = self._get(item_id)
+    async def _rename(self, item_uid: int, name: str) -> ItemType:
+        item = self._get(item_uid)
         if name != item.name:
             self._check_name(name)
-        self._items[item_id] = item = dataclasses.replace(item, name=name)
+        self._items[item_uid] = item = dataclasses.replace(item, name=name)
         return item
 
     @t.override
-    async def _delete(self, item_id: int) -> None:
-        self._get(item_id)
-        del self._items[item_id]
+    async def _delete(self, item_uid: int) -> None:
+        self._get(item_uid)
+        del self._items[item_uid]
 
-    def _get(self, item_id: int) -> ItemType:
+    def _get(self, item_uid: int) -> ItemType:
         try:
-            return self._items[item_id]
+            return self._items[item_uid]
         except KeyError:
-            raise AuthItemNotFoundError.for_id(self.REGISTRY, item_id) from None
+            raise AuthItemNotFoundError.for_uid(self.REGISTRY, item_uid) from None
 
     def _check_name(self, name: str) -> None:
         if any(item.name == name for item in self._items.values()):

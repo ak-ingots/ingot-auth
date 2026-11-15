@@ -149,13 +149,13 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         Opens a session of a profile signed in by a method, with the values of
         the attributes of the session, checked by the caller, and gives its
         token, 256 random bits, given once, kept by none but the client, with
-        the id of the session.
+        the uid of the session.
         """
         token = secrets.token_urlsafe(32)
         now = self._get_now()
         session = AuthSessionRecord(
-            id=self._create_id(),
-            uid=uid,
+            uid=self._create_uid(),
+            profile_uid=uid,
             method=method,
             token_hash=_hash_token(token),
             attr_values=attr_values,
@@ -163,12 +163,12 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
             seen_at=now,
         )
         await self.project.auth.storage.sessions.open(session)
-        return AuthSessionToken(session_id=session.id, token=token)
+        return AuthSessionToken(session_uid=session.uid, token=token)
 
     @t.final
     async def authenticate(self, token: str) -> AuthCaller:
         """
-        The caller of the session of a token: its uid, the id of the session and
+        The caller of the session of a token: its uid, the uid of the session and
         the permissions of the access, from the cache, or formed on a miss. The
         time the session is seen at is written as the strategy of its lifetime
         says.
@@ -195,11 +195,13 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         groups_digest = access.groups.get_digest()
         caller = await cache.callers.get(token_hash, groups_digest)
         if caller is None:
-            permissions = await access.permissions.get_permissions(session.uid)
-            values = await self.project.auth.storage.profiles.values.get(session.uid)
+            permissions = await access.permissions.get_permissions(session.profile_uid)
+            values = await self.project.auth.storage.profiles.values.get(
+                session.profile_uid
+            )
             caller = AuthCaller(
-                uid=session.uid,
-                session_id=session.id,
+                uid=session.profile_uid,
+                session_uid=session.uid,
                 permissions=permissions,
                 profile_hash=build_profile_hash(values, permissions),
             )
@@ -224,7 +226,7 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     async def close(
         self,
         uid: str,
-        session_id: str,
+        session_uid: str,
         reason: AuthSessionCloseReason,
     ) -> None:
         """
@@ -237,19 +239,19 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
             the id.
         """
         for session in await self.project.auth.storage.sessions.get_open(uid):
-            if session.id == session_id:
+            if session.uid == session_uid:
                 break
         else:
-            raise AuthSessionNotFoundError.for_id(session_id)
+            raise AuthSessionNotFoundError.for_uid(session_uid)
         try:
             await self.project.auth.storage.sessions.close(
-                session.id, reason, self._get_now()
+                session.uid, reason, self._get_now()
             )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile, by another request
         await self._forget(session.token_hash)
 
-    def _create_id(self) -> str:
+    def _create_uid(self) -> str:
         """The id of a new session: random, as the uids are."""
         return os.urandom(16).hex()
 
@@ -278,7 +280,7 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     ) -> AuthSessionRecord:
         """Writes the time a session is seen at, in the storage and the cache."""
         try:
-            await self.project.auth.storage.sessions.touch(session.id, now)
+            await self.project.auth.storage.sessions.touch(session.uid, now)
         except AuthSessionNotFoundError:
             await self._forget(session.token_hash)
             raise
@@ -300,14 +302,14 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         auth = self.project.auth
         metadata = self.project.operations.create_metadata(AUTH_SYSTEM)
         logger.info(
-            "the session %s expired, %s, run %s", session.id, reason, metadata.run_uid
+            "the session %s expired, %s, run %s", session.uid, reason, metadata.run_uid
         )
         try:
             async with auth.storage.transaction():
-                await auth.storage.sessions.close(session.id, reason, now)
+                await auth.storage.sessions.close(session.uid, reason, now)
                 await auth.activities.record(
                     self,
-                    session.id,
+                    session.uid,
                     AuthActivityAction.EXPIRE,
                     metadata,
                     context=AuthSessionExpired(reason=reason.value),

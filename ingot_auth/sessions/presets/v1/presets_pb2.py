@@ -24,47 +24,47 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,ingot_auth/sessions/presets/v1/presets.proto\x12\x1eingot_auth.sessions.presets.v1\"\"\n\x06Preset\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"?\n\x07\x42inding\x12\x11\n\tpreset_id\x18\x01 \x01(\r\x12\x0f\n\x07\x61ttr_id\x18\x02 \x01(\r\x12\x10\n\x08required\x18\x03 \x01(\x08\"M\n\x13\x43reatePresetRequest\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"N\n\x14\x43reatePresetResponse\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"\x14\n\x12ListPresetsRequest\"N\n\x13ListPresetsResponse\x12\x37\n\x07presets\x18\x01 \x03(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"/\n\x13RenamePresetRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"N\n\x14RenamePresetResponse\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"!\n\x13\x44\x65letePresetRequest\x12\n\n\x02id\x18\x01 \x01(\r\"\x16\n\x14\x44\x65letePresetResponse\"K\n\x0f\x42indAttrRequest\x12\x38\n\x07\x62inding\x18\x01 \x01(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding\"L\n\x10\x42indAttrResponse\x12\x38\n\x07\x62inding\x18\x01 \x01(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding\"7\n\x11UnbindAttrRequest\x12\x11\n\tpreset_id\x18\x01 \x01(\r\x12\x0f\n\x07\x61ttr_id\x18\x02 \x01(\r\"\x14\n\x12UnbindAttrResponse\"\x15\n\x13ListBindingsRequest\"Q\n\x14ListBindingsResponse\x12\x39\n\x08\x62indings\x18\x01 \x03(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding*\xc6\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_RENAME\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08\x12\x17\n\x13PERMISSION_CAN_BIND\x10\x10\x12\x19\n\x15PERMISSION_CAN_UNBIND\x10 2\xd1\x06\n\x07Presets\x12y\n\x0c\x43reatePreset\x12\x33.ingot_auth.sessions.presets.v1.CreatePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.CreatePresetResponse\x12v\n\x0bListPresets\x12\x32.ingot_auth.sessions.presets.v1.ListPresetsRequest\x1a\x33.ingot_auth.sessions.presets.v1.ListPresetsResponse\x12y\n\x0cRenamePreset\x12\x33.ingot_auth.sessions.presets.v1.RenamePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.RenamePresetResponse\x12y\n\x0c\x44\x65letePreset\x12\x33.ingot_auth.sessions.presets.v1.DeletePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.DeletePresetResponse\x12m\n\x08\x42indAttr\x12/.ingot_auth.sessions.presets.v1.BindAttrRequest\x1a\x30.ingot_auth.sessions.presets.v1.BindAttrResponse\x12s\n\nUnbindAttr\x12\x31.ingot_auth.sessions.presets.v1.UnbindAttrRequest\x1a\x32.ingot_auth.sessions.presets.v1.UnbindAttrResponse\x12y\n\x0cListBindings\x12\x33.ingot_auth.sessions.presets.v1.ListBindingsRequest\x1a\x34.ingot_auth.sessions.presets.v1.ListBindingsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,ingot_auth/sessions/presets/v1/presets.proto\x12\x1eingot_auth.sessions.presets.v1\"#\n\x06Preset\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"A\n\x07\x42inding\x12\x12\n\npreset_uid\x18\x01 \x01(\r\x12\x10\n\x08\x61ttr_uid\x18\x02 \x01(\r\x12\x10\n\x08required\x18\x03 \x01(\x08\"M\n\x13\x43reatePresetRequest\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"N\n\x14\x43reatePresetResponse\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"\x14\n\x12ListPresetsRequest\"N\n\x13ListPresetsResponse\x12\x37\n\x07presets\x18\x01 \x03(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"0\n\x13RenamePresetRequest\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"N\n\x14RenamePresetResponse\x12\x36\n\x06preset\x18\x01 \x01(\x0b\x32&.ingot_auth.sessions.presets.v1.Preset\"\"\n\x13\x44\x65letePresetRequest\x12\x0b\n\x03uid\x18\x01 \x01(\r\"\x16\n\x14\x44\x65letePresetResponse\"K\n\x0f\x42indAttrRequest\x12\x38\n\x07\x62inding\x18\x01 \x01(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding\"L\n\x10\x42indAttrResponse\x12\x38\n\x07\x62inding\x18\x01 \x01(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding\"9\n\x11UnbindAttrRequest\x12\x12\n\npreset_uid\x18\x01 \x01(\r\x12\x10\n\x08\x61ttr_uid\x18\x02 \x01(\r\"\x14\n\x12UnbindAttrResponse\"\x15\n\x13ListBindingsRequest\"Q\n\x14ListBindingsResponse\x12\x39\n\x08\x62indings\x18\x01 \x03(\x0b\x32\'.ingot_auth.sessions.presets.v1.Binding*\xc6\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_RENAME\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08\x12\x17\n\x13PERMISSION_CAN_BIND\x10\x10\x12\x19\n\x15PERMISSION_CAN_UNBIND\x10 2\xd1\x06\n\x07Presets\x12y\n\x0c\x43reatePreset\x12\x33.ingot_auth.sessions.presets.v1.CreatePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.CreatePresetResponse\x12v\n\x0bListPresets\x12\x32.ingot_auth.sessions.presets.v1.ListPresetsRequest\x1a\x33.ingot_auth.sessions.presets.v1.ListPresetsResponse\x12y\n\x0cRenamePreset\x12\x33.ingot_auth.sessions.presets.v1.RenamePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.RenamePresetResponse\x12y\n\x0c\x44\x65letePreset\x12\x33.ingot_auth.sessions.presets.v1.DeletePresetRequest\x1a\x34.ingot_auth.sessions.presets.v1.DeletePresetResponse\x12m\n\x08\x42indAttr\x12/.ingot_auth.sessions.presets.v1.BindAttrRequest\x1a\x30.ingot_auth.sessions.presets.v1.BindAttrResponse\x12s\n\nUnbindAttr\x12\x31.ingot_auth.sessions.presets.v1.UnbindAttrRequest\x1a\x32.ingot_auth.sessions.presets.v1.UnbindAttrResponse\x12y\n\x0cListBindings\x12\x33.ingot_auth.sessions.presets.v1.ListBindingsRequest\x1a\x34.ingot_auth.sessions.presets.v1.ListBindingsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sessions.presets.v1.presets_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=971
-  _globals['_PERMISSION']._serialized_end=1169
+  _globals['_PERMISSION']._serialized_start=978
+  _globals['_PERMISSION']._serialized_end=1176
   _globals['_PRESET']._serialized_start=80
-  _globals['_PRESET']._serialized_end=114
-  _globals['_BINDING']._serialized_start=116
-  _globals['_BINDING']._serialized_end=179
-  _globals['_CREATEPRESETREQUEST']._serialized_start=181
-  _globals['_CREATEPRESETREQUEST']._serialized_end=258
-  _globals['_CREATEPRESETRESPONSE']._serialized_start=260
-  _globals['_CREATEPRESETRESPONSE']._serialized_end=338
-  _globals['_LISTPRESETSREQUEST']._serialized_start=340
-  _globals['_LISTPRESETSREQUEST']._serialized_end=360
-  _globals['_LISTPRESETSRESPONSE']._serialized_start=362
-  _globals['_LISTPRESETSRESPONSE']._serialized_end=440
-  _globals['_RENAMEPRESETREQUEST']._serialized_start=442
-  _globals['_RENAMEPRESETREQUEST']._serialized_end=489
-  _globals['_RENAMEPRESETRESPONSE']._serialized_start=491
-  _globals['_RENAMEPRESETRESPONSE']._serialized_end=569
-  _globals['_DELETEPRESETREQUEST']._serialized_start=571
-  _globals['_DELETEPRESETREQUEST']._serialized_end=604
-  _globals['_DELETEPRESETRESPONSE']._serialized_start=606
-  _globals['_DELETEPRESETRESPONSE']._serialized_end=628
-  _globals['_BINDATTRREQUEST']._serialized_start=630
-  _globals['_BINDATTRREQUEST']._serialized_end=705
-  _globals['_BINDATTRRESPONSE']._serialized_start=707
-  _globals['_BINDATTRRESPONSE']._serialized_end=783
-  _globals['_UNBINDATTRREQUEST']._serialized_start=785
-  _globals['_UNBINDATTRREQUEST']._serialized_end=840
-  _globals['_UNBINDATTRRESPONSE']._serialized_start=842
-  _globals['_UNBINDATTRRESPONSE']._serialized_end=862
-  _globals['_LISTBINDINGSREQUEST']._serialized_start=864
-  _globals['_LISTBINDINGSREQUEST']._serialized_end=885
-  _globals['_LISTBINDINGSRESPONSE']._serialized_start=887
-  _globals['_LISTBINDINGSRESPONSE']._serialized_end=968
-  _globals['_PRESETS']._serialized_start=1172
-  _globals['_PRESETS']._serialized_end=2021
+  _globals['_PRESET']._serialized_end=115
+  _globals['_BINDING']._serialized_start=117
+  _globals['_BINDING']._serialized_end=182
+  _globals['_CREATEPRESETREQUEST']._serialized_start=184
+  _globals['_CREATEPRESETREQUEST']._serialized_end=261
+  _globals['_CREATEPRESETRESPONSE']._serialized_start=263
+  _globals['_CREATEPRESETRESPONSE']._serialized_end=341
+  _globals['_LISTPRESETSREQUEST']._serialized_start=343
+  _globals['_LISTPRESETSREQUEST']._serialized_end=363
+  _globals['_LISTPRESETSRESPONSE']._serialized_start=365
+  _globals['_LISTPRESETSRESPONSE']._serialized_end=443
+  _globals['_RENAMEPRESETREQUEST']._serialized_start=445
+  _globals['_RENAMEPRESETREQUEST']._serialized_end=493
+  _globals['_RENAMEPRESETRESPONSE']._serialized_start=495
+  _globals['_RENAMEPRESETRESPONSE']._serialized_end=573
+  _globals['_DELETEPRESETREQUEST']._serialized_start=575
+  _globals['_DELETEPRESETREQUEST']._serialized_end=609
+  _globals['_DELETEPRESETRESPONSE']._serialized_start=611
+  _globals['_DELETEPRESETRESPONSE']._serialized_end=633
+  _globals['_BINDATTRREQUEST']._serialized_start=635
+  _globals['_BINDATTRREQUEST']._serialized_end=710
+  _globals['_BINDATTRRESPONSE']._serialized_start=712
+  _globals['_BINDATTRRESPONSE']._serialized_end=788
+  _globals['_UNBINDATTRREQUEST']._serialized_start=790
+  _globals['_UNBINDATTRREQUEST']._serialized_end=847
+  _globals['_UNBINDATTRRESPONSE']._serialized_start=849
+  _globals['_UNBINDATTRRESPONSE']._serialized_end=869
+  _globals['_LISTBINDINGSREQUEST']._serialized_start=871
+  _globals['_LISTBINDINGSREQUEST']._serialized_end=892
+  _globals['_LISTBINDINGSRESPONSE']._serialized_start=894
+  _globals['_LISTBINDINGSRESPONSE']._serialized_end=975
+  _globals['_PRESETS']._serialized_start=1179
+  _globals['_PRESETS']._serialized_end=2028
 # @@protoc_insertion_point(module_scope)

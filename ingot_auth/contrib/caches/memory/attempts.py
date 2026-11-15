@@ -24,11 +24,11 @@ class AuthMemoryAttemptsCache(BaseAuthAttemptsCache):
 
     @t.override
     async def _put(self, attempt: AuthAttempt) -> None:
-        self._attempts[attempt.id] = attempt
+        self._attempts[attempt.uid] = attempt
 
     @t.override
-    async def _take(self, attempt_id: str) -> AuthAttempt:
-        attempt = self._attempts.pop(attempt_id, None)
+    async def _take(self, attempt_uid: str) -> AuthAttempt:
+        attempt = self._attempts.pop(attempt_uid, None)
         if attempt is None or attempt.expires_at <= self._get_now():
             raise AuthAttemptNotFoundError.create()
         return attempt

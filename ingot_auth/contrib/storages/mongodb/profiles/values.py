@@ -34,13 +34,13 @@ class AuthMongoDbProfileValuesStorage(
         if document is None:
             return AuthProfileValues()
         return AuthProfileValues(
-            tag_ids=frozenset(document.get("tag_ids", ())),
+            tag_uids=frozenset(document.get("tag_uids", ())),
             attr_values=build_attr_values(document.get("attr_values", [])),
         )
 
     @t.override
-    async def _set_tags(self, uid: str, tag_ids: frozenset[int]) -> None:
-        await self._set(uid, "tag_ids", sorted(tag_ids))
+    async def _set_tags(self, uid: str, tag_uids: frozenset[int]) -> None:
+        await self._set(uid, "tag_uids", sorted(tag_uids))
 
     @t.override
     async def _set_attr_values(

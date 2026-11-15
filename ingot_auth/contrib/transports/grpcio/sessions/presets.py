@@ -28,7 +28,7 @@ class AuthGrpcSessionPresetsServicer(
     async def CreatePreset(
         self, request: presets_pb2.CreatePresetRequest, context: Context
     ) -> presets_pb2.CreatePresetResponse:
-        preset = AuthSessionPreset(id=request.preset.id, name=request.preset.name)
+        preset = AuthSessionPreset(uid=request.preset.uid, name=request.preset.name)
         factory = self.project.auth.sessions.presets.op_create
         created = await self.run_operation(factory, preset, context)
         return presets_pb2.CreatePresetResponse(preset=build_preset_message(created))
@@ -47,7 +47,7 @@ class AuthGrpcSessionPresetsServicer(
     async def RenamePreset(
         self, request: presets_pb2.RenamePresetRequest, context: Context
     ) -> presets_pb2.RenamePresetResponse:
-        parameters = AuthRenameItemParameters(id=request.id, name=request.name)
+        parameters = AuthRenameItemParameters(uid=request.uid, name=request.name)
         factory = self.project.auth.sessions.presets.op_rename
         renamed = await self.run_operation(factory, parameters, context)
         return presets_pb2.RenamePresetResponse(preset=build_preset_message(renamed))
@@ -56,7 +56,7 @@ class AuthGrpcSessionPresetsServicer(
     async def DeletePreset(
         self, request: presets_pb2.DeletePresetRequest, context: Context
     ) -> presets_pb2.DeletePresetResponse:
-        parameters = AuthDeleteItemParameters(id=request.id)
+        parameters = AuthDeleteItemParameters(uid=request.uid)
         factory = self.project.auth.sessions.presets.op_delete
         await self.run_operation(factory, parameters, context)
         return presets_pb2.DeletePresetResponse()
@@ -67,8 +67,8 @@ class AuthGrpcSessionPresetsServicer(
     ) -> presets_pb2.BindAttrResponse:
         message = request.binding
         binding = AuthSessionPresetBinding(
-            preset_id=message.preset_id,
-            attr_id=message.attr_id,
+            preset_uid=message.preset_uid,
+            attr_uid=message.attr_uid,
             required=message.required,
         )
         factory = self.project.auth.sessions.presets.op_bind
@@ -80,7 +80,7 @@ class AuthGrpcSessionPresetsServicer(
         self, request: presets_pb2.UnbindAttrRequest, context: Context
     ) -> presets_pb2.UnbindAttrResponse:
         parameters = AuthUnbindSessionAttrParameters(
-            preset_id=request.preset_id, attr_id=request.attr_id
+            preset_uid=request.preset_uid, attr_uid=request.attr_uid
         )
         factory = self.project.auth.sessions.presets.op_unbind
         await self.run_operation(factory, parameters, context)
@@ -99,7 +99,7 @@ class AuthGrpcSessionPresetsServicer(
 
 def build_preset_message(preset: AuthSessionPreset) -> presets_pb2.Preset:
     """Internal: the message of a preset."""
-    return presets_pb2.Preset(id=preset.id, name=preset.name)
+    return presets_pb2.Preset(uid=preset.uid, name=preset.name)
 
 
 def build_binding_message(
@@ -107,7 +107,7 @@ def build_binding_message(
 ) -> presets_pb2.Binding:
     """Internal: the message of a binding."""
     return presets_pb2.Binding(
-        preset_id=binding.preset_id,
-        attr_id=binding.attr_id,
+        preset_uid=binding.preset_uid,
+        attr_uid=binding.attr_uid,
         required=binding.required,
     )

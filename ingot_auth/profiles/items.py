@@ -23,7 +23,7 @@ class AuthSetProfileTagsParameters:
     """The uid of a profile and the ids of all the tags it is to have."""
 
     uid: str
-    tag_ids: frozenset[int]
+    tag_uids: frozenset[int]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -46,7 +46,7 @@ class AuthOwnProfile:
     reply tells, so that the client knows when to ask again.
     """
 
-    tag_ids: frozenset[int]
+    tag_uids: frozenset[int]
     attr_values: "Mapping[int, AuthAttrValue]"
     permissions: "Mapping[str, int]"
     hash: str

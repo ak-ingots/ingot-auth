@@ -6,7 +6,7 @@ package ingot_auth.methods.v1;
 // attempt to answer to, and what the answer is, by its kind, as the answer of
 // the flow takes it.
 message Challenge {
-  string attempt_id = 1;
+  string attempt_uid = 1;
   oneof challenge {
     CodeChallenge code = 2;
   }

@@ -35,7 +35,7 @@ class AuthMongoDbSessionAttrsStorage(
     @t.override
     def _build_item(self, document: "Document") -> AuthSessionAttr:
         return AuthSessionAttr(
-            id=document["_id"],
+            uid=document["_id"],
             name=document["name"],
             type=AuthAttrType(document["type"]),
             source=AuthSessionAttrSource(document["source"]),

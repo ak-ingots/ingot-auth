@@ -29,7 +29,7 @@ class AuthGrpcProfilesServicer(
         return profiles_pb2.GetOwnProfileResponse(
             values=build_values_message(
                 AuthProfileValues(
-                    tag_ids=profile.tag_ids, attr_values=profile.attr_values
+                    tag_uids=profile.tag_uids, attr_values=profile.attr_values
                 )
             ),
             permissions=profile.permissions,
@@ -41,7 +41,7 @@ class AuthGrpcProfilesServicer(
         self, request: profiles_pb2.SetProfileTagsRequest, context: Context
     ) -> profiles_pb2.SetProfileTagsResponse:
         parameters = AuthSetProfileTagsParameters(
-            uid=request.uid, tag_ids=frozenset(request.tag_ids)
+            uid=request.uid, tag_uids=frozenset(request.tag_uids)
         )
         factory = self.project.auth.profiles.op_set_tags
         values = await self.run_operation(factory, parameters, context)
@@ -66,9 +66,9 @@ class AuthGrpcProfilesServicer(
 def build_values_message(values: AuthProfileValues) -> profiles_pb2.ProfileValues:
     """Internal: the message of the values of a profile."""
     return profiles_pb2.ProfileValues(
-        tag_ids=sorted(values.tag_ids),
+        tag_uids=sorted(values.tag_uids),
         attr_values=[
-            build_attr_value_message(attr_id, value)
-            for attr_id, value in sorted(values.attr_values.items())
+            build_attr_value_message(attr_uid, value)
+            for attr_uid, value in sorted(values.attr_values.items())
         ],
     )

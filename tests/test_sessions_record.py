@@ -33,7 +33,7 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         self.project = AuthMemoryProject()
         self.sessions = self.project.auth.sessions
         await self.project.auth.storage.access.members.add(
-            AuthMembership(group="auth.sessions.grp_admins", uid="op")
+            AuthMembership(group="auth.sessions.grp_admins", profile_uid="op")
         )
 
     async def run_operation(
@@ -57,16 +57,16 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         operator = await self.caller_of("op")
         record = await self.run_operation(
             self.sessions.op_list,
-            AuthListSessionsParameters(uid="a1", closed=True),
+            AuthListSessionsParameters(profile_uid="a1", closed=True),
             operator,
         )
         self.assertEqual(
-            [(s.id, s.close_reason) for s in record],
+            [(s.uid, s.close_reason) for s in record],
             [
-                (phone.session_id, AuthSessionCloseReason.REVOKED),
-                (tablet.session_id, AuthSessionCloseReason.REVOKED),
-                (record[2].id, AuthSessionCloseReason.SIGNED_OUT),
-                (kept.session_id, None),
+                (phone.session_uid, AuthSessionCloseReason.REVOKED),
+                (tablet.session_uid, AuthSessionCloseReason.REVOKED),
+                (record[2].uid, AuthSessionCloseReason.SIGNED_OUT),
+                (kept.session_uid, None),
             ],
         )
         self.assertEqual(record[0].attr_values, {1: "phone"})
@@ -74,14 +74,16 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         log = self.project.auth.storage.activities
         for session in record[:3]:
             query = AuthListActivitiesParameters(
-                entity_type="auth.sessions", entity_id=session.id
+                entity_type="auth.sessions", entity_uid=session.uid
             )
             (closed,) = await log.find(query)
             self.assertEqual(closed.who, "a1")
         open_only = await self.run_operation(
-            self.sessions.op_list, AuthListSessionsParameters(uid="a1"), operator
+            self.sessions.op_list,
+            AuthListSessionsParameters(profile_uid="a1"),
+            operator,
         )
-        self.assertEqual([s.id for s in open_only], [kept.session_id])
+        self.assertEqual([s.uid for s in open_only], [kept.session_uid])
 
     async def test_an_expired_session_is_closed_by_the_server(self) -> None:
         opened = await self.sessions.open("a1", "nickname", {})
@@ -91,13 +93,13 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
                 await self.sessions.authenticate(opened.token)
         record = await self.run_operation(
             self.sessions.op_list,
-            AuthListSessionsParameters(uid="a1", closed=True),
+            AuthListSessionsParameters(profile_uid="a1", closed=True),
             ROOT,
         )
         self.assertEqual(
             record[0].close_reason, AuthSessionCloseReason.EXPIRED_ABSOLUTE
         )
-        query = AuthListActivitiesParameters(entity_id=opened.session_id)
+        query = AuthListActivitiesParameters(entity_uid=opened.session_uid)
         (expired,) = await self.project.auth.storage.activities.find(query)
         self.assertEqual(expired.who, "system")
 
@@ -105,7 +107,9 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         user = await self.caller_of("a1")
         with self.assertRaises(OperationPermissionsError):
             await self.run_operation(
-                self.sessions.op_list, AuthListSessionsParameters(uid="a1"), user
+                self.sessions.op_list,
+                AuthListSessionsParameters(profile_uid="a1"),
+                user,
             )
 
 
@@ -115,8 +119,8 @@ class SeededSessionsStorage(AuthMemorySessionsStorage):
         later = NOW + datetime.timedelta(hours=1)
         for record in (
             AuthSessionRecord(
-                id="s1",
-                uid="a1",
+                uid="s1",
+                profile_uid="a1",
                 method="nickname",
                 token_hash="h1",
                 attr_values={2: "PL", 1: "iPhone"},
@@ -126,8 +130,8 @@ class SeededSessionsStorage(AuthMemorySessionsStorage):
                 close_reason=AuthSessionCloseReason.REVOKED,
             ),
             AuthSessionRecord(
-                id="s2",
-                uid="a1",
+                uid="s2",
+                profile_uid="a1",
                 method="email_code",
                 token_hash="h2",
                 attr_values={},
@@ -137,8 +141,8 @@ class SeededSessionsStorage(AuthMemorySessionsStorage):
                 close_reason=AuthSessionCloseReason.EXPIRED_IDLE,
             ),
             AuthSessionRecord(
-                id="s3",
-                uid="a1",
+                uid="s3",
+                profile_uid="a1",
                 method="nickname",
                 token_hash="h3",
                 attr_values={},
@@ -146,7 +150,7 @@ class SeededSessionsStorage(AuthMemorySessionsStorage):
                 seen_at=later,
             ),
         ):
-            self._sessions[record.id] = record
+            self._sessions[record.uid] = record
 
 
 class SeededStorage(AuthMemoryStorage):

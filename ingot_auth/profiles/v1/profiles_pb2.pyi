@@ -46,21 +46,21 @@ class ProfileValues(_message.Message):
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    TAG_IDS_FIELD_NUMBER: _builtins.int
+    TAG_UIDS_FIELD_NUMBER: _builtins.int
     ATTR_VALUES_FIELD_NUMBER: _builtins.int
     @_builtins.property
-    def tag_ids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]: ...
+    def tag_uids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]: ...
     @_builtins.property
     def attr_values(self) -> _containers.RepeatedCompositeFieldContainer[_attrs_pb2.AttrValue]: ...
     def __init__(
         self,
         *,
-        tag_ids: _abc.Iterable[_builtins.int] | None = ...,
+        tag_uids: _abc.Iterable[_builtins.int] | None = ...,
         attr_values: _abc.Iterable[_attrs_pb2.AttrValue] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "tag_ids", b"tag_ids"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "tag_uids", b"tag_uids"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -136,21 +136,21 @@ class SetProfileTagsRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     UID_FIELD_NUMBER: _builtins.int
-    TAG_IDS_FIELD_NUMBER: _builtins.int
+    TAG_UIDS_FIELD_NUMBER: _builtins.int
     uid: _builtins.str
     @_builtins.property
-    def tag_ids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]:
+    def tag_uids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]:
         """all the tags it is to have"""
 
     def __init__(
         self,
         *,
         uid: _builtins.str = ...,
-        tag_ids: _abc.Iterable[_builtins.int] | None = ...,
+        tag_uids: _abc.Iterable[_builtins.int] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["tag_ids", b"tag_ids", "uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["tag_uids", b"tag_uids", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

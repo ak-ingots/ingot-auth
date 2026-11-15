@@ -35,7 +35,7 @@ class AuthGrpcSignUpServicer(GrpcServicer, sign_up_pb2_grpc.SignUpServicer):
     ) -> sign_up_pb2.AnswerSignUpResponse:
         # the one kind of an answer, a code: one not given is a wrong one
         parameters = AuthAnswerSignUpParameters(
-            attempt_id=request.attempt_id, answer=request.code
+            attempt_uid=request.attempt_uid, answer=request.code
         )
         factory = self.project.auth.sign_up.op_answer
         result = await self.run_operation(factory, parameters, context)
@@ -51,5 +51,5 @@ def build_sign_up_result(result: AuthSignUpResult) -> sign_up_pb2.SignUpResult:
     if isinstance(result, AuthSignedUp):
         return sign_up_pb2.SignUpResult(signed_up=sign_up_pb2.SignedUp(uid=result.uid))
     return sign_up_pb2.SignUpResult(
-        challenge=build_challenge(result.attempt_id, result.challenge)
+        challenge=build_challenge(result.attempt_uid, result.challenge)
     )

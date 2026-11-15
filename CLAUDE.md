@@ -196,6 +196,10 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
   and its own package.
 - The errors of a package live in its `errors.py`, apart from the entity
   they are of, and the package exports them as before.
+- An entity names its own identifier `uid`, a reference to another
+  `<entity>_uid`, `profile_uid`, `session_uid`, `attr_uid`, never `id`, a
+  builtin of Python; the fields a backend stores are named alike, MongoDB
+  keeping its `_id`.
 
 ## Design
 

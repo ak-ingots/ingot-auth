@@ -41,19 +41,19 @@ Global___Permission: _TypeAlias = Permission  # noqa: Y015
 class AnswerSignUpRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ATTEMPT_ID_FIELD_NUMBER: _builtins.int
+    ATTEMPT_UID_FIELD_NUMBER: _builtins.int
     CODE_FIELD_NUMBER: _builtins.int
-    attempt_id: _builtins.str
+    attempt_uid: _builtins.str
     code: _builtins.str
     def __init__(
         self,
         *,
-        attempt_id: _builtins.str = ...,
+        attempt_uid: _builtins.str = ...,
         code: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["answer", b"answer", "code", b"code"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["answer", b"answer", "attempt_id", b"attempt_id", "code", b"code"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["answer", b"answer", "attempt_uid", b"attempt_uid", "code", b"code"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     _WhichOneofReturnType_answer: _TypeAlias = _typing.Literal["code"]  # noqa: Y015
     _WhichOneofArgType_answer: _TypeAlias = _typing.Literal["answer", b"answer"]  # noqa: Y015

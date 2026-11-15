@@ -69,16 +69,16 @@ Global___CloseReason: _TypeAlias = CloseReason  # noqa: Y015
 
 @_typing.final
 class Session(_message.Message):
-    """An open session as its user sees it: its public id, never its token."""
+    """An open session as its user sees it: its public uid, never its token."""
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     ATTR_VALUES_FIELD_NUMBER: _builtins.int
     OPENED_AT_FIELD_NUMBER: _builtins.int
     SEEN_AT_FIELD_NUMBER: _builtins.int
     IS_CURRENT_FIELD_NUMBER: _builtins.int
-    id: _builtins.str
+    uid: _builtins.str
     is_current: _builtins.bool
     """that of the caller"""
     @_builtins.property
@@ -92,7 +92,7 @@ class Session(_message.Message):
     def __init__(
         self,
         *,
-        id: _builtins.str = ...,
+        uid: _builtins.str = ...,
         attr_values: _abc.Iterable[_attrs_pb2.AttrValue] | None = ...,
         opened_at: _timestamp_pb2.Timestamp | None = ...,
         seen_at: _timestamp_pb2.Timestamp | None = ...,
@@ -100,7 +100,7 @@ class Session(_message.Message):
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["opened_at", b"opened_at", "seen_at", b"seen_at"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "id", b"id", "is_current", b"is_current", "opened_at", b"opened_at", "seen_at", b"seen_at"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "is_current", b"is_current", "opened_at", b"opened_at", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -147,16 +147,16 @@ Global___ListOwnSessionsResponse: _TypeAlias = ListOwnSessionsResponse  # noqa: 
 class RevokeOwnSessionRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    SESSION_ID_FIELD_NUMBER: _builtins.int
-    session_id: _builtins.str
+    SESSION_UID_FIELD_NUMBER: _builtins.int
+    session_uid: _builtins.str
     def __init__(
         self,
         *,
-        session_id: _builtins.str = ...,
+        session_uid: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["session_id", b"session_id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["session_uid", b"session_uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -220,16 +220,16 @@ class SessionRecord(_message.Message):
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
     UID_FIELD_NUMBER: _builtins.int
+    PROFILE_UID_FIELD_NUMBER: _builtins.int
     METHOD_FIELD_NUMBER: _builtins.int
     ATTR_VALUES_FIELD_NUMBER: _builtins.int
     OPENED_AT_FIELD_NUMBER: _builtins.int
     SEEN_AT_FIELD_NUMBER: _builtins.int
     CLOSED_AT_FIELD_NUMBER: _builtins.int
     CLOSE_REASON_FIELD_NUMBER: _builtins.int
-    id: _builtins.str
     uid: _builtins.str
+    profile_uid: _builtins.str
     method: _builtins.str
     close_reason: Global___CloseReason.ValueType
     @_builtins.property
@@ -245,8 +245,8 @@ class SessionRecord(_message.Message):
     def __init__(
         self,
         *,
-        id: _builtins.str = ...,
         uid: _builtins.str = ...,
+        profile_uid: _builtins.str = ...,
         method: _builtins.str = ...,
         attr_values: _abc.Iterable[_attrs_pb2.AttrValue] | None = ...,
         opened_at: _timestamp_pb2.Timestamp | None = ...,
@@ -256,7 +256,7 @@ class SessionRecord(_message.Message):
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["closed_at", b"closed_at", "opened_at", b"opened_at", "seen_at", b"seen_at"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "close_reason", b"close_reason", "closed_at", b"closed_at", "id", b"id", "method", b"method", "opened_at", b"opened_at", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "close_reason", b"close_reason", "closed_at", b"closed_at", "method", b"method", "opened_at", b"opened_at", "profile_uid", b"profile_uid", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -266,20 +266,20 @@ Global___SessionRecord: _TypeAlias = SessionRecord  # noqa: Y015
 class ListSessionsRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    UID_FIELD_NUMBER: _builtins.int
+    PROFILE_UID_FIELD_NUMBER: _builtins.int
     CLOSED_FIELD_NUMBER: _builtins.int
-    uid: _builtins.str
+    profile_uid: _builtins.str
     closed: _builtins.bool
     """the closed ones too, the record of the sign-ins"""
     def __init__(
         self,
         *,
-        uid: _builtins.str = ...,
+        profile_uid: _builtins.str = ...,
         closed: _builtins.bool = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["closed", b"closed", "uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["closed", b"closed", "profile_uid", b"profile_uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

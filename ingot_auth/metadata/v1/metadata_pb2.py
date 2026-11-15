@@ -24,37 +24,37 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/metadata/v1/metadata.proto\x12\x16ingot_auth.metadata.v1\"\xe4\x01\n\x07Profile\x12\x31\n\x04tags\x18\x01 \x03(\x0b\x32#.ingot_auth.metadata.v1.Profile.Tag\x12\x33\n\x05\x61ttrs\x18\x02 \x03(\x0b\x32$.ingot_auth.metadata.v1.Profile.Attr\x1a\x1f\n\x03Tag\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x1aP\n\x04\x41ttr\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12.\n\x04type\x18\x03 \x01(\x0e\x32 .ingot_auth.metadata.v1.AttrType\"\xe9\x02\n\x07Session\x12\x33\n\x05\x61ttrs\x18\x01 \x03(\x0b\x32$.ingot_auth.metadata.v1.Session.Attr\x12\x37\n\x07presets\x18\x02 \x03(\x0b\x32&.ingot_auth.metadata.v1.Session.Preset\x12\x39\n\x08\x62indings\x18\x03 \x03(\x0b\x32\'.ingot_auth.metadata.v1.Session.Binding\x1aP\n\x04\x41ttr\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12.\n\x04type\x18\x03 \x01(\x0e\x32 .ingot_auth.metadata.v1.AttrType\x1a\"\n\x06Preset\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a?\n\x07\x42inding\x12\x11\n\tpreset_id\x18\x01 \x01(\r\x12\x0f\n\x07\x61ttr_id\x18\x02 \x01(\r\x12\x10\n\x08required\x18\x03 \x01(\x08\"8\n\x06Method\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07sign_up\x18\x02 \x01(\x08\x12\x0f\n\x07sign_in\x18\x03 \x01(\x08\"\x14\n\x12GetMetadataRequest\"\xaa\x01\n\x13GetMetadataResponse\x12\x30\n\x07profile\x18\x01 \x01(\x0b\x32\x1f.ingot_auth.metadata.v1.Profile\x12\x30\n\x07session\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.metadata.v1.Session\x12/\n\x07methods\x18\x03 \x03(\x0b\x32\x1e.ingot_auth.metadata.v1.Method*A\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x17\n\x13PERMISSION_CAN_READ\x10\x01*\x8e\x01\n\x08\x41ttrType\x12\x19\n\x15\x41TTR_TYPE_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x41TTR_TYPE_BOOL\x10\x01\x12\x11\n\rATTR_TYPE_INT\x10\x02\x12\x15\n\x11\x41TTR_TYPE_DECIMAL\x10\x03\x12\x16\n\x12\x41TTR_TYPE_DATETIME\x10\x04\x12\x11\n\rATTR_TYPE_STR\x10\x05\x32r\n\x08Metadata\x12\x66\n\x0bGetMetadata\x12*.ingot_auth.metadata.v1.GetMetadataRequest\x1a+.ingot_auth.metadata.v1.GetMetadataResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/metadata/v1/metadata.proto\x12\x16ingot_auth.metadata.v1\"\xe6\x01\n\x07Profile\x12\x31\n\x04tags\x18\x01 \x03(\x0b\x32#.ingot_auth.metadata.v1.Profile.Tag\x12\x33\n\x05\x61ttrs\x18\x02 \x03(\x0b\x32$.ingot_auth.metadata.v1.Profile.Attr\x1a \n\x03Tag\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x1aQ\n\x04\x41ttr\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12.\n\x04type\x18\x03 \x01(\x0e\x32 .ingot_auth.metadata.v1.AttrType\"\xed\x02\n\x07Session\x12\x33\n\x05\x61ttrs\x18\x01 \x03(\x0b\x32$.ingot_auth.metadata.v1.Session.Attr\x12\x37\n\x07presets\x18\x02 \x03(\x0b\x32&.ingot_auth.metadata.v1.Session.Preset\x12\x39\n\x08\x62indings\x18\x03 \x03(\x0b\x32\'.ingot_auth.metadata.v1.Session.Binding\x1aQ\n\x04\x41ttr\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12.\n\x04type\x18\x03 \x01(\x0e\x32 .ingot_auth.metadata.v1.AttrType\x1a#\n\x06Preset\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x1a\x41\n\x07\x42inding\x12\x12\n\npreset_uid\x18\x01 \x01(\r\x12\x10\n\x08\x61ttr_uid\x18\x02 \x01(\r\x12\x10\n\x08required\x18\x03 \x01(\x08\"8\n\x06Method\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07sign_up\x18\x02 \x01(\x08\x12\x0f\n\x07sign_in\x18\x03 \x01(\x08\"\x14\n\x12GetMetadataRequest\"\xaa\x01\n\x13GetMetadataResponse\x12\x30\n\x07profile\x18\x01 \x01(\x0b\x32\x1f.ingot_auth.metadata.v1.Profile\x12\x30\n\x07session\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.metadata.v1.Session\x12/\n\x07methods\x18\x03 \x03(\x0b\x32\x1e.ingot_auth.metadata.v1.Method*A\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x17\n\x13PERMISSION_CAN_READ\x10\x01*\x8e\x01\n\x08\x41ttrType\x12\x19\n\x15\x41TTR_TYPE_UNSPECIFIED\x10\x00\x12\x12\n\x0e\x41TTR_TYPE_BOOL\x10\x01\x12\x11\n\rATTR_TYPE_INT\x10\x02\x12\x15\n\x11\x41TTR_TYPE_DECIMAL\x10\x03\x12\x16\n\x12\x41TTR_TYPE_DATETIME\x10\x04\x12\x11\n\rATTR_TYPE_STR\x10\x05\x32r\n\x08Metadata\x12\x66\n\x0bGetMetadata\x12*.ingot_auth.metadata.v1.GetMetadataRequest\x1a+.ingot_auth.metadata.v1.GetMetadataResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.metadata.v1.metadata_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=913
-  _globals['_PERMISSION']._serialized_end=978
-  _globals['_ATTRTYPE']._serialized_start=981
-  _globals['_ATTRTYPE']._serialized_end=1123
+  _globals['_PERMISSION']._serialized_start=919
+  _globals['_PERMISSION']._serialized_end=984
+  _globals['_ATTRTYPE']._serialized_start=987
+  _globals['_ATTRTYPE']._serialized_end=1129
   _globals['_PROFILE']._serialized_start=66
-  _globals['_PROFILE']._serialized_end=294
+  _globals['_PROFILE']._serialized_end=296
   _globals['_PROFILE_TAG']._serialized_start=181
-  _globals['_PROFILE_TAG']._serialized_end=212
-  _globals['_PROFILE_ATTR']._serialized_start=214
-  _globals['_PROFILE_ATTR']._serialized_end=294
-  _globals['_SESSION']._serialized_start=297
-  _globals['_SESSION']._serialized_end=658
-  _globals['_SESSION_ATTR']._serialized_start=214
-  _globals['_SESSION_ATTR']._serialized_end=294
-  _globals['_SESSION_PRESET']._serialized_start=559
-  _globals['_SESSION_PRESET']._serialized_end=593
-  _globals['_SESSION_BINDING']._serialized_start=595
-  _globals['_SESSION_BINDING']._serialized_end=658
-  _globals['_METHOD']._serialized_start=660
-  _globals['_METHOD']._serialized_end=716
-  _globals['_GETMETADATAREQUEST']._serialized_start=718
-  _globals['_GETMETADATAREQUEST']._serialized_end=738
-  _globals['_GETMETADATARESPONSE']._serialized_start=741
-  _globals['_GETMETADATARESPONSE']._serialized_end=911
-  _globals['_METADATA']._serialized_start=1125
-  _globals['_METADATA']._serialized_end=1239
+  _globals['_PROFILE_TAG']._serialized_end=213
+  _globals['_PROFILE_ATTR']._serialized_start=215
+  _globals['_PROFILE_ATTR']._serialized_end=296
+  _globals['_SESSION']._serialized_start=299
+  _globals['_SESSION']._serialized_end=664
+  _globals['_SESSION_ATTR']._serialized_start=215
+  _globals['_SESSION_ATTR']._serialized_end=296
+  _globals['_SESSION_PRESET']._serialized_start=562
+  _globals['_SESSION_PRESET']._serialized_end=597
+  _globals['_SESSION_BINDING']._serialized_start=599
+  _globals['_SESSION_BINDING']._serialized_end=664
+  _globals['_METHOD']._serialized_start=666
+  _globals['_METHOD']._serialized_end=722
+  _globals['_GETMETADATAREQUEST']._serialized_start=724
+  _globals['_GETMETADATAREQUEST']._serialized_end=744
+  _globals['_GETMETADATARESPONSE']._serialized_start=747
+  _globals['_GETMETADATARESPONSE']._serialized_end=917
+  _globals['_METADATA']._serialized_start=1131
+  _globals['_METADATA']._serialized_end=1245
 # @@protoc_insertion_point(module_scope)

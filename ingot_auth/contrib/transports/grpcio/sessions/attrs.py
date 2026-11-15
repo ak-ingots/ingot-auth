@@ -49,7 +49,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
     ) -> attrs_pb2.CreateAttrResponse:
         message = request.attr
         session_attr = AuthSessionAttr(
-            id=message.id,
+            uid=message.uid,
             name=message.name,
             type=build_attr_type(message.type),
             source=build_source(message.source),
@@ -72,7 +72,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
     async def RenameAttr(
         self, request: attrs_pb2.RenameAttrRequest, context: Context
     ) -> attrs_pb2.RenameAttrResponse:
-        parameters = AuthRenameItemParameters(id=request.id, name=request.name)
+        parameters = AuthRenameItemParameters(uid=request.uid, name=request.name)
         factory = self.project.auth.sessions.attrs.op_rename
         renamed = await self.run_operation(factory, parameters, context)
         return attrs_pb2.RenameAttrResponse(attr=build_session_attr_message(renamed))
@@ -81,7 +81,7 @@ class AuthGrpcSessionAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsSer
     async def DeleteAttr(
         self, request: attrs_pb2.DeleteAttrRequest, context: Context
     ) -> attrs_pb2.DeleteAttrResponse:
-        parameters = AuthDeleteItemParameters(id=request.id)
+        parameters = AuthDeleteItemParameters(uid=request.uid)
         factory = self.project.auth.sessions.attrs.op_delete
         await self.run_operation(factory, parameters, context)
         return attrs_pb2.DeleteAttrResponse()
@@ -92,7 +92,7 @@ def build_session_attr_message(
 ) -> attrs_pb2.Attr:
     """Internal: the message of an attribute of the sessions."""
     return attrs_pb2.Attr(
-        id=session_attr.id,
+        uid=session_attr.uid,
         name=session_attr.name,
         type=ATTR_TYPES[session_attr.type],
         source=SOURCES[session_attr.source],

@@ -58,12 +58,12 @@ class AuthGetMetadataOperation(BaseOperation[None, AuthMetadata]):
             for attr in await storage.attrs.get_all()
             if attr.source is AuthSessionAttrSource.CLIENT
         )
-        attr_ids = {attr.id for attr in attrs}
+        attr_uids = {attr.uid for attr in attrs}
         bindings = await storage.presets.get_bindings()
         return AuthSessionMetadata(
             attrs=attrs,
             presets=await storage.presets.get_all(),
-            bindings=tuple(b for b in bindings if b.attr_id in attr_ids),
+            bindings=tuple(b for b in bindings if b.attr_uid in attr_uids),
         )
 
     def _get_methods(self) -> tuple[AuthMethodMetadata, ...]:

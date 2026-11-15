@@ -55,9 +55,11 @@ class AuthItemConflictError(AuthRegistryError):
     """An id or a name is taken."""
 
     @classmethod
-    def for_id(cls, registry: str, item_id: int) -> t.Self:
+    def for_uid(cls, registry: str, item_uid: int) -> t.Self:
         """The id is taken, or was."""
-        return cls(f"{registry}: the id {item_id} is not available", registry, item_id)
+        return cls(
+            f"{registry}: the id {item_uid} is not available", registry, item_uid
+        )
 
     @classmethod
     def for_name(cls, registry: str, name: str) -> t.Self:
@@ -69,12 +71,12 @@ class AuthItemNotFoundError(AuthRegistryError):
     """No item has the id, or an item is not bound to another."""
 
     @classmethod
-    def for_id(cls, registry: str, item_id: int) -> t.Self:
-        """No item has ``item_id``."""
-        return cls(f"{registry}: no item {item_id}", registry, item_id)
+    def for_uid(cls, registry: str, item_uid: int) -> t.Self:
+        """No item has ``item_uid``."""
+        return cls(f"{registry}: no item {item_uid}", registry, item_uid)
 
     @classmethod
-    def for_binding(cls, registry: str, item_id: int, bound_id: int) -> t.Self:
-        """The item ``item_id`` is not bound to ``bound_id``; the key is both."""
-        key = f"{item_id}:{bound_id}"
+    def for_binding(cls, registry: str, item_uid: int, bound_uid: int) -> t.Self:
+        """The item ``item_uid`` is not bound to ``bound_uid``; the key is both."""
+        key = f"{item_uid}:{bound_uid}"
         return cls(f"{registry}: no binding {key}", registry, key)

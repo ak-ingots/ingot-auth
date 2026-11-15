@@ -63,11 +63,11 @@ def build_profile_message(profile: AuthProfileMetadata) -> metadata_pb2.Profile:
     """Internal: the message of the metadata of the profiles."""
     return metadata_pb2.Profile(
         tags=(
-            metadata_pb2.Profile.Tag(id=tag.id, name=tag.name) for tag in profile.tags
+            metadata_pb2.Profile.Tag(uid=tag.uid, name=tag.name) for tag in profile.tags
         ),
         attrs=(
             metadata_pb2.Profile.Attr(
-                id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type]
+                uid=attr.uid, name=attr.name, type=ATTR_TYPES[attr.type]
             )
             for attr in profile.attrs
         ),
@@ -79,18 +79,18 @@ def build_session_message(session: AuthSessionMetadata) -> metadata_pb2.Session:
     return metadata_pb2.Session(
         attrs=(
             metadata_pb2.Session.Attr(
-                id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type]
+                uid=attr.uid, name=attr.name, type=ATTR_TYPES[attr.type]
             )
             for attr in session.attrs
         ),
         presets=(
-            metadata_pb2.Session.Preset(id=preset.id, name=preset.name)
+            metadata_pb2.Session.Preset(uid=preset.uid, name=preset.name)
             for preset in session.presets
         ),
         bindings=(
             metadata_pb2.Session.Binding(
-                preset_id=binding.preset_id,
-                attr_id=binding.attr_id,
+                preset_uid=binding.preset_uid,
+                attr_uid=binding.attr_uid,
                 required=binding.required,
             )
             for binding in session.bindings

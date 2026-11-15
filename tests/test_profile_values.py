@@ -43,11 +43,11 @@ NOW = datetime.datetime(2026, 11, 15, 12, tzinfo=datetime.UTC)
 async def seed(project: AuthMemoryProject) -> None:
     profiles = project.auth.storage.profiles
     await profiles.create(AuthProfile(uid="a1", created_at=NOW))
-    for tag_id, name in ((1, "beta"), (2, "staff")):
-        await profiles.tags.create(AuthTag(id=tag_id, name=name))
-    for attr_id, attr_type in enumerate(AuthAttrType, start=1):
+    for tag_uid, name in ((1, "beta"), (2, "staff")):
+        await profiles.tags.create(AuthTag(uid=tag_uid, name=name))
+    for attr_uid, attr_type in enumerate(AuthAttrType, start=1):
         await profiles.attrs.create(
-            AuthAttr(id=attr_id, name=attr_type.value, type=attr_type)
+            AuthAttr(uid=attr_uid, name=attr_type.value, type=attr_type)
         )
 
 
@@ -68,11 +68,11 @@ class ProfileValuesTestCase(unittest.IsolatedAsyncioTestCase):
         return await operations.runner.run(factory, parameters, metadata)
 
     async def test_an_operator_sets_the_tags_of_a_profile(self) -> None:
-        parameters = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({2, 1}))
+        parameters = AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset({2, 1}))
         for _ in range(2):  # run twice, it changes nothing more
             values = await self.run_operation(self.profiles.op_set_tags, parameters)
-            self.assertEqual(values, AuthProfileValues(tag_ids=frozenset({1, 2})))
-        none = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset())
+            self.assertEqual(values, AuthProfileValues(tag_uids=frozenset({1, 2})))
+        none = AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset())
         values = await self.run_operation(self.profiles.op_set_tags, none)
         self.assertEqual(values, AuthProfileValues())
 
@@ -94,12 +94,12 @@ class ProfileValuesTestCase(unittest.IsolatedAsyncioTestCase):
         for factory, parameters, error in (
             (
                 self.profiles.op_set_tags,
-                AuthSetProfileTagsParameters(uid="b2", tag_ids=frozenset()),
+                AuthSetProfileTagsParameters(uid="b2", tag_uids=frozenset()),
                 AuthProfileNotFoundError,
             ),
             (
                 self.profiles.op_set_tags,
-                AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({1, 9})),
+                AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset({1, 9})),
                 AuthItemNotFoundError,
             ),
             (
@@ -125,7 +125,7 @@ class ProfileValuesTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(values, AuthProfileValues())
 
     async def test_a_change_forgets_the_callers_of_the_profile(self) -> None:
-        parameters = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({1}))
+        parameters = AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset({1}))
         with mock.patch.object(
             type(self.project.auth.sessions), "forget_callers"
         ) as forget:
@@ -134,10 +134,10 @@ class ProfileValuesTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_managers_may_set_them_the_user_not(self) -> None:
         await self.project.auth.storage.access.members.add(
-            AuthMembership(group="auth.profiles.grp_managers", uid="op")
+            AuthMembership(group="auth.profiles.grp_managers", profile_uid="op")
         )
         sessions = self.project.auth.sessions
-        parameters = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({1}))
+        parameters = AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset({1}))
         operator = await sessions.authenticate(
             (await sessions.open("op", "nickname", {})).token
         )
@@ -154,13 +154,13 @@ class OwnProfileTestCase(ProfileValuesTestCase):
         sessions = self.project.auth.sessions
         token = (await sessions.open("a1", "nickname", {})).token
         caller = await sessions.authenticate(token)
-        tags = AuthSetProfileTagsParameters(uid="a1", tag_ids=frozenset({1}))
+        tags = AuthSetProfileTagsParameters(uid="a1", tag_uids=frozenset({1}))
         await self.run_operation(self.profiles.op_set_tags, tags)
         changed = await sessions.authenticate(token)  # formed again
         self.assertNotEqual(changed.profile_hash, caller.profile_hash)
         profile = await self.run_operation(self.profiles.op_get_own, None, changed)
         self.assertEqual(
-            (profile.tag_ids, profile.attr_values, profile.hash),
+            (profile.tag_uids, profile.attr_values, profile.hash),
             (frozenset({1}), {}, changed.profile_hash),
         )
         self.assertEqual(profile.permissions, dict(changed.permissions))
@@ -181,16 +181,16 @@ class SeededProfilesStorage(AuthMemoryProfilesStorage):
 class SeededTagsStorage(AuthMemoryTagsStorage):
     def __init__(self) -> None:
         super().__init__()
-        self._items[1] = AuthTag(id=1, name="beta")
-        self._items[2] = AuthTag(id=2, name="staff")
+        self._items[1] = AuthTag(uid=1, name="beta")
+        self._items[2] = AuthTag(uid=2, name="staff")
 
 
 class SeededAttrsStorage(AuthMemoryAttrsStorage):
     def __init__(self) -> None:
         super().__init__()
-        for attr_id, attr_type in enumerate(AuthAttrType, start=1):
-            self._items[attr_id] = AuthAttr(
-                id=attr_id, name=attr_type.value, type=attr_type
+        for attr_uid, attr_type in enumerate(AuthAttrType, start=1):
+            self._items[attr_uid] = AuthAttr(
+                uid=attr_uid, name=attr_type.value, type=attr_type
             )
 
 
@@ -281,19 +281,19 @@ class CommandsTestCase(unittest.TestCase):
 class ProfileHashTestCase(unittest.TestCase):
     def test_the_hash_changes_with_what_the_client_sees(self) -> None:
         values = AuthProfileValues(
-            tag_ids=frozenset({1, 2}), attr_values={1: NOW, 2: 7}
+            tag_uids=frozenset({1, 2}), attr_values={1: NOW, 2: 7}
         )
         known = build_profile_hash(values, {"shop": 1})
-        same = AuthProfileValues(tag_ids=frozenset({2, 1}), attr_values={2: 7, 1: NOW})
+        same = AuthProfileValues(tag_uids=frozenset({2, 1}), attr_values={2: 7, 1: NOW})
         self.assertEqual(build_profile_hash(same, {"shop": 1}), known)
         for other, permissions in (
             (
-                AuthProfileValues(tag_ids=frozenset({1}), attr_values={1: NOW, 2: 7}),
+                AuthProfileValues(tag_uids=frozenset({1}), attr_values={1: NOW, 2: 7}),
                 {"shop": 1},
             ),
             (
                 AuthProfileValues(
-                    tag_ids=frozenset({1, 2}), attr_values={1: NOW, 2: "7"}
+                    tag_uids=frozenset({1, 2}), attr_values={1: NOW, 2: "7"}
                 ),
                 {"shop": 1},
             ),

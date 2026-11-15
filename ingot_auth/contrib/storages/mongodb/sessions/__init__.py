@@ -47,8 +47,8 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         collection = await self._mongodb_get_collection()
         await collection.insert_one(
             {
-                "_id": session.id,
-                "uid": session.uid,
+                "_id": session.uid,
+                "profile_uid": session.profile_uid,
                 "method": session.method,
                 "token_hash": session.token_hash,
                 "attr_values": build_bson_attr_values(session.attr_values),
@@ -75,7 +75,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
     async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"uid": uid, "closed_at": None}, session=self._mongodb_get_session()
+            {"profile_uid": uid, "closed_at": None}, session=self._mongodb_get_session()
         ).sort([("opened_at", 1), ("_id", 1)])
         return tuple([_build_session(document) async for document in documents])
 
@@ -83,57 +83,56 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
     async def _get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"uid": uid}, session=self._mongodb_get_session()
+            {"profile_uid": uid}, session=self._mongodb_get_session()
         ).sort([("opened_at", 1), ("_id", 1)])
         return tuple([_build_session(document) async for document in documents])
 
     @t.override
-    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+    async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         collection = await self._mongodb_get_collection()
         result = await collection.update_one(
-            {"_id": session_id, "closed_at": None},
+            {"_id": session_uid, "closed_at": None},
             {"$set": {"seen_at": seen_at}},
             session=self._mongodb_get_session(),
         )
         if not result.matched_count:
-            raise AuthSessionNotFoundError.for_id(session_id)
+            raise AuthSessionNotFoundError.for_uid(session_uid)
 
     @t.override
     async def _close(
         self,
-        session_id: str,
+        session_uid: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
     ) -> None:
         collection = await self._mongodb_get_collection()
         changes = {"closed_at": closed_at, "close_reason": reason.value}
         result = await collection.update_one(
-            {"_id": session_id, "closed_at": None},
+            {"_id": session_uid, "closed_at": None},
             {"$set": changes},
             session=self._mongodb_get_session(),
         )
         if not result.matched_count:
-            raise AuthSessionNotFoundError.for_id(session_id)
+            raise AuthSessionNotFoundError.for_uid(session_uid)
 
     @t.override
     async def _mongodb_create_indexes(
         self, collection: "AsyncCollection[Document]"
     ) -> None:
         await collection.create_index("token_hash", unique=True)
-        await collection.create_index([("uid", 1), ("closed_at", 1)])
+        await collection.create_index([("profile_uid", 1), ("closed_at", 1)])
 
 
 def _build_session(document: "Document") -> AuthSessionRecord:
     close_reason = document.get("close_reason")
     return AuthSessionRecord(
-        id=document["_id"],
-        uid=document["uid"],
+        uid=document["_id"],
+        profile_uid=document["profile_uid"],
         method=document["method"],
         token_hash=document["token_hash"],
         attr_values=build_attr_values(document["attr_values"]),
         opened_at=document["opened_at"],
-        # a session opened by 0.1.0 has none: seen at its sign-in
-        seen_at=document.get("seen_at") or document["opened_at"],
+        seen_at=document["seen_at"],
         closed_at=document.get("closed_at"),
         close_reason=close_reason and AuthSessionCloseReason(close_reason),
     )

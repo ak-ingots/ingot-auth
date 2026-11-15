@@ -36,7 +36,7 @@ class AuthProfileValues:
     its attributes, by the ids of the attributes; empty for a profile of none.
     """
 
-    tag_ids: frozenset[int] = frozenset()
+    tag_uids: frozenset[int] = frozenset()
     attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
 
 
@@ -46,7 +46,7 @@ class AuthIdentity:
 
     kind: str
     value: str
-    uid: str
+    profile_uid: str
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

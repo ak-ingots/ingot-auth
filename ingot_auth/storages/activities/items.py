@@ -34,18 +34,18 @@ class AuthActivityRecord:
     """
     A change of state of an entity of the auth, a fact as it was written. Its
     actor, two parts of one whole: ``who``, the uid of the caller, and
-    ``session_id``, of its session, none of a caller of none. ``entity_type``
-    is the full name of the unit of the entity, ``entity_id`` its id;
+    ``session_uid``, of its session, none of a caller of none. ``entity_type``
+    is the full name of the unit of the entity, ``entity_uid`` its id;
     ``context`` what the change was, the attributes the code of its time
     wrote, none for many; ``run_uid`` the uid of the run of operations, of
     the request or of a job.
     """
 
     who: str
-    session_id: str | None
+    session_uid: str | None
     action: AuthActivityAction
     entity_type: str
-    entity_id: str
+    entity_uid: str
     context: "Mapping[str, object]"
     run_uid: str
     when: datetime.datetime
@@ -60,9 +60,9 @@ class AuthActivityQuery:
     """
 
     entity_type: str | None = None
-    entity_id: str | None = None
+    entity_uid: str | None = None
     who: str | None = None
-    session_id: str | None = None
+    session_uid: str | None = None
     action: AuthActivityAction | None = None
     since: datetime.datetime | None = None
     until: datetime.datetime | None = None

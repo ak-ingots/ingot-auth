@@ -20,7 +20,7 @@ from .sessions import create_session
 
 CALLER: t.Final = AuthCaller(
     uid="a1",
-    session_id="s1",
+    session_uid="s1",
     permissions=Permissions({"auth.access.groups": AuthGroupsPermissions.CAN_READ}),
     profile_hash="9f86d0",
 )
@@ -33,12 +33,12 @@ class AuthAttemptsCacheContract(BaseAuthContract):
     """
 
     def create_attempt(
-        self, attempt_id: str = "x", expires_in: float = 60, failures: int = 0
+        self, attempt_uid: str = "x", expires_in: float = 60, failures: int = 0
     ) -> AuthAttempt:
         """An attempt expiring in ``expires_in`` seconds."""
         now = datetime.datetime.now(datetime.UTC)
         return AuthAttempt(
-            id=attempt_id,
+            uid=attempt_uid,
             flow="sign_up",
             method="testing",
             state="state",

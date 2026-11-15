@@ -148,7 +148,7 @@ class BaseAuthRegistryStorageContract[ItemType: AuthItem](BaseAuthContract):
         raise NotImplementedError(f"{type(self).__qualname__}._get_storage")
 
     @abc.abstractmethod
-    def _create_item(self, item_id: int, name: str) -> ItemType:
+    def _create_item(self, item_uid: int, name: str) -> ItemType:
         raise NotImplementedError(f"{type(self).__qualname__}._create_item")
 
     def _assert_error(self, error: AuthRegistryError, key: int | str) -> None:
@@ -173,8 +173,8 @@ class AuthTagsStorageContract(BaseAuthRegistryStorageContract[AuthTag]):
         return project.auth.storage.profiles.tags
 
     @t.override
-    def _create_item(self, item_id: int, name: str) -> AuthTag:
-        return AuthTag(id=item_id, name=name)
+    def _create_item(self, item_uid: int, name: str) -> AuthTag:
+        return AuthTag(uid=item_uid, name=name)
 
 
 class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
@@ -184,15 +184,15 @@ class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
 
     async def test_every_type_is_given_as_created(self) -> None:
         attrs = tuple(
-            AuthAttr(id=item_id, name=item_type.value, type=item_type)
-            for item_id, item_type in enumerate(AuthAttrType, start=1)
+            AuthAttr(uid=item_uid, name=item_type.value, type=item_type)
+            for item_uid, item_type in enumerate(AuthAttrType, start=1)
         )
         for attr in attrs:
             await self.storage.create(attr)
         self.assertEqual(await self.storage.get_all(), attrs)
 
     async def test_a_rename_keeps_the_type(self) -> None:
-        attr = AuthAttr(id=1, name="phone", type=AuthAttrType.BOOL)
+        attr = AuthAttr(uid=1, name="phone", type=AuthAttrType.BOOL)
         await self.storage.create(attr)
         renamed = await self.storage.rename(1, "mobile")
         self.assertEqual(renamed.type, AuthAttrType.BOOL)
@@ -203,8 +203,8 @@ class AuthAttrsStorageContract(BaseAuthRegistryStorageContract[AuthAttr]):
         return project.auth.storage.profiles.attrs
 
     @t.override
-    def _create_item(self, item_id: int, name: str) -> AuthAttr:
-        return AuthAttr(id=item_id, name=name, type=AuthAttrType.STR)
+    def _create_item(self, item_uid: int, name: str) -> AuthAttr:
+        return AuthAttr(uid=item_uid, name=name, type=AuthAttrType.STR)
 
 
 class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessionAttr]):
@@ -220,12 +220,12 @@ class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessio
         ]
         session_attrs = tuple(
             AuthSessionAttr(
-                id=item_id,
+                uid=item_uid,
                 name=f"{item_type.value}_{source.value}",
                 type=item_type,
                 source=source,
             )
-            for item_id, (item_type, source) in enumerate(pairs, start=1)
+            for item_uid, (item_type, source) in enumerate(pairs, start=1)
         )
         for session_attr in session_attrs:
             await self.storage.create(session_attr)
@@ -233,7 +233,7 @@ class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessio
 
     async def test_a_rename_keeps_the_type_and_the_source(self) -> None:
         session_attr = AuthSessionAttr(
-            id=1,
+            uid=1,
             name="ip",
             type=AuthAttrType.STR,
             source=AuthSessionAttrSource.TRANSPORT,
@@ -253,9 +253,9 @@ class AuthSessionAttrsStorageContract(BaseAuthRegistryStorageContract[AuthSessio
         return project.auth.storage.sessions.attrs
 
     @t.override
-    def _create_item(self, item_id: int, name: str) -> AuthSessionAttr:
+    def _create_item(self, item_uid: int, name: str) -> AuthSessionAttr:
         return AuthSessionAttr(
-            id=item_id,
+            uid=item_uid,
             name=name,
             type=AuthAttrType.STR,
             source=AuthSessionAttrSource.CLIENT,
@@ -279,12 +279,12 @@ class AuthSessionPresetsStorageContract(
         self.assertEqual(await self.storage.get_bindings(), ())
 
     async def test_the_bindings_come_by_the_preset_then_the_attr(self) -> None:
-        for item_id, name in ((2, "sign_up"), (1, "sign_in")):
-            await self.storage.create(self._create_item(item_id, name))
+        for item_uid, name in ((2, "sign_up"), (1, "sign_in")):
+            await self.storage.create(self._create_item(item_uid, name))
         bindings = (
-            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True),
-            AuthSessionPresetBinding(preset_id=1, attr_id=7, required=False),
-            AuthSessionPresetBinding(preset_id=2, attr_id=3, required=False),
+            AuthSessionPresetBinding(preset_uid=1, attr_uid=3, required=True),
+            AuthSessionPresetBinding(preset_uid=1, attr_uid=7, required=False),
+            AuthSessionPresetBinding(preset_uid=2, attr_uid=3, required=False),
         )
         for binding in reversed(bindings):
             await self.storage.bind(binding)
@@ -294,17 +294,17 @@ class AuthSessionPresetsStorageContract(
         await self.storage.create(self._create_item(1, "sign_in"))
         for required in (False, True):
             binding = AuthSessionPresetBinding(
-                preset_id=1, attr_id=3, required=required
+                preset_uid=1, attr_uid=3, required=required
             )
             await self.storage.bind(binding)
         self.assertEqual(await self.storage.get_bindings(), (binding,))
 
     async def test_an_unbound_attr_is_gone(self) -> None:
         await self.storage.create(self._create_item(1, "sign_in"))
-        kept = AuthSessionPresetBinding(preset_id=1, attr_id=7, required=False)
+        kept = AuthSessionPresetBinding(preset_uid=1, attr_uid=7, required=False)
         await self.storage.bind(kept)
         await self.storage.bind(
-            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+            AuthSessionPresetBinding(preset_uid=1, attr_uid=3, required=True)
         )
         await self.storage.unbind(1, 3)
         self.assertEqual(await self.storage.get_bindings(), (kept,))
@@ -318,22 +318,22 @@ class AuthSessionPresetsStorageContract(
     async def test_a_preset_not_there_is_not_found(self) -> None:
         await self.storage.create(self._create_item(1, "sign_in"))
         await self.storage.delete(1)
-        binding = AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
-        for preset_id in (1, 2):
+        binding = AuthSessionPresetBinding(preset_uid=1, attr_uid=3, required=True)
+        for preset_uid in (1, 2):
             for call in (
-                self.storage.bind(dataclasses.replace(binding, preset_id=preset_id)),
-                self.storage.unbind(preset_id, 3),
+                self.storage.bind(dataclasses.replace(binding, preset_uid=preset_uid)),
+                self.storage.unbind(preset_uid, 3),
             ):
                 with self.assertRaises(AuthItemNotFoundError) as error:
                     await call
-                self._assert_error(error.exception, preset_id)
+                self._assert_error(error.exception, preset_uid)
 
     async def test_the_bindings_go_with_their_preset(self) -> None:
-        for item_id, name in ((1, "sign_in"), (2, "sign_up")):
-            await self.storage.create(self._create_item(item_id, name))
-        kept = AuthSessionPresetBinding(preset_id=2, attr_id=3, required=True)
+        for item_uid, name in ((1, "sign_in"), (2, "sign_up")):
+            await self.storage.create(self._create_item(item_uid, name))
+        kept = AuthSessionPresetBinding(preset_uid=2, attr_uid=3, required=True)
         await self.storage.bind(
-            AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+            AuthSessionPresetBinding(preset_uid=1, attr_uid=3, required=True)
         )
         await self.storage.bind(kept)
         await self.storage.delete(1)
@@ -341,7 +341,7 @@ class AuthSessionPresetsStorageContract(
 
     async def test_a_rename_keeps_the_bindings(self) -> None:
         await self.storage.create(self._create_item(1, "sign_in"))
-        binding = AuthSessionPresetBinding(preset_id=1, attr_id=3, required=True)
+        binding = AuthSessionPresetBinding(preset_uid=1, attr_uid=3, required=True)
         await self.storage.bind(binding)
         await self.storage.rename(1, "sign_in/apple")
         self.assertEqual(await self.storage.get_bindings(), (binding,))
@@ -351,5 +351,5 @@ class AuthSessionPresetsStorageContract(
         return project.auth.storage.sessions.presets
 
     @t.override
-    def _create_item(self, item_id: int, name: str) -> AuthSessionPreset:
-        return AuthSessionPreset(id=item_id, name=name)
+    def _create_item(self, item_uid: int, name: str) -> AuthSessionPreset:
+        return AuthSessionPreset(uid=item_uid, name=name)

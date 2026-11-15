@@ -128,15 +128,15 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.dispatcher.join()
         return result
 
-    async def answer(self, attempt_id: str, code: str) -> AuthSignUpResult:
-        answer = AuthAnswerSignUpParameters(attempt_id=attempt_id, answer=code)
+    async def answer(self, attempt_uid: str, code: str) -> AuthSignUpResult:
+        answer = AuthAnswerSignUpParameters(attempt_uid=attempt_uid, answer=code)
         return await self.project.operations.runner.run(
             self.project.auth.sign_up.op_answer, answer, self.metadata
         )
 
     async def sign_up(self, email: str) -> AuthSignedUp:
         challenge = await self.start(email)
-        result = await self.answer(challenge.attempt_id, self.get_codes()[-1][1])
+        result = await self.answer(challenge.attempt_uid, self.get_codes()[-1][1])
         assert isinstance(result, AuthSignedUp)
         return result
 
@@ -146,7 +146,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         [(email, code)] = self.get_codes()
         self.assertEqual(email, "alice@example.com")
         self.assertRegex(code, r"^\d{6}$")
-        result = await self.answer(challenge.attempt_id, code)
+        result = await self.answer(challenge.attempt_uid, code)
         assert isinstance(result, AuthSignedUp)
         identities = self.project.auth.storage.profiles.identities
         self.assertEqual(
@@ -158,9 +158,9 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         code = self.get_codes()[-1][1]
         wrong = f"{(int(code) + 1) % 10**6:06d}"
         with self.assertRaises(AuthMethodRefusedError):
-            await self.answer(challenge.attempt_id, wrong)
+            await self.answer(challenge.attempt_uid, wrong)
         self.assertIsInstance(
-            await self.answer(challenge.attempt_id, code), AuthSignedUp
+            await self.answer(challenge.attempt_uid, code), AuthSignedUp
         )
 
     async def test_the_email_is_normalized(self) -> None:
@@ -213,7 +213,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(challenge.challenge, AuthCodeChallenge(length=6))
         await self.project.auth.dispatcher.join()
         answer = AuthAnswerSignInParameters(
-            attempt_id=challenge.attempt_id, answer=self.get_codes()[-1][1]
+            attempt_uid=challenge.attempt_uid, answer=self.get_codes()[-1][1]
         )
         signed_in = await runner.run(sign_in.op_answer, answer, metadata)
         assert isinstance(signed_in, AuthSignedIn)
@@ -286,7 +286,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(call.args[1], "AuthSendCodeOperation")
         self.assertIsInstance(call.args[2], OSError)
         # the code had it come is good still, as the attempt lives
-        result = await self.answer(challenge.attempt_id, "123456")
+        result = await self.answer(challenge.attempt_uid, "123456")
         self.assertIsInstance(result, AuthSignedUp)
 
     def test_the_mail_is_plain_english_its_secrets_out_of_its_repr(self) -> None:

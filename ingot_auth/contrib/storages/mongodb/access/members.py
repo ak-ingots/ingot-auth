@@ -26,7 +26,7 @@ class AuthMongoDbMembersStorage(AuthMongoDbCollectionMixin, BaseAuthMembersStora
     @t.override
     async def _add(self, membership: AuthMembership) -> None:
         collection = await self._mongodb_get_collection()
-        document = {"group": membership.group, "uid": membership.uid}
+        document = {"group": membership.group, "profile_uid": membership.profile_uid}
         await collection.replace_one(
             document, document, upsert=True, session=self._mongodb_get_session()
         )
@@ -35,7 +35,7 @@ class AuthMongoDbMembersStorage(AuthMongoDbCollectionMixin, BaseAuthMembersStora
     async def _remove(self, membership: AuthMembership) -> None:
         collection = await self._mongodb_get_collection()
         await collection.delete_one(
-            {"group": membership.group, "uid": membership.uid},
+            {"group": membership.group, "profile_uid": membership.profile_uid},
             session=self._mongodb_get_session(),
         )
 
@@ -43,15 +43,15 @@ class AuthMongoDbMembersStorage(AuthMongoDbCollectionMixin, BaseAuthMembersStora
     async def _get_uids(self, group: str) -> tuple[str, ...]:
         collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"group": group}, {"uid": True}, session=self._mongodb_get_session()
-        ).sort("uid", 1)
-        return tuple([document["uid"] async for document in documents])
+            {"group": group}, {"profile_uid": True}, session=self._mongodb_get_session()
+        ).sort("profile_uid", 1)
+        return tuple([document["profile_uid"] async for document in documents])
 
     @t.override
     async def _get_groups(self, uid: str) -> tuple[str, ...]:
         collection = await self._mongodb_get_collection()
         documents = collection.find(
-            {"uid": uid}, {"group": True}, session=self._mongodb_get_session()
+            {"profile_uid": uid}, {"group": True}, session=self._mongodb_get_session()
         ).sort("group", 1)
         return tuple([document["group"] async for document in documents])
 
@@ -59,5 +59,5 @@ class AuthMongoDbMembersStorage(AuthMongoDbCollectionMixin, BaseAuthMembersStora
     async def _mongodb_create_indexes(
         self, collection: "AsyncCollection[Document]"
     ) -> None:
-        await collection.create_index([("group", 1), ("uid", 1)], unique=True)
-        await collection.create_index([("uid", 1), ("group", 1)])
+        await collection.create_index([("group", 1), ("profile_uid", 1)], unique=True)
+        await collection.create_index([("profile_uid", 1), ("group", 1)])

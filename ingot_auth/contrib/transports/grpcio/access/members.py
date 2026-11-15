@@ -40,17 +40,17 @@ class AuthGrpcMembersServicer(BaseAuthGrpcServicer, members_pb2_grpc.MembersServ
     ) -> members_pb2.ListMembersResponse:
         factory = self.project.auth.access.members.op_list
         uids = await self.run_operation(factory, request.group, context)
-        return members_pb2.ListMembersResponse(uids=uids)
+        return members_pb2.ListMembersResponse(profile_uids=uids)
 
     @t.override
     async def ListMemberGroups(
         self, request: members_pb2.ListMemberGroupsRequest, context: Context
     ) -> members_pb2.ListMemberGroupsResponse:
         factory = self.project.auth.access.members.op_list_groups
-        groups = await self.run_operation(factory, request.uid, context)
+        groups = await self.run_operation(factory, request.profile_uid, context)
         return members_pb2.ListMemberGroupsResponse(groups=groups)
 
 
 def build_membership(message: members_pb2.Membership) -> AuthMembership:
     """Internal: the membership of a message."""
-    return AuthMembership(group=message.group, uid=message.uid)
+    return AuthMembership(group=message.group, profile_uid=message.profile_uid)

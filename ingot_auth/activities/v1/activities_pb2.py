@@ -26,23 +26,23 @@ from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n)ingot_auth/activities/v1/activities.proto\x12\x18ingot_auth.activities.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xea\x01\n\x08\x41\x63tivity\x12\x0b\n\x03who\x18\x01 \x01(\t\x12\x12\n\nsession_id\x18\x02 \x01(\t\x12\x30\n\x06\x61\x63tion\x18\x03 \x01(\x0e\x32 .ingot_auth.activities.v1.Action\x12\x13\n\x0b\x65ntity_type\x18\x04 \x01(\t\x12\x11\n\tentity_id\x18\x05 \x01(\t\x12(\n\x07\x63ontext\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0f\n\x07run_uid\x18\x07 \x01(\t\x12(\n\x04when\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xc0\x02\n\x15ListActivitiesRequest\x12\x18\n\x0b\x65ntity_type\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x16\n\tentity_id\x18\x02 \x01(\tH\x01\x88\x01\x01\x12\x10\n\x03who\x18\x03 \x01(\tH\x02\x88\x01\x01\x12\x17\n\nsession_id\x18\x04 \x01(\tH\x03\x88\x01\x01\x12\x30\n\x06\x61\x63tion\x18\x05 \x01(\x0e\x32 .ingot_auth.activities.v1.Action\x12)\n\x05since\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12)\n\x05until\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05limit\x18\x08 \x01(\rB\x0e\n\x0c_entity_typeB\x0c\n\n_entity_idB\x06\n\x04_whoB\r\n\x0b_session_id\"P\n\x16ListActivitiesResponse\x12\x36\n\nactivities\x18\x01 \x03(\x0b\x32\".ingot_auth.activities.v1.Activity*A\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x17\n\x13PERMISSION_CAN_READ\x10\x01*\xcc\x01\n\x06\x41\x63tion\x12\x16\n\x12\x41\x43TION_UNSPECIFIED\x10\x00\x12\x11\n\rACTION_CREATE\x10\x01\x12\x11\n\rACTION_UPDATE\x10\x02\x12\x11\n\rACTION_DELETE\x10\x03\x12\x0f\n\x0b\x41\x43TION_BIND\x10\x04\x12\x11\n\rACTION_UNBIND\x10\x05\x12\x12\n\x0e\x41\x43TION_SIGN_IN\x10\x06\x12\x13\n\x0f\x41\x43TION_SIGN_OUT\x10\x07\x12\x11\n\rACTION_REVOKE\x10\x08\x12\x11\n\rACTION_EXPIRE\x10\t2\x81\x01\n\nActivities\x12s\n\x0eListActivities\x12/.ingot_auth.activities.v1.ListActivitiesRequest\x1a\x30.ingot_auth.activities.v1.ListActivitiesResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n)ingot_auth/activities/v1/activities.proto\x12\x18ingot_auth.activities.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xec\x01\n\x08\x41\x63tivity\x12\x0b\n\x03who\x18\x01 \x01(\t\x12\x13\n\x0bsession_uid\x18\x02 \x01(\t\x12\x30\n\x06\x61\x63tion\x18\x03 \x01(\x0e\x32 .ingot_auth.activities.v1.Action\x12\x13\n\x0b\x65ntity_type\x18\x04 \x01(\t\x12\x12\n\nentity_uid\x18\x05 \x01(\t\x12(\n\x07\x63ontext\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x0f\n\x07run_uid\x18\x07 \x01(\t\x12(\n\x04when\x18\x08 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xc4\x02\n\x15ListActivitiesRequest\x12\x18\n\x0b\x65ntity_type\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x17\n\nentity_uid\x18\x02 \x01(\tH\x01\x88\x01\x01\x12\x10\n\x03who\x18\x03 \x01(\tH\x02\x88\x01\x01\x12\x18\n\x0bsession_uid\x18\x04 \x01(\tH\x03\x88\x01\x01\x12\x30\n\x06\x61\x63tion\x18\x05 \x01(\x0e\x32 .ingot_auth.activities.v1.Action\x12)\n\x05since\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12)\n\x05until\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05limit\x18\x08 \x01(\rB\x0e\n\x0c_entity_typeB\r\n\x0b_entity_uidB\x06\n\x04_whoB\x0e\n\x0c_session_uid\"P\n\x16ListActivitiesResponse\x12\x36\n\nactivities\x18\x01 \x03(\x0b\x32\".ingot_auth.activities.v1.Activity*A\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x17\n\x13PERMISSION_CAN_READ\x10\x01*\xcc\x01\n\x06\x41\x63tion\x12\x16\n\x12\x41\x43TION_UNSPECIFIED\x10\x00\x12\x11\n\rACTION_CREATE\x10\x01\x12\x11\n\rACTION_UPDATE\x10\x02\x12\x11\n\rACTION_DELETE\x10\x03\x12\x0f\n\x0b\x41\x43TION_BIND\x10\x04\x12\x11\n\rACTION_UNBIND\x10\x05\x12\x12\n\x0e\x41\x43TION_SIGN_IN\x10\x06\x12\x13\n\x0f\x41\x43TION_SIGN_OUT\x10\x07\x12\x11\n\rACTION_REVOKE\x10\x08\x12\x11\n\rACTION_EXPIRE\x10\t2\x81\x01\n\nActivities\x12s\n\x0eListActivities\x12/.ingot_auth.activities.v1.ListActivitiesRequest\x1a\x30.ingot_auth.activities.v1.ListActivitiesResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.activities.v1.activities_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=776
-  _globals['_PERMISSION']._serialized_end=841
-  _globals['_ACTION']._serialized_start=844
-  _globals['_ACTION']._serialized_end=1048
+  _globals['_PERMISSION']._serialized_start=782
+  _globals['_PERMISSION']._serialized_end=847
+  _globals['_ACTION']._serialized_start=850
+  _globals['_ACTION']._serialized_end=1054
   _globals['_ACTIVITY']._serialized_start=135
-  _globals['_ACTIVITY']._serialized_end=369
-  _globals['_LISTACTIVITIESREQUEST']._serialized_start=372
-  _globals['_LISTACTIVITIESREQUEST']._serialized_end=692
-  _globals['_LISTACTIVITIESRESPONSE']._serialized_start=694
-  _globals['_LISTACTIVITIESRESPONSE']._serialized_end=774
-  _globals['_ACTIVITIES']._serialized_start=1051
-  _globals['_ACTIVITIES']._serialized_end=1180
+  _globals['_ACTIVITY']._serialized_end=371
+  _globals['_LISTACTIVITIESREQUEST']._serialized_start=374
+  _globals['_LISTACTIVITIESREQUEST']._serialized_end=698
+  _globals['_LISTACTIVITIESRESPONSE']._serialized_start=700
+  _globals['_LISTACTIVITIESRESPONSE']._serialized_end=780
+  _globals['_ACTIVITIES']._serialized_start=1057
+  _globals['_ACTIVITIES']._serialized_end=1186
 # @@protoc_insertion_point(module_scope)

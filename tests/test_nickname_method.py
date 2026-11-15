@@ -217,7 +217,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         result = await runner.run(sign_in, start, metadata)
         assert isinstance(result, AuthSignedIn)
         caller = await self.project.auth.sessions.authenticate(result.token)
-        self.assertEqual((caller.uid, caller.session_id), (uid, result.session_id))
+        self.assertEqual((caller.uid, caller.session_uid), (uid, result.session_uid))
         wrong = AuthStartSignInParameters(
             method="nickname",
             parameters=AuthNicknameStart(nickname="alice", password="wrong horse"),
@@ -234,7 +234,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_password_is_of_the_profile(self) -> None:
         result = await self.sign_up("alice", "correct horse")
         await self.project.auth.storage.profiles.identities.create(
-            AuthIdentity(kind="nickname", value="wonder", uid=result.uid)
+            AuthIdentity(kind="nickname", value="wonder", profile_uid=result.uid)
         )
         self.assertEqual(
             await self.sign_in("wonder", "correct horse"),
@@ -338,7 +338,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         secret = await self.project.auth.storage.profiles.secrets.get(result.uid)
         profiles = costlier.auth.storage.profiles
         await profiles.identities.create(
-            AuthIdentity(kind="nickname", value="alice", uid=result.uid)
+            AuthIdentity(kind="nickname", value="alice", profile_uid=result.uid)
         )
         await profiles.secrets.put(result.uid, secret)
         method = costlier.auth.methods.get("nickname")

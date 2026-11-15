@@ -18,11 +18,11 @@ class AuthMemoryMembersStorage(AuthMemoryStateMixin, BaseAuthMembersStorage):
 
     @t.override
     async def _add(self, membership: AuthMembership) -> None:
-        self._memberships.add((membership.group, membership.uid))
+        self._memberships.add((membership.group, membership.profile_uid))
 
     @t.override
     async def _remove(self, membership: AuthMembership) -> None:
-        self._memberships.discard((membership.group, membership.uid))
+        self._memberships.discard((membership.group, membership.profile_uid))
 
     @t.override
     async def _get_uids(self, group: str) -> tuple[str, ...]:

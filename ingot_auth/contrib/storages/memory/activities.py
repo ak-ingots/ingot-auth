@@ -36,9 +36,9 @@ class AuthMemoryActivitiesStorage(AuthMemoryStateMixin, BaseAuthActivitiesStorag
 def _matches(record: AuthActivityRecord, query: AuthActivityQuery) -> bool:
     return (
         query.entity_type in (None, record.entity_type)
-        and query.entity_id in (None, record.entity_id)
+        and query.entity_uid in (None, record.entity_uid)
         and query.who in (None, record.who)
-        and query.session_id in (None, record.session_id)
+        and query.session_uid in (None, record.session_uid)
         and query.action in (None, record.action)
         and (query.since is None or record.when >= query.since)
         and (query.until is None or record.when < query.until)

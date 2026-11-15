@@ -17,9 +17,9 @@ class AuthItemInvalidError(AuthRegistryError):
     """
 
     @classmethod
-    def for_id(cls, registry: str, item_id: int) -> t.Self:
+    def for_uid(cls, registry: str, item_uid: int) -> t.Self:
         """The id is not positive."""
-        return cls(f"{registry}: the id {item_id} is not positive", registry, item_id)
+        return cls(f"{registry}: the id {item_uid} is not positive", registry, item_uid)
 
     @classmethod
     def for_name(cls, registry: str, name: str) -> t.Self:
@@ -34,13 +34,13 @@ class AuthItemInvalidError(AuthRegistryError):
         )
 
     @classmethod
-    def for_value(cls, registry: str, item_id: int) -> t.Self:
+    def for_value(cls, registry: str, item_uid: int) -> t.Self:
         """
-        A value of the item ``item_id`` is not acceptable: not of its type, or
+        A value of the item ``item_uid`` is not acceptable: not of its type, or
         not for the one who gives it. The value itself is not told.
         """
         return cls(
-            f"{registry}: a value of {item_id} is not acceptable", registry, item_id
+            f"{registry}: a value of {item_uid} is not acceptable", registry, item_uid
         )
 
     @classmethod

@@ -23,18 +23,18 @@ class BaseAuthAttemptsCache(Entity):
         await self._put(attempt)
 
     @t.final
-    async def take(self, attempt_id: str) -> AuthAttempt:
+    async def take(self, attempt_uid: str) -> AuthAttempt:
         """
         Gives an attempt and forgets it.
 
         :raises AuthAttemptNotFoundError: no attempt has the id, or it expired.
         """
-        return await self._take(attempt_id)
+        return await self._take(attempt_uid)
 
     @abc.abstractmethod
     async def _put(self, attempt: AuthAttempt) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._put")
 
     @abc.abstractmethod
-    async def _take(self, attempt_id: str) -> AuthAttempt:
+    async def _take(self, attempt_uid: str) -> AuthAttempt:
         raise NotImplementedError(f"{type(self).__qualname__}._take")

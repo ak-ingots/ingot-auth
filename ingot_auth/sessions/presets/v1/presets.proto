@@ -34,14 +34,14 @@ enum Permission {
 }
 
 message Preset {
-  uint32 id = 1;
+  uint32 uid = 1;
   string name = 2;
 }
 
 // An attribute of the sessions bound to a preset, many to many.
 message Binding {
-  uint32 preset_id = 1;
-  uint32 attr_id = 2;
+  uint32 preset_uid = 1;
+  uint32 attr_uid = 2;
   bool required = 3;
 }
 
@@ -60,7 +60,7 @@ message ListPresetsResponse {
 }
 
 message RenamePresetRequest {
-  uint32 id = 1;
+  uint32 uid = 1;
   string name = 2;
 }
 
@@ -69,7 +69,7 @@ message RenamePresetResponse {
 }
 
 message DeletePresetRequest {
-  uint32 id = 1;
+  uint32 uid = 1;
 }
 
 message DeletePresetResponse {}
@@ -83,8 +83,8 @@ message BindAttrResponse {
 }
 
 message UnbindAttrRequest {
-  uint32 preset_id = 1;
-  uint32 attr_id = 2;
+  uint32 preset_uid = 1;
+  uint32 attr_uid = 2;
 }
 
 message UnbindAttrResponse {}

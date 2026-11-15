@@ -36,7 +36,7 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
 
     @t.override
     async def _open(self, session: AuthSessionRecord) -> None:
-        self._sessions[session.id] = session
+        self._sessions[session.uid] = session
 
     @t.override
     async def _find(self, token_hash: str) -> AuthSessionRecord:
@@ -52,9 +52,9 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
                 (
                     session
                     for session in self._sessions.values()
-                    if session.uid == uid and session.closed_at is None
+                    if session.profile_uid == uid and session.closed_at is None
                 ),
-                key=lambda session: (session.opened_at, session.id),
+                key=lambda session: (session.opened_at, session.uid),
             )
         )
 
@@ -62,31 +62,35 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
     async def _get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         return tuple(
             sorted(
-                (session for session in self._sessions.values() if session.uid == uid),
-                key=lambda session: (session.opened_at, session.id),
+                (
+                    session
+                    for session in self._sessions.values()
+                    if session.profile_uid == uid
+                ),
+                key=lambda session: (session.opened_at, session.uid),
             )
         )
 
     @t.override
-    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
-        session = self._find_open(session_id)
-        self._sessions[session_id] = dataclasses.replace(session, seen_at=seen_at)
+    async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
+        session = self._find_open(session_uid)
+        self._sessions[session_uid] = dataclasses.replace(session, seen_at=seen_at)
 
     @t.override
     async def _close(
         self,
-        session_id: str,
+        session_uid: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
     ) -> None:
-        session = self._find_open(session_id)
-        self._sessions[session_id] = dataclasses.replace(
+        session = self._find_open(session_uid)
+        self._sessions[session_uid] = dataclasses.replace(
             session, closed_at=closed_at, close_reason=reason
         )
 
-    def _find_open(self, session_id: str) -> AuthSessionRecord:
+    def _find_open(self, session_uid: str) -> AuthSessionRecord:
         """:raises AuthSessionNotFoundError: no session of the id is open."""
-        session = self._sessions.get(session_id)
+        session = self._sessions.get(session_uid)
         if session is None or session.closed_at is not None:
-            raise AuthSessionNotFoundError.for_id(session_id)
+            raise AuthSessionNotFoundError.for_uid(session_uid)
         return session

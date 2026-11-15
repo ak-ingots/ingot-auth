@@ -92,7 +92,7 @@ attempt knows whose challenge it is:
 challenge = (
     await email_code.StartSignIn(StartSignInRequest(email="alice@example.com"))
 ).result.challenge
-answer = AnswerSignInRequest(attempt_id=challenge.attempt_id, code="123456")
+answer = AnswerSignInRequest(attempt_uid=challenge.attempt_uid, code="123456")
 token = (await sign_in.AnswerSignIn(answer)).result.signed_in.token
 ```
 

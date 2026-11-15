@@ -36,10 +36,10 @@ class OwnSessionsTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sessions.open("b2", "nickname", {1: "another's"})
         own = await self.run_operation(self.sessions.op_list_own, None)
         self.assertEqual(
-            [(s.id, s.attr_values, s.is_current) for s in own],
+            [(s.uid, s.attr_values, s.is_current) for s in own],
             [
-                (self.phone.session_id, {1: "phone"}, False),
-                (self.laptop.session_id, {1: "laptop"}, True),
+                (self.phone.session_uid, {1: "phone"}, False),
+                (self.laptop.session_uid, {1: "laptop"}, True),
             ],
         )
         self.assertNotIn(self.laptop.token, repr(own))
@@ -48,36 +48,36 @@ class OwnSessionsTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_a_user_revokes_a_session_of_its_own(self) -> None:
-        lost = AuthRevokeOwnSessionParameters(session_id=self.phone.session_id)
+        lost = AuthRevokeOwnSessionParameters(session_uid=self.phone.session_uid)
         await self.run_operation(self.sessions.op_revoke_own, lost)
         with self.assertRaises(AuthSessionNotFoundError):
             await self.sessions.authenticate(self.phone.token)
         own = await self.run_operation(self.sessions.op_list_own, None)
-        self.assertEqual([s.id for s in own], [self.laptop.session_id])
+        self.assertEqual([s.uid for s in own], [self.laptop.session_uid])
         storage = self.project.auth.storage
         assert isinstance(storage, AuthMemoryStorage)
         self.assertEqual(
-            storage.sessions._sessions[self.phone.session_id].close_reason,
+            storage.sessions._sessions[self.phone.session_uid].close_reason,
             AuthSessionCloseReason.REVOKED,
         )
 
     async def test_a_session_of_another_or_closed_is_not_found(self) -> None:
         another = await self.sessions.open("b2", "nickname", {})
-        lost = AuthRevokeOwnSessionParameters(session_id=self.phone.session_id)
+        lost = AuthRevokeOwnSessionParameters(session_uid=self.phone.session_uid)
         await self.run_operation(self.sessions.op_revoke_own, lost)
-        for session_id, caller in (
-            (another.session_id, self.caller),
-            (self.phone.session_id, self.caller),  # closed already
+        for session_uid, caller in (
+            (another.session_uid, self.caller),
+            (self.phone.session_uid, self.caller),  # closed already
             ("unknown", self.caller),
-            (self.laptop.session_id, ROOT),  # the root has no session
+            (self.laptop.session_uid, ROOT),  # the root has no session
         ):
-            with self.subTest(session_id=session_id, caller=caller.uid):
-                parameters = AuthRevokeOwnSessionParameters(session_id=session_id)
+            with self.subTest(session_uid=session_uid, caller=caller.uid):
+                parameters = AuthRevokeOwnSessionParameters(session_uid=session_uid)
                 with self.assertRaises(AuthOwnSessionNotFoundError) as error:
                     await self.run_operation(
                         self.sessions.op_revoke_own, parameters, caller
                     )
-                self.assertEqual(error.exception.session_id, session_id)
+                self.assertEqual(error.exception.session_uid, session_uid)
         await self.sessions.authenticate(another.token)  # kept
 
     async def test_a_user_revokes_its_other_sessions(self) -> None:
@@ -96,13 +96,13 @@ class OwnSessionsTestCase(unittest.IsolatedAsyncioTestCase):
         with mock.patch.object(
             type(self.sessions),
             "close",
-            mock.AsyncMock(side_effect=AuthSessionNotFoundError.for_id("x")),
+            mock.AsyncMock(side_effect=AuthSessionNotFoundError.for_uid("x")),
         ):
             count = await self.run_operation(self.sessions.op_revoke_others, None)
         self.assertEqual(count, 0)
 
     async def test_the_anonymous_caller_may_not(self) -> None:
-        lost = AuthRevokeOwnSessionParameters(session_id=self.phone.session_id)
+        lost = AuthRevokeOwnSessionParameters(session_uid=self.phone.session_uid)
         for factory, parameters in (
             (self.sessions.op_list_own, None),
             (self.sessions.op_revoke_own, lost),

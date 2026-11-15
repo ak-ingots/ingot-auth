@@ -37,23 +37,23 @@ class BaseAuthRegistryStorage[ItemType: AuthItem](Entity):
         return await self._get_all()
 
     @t.final
-    async def rename(self, item_id: int, name: str) -> ItemType:
+    async def rename(self, item_uid: int, name: str) -> ItemType:
         """
         Gives an item a new name, returning the item renamed.
 
         :raises AuthItemNotFoundError: no item has the id.
         :raises AuthItemConflictError: the name is taken.
         """
-        return await self._rename(item_id, name)
+        return await self._rename(item_uid, name)
 
     @t.final
-    async def delete(self, item_id: int) -> None:
+    async def delete(self, item_uid: int) -> None:
         """
         Deletes an item; its id stays taken.
 
         :raises AuthItemNotFoundError: no item has the id.
         """
-        await self._delete(item_id)
+        await self._delete(item_uid)
 
     @abc.abstractmethod
     async def _create(self, item: ItemType) -> None:
@@ -64,9 +64,9 @@ class BaseAuthRegistryStorage[ItemType: AuthItem](Entity):
         raise NotImplementedError(f"{type(self).__qualname__}._get_all")
 
     @abc.abstractmethod
-    async def _rename(self, item_id: int, name: str) -> ItemType:
+    async def _rename(self, item_uid: int, name: str) -> ItemType:
         raise NotImplementedError(f"{type(self).__qualname__}._rename")
 
     @abc.abstractmethod
-    async def _delete(self, item_id: int) -> None:
+    async def _delete(self, item_uid: int) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._delete")

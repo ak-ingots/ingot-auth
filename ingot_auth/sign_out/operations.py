@@ -40,12 +40,12 @@ class AuthSignOutOperation(BaseOperation[None, None]):
             async with auth.storage.transaction():
                 await auth.sessions.close(
                     caller.uid,
-                    caller.session_id,
+                    caller.session_uid,
                     AuthSessionCloseReason.SIGNED_OUT,
                 )
                 await auth.activities.record(
                     auth.sessions,
-                    caller.session_id,
+                    caller.session_uid,
                     AuthActivityAction.SIGN_OUT,
                     metadata,
                 )

@@ -25,23 +25,23 @@ if t.TYPE_CHECKING:
 class AuthSessionToken:
     """
     The token of a session just opened, given once, kept by none but the
-    client and never in a ``repr``, and the id of its session, public.
+    client and never in a ``repr``, and the uid of its session, public.
     """
 
-    session_id: str
+    session_uid: str
     token: str = field(repr=False)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthOwnSession:
     """
-    An open session as its user sees it: its public id, never its token, the
+    An open session as its user sees it: its public uid, never its token, the
     values of its attributes by their ids, the device, the place, the times
     it opened and was seen at, and whether it is the current one, that of the
     caller.
     """
 
-    id: str
+    uid: str
     attr_values: "Mapping[int, AuthAttrValue]"
     opened_at: datetime.datetime
     seen_at: datetime.datetime
@@ -50,16 +50,16 @@ class AuthOwnSession:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthRevokeOwnSessionParameters:
-    """The public id of a session of the caller's own."""
+    """The public uid of a session of the caller's own."""
 
-    session_id: str
+    session_uid: str
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthListSessionsParameters:
     """The uid of a profile; its closed sessions too, the record, if told."""
 
-    uid: str
+    profile_uid: str
     closed: bool = False
 
 
@@ -68,11 +68,11 @@ class AuthSessionInfo:
     """
     A session of a profile as an operator sees it, open or closed, the record
     of a sign-in: never its token nor its hash. A closed one tells when and
-    why; by whom, the activity log tells, by the id of the session.
+    why; by whom, the activity log tells, by the uid of the session.
     """
 
-    id: str
     uid: str
+    profile_uid: str
     method: str
     attr_values: "Mapping[int, AuthAttrValue]"
     opened_at: datetime.datetime

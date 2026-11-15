@@ -159,7 +159,7 @@ class BaseSignInTestCase(unittest.IsolatedAsyncioTestCase):
         self.project = self.create_project()
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
-                id=1,
+                uid=1,
                 name="device",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.CLIENT,
@@ -204,8 +204,8 @@ class BaseSignInTestCase(unittest.IsolatedAsyncioTestCase):
             self.project.operations.create_metadata(caller or self.create_caller()),
         )
 
-    async def answer(self, attempt_id: str, answer: str) -> AuthSignInResult:
-        parameters = AuthAnswerSignInParameters(attempt_id=attempt_id, answer=answer)
+    async def answer(self, attempt_uid: str, answer: str) -> AuthSignInResult:
+        parameters = AuthAnswerSignInParameters(attempt_uid=attempt_uid, answer=answer)
         return await self.project.operations.runner.run(
             self.project.auth.sign_in.op_answer,
             parameters,
@@ -219,7 +219,7 @@ class SignInTestCase(BaseSignInTestCase):
         result = await self.start(AuthTestingStart(subject="a@b.c"), a1="iPhone")
         assert isinstance(result, AuthSignedIn)
         caller = await self.project.auth.sessions.authenticate(result.token)
-        self.assertEqual((caller.uid, caller.session_id), (uid, result.session_id))
+        self.assertEqual((caller.uid, caller.session_uid), (uid, result.session_uid))
         self.assertEqual(
             caller.permissions, masks(AuthTestingPermissions.CAN_SIGN_IN) | OWN
         )
@@ -227,7 +227,7 @@ class SignInTestCase(BaseSignInTestCase):
             hash_token(result.token)
         )
         self.assertEqual(
-            (session.uid, session.method, session.attr_values),
+            (session.profile_uid, session.method, session.attr_values),
             (uid, "testing", {1: "iPhone"}),
         )
         self.assertNotIn(result.token, repr(result))
@@ -235,7 +235,7 @@ class SignInTestCase(BaseSignInTestCase):
     async def test_the_session_keeps_the_values_of_the_transport(self) -> None:
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
-                id=2,
+                uid=2,
                 name="ip",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.TRANSPORT,
@@ -265,8 +265,8 @@ class SignInTestCase(BaseSignInTestCase):
         assert isinstance(challenge, AuthSignInChallenge)
         self.assertEqual(challenge.challenge, "code")
         with self.assertRaises(AuthMethodRefusedError):
-            await self.answer(challenge.attempt_id, "2")
-        result = await self.answer(challenge.attempt_id, "1")
+            await self.answer(challenge.attempt_uid, "2")
+        result = await self.answer(challenge.attempt_uid, "1")
         assert isinstance(result, AuthSignedIn)
         caller = await self.project.auth.sessions.authenticate(result.token)
         self.assertEqual(caller.uid, uid)
@@ -286,7 +286,7 @@ class SignInTestCase(BaseSignInTestCase):
         )
         assert isinstance(challenge, AuthSignUpChallenge)
         with self.assertRaises(AuthAttemptNotFoundError):
-            await self.answer(challenge.attempt_id, "1")
+            await self.answer(challenge.attempt_uid, "1")
 
     def test_the_anonymous_caller_gets_the_flag_of_the_sign_in(self) -> None:
         self.assertEqual(
@@ -337,14 +337,14 @@ class DerivingTestCase(BaseSignInTestCase):
         self,
     ) -> None:
         attrs = self.project.auth.storage.sessions.attrs
-        for attr_id, name, source in (
+        for attr_uid, name, source in (
             (2, "ip", AuthSessionAttrSource.TRANSPORT),
             (3, "country", AuthSessionAttrSource.DERIVED),
             (4, "city", AuthSessionAttrSource.DERIVED),
         ):
             await attrs.create(
                 AuthSessionAttr(
-                    id=attr_id, name=name, type=AuthAttrType.STR, source=source
+                    uid=attr_uid, name=name, type=AuthAttrType.STR, source=source
                 )
             )
         await self.sign_up("a@b.c")
@@ -394,7 +394,7 @@ class TimingTestCase(BaseSignInTestCase):
             challenge = await self.start(AuthTestingStart(subject="a@b.c", code="1"))
             assert isinstance(challenge, AuthSignInChallenge)
             with self.assertRaises(AuthMethodRefusedError):
-                await self.answer(challenge.attempt_id, "2")
+                await self.answer(challenge.attempt_uid, "2")
         self.assertEqual(sleep.await_count, 2)
 
 

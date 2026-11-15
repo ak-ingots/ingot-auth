@@ -12,9 +12,9 @@ from ingot_auth.storages import (
 
 from .base import BaseAuthContract
 
-BETA = AuthTag(id=1, name="beta")
+BETA = AuthTag(uid=1, name="beta")
 DEVICE = AuthSessionAttr(
-    id=1, name="device", type=AuthAttrType.STR, source=AuthSessionAttrSource.CLIENT
+    uid=1, name="device", type=AuthAttrType.STR, source=AuthSessionAttrSource.CLIENT
 )
 
 

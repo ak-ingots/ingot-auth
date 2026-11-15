@@ -86,7 +86,7 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
         uid, signed_in = await self.sign_up_and_in()
         sign_in, bound, created = await self.last(3)
         self.assertEqual(
-            [(r.who, r.action, r.entity_type, r.entity_id) for r in (created, bound)],
+            [(r.who, r.action, r.entity_type, r.entity_uid) for r in (created, bound)],
             [
                 ("anonymous", AuthActivityAction.CREATE, "auth.profiles", uid),
                 ("anonymous", AuthActivityAction.BIND, "auth.profiles", uid),
@@ -97,11 +97,11 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
             ({"method": "testing", "identifier_kind": "testing"}, {"kind": "testing"}),
         )
         self.assertEqual(
-            (sign_in.action, sign_in.entity_type, sign_in.entity_id, sign_in.context),
+            (sign_in.action, sign_in.entity_type, sign_in.entity_uid, sign_in.context),
             (
                 AuthActivityAction.SIGN_IN,
                 "auth.sessions",
-                signed_in.session_id,
+                signed_in.session_uid,
                 {"uid": uid, "method": "testing"},
             ),
         )
@@ -114,23 +114,23 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
         another = await sessions.open(uid, "testing", {})
         await self.run_operation(
             sessions.op_revoke_own,
-            AuthRevokeOwnSessionParameters(session_id=other.session_id),
+            AuthRevokeOwnSessionParameters(session_uid=other.session_uid),
             caller,
         )
         await self.run_operation(sessions.op_revoke_others, None, caller)
         await self.run_operation(self.auth.sign_out.op_sign_out, None, caller)
         sign_out, revoke_others, revoke_own = await self.last(3)
         self.assertEqual(
-            [(r.action, r.entity_id) for r in (revoke_own, revoke_others, sign_out)],
+            [(r.action, r.entity_uid) for r in (revoke_own, revoke_others, sign_out)],
             [
-                (AuthActivityAction.REVOKE, other.session_id),
-                (AuthActivityAction.REVOKE, another.session_id),
-                (AuthActivityAction.SIGN_OUT, signed_in.session_id),
+                (AuthActivityAction.REVOKE, other.session_uid),
+                (AuthActivityAction.REVOKE, another.session_uid),
+                (AuthActivityAction.SIGN_OUT, signed_in.session_uid),
             ],
         )
         self.assertEqual(
-            {(r.who, r.session_id) for r in (sign_out, revoke_own)},
-            {(uid, signed_in.session_id)},
+            {(r.who, r.session_uid) for r in (sign_out, revoke_own)},
+            {(uid, signed_in.session_uid)},
         )
 
     async def test_a_session_expiring_is_recorded_by_the_server(self) -> None:
@@ -145,7 +145,7 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
                 await sessions.authenticate(signed_in.token)
         (expired,) = await self.last()
         self.assertEqual(
-            (expired.who, expired.session_id, expired.action, expired.context),
+            (expired.who, expired.session_uid, expired.action, expired.context),
             (
                 "system",
                 None,
@@ -158,31 +158,33 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_members_and_the_presets_are_recorded(self) -> None:
         uid, _ = await self.sign_up_and_in()
         members = self.auth.access.members
-        membership = AuthMembership(group="auth.profiles.grp_managers", uid=uid)
+        membership = AuthMembership(group="auth.profiles.grp_managers", profile_uid=uid)
         await self.run_operation(members.op_add, membership)
         await self.run_operation(members.op_remove, membership)
         presets = self.auth.sessions.presets
         await self.run_operation(
             self.auth.sessions.attrs.op_create,
             AuthSessionAttr(
-                id=1,
+                uid=1,
                 name="device",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.CLIENT,
             ),
         )
-        await self.run_operation(presets.op_create, AuthSessionPreset(id=1, name="web"))
         await self.run_operation(
-            presets.op_bind,
-            AuthSessionPresetBinding(preset_id=1, attr_id=1, required=False),
+            presets.op_create, AuthSessionPreset(uid=1, name="web")
         )
         await self.run_operation(
-            presets.op_unbind, AuthUnbindSessionAttrParameters(preset_id=1, attr_id=1)
+            presets.op_bind,
+            AuthSessionPresetBinding(preset_uid=1, attr_uid=1, required=False),
+        )
+        await self.run_operation(
+            presets.op_unbind, AuthUnbindSessionAttrParameters(preset_uid=1, attr_uid=1)
         )
         unbind, bind, _, _, unbound, bound = await self.last(6)
         self.assertEqual(
             [
-                (r.action, r.entity_type, r.entity_id, r.context)
+                (r.action, r.entity_type, r.entity_uid, r.context)
                 for r in (bound, unbound)
             ],
             [
@@ -201,19 +203,22 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
             ],
         )
         self.assertEqual(
-            [(r.action, r.entity_type, r.entity_id, r.context) for r in (bind, unbind)],
+            [
+                (r.action, r.entity_type, r.entity_uid, r.context)
+                for r in (bind, unbind)
+            ],
             [
                 (
                     AuthActivityAction.BIND,
                     "auth.sessions.presets",
                     "1",
-                    {"attr_id": 1, "required": False},
+                    {"attr_uid": 1, "required": False},
                 ),
                 (
                     AuthActivityAction.UNBIND,
                     "auth.sessions.presets",
                     "1",
-                    {"attr_id": 1},
+                    {"attr_uid": 1},
                 ),
             ],
         )
@@ -221,12 +226,12 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_values_of_a_profile_are_recorded(self) -> None:
         uid, _ = await self.sign_up_and_in()
         storage = self.auth.storage.profiles
-        await storage.tags.create(AuthTag(id=1, name="beta"))
-        await storage.attrs.create(AuthAttr(id=2, name="name", type=AuthAttrType.STR))
+        await storage.tags.create(AuthTag(uid=1, name="beta"))
+        await storage.attrs.create(AuthAttr(uid=2, name="name", type=AuthAttrType.STR))
         profiles = self.auth.profiles
         await self.run_operation(
             profiles.op_set_tags,
-            AuthSetProfileTagsParameters(uid=uid, tag_ids=frozenset({1})),
+            AuthSetProfileTagsParameters(uid=uid, tag_uids=frozenset({1})),
         )
         await self.run_operation(
             profiles.op_set_attr_values,
@@ -234,9 +239,12 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
         )
         values, tags = await self.last(2)
         self.assertEqual(
-            [(r.action, r.entity_type, r.entity_id, r.context) for r in (tags, values)],
             [
-                (AuthActivityAction.UPDATE, "auth.profiles", uid, {"tag_ids": [1]}),
+                (r.action, r.entity_type, r.entity_uid, r.context)
+                for r in (tags, values)
+            ],
+            [
+                (AuthActivityAction.UPDATE, "auth.profiles", uid, {"tag_uids": [1]}),
                 (
                     AuthActivityAction.UPDATE,
                     "auth.profiles",

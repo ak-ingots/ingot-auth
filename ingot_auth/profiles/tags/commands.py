@@ -42,7 +42,7 @@ class AuthCreateTagCommand(BaseAuthCreateItemCommand[AuthTag]):
     @t.override
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthTag:
-        return AuthTag(id=namespace.registry_id, name=namespace.registry_name)
+        return AuthTag(uid=namespace.registry_uid, name=namespace.registry_name)
 
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthCreateTagOperation]":
@@ -100,7 +100,7 @@ class AuthSetProfileTagsCommand(
         cls, namespace: argparse.Namespace
     ) -> AuthSetProfileTagsParameters:
         return AuthSetProfileTagsParameters(
-            uid=namespace.profiles_uid, tag_ids=frozenset(namespace.profiles_tags)
+            uid=namespace.profiles_uid, tag_uids=frozenset(namespace.profiles_tags)
         )
 
     @t.override

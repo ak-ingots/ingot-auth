@@ -40,13 +40,13 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](
         document = self._build_document(item)
         try:
             await collection.insert_one(
-                {**document, "_id": item.id, "deleted": False},
+                {**document, "_id": item.uid, "deleted": False},
                 session=self._mongodb_get_session(),
             )
         except DuplicateKeyError as error:
             details = error.details or {}
             if "_id" in details.get("keyPattern", {}):
-                raise AuthItemConflictError.for_id(self.REGISTRY, item.id) from error
+                raise AuthItemConflictError.for_uid(self.REGISTRY, item.uid) from error
             raise AuthItemConflictError.for_name(self.REGISTRY, item.name) from error
 
     @t.override
@@ -58,11 +58,11 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](
         return tuple([self._build_item(document) async for document in documents])
 
     @t.override
-    async def _rename(self, item_id: int, name: str) -> ItemType:
+    async def _rename(self, item_uid: int, name: str) -> ItemType:
         collection = await self._mongodb_get_collection()
         try:
             document = await collection.find_one_and_update(
-                {"_id": item_id, "deleted": False},
+                {"_id": item_uid, "deleted": False},
                 {"$set": {"name": name}},
                 return_document=ReturnDocument.AFTER,
                 session=self._mongodb_get_session(),
@@ -70,19 +70,19 @@ class AuthMongoDbRegistryStorage[ItemType: AuthItem](
         except DuplicateKeyError as error:
             raise AuthItemConflictError.for_name(self.REGISTRY, name) from error
         if document is None:
-            raise AuthItemNotFoundError.for_id(self.REGISTRY, item_id)
+            raise AuthItemNotFoundError.for_uid(self.REGISTRY, item_uid)
         return self._build_item(document)
 
     @t.override
-    async def _delete(self, item_id: int) -> None:
+    async def _delete(self, item_uid: int) -> None:
         collection = await self._mongodb_get_collection()
         result = await collection.update_one(
-            {"_id": item_id, "deleted": False},
+            {"_id": item_uid, "deleted": False},
             {"$set": {"deleted": True}},
             session=self._mongodb_get_session(),
         )
         if not result.matched_count:
-            raise AuthItemNotFoundError.for_id(self.REGISTRY, item_id)
+            raise AuthItemNotFoundError.for_uid(self.REGISTRY, item_uid)
 
     @abc.abstractmethod
     def _build_document(self, item: ItemType) -> "Document":

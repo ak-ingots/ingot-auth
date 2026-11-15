@@ -44,7 +44,7 @@ if t.TYPE_CHECKING:
 class AuthSessionAttrBound(AuthActivityContext):
     """The context of an attribute bound to a preset: which, and how required."""
 
-    attr_id: int
+    attr_uid: int
     required: bool
 
 
@@ -52,13 +52,13 @@ class AuthSessionAttrBound(AuthActivityContext):
 class AuthSessionAttrUnbound(AuthActivityContext):
     """The context of an attribute unbound from a preset: which."""
 
-    attr_id: int
+    attr_uid: int
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthUnbindSessionAttrParameters:
-    preset_id: int
-    attr_id: int
+    preset_uid: int
+    attr_uid: int
 
 
 class BaseAuthSessionPresetsOperation[ParametersType, ResultType](
@@ -75,7 +75,7 @@ class BaseAuthSessionPresetsOperation[ParametersType, ResultType](
     async def _get_attr_ids(self) -> set[int]:
         """The ids of the attributes of the sessions there are."""
         attrs = await self.project.auth.storage.sessions.attrs.get_all()
-        return {attr.id for attr in attrs}
+        return {attr.uid for attr in attrs}
 
 
 class AuthCreateSessionPresetOperation(
@@ -147,17 +147,17 @@ class AuthBindSessionAttrOperation(
     async def _run(
         self, parameters: AuthSessionPresetBinding, metadata: OperationMetadata
     ) -> AuthSessionPresetBinding:
-        if parameters.attr_id not in await self._get_attr_ids():
+        if parameters.attr_uid not in await self._get_attr_ids():
             registry = self.project.auth.storage.sessions.attrs.REGISTRY
-            raise AuthItemNotFoundError.for_id(registry, parameters.attr_id)
+            raise AuthItemNotFoundError.for_uid(registry, parameters.attr_uid)
         async with self.project.auth.storage.transaction():
             await self._get_storage().bind(parameters)
             await self._record(
-                parameters.preset_id,
+                parameters.preset_uid,
                 AuthActivityAction.BIND,
                 metadata,
                 AuthSessionAttrBound(
-                    attr_id=parameters.attr_id, required=parameters.required
+                    attr_uid=parameters.attr_uid, required=parameters.required
                 ),
             )
         return parameters
@@ -180,12 +180,12 @@ class AuthUnbindSessionAttrOperation(
         self, parameters: AuthUnbindSessionAttrParameters, metadata: OperationMetadata
     ) -> None:
         async with self.project.auth.storage.transaction():
-            await self._get_storage().unbind(parameters.preset_id, parameters.attr_id)
+            await self._get_storage().unbind(parameters.preset_uid, parameters.attr_uid)
             await self._record(
-                parameters.preset_id,
+                parameters.preset_uid,
                 AuthActivityAction.UNBIND,
                 metadata,
-                AuthSessionAttrUnbound(attr_id=parameters.attr_id),
+                AuthSessionAttrUnbound(attr_uid=parameters.attr_uid),
             )
 
 
@@ -208,6 +208,6 @@ class AuthListSessionPresetBindingsOperation(
     async def _run(
         self, parameters: None, metadata: OperationMetadata
     ) -> tuple[AuthSessionPresetBinding, ...]:
-        attr_ids = await self._get_attr_ids()
+        attr_uids = await self._get_attr_ids()
         bindings = await self._get_storage().get_bindings()
-        return tuple(binding for binding in bindings if binding.attr_id in attr_ids)
+        return tuple(binding for binding in bindings if binding.attr_uid in attr_uids)

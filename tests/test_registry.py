@@ -43,26 +43,26 @@ from ingot_auth.storages import (
 
 from tests import ANONYMOUS, ROOT, masks
 
-BETA: t.Final = AuthTag(id=1, name="beta")
-STAFF: t.Final = AuthTag(id=2, name="staff")
+BETA: t.Final = AuthTag(uid=1, name="beta")
+STAFF: t.Final = AuthTag(uid=2, name="staff")
 IP: t.Final = AuthSessionAttr(
-    id=1, name="ip", type=AuthAttrType.STR, source=AuthSessionAttrSource.TRANSPORT
+    uid=1, name="ip", type=AuthAttrType.STR, source=AuthSessionAttrSource.TRANSPORT
 )
-SIGN_IN: t.Final = AuthSessionPreset(id=1, name="sign_in")
+SIGN_IN: t.Final = AuthSessionPreset(uid=1, name="sign_in")
 
 
 class SeededSessionAttrsStorage(AuthMemorySessionAttrsStorage):
     def __init__(self) -> None:
         super().__init__()
-        self._items[IP.id] = IP
-        self._taken_ids.add(IP.id)
+        self._items[IP.uid] = IP
+        self._taken_ids.add(IP.uid)
 
 
 class SeededSessionPresetsStorage(AuthMemorySessionPresetsStorage):
     def __init__(self) -> None:
         super().__init__()
-        self._items[SIGN_IN.id] = SIGN_IN
-        self._taken_ids.add(SIGN_IN.id)
+        self._items[SIGN_IN.uid] = SIGN_IN
+        self._taken_ids.add(SIGN_IN.uid)
 
 
 class SeededSessionsStorage(AuthMemorySessionsStorage):
@@ -97,22 +97,22 @@ class RegistryOperationsTestCase(unittest.TestCase):
         async def run() -> tuple[AuthTag, ...]:
             await self.runner.run(tags.op_create, STAFF, self.metadata)
             await self.runner.run(tags.op_create, BETA, self.metadata)
-            parameters = AuthRenameItemParameters(id=2, name="team")
+            parameters = AuthRenameItemParameters(uid=2, name="team")
             await self.runner.run(tags.op_rename, parameters, self.metadata)
             await self.runner.run(
-                tags.op_delete, AuthDeleteItemParameters(id=1), self.metadata
+                tags.op_delete, AuthDeleteItemParameters(uid=1), self.metadata
             )
             return await self.runner.run(tags.op_list, None, self.metadata)
 
-        self.assertEqual(asyncio.run(run()), (AuthTag(id=2, name="team"),))
+        self.assertEqual(asyncio.run(run()), (AuthTag(uid=2, name="team"),))
 
     def test_an_attr_keeps_its_type_when_renamed(self) -> None:
         attrs = self.project.auth.profiles.attrs
-        title = AuthAttr(id=1, name="title/en", type=AuthAttrType.STR)
+        title = AuthAttr(uid=1, name="title/en", type=AuthAttrType.STR)
 
         async def run() -> AuthAttr:
             await self.runner.run(attrs.op_create, title, self.metadata)
-            parameters = AuthRenameItemParameters(id=1, name="title/be")
+            parameters = AuthRenameItemParameters(uid=1, name="title/be")
             return await self.runner.run(attrs.op_rename, parameters, self.metadata)
 
         self.assertEqual(asyncio.run(run()).type, AuthAttrType.STR)
@@ -120,7 +120,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
     def test_a_session_attr_keeps_its_type_and_source_when_renamed(self) -> None:
         session_attrs = self.project.auth.sessions.attrs
         ip = AuthSessionAttr(
-            id=1,
+            uid=1,
             name="ip",
             type=AuthAttrType.STR,
             source=AuthSessionAttrSource.TRANSPORT,
@@ -128,7 +128,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
         async def run() -> AuthSessionAttr:
             await self.runner.run(session_attrs.op_create, ip, self.metadata)
-            parameters = AuthRenameItemParameters(id=1, name="peer/ip")
+            parameters = AuthRenameItemParameters(uid=1, name="peer/ip")
             return await self.runner.run(
                 session_attrs.op_rename, parameters, self.metadata
             )
@@ -141,14 +141,16 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
     def test_an_attr_is_bound_to_a_preset_and_unbound(self) -> None:
         presets = self.project.auth.sessions.presets
-        required = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+        required = AuthSessionPresetBinding(preset_uid=1, attr_uid=1, required=True)
 
         async def run() -> tuple[AuthSessionPresetBinding, ...]:
             await self.runner.run(
                 self.project.auth.sessions.attrs.op_create, IP, self.metadata
             )
             await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
-            optional = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=False)
+            optional = AuthSessionPresetBinding(
+                preset_uid=1, attr_uid=1, required=False
+            )
             bound = await self.runner.run(presets.op_bind, optional, self.metadata)
             self.assertEqual(bound, optional)
             await self.runner.run(presets.op_bind, required, self.metadata)
@@ -156,7 +158,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
                 presets.op_list_bindings, None, self.metadata
             )
             self.assertEqual(bindings, (required,))
-            parameters = AuthUnbindSessionAttrParameters(preset_id=1, attr_id=1)
+            parameters = AuthUnbindSessionAttrParameters(preset_uid=1, attr_uid=1)
             await self.runner.run(presets.op_unbind, parameters, self.metadata)
             return await self.runner.run(presets.op_list_bindings, None, self.metadata)
 
@@ -164,7 +166,7 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
     def test_only_an_attr_there_is_bound(self) -> None:
         presets = self.project.auth.sessions.presets
-        binding = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+        binding = AuthSessionPresetBinding(preset_uid=1, attr_uid=1, required=True)
 
         async def run() -> None:
             await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
@@ -179,14 +181,14 @@ class RegistryOperationsTestCase(unittest.TestCase):
     def test_a_deleted_attr_is_gone_from_the_presets(self) -> None:
         attrs = self.project.auth.sessions.attrs
         presets = self.project.auth.sessions.presets
-        binding = AuthSessionPresetBinding(preset_id=1, attr_id=1, required=True)
+        binding = AuthSessionPresetBinding(preset_uid=1, attr_uid=1, required=True)
 
         async def run() -> tuple[AuthSessionPresetBinding, ...]:
             await self.runner.run(attrs.op_create, IP, self.metadata)
             await self.runner.run(presets.op_create, SIGN_IN, self.metadata)
             await self.runner.run(presets.op_bind, binding, self.metadata)
             await self.runner.run(
-                attrs.op_delete, AuthDeleteItemParameters(id=1), self.metadata
+                attrs.op_delete, AuthDeleteItemParameters(uid=1), self.metadata
             )
             return await self.runner.run(presets.op_list_bindings, None, self.metadata)
 
@@ -194,10 +196,10 @@ class RegistryOperationsTestCase(unittest.TestCase):
 
     def test_wrong_ids_and_names_are_refused(self) -> None:
         tags = self.project.auth.profiles.tags
-        for tag in (AuthTag(id=0, name="beta"), AuthTag(id=1, name="Beta")):
+        for tag in (AuthTag(uid=0, name="beta"), AuthTag(uid=1, name="Beta")):
             with self.assertRaises(AuthItemInvalidError):
                 asyncio.run(self.runner.run(tags.op_create, tag, self.metadata))
-        parameters = AuthRenameItemParameters(id=1, name="two words")
+        parameters = AuthRenameItemParameters(uid=1, name="two words")
         with self.assertRaises(AuthItemInvalidError):
             asyncio.run(self.runner.run(tags.op_rename, parameters, self.metadata))
 
@@ -256,7 +258,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
     def test_the_commands_print_the_items(self) -> None:
         self.assertEqual(
             self.run_project(
-                "auth", "profiles", "tags", "create", "--id", "1", "--name", "beta"
+                "auth", "profiles", "tags", "create", "--uid", "1", "--name", "beta"
             ),
             "1\tbeta\n",
         )
@@ -266,7 +268,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
                 "profiles",
                 "attrs",
                 "create",
-                "--id",
+                "--uid",
                 "1",
                 "--name",
                 "phone",
@@ -281,7 +283,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
                 "sessions",
                 "attrs",
                 "create",
-                "--id",
+                "--uid",
                 "1",
                 "--name",
                 "ip",
@@ -296,7 +298,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
     def test_the_commands_of_the_presets_print_the_bindings(self) -> None:
         presets = ("auth", "sessions", "presets")
         self.assertEqual(
-            self.run_project(*presets, "create", "--id", "2", "--name", "sign_up"),
+            self.run_project(*presets, "create", "--uid", "2", "--name", "sign_up"),
             "2\tsign_up\n",
         )
         for flags, requirement in (([], "optional"), (["--required"], "required")):
@@ -339,8 +341,8 @@ class RegistryCommandsTestCase(unittest.TestCase):
         ):
             self.assertEqual(self.run_project("auth", unit, registry, "list"), "")
             for argv in (
-                ["rename", "--id", "1", "--name", "x"],
-                ["delete", "--id", "1"],
+                ["rename", "--uid", "1", "--name", "x"],
+                ["delete", "--uid", "1"],
             ):
                 with self.assertLogs("ingots.puer.runner", "ERROR"):
                     code = CommandRunner(

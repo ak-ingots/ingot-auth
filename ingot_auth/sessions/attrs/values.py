@@ -37,16 +37,16 @@ def check_client_attr_values(
     :raises AuthItemInvalidError: the value is not of the type of its
         attribute, or the client is not its source.
     """
-    by_id = {attr.id: attr for attr in attrs}
-    for attr_id, value in attr_values.items():
+    by_id = {attr.uid: attr for attr in attrs}
+    for attr_uid, value in attr_values.items():
         try:
-            attr = by_id[attr_id]
+            attr = by_id[attr_uid]
         except KeyError:
-            raise AuthItemNotFoundError.for_id(REGISTRY, attr_id) from None
+            raise AuthItemNotFoundError.for_uid(REGISTRY, attr_uid) from None
         if attr.source is not AuthSessionAttrSource.CLIENT:
-            raise AuthItemInvalidError.for_value(REGISTRY, attr_id)
+            raise AuthItemInvalidError.for_value(REGISTRY, attr_uid)
         if type(value) is not ATTR_VALUE_TYPES[attr.type]:
-            raise AuthItemInvalidError.for_value(REGISTRY, attr_id)
+            raise AuthItemInvalidError.for_value(REGISTRY, attr_uid)
 
 
 def build_attr_values(
@@ -87,5 +87,5 @@ def build_attr_values(
                 type(value).__name__,
             )
         else:
-            kept[attr.id] = value
+            kept[attr.uid] = value
     return kept

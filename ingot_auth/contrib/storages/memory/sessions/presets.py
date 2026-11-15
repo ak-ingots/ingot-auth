@@ -25,32 +25,32 @@ class AuthMemorySessionPresetsStorage(
         self._bindings: dict[int, dict[int, bool]] = {}
 
     @t.override
-    async def _delete(self, item_id: int) -> None:
-        await super()._delete(item_id)
-        self._bindings.pop(item_id, None)
+    async def _delete(self, item_uid: int) -> None:
+        await super()._delete(item_uid)
+        self._bindings.pop(item_uid, None)
 
     @t.override
     async def _bind(self, binding: AuthSessionPresetBinding) -> None:
-        self._get(binding.preset_id)
-        bindings = self._bindings.setdefault(binding.preset_id, {})
-        bindings[binding.attr_id] = binding.required
+        self._get(binding.preset_uid)
+        bindings = self._bindings.setdefault(binding.preset_uid, {})
+        bindings[binding.attr_uid] = binding.required
 
     @t.override
-    async def _unbind(self, preset_id: int, attr_id: int) -> None:
-        self._get(preset_id)
+    async def _unbind(self, preset_uid: int, attr_uid: int) -> None:
+        self._get(preset_uid)
         try:
-            del self._bindings.get(preset_id, {})[attr_id]
+            del self._bindings.get(preset_uid, {})[attr_uid]
         except KeyError:
             raise AuthItemNotFoundError.for_binding(
-                self.REGISTRY, preset_id, attr_id
+                self.REGISTRY, preset_uid, attr_uid
             ) from None
 
     @t.override
     async def _get_bindings(self) -> tuple[AuthSessionPresetBinding, ...]:
         return tuple(
             AuthSessionPresetBinding(
-                preset_id=preset_id, attr_id=attr_id, required=required
+                preset_uid=preset_uid, attr_uid=attr_uid, required=required
             )
-            for preset_id in sorted(self._bindings)
-            for attr_id, required in sorted(self._bindings[preset_id].items())
+            for preset_uid in sorted(self._bindings)
+            for attr_uid, required in sorted(self._bindings[preset_uid].items())
         )

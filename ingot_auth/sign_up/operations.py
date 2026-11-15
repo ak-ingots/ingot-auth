@@ -86,8 +86,10 @@ class BaseAuthSignUpOperation[ParametersType](
         return await method.start_sign_up(parameters, metadata)
 
     @t.override
-    def _create_challenge(self, attempt_id: str, challenge: object) -> AuthSignUpResult:
-        return AuthSignUpChallenge(attempt_id=attempt_id, challenge=challenge)
+    def _create_challenge(
+        self, attempt_uid: str, challenge: object
+    ) -> AuthSignUpResult:
+        return AuthSignUpChallenge(attempt_uid=attempt_uid, challenge=challenge)
 
     @t.override
     async def _complete(
@@ -112,7 +114,7 @@ class BaseAuthSignUpOperation[ParametersType](
         uid = self._create_uid()
         now = self._get_now()
         identity = AuthIdentity(
-            kind=method.IDENTIFIER_KIND, value=verified.subject, uid=uid
+            kind=method.IDENTIFIER_KIND, value=verified.subject, profile_uid=uid
         )
         record = AuthSignUpRecord(
             uid=uid, method=method.get_name(), signed_up_at=now, attr_values=attr_values
@@ -196,4 +198,4 @@ class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParamete
     async def _run(
         self, parameters: AuthAnswerSignUpParameters, metadata: OperationMetadata
     ) -> AuthSignUpResult:
-        return await self.answer(parameters.attempt_id, parameters.answer, metadata)
+        return await self.answer(parameters.attempt_uid, parameters.answer, metadata)

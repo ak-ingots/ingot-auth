@@ -51,19 +51,19 @@ Global___Permission: _TypeAlias = Permission  # noqa: Y015
 class Preset(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -75,22 +75,22 @@ class Binding(_message.Message):
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    PRESET_ID_FIELD_NUMBER: _builtins.int
-    ATTR_ID_FIELD_NUMBER: _builtins.int
+    PRESET_UID_FIELD_NUMBER: _builtins.int
+    ATTR_UID_FIELD_NUMBER: _builtins.int
     REQUIRED_FIELD_NUMBER: _builtins.int
-    preset_id: _builtins.int
-    attr_id: _builtins.int
+    preset_uid: _builtins.int
+    attr_uid: _builtins.int
     required: _builtins.bool
     def __init__(
         self,
         *,
-        preset_id: _builtins.int = ...,
-        attr_id: _builtins.int = ...,
+        preset_uid: _builtins.int = ...,
+        attr_uid: _builtins.int = ...,
         required: _builtins.bool = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_id", b"attr_id", "preset_id", b"preset_id", "required", b"required"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_uid", b"attr_uid", "preset_uid", b"preset_uid", "required", b"required"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -175,19 +175,19 @@ Global___ListPresetsResponse: _TypeAlias = ListPresetsResponse  # noqa: Y015
 class RenamePresetRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -217,16 +217,16 @@ Global___RenamePresetResponse: _TypeAlias = RenamePresetResponse  # noqa: Y015
 class DeletePresetRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
+    uid: _builtins.int
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -291,19 +291,19 @@ Global___BindAttrResponse: _TypeAlias = BindAttrResponse  # noqa: Y015
 class UnbindAttrRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    PRESET_ID_FIELD_NUMBER: _builtins.int
-    ATTR_ID_FIELD_NUMBER: _builtins.int
-    preset_id: _builtins.int
-    attr_id: _builtins.int
+    PRESET_UID_FIELD_NUMBER: _builtins.int
+    ATTR_UID_FIELD_NUMBER: _builtins.int
+    preset_uid: _builtins.int
+    attr_uid: _builtins.int
     def __init__(
         self,
         *,
-        preset_id: _builtins.int = ...,
-        attr_id: _builtins.int = ...,
+        preset_uid: _builtins.int = ...,
+        attr_uid: _builtins.int = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_id", b"attr_id", "preset_id", b"preset_id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_uid", b"attr_uid", "preset_uid", b"preset_uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
