@@ -30,7 +30,6 @@ __all__ = (
     "AuthGroupNotFoundError",
     "AuthGroupsOwner",
     "AuthGroupsUnit",
-    "AuthGroupsPermissions",
     "AuthListGroupsOperation",
     "AuthListGroupsCommand",
     "AuthSignedInGroup",
@@ -40,7 +39,11 @@ import hashlib
 import json
 import typing as t
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -50,7 +53,6 @@ from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
 from .operations import AuthListGroupsOperation
 from .owners import AuthGroupsOwner, find_group_names
-from .permissions import AuthGroupsPermissions
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -65,12 +67,17 @@ class AuthGroupsUnit(OperationsOwner, CliUnit):
     the class is created, as it belongs to its domain.
     """
 
+    class Flags(PermissionFlags):
+        """The operations on the groups, which the code declares: reading them."""
+
+        CAN_READ = 1 << 0
+
     cli_name = "groups"
     cli_description = "The groups of the users."
 
     project: "AuthProject"
 
-    permissions = PermissionsSlot(AuthGroupsPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_list = Factory(AuthListGroupsOperation)
 

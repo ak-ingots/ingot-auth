@@ -27,7 +27,6 @@ __all__ = (
     "AuthSlidingFixedLifetime",
     "AuthSlidingLifetime",
     "AuthSessionToken",
-    "AuthSessionsPermissions",
     "AuthSessionsUnit",
     "BaseAuthSessionAttrsDeriver",
     "BaseAuthSessionLifetime",
@@ -41,7 +40,11 @@ import os
 import secrets
 import typing as t
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -85,7 +88,6 @@ from .operations import (
     AuthRevokeOtherSessionsOperation,
     AuthRevokeOwnSessionOperation,
 )
-from .permissions import AuthSessionsPermissions
 from .presets import AuthSessionPresetsUnit
 
 if t.TYPE_CHECKING:
@@ -116,6 +118,19 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     its sign-ins, ``auth sessions list <uid> --closed``.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The flags of the domain of the sessions, the full name of their unit,
+        ``auth.sessions``: each kept for good, as the masks are stored and sent.
+        ``auth.grp_signed_in`` grants a signed-in user its own,
+        ``auth.sessions.grp_admins`` the listing of those of a profile, the
+        record of its sign-ins.
+        """
+
+        CAN_LIST_OWN = 1 << 0
+        CAN_REVOKE_OWN = 1 << 1
+        CAN_LIST = 1 << 2
+
     cli_name = "sessions"
     cli_description = "The sessions of the users."
 
@@ -125,7 +140,7 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     grp_managers = Slot(AuthSessionsManagersGroup)
     grp_admins = Slot(AuthSessionsAdminsGroup)
 
-    permissions = PermissionsSlot(AuthSessionsPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_list_own = Factory(AuthListOwnSessionsOperation)
     op_revoke_own = Factory(AuthRevokeOwnSessionOperation)

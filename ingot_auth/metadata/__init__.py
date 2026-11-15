@@ -6,7 +6,6 @@ read them.
 __all__ = (
     "AuthGetMetadataOperation",
     "AuthMetadata",
-    "AuthMetadataPermissions",
     "AuthMetadataUnit",
     "AuthMethodMetadata",
     "AuthProfileMetadata",
@@ -15,7 +14,12 @@ __all__ = (
 
 import typing as t
 
-from ingots.defaults.operations import OperationsOwner, Permissions, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Unit
 
 from .items import (
@@ -25,13 +29,17 @@ from .items import (
     AuthSessionMetadata,
 )
 from .operations import AuthGetMetadataOperation
-from .permissions import AuthMetadataPermissions
 
 
 class AuthMetadataUnit(OperationsOwner, Unit):
     """The operations of the metadata, open to anyone."""
 
-    permissions = PermissionsSlot(AuthMetadataPermissions)
+    class Flags(PermissionFlags):
+        """The operations on the metadata."""
+
+        CAN_READ = 1 << 0
+
+    permissions = PermissionsSlot(Flags)
 
     op_get = Factory(AuthGetMetadataOperation)
 

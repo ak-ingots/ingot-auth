@@ -9,13 +9,12 @@ email of a sign-up is checked by the group of the policies of the method,
 its slot ``policies_sign_up_email``, empty unless an application gives
 policies to it in its subclass. Its flows
 are toggled by its configs, :class:`AuthEmailCodeConfigs`, which the project
-mixes into its own, and are its permissions, :class:`AuthEmailCodePermissions`.
+mixes into its own, and are its permissions, :class:`AuthEmailCodeMethod.Flags`.
 """
 
 __all__ = (
     "AuthEmailCodeConfigs",
     "AuthEmailCodeMethod",
-    "AuthEmailCodePermissions",
     "AuthEmailCodeStart",
     "AuthEmailCodeState",
     "AuthEmailSignUpParameters",
@@ -33,7 +32,12 @@ import typing as t
 import unicodedata
 from dataclasses import dataclass, field
 
-from ingots.defaults.operations import OperationMetadata, Permissions, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationMetadata,
+    PermissionFlags,
+    Permissions,
+    PermissionsSlot,
+)
 from ingots.puer import Factory
 
 from ingot_auth.mailers import AuthMail
@@ -54,7 +58,6 @@ from .operations import (
     AuthSendDenialOperation,
     AuthSendDenialParameters,
 )
-from .permissions import AuthEmailCodePermissions
 from .policies import AuthEmailSignUpParameters, AuthEmailSignUpPolicies
 
 
@@ -91,10 +94,19 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
     of :meth:`_build_denial_mail`.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The flows of the method: a caller signs up and in by a code by mail with
+        their flags, which the toggles of the method give while a flow is open.
+        """
+
+        CAN_SIGN_UP = 1 << 0
+        CAN_SIGN_IN = 1 << 1
+
     IDENTIFIER_KIND: t.ClassVar[str] = "email"
     CODE_LENGTH: t.ClassVar[int] = 6
 
-    permissions = PermissionsSlot(AuthEmailCodePermissions)
+    permissions = PermissionsSlot(Flags)
 
     policies_sign_up_email = AuthEmailSignUpPolicies()
 

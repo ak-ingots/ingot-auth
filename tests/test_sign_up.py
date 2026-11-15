@@ -31,7 +31,7 @@ from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
     AuthSignUpChallenge,
-    AuthSignUpPermissions,
+    AuthSignUpUnit,
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
@@ -51,26 +51,20 @@ from ingot_auth.storages import (
 )
 from ingot_auth.testing.methods import (
     AuthTestingMethod,
-    AuthTestingPermissions,
     AuthTestingStart,
 )
 
 from tests import ANONYMOUS, DOMAINS, masks
 
 
-class OneStepPermissions(PermissionFlags):
-    CAN_SIGN_UP = 1 << 0
-
-
-# of the slot one_step of the methods
-DOMAINS[OneStepPermissions] = "auth.methods.one_step"
-
-
 class OneStepMethod(BaseAuthMethod[str, str, None]):
+    class Flags(PermissionFlags):
+        CAN_SIGN_UP = 1 << 0
+
     # of the kind of the testing method: they share its identifiers
     IDENTIFIER_KIND = "testing"
 
-    permissions = PermissionsSlot(OneStepPermissions)
+    permissions = PermissionsSlot(Flags)
 
     @t.override
     def _get_sign_up_enabled(self) -> bool:
@@ -85,6 +79,10 @@ class OneStepMethod(BaseAuthMethod[str, str, None]):
         self, parameters: str, metadata: OperationMetadata
     ) -> AuthStep:
         return AuthVerified(subject=parameters)
+
+
+# of the slot one_step of the methods
+DOMAINS[OneStepMethod.Flags] = "auth.methods.one_step"
 
 
 class NoFlowMethod(BaseAuthMethod[str, str, None]):
@@ -379,7 +377,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         sign_up = self.project.auth.sign_up
         for factory in (sign_up.op_start, sign_up.op_answer):
             self.assertEqual(
-                factory().get_permissions(), masks(AuthSignUpPermissions.CAN_SIGN_UP)
+                factory().get_permissions(), masks(AuthSignUpUnit.Flags.CAN_SIGN_UP)
             )
         self.metadata = self.project.operations.create_metadata(ANONYMOUS)
         with self.assertRaises(OperationPermissionsError):
@@ -391,8 +389,9 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             self.project.auth.methods.get_anonymous_permissions(),
             masks(
-                AuthTestingPermissions.CAN_SIGN_UP | AuthTestingPermissions.CAN_SIGN_IN,
-                OneStepPermissions.CAN_SIGN_UP,
+                AuthTestingMethod.Flags.CAN_SIGN_UP
+                | AuthTestingMethod.Flags.CAN_SIGN_IN,
+                OneStepMethod.Flags.CAN_SIGN_UP,
             ),
         )
 
@@ -402,7 +401,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         auth = self.project.auth
         self.assertEqual(
             auth.sign_up.get_anonymous_permissions(),
-            masks(AuthSignUpPermissions.CAN_SIGN_UP),
+            masks(AuthSignUpUnit.Flags.CAN_SIGN_UP),
         )
         self.project.settings.configs.apply({"AUTH_SIGN_UP_ENABLED": False})
         self.assertFalse(auth.sign_up.get_enabled())
@@ -412,7 +411,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(
             auth.methods.get_anonymous_permissions(),
-            masks(AuthTestingPermissions.CAN_SIGN_IN),
+            masks(AuthTestingMethod.Flags.CAN_SIGN_IN),
         )
 
     async def test_signing_up_by_a_method_needs_its_flag(self) -> None:
@@ -422,13 +421,13 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             dataclasses.replace(
                 self.caller,
                 permissions=self.caller.permissions
-                - masks(AuthTestingPermissions.CAN_SIGN_UP),
+                - masks(AuthTestingMethod.Flags.CAN_SIGN_UP),
             )
         )
         with self.assertRaises(OperationPermissionsError) as error:
             await self.start(AuthTestingStart(subject="b"))
         self.assertEqual(
-            error.exception.required, masks(AuthTestingPermissions.CAN_SIGN_UP)
+            error.exception.required, masks(AuthTestingMethod.Flags.CAN_SIGN_UP)
         )
         # an attempt is of a method closed meanwhile
         with self.assertRaises(OperationPermissionsError):
@@ -442,7 +441,7 @@ class MethodPermissionsTestCase(unittest.TestCase):
         one_step = project.auth.methods.get("one_step")
         self.assertEqual(
             one_step.get_sign_up_permissions(),
-            masks(OneStepPermissions.CAN_SIGN_UP),
+            masks(OneStepMethod.Flags.CAN_SIGN_UP),
         )
         no_flow = project.auth.methods.get("no_flow")
         for get in (no_flow.get_sign_up_permissions, no_flow.get_sign_in_permissions):

@@ -11,7 +11,6 @@ from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
     AuthEmailCodeMethod,
-    AuthEmailCodePermissions,
     AuthEmailCodeStart,
     AuthEmailCodeState,
     AuthEmailSignUpPolicies,
@@ -32,7 +31,7 @@ from ingot_auth.sign_in import (
     AuthAnswerSignInParameters,
     AuthSignedIn,
     AuthSignInChallenge,
-    AuthSignInPermissions,
+    AuthSignInUnit,
     AuthStartSignInParameters,
 )
 from ingot_auth.settings.configs import AuthConfigs
@@ -40,7 +39,7 @@ from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,
     AuthSignUpChallenge,
-    AuthSignUpPermissions,
+    AuthSignUpUnit,
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
@@ -50,13 +49,13 @@ from tests import masks
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
     permissions=masks(
-        AuthSignUpPermissions.CAN_SIGN_UP, AuthEmailCodePermissions.CAN_SIGN_UP
+        AuthSignUpUnit.Flags.CAN_SIGN_UP, AuthEmailCodeMethod.Flags.CAN_SIGN_UP
     ),
 )
 SIGNING_IN: t.Final = Caller(
     uid="anonymous",
     permissions=masks(
-        AuthSignInPermissions.CAN_SIGN_IN, AuthEmailCodePermissions.CAN_SIGN_IN
+        AuthSignInUnit.Flags.CAN_SIGN_IN, AuthEmailCodeMethod.Flags.CAN_SIGN_IN
     ),
 )
 

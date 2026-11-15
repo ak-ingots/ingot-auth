@@ -93,7 +93,7 @@ and the metadata lists them closed. The sign-in has none: what limits it
 comes later, as a strategy.
 
 The flows of a method are permissions too, a domain a method,
-`AuthNicknamePermissions` of `auth.methods.nickname`, a flag a flow: a
+`AuthNicknameMethod.Flags` of `auth.methods.nickname`, a flag a flow: a
 sign-up by a method needs its `CAN_SIGN_UP` besides the `CAN_SIGN_UP` of
 the sign-up, and the toggles give the anonymous caller the flags of the
 flows open, so that a flow closed is refused as any operation the caller

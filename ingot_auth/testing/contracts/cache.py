@@ -12,7 +12,9 @@ import typing as t
 
 from ingots.defaults.operations import Permissions
 
-from ingot_auth.access.groups import AuthGroupsPermissions
+from ingot_auth.access.groups import (
+    AuthGroupsUnit,
+)
 from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError, AuthCaller
 
 from .base import BaseAuthContract
@@ -21,7 +23,7 @@ from .sessions import create_session
 CALLER: t.Final = AuthCaller(
     uid="a1",
     session_uid="s1",
-    permissions=Permissions({"auth.access.groups": AuthGroupsPermissions.CAN_READ}),
+    permissions=Permissions({"auth.access.groups": AuthGroupsUnit.Flags.CAN_READ}),
     profile_hash="9f86d0",
 )
 

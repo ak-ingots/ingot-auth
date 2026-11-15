@@ -15,7 +15,6 @@ from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
     AuthNicknameMethod,
-    AuthNicknamePermissions,
     AuthNicknameSignUpPolicies,
     AuthNicknameStart,
 )
@@ -44,12 +43,12 @@ from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.sign_in import (
     AuthSignedIn,
-    AuthSignInPermissions,
+    AuthSignInUnit,
     AuthStartSignInParameters,
 )
 from ingot_auth.sign_up import (
     AuthSignedUp,
-    AuthSignUpPermissions,
+    AuthSignUpUnit,
     AuthStartSignUpParameters,
 )
 from ingot_auth.storages import AuthIdentity
@@ -59,13 +58,13 @@ from tests import masks
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
     permissions=masks(
-        AuthSignUpPermissions.CAN_SIGN_UP, AuthNicknamePermissions.CAN_SIGN_UP
+        AuthSignUpUnit.Flags.CAN_SIGN_UP, AuthNicknameMethod.Flags.CAN_SIGN_UP
     ),
 )
 SIGNING_IN: t.Final = Caller(
     uid="anonymous",
     permissions=masks(
-        AuthSignInPermissions.CAN_SIGN_IN, AuthNicknamePermissions.CAN_SIGN_IN
+        AuthSignInUnit.Flags.CAN_SIGN_IN, AuthNicknameMethod.Flags.CAN_SIGN_IN
     ),
 )
 
@@ -316,7 +315,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self,
     ) -> None:
         self.project = TstPoliciesProject()
-        guarded = masks(AuthNicknamePermissions.CAN_SIGN_IN)
+        guarded = masks(AuthNicknameMethod.Flags.CAN_SIGN_IN)
         with mock.patch.object(
             PasswordLength, "_get_permissions", return_value=guarded
         ):

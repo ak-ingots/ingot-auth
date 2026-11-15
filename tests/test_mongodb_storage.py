@@ -27,7 +27,7 @@ from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.sign_up import (
     AuthSignedUp,
-    AuthSignUpPermissions,
+    AuthSignUpUnit,
     AuthSignUpResult,
     AuthStartSignUpParameters,
 )
@@ -54,7 +54,6 @@ from ingot_auth.testing.contracts import (
 )
 from ingot_auth.testing.methods import (
     AuthTestingMethod,
-    AuthTestingPermissions,
     AuthTestingStart,
 )
 
@@ -64,7 +63,7 @@ PORT = os.environ.get("INGOT_AUTH_TEST_PORT")
 SIGNING_UP: t.Final = Caller(
     uid="anonymous",
     permissions=masks(
-        AuthSignUpPermissions.CAN_SIGN_UP, AuthTestingPermissions.CAN_SIGN_UP
+        AuthSignUpUnit.Flags.CAN_SIGN_UP, AuthTestingMethod.Flags.CAN_SIGN_UP
     ),
 )
 

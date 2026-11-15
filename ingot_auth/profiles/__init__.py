@@ -10,7 +10,6 @@ __all__ = (
     "AuthOwnProfile",
     "AuthProfilesConsumersGroup",
     "AuthProfilesManagersGroup",
-    "AuthProfilesPermissions",
     "AuthProfilesUnit",
     "AuthSetProfileAttrValuesOperation",
     "AuthSetProfileAttrValuesParameters",
@@ -18,7 +17,11 @@ __all__ = (
     "AuthSetProfileTagsParameters",
 )
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -36,7 +39,6 @@ from .operations import (
     AuthSetProfileAttrValuesOperation,
     AuthSetProfileTagsOperation,
 )
-from .permissions import AuthProfilesPermissions
 from .tags import AuthTagsUnit
 
 
@@ -49,13 +51,24 @@ class AuthProfilesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     and sets the values.
     """
 
+    class Flags(PermissionFlags):
+        """
+        The flags of the domain of the profiles, the full name of their unit,
+        ``auth.profiles``: each kept for good, as the masks are stored and sent.
+        ``auth.profiles.grp_managers`` grants the setting of their values,
+        ``auth.grp_signed_in`` a signed-in user the reading of its own profile.
+        """
+
+        CAN_UPDATE = 1 << 0
+        CAN_READ_OWN = 1 << 1
+
     cli_name = "profiles"
     cli_description = "The profiles of the users."
 
     grp_consumers = Slot(AuthProfilesConsumersGroup)
     grp_managers = Slot(AuthProfilesManagersGroup)
 
-    permissions = PermissionsSlot(AuthProfilesPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_set_tags = Factory(AuthSetProfileTagsOperation)
     op_set_attr_values = Factory(AuthSetProfileAttrValuesOperation)

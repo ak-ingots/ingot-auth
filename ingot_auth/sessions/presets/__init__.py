@@ -5,12 +5,13 @@ link it to the attributes, many to many, each telling whether the preset
 requires the attribute.
 """
 
-__all__ = (
-    "AuthSessionPresetsUnit",
-    "AuthSessionPresetsPermissions",
-)
+__all__ = ("AuthSessionPresetsUnit",)
 
-from ingots.defaults.operations import OperationsOwner, PermissionsSlot
+from ingots.defaults.operations import (
+    OperationsOwner,
+    PermissionFlags,
+    PermissionsSlot,
+)
 from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
@@ -32,7 +33,6 @@ from .operations import (
     AuthRenameSessionPresetOperation,
     AuthUnbindSessionAttrOperation,
 )
-from .permissions import AuthSessionPresetsPermissions
 
 
 class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
@@ -42,10 +42,20 @@ class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
     presets themselves are in the storage of the auth.
     """
 
+    class Flags(PermissionFlags):
+        """The operations on the presets of the sessions and their bindings."""
+
+        CAN_CREATE = 1 << 0
+        CAN_READ = 1 << 1
+        CAN_RENAME = 1 << 2
+        CAN_DELETE = 1 << 3
+        CAN_BIND = 1 << 4
+        CAN_UNBIND = 1 << 5
+
     cli_name = "presets"
     cli_description = "The presets of the sessions."
 
-    permissions = PermissionsSlot(AuthSessionPresetsPermissions)
+    permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateSessionPresetOperation)
     op_list = Factory(AuthListSessionPresetsOperation)

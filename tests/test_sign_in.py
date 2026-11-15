@@ -42,9 +42,8 @@ from ingot_auth.sign_in import (
     AuthNoTiming,
     AuthSignedIn,
     AuthSignInChallenge,
-    AuthSignInPermissions,
-    AuthSignInResult,
     AuthSignInUnit,
+    AuthSignInResult,
     AuthStartSignInParameters,
     BaseAuthTiming,
 )
@@ -61,7 +60,6 @@ from ingot_auth.storages import (
 )
 from ingot_auth.testing.methods import (
     AuthTestingMethod,
-    AuthTestingPermissions,
     AuthTestingStart,
 )
 
@@ -221,7 +219,7 @@ class SignInTestCase(BaseSignInTestCase):
         caller = await self.project.auth.sessions.authenticate(result.token)
         self.assertEqual((caller.uid, caller.session_uid), (uid, result.session_uid))
         self.assertEqual(
-            caller.permissions, masks(AuthTestingPermissions.CAN_SIGN_IN) | OWN
+            caller.permissions, masks(AuthTestingMethod.Flags.CAN_SIGN_IN) | OWN
         )
         session = await self.project.auth.storage.sessions.find(
             hash_token(result.token)
@@ -291,7 +289,7 @@ class SignInTestCase(BaseSignInTestCase):
     def test_the_anonymous_caller_gets_the_flag_of_the_sign_in(self) -> None:
         self.assertEqual(
             self.project.auth.sign_in.get_anonymous_permissions(),
-            masks(AuthSignInPermissions.CAN_SIGN_IN),
+            masks(AuthSignInUnit.Flags.CAN_SIGN_IN),
         )
 
     async def test_signing_in_needs_the_flags_of_the_flow_and_the_method(
@@ -301,12 +299,12 @@ class SignInTestCase(BaseSignInTestCase):
         sign_in = self.project.auth.sign_in
         for factory in (sign_in.op_start, sign_in.op_answer):
             self.assertEqual(
-                factory().get_permissions(), masks(AuthSignInPermissions.CAN_SIGN_IN)
+                factory().get_permissions(), masks(AuthSignInUnit.Flags.CAN_SIGN_IN)
             )
         caller = self.create_caller()
         for lacking in (
-            AuthSignInPermissions.CAN_SIGN_IN,
-            AuthTestingPermissions.CAN_SIGN_IN,
+            AuthSignInUnit.Flags.CAN_SIGN_IN,
+            AuthTestingMethod.Flags.CAN_SIGN_IN,
         ):
             with self.subTest(lacking=lacking):
                 without = dataclasses.replace(
