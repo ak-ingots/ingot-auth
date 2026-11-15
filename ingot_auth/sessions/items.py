@@ -4,6 +4,7 @@ __all__ = (
     "AuthListSessionsParameters",
     "AuthOwnSession",
     "AuthRevokeOwnSessionParameters",
+    "AuthSessionExpired",
     "AuthSessionInfo",
     "AuthSessionToken",
 )
@@ -11,6 +12,8 @@ __all__ = (
 import datetime
 import typing as t
 from dataclasses import dataclass, field
+
+from ingot_auth.activities import AuthActivityContext
 
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
@@ -77,3 +80,10 @@ class AuthSessionInfo:
     closed_at: datetime.datetime | None
     close_reason: "AuthSessionCloseReason | None"
     closed_by: str | None
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSessionExpired(AuthActivityContext):
+    """The context of a session expiring in the activity log: why it closed."""
+
+    reason: str

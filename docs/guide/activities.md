@@ -66,4 +66,21 @@ async with self.project.auth.storage.transaction():
     )
 ```
 
-The registries record theirs now; the other changes of the core come next.
+## What the core records
+
+| Entity | Action | Context |
+|---|---|---|
+| `auth.profiles` | `create`, by a sign-up | the method, the kind of its identifier |
+| `auth.profiles` | `bind`, the identifier of a sign-up | its kind, never its value |
+| `auth.profiles` | `update`, the tags set | `tag_ids` |
+| `auth.profiles` | `update`, the values set | `attr_values`, by the ids of the attributes |
+| `auth.sessions` | `sign_in` | the uid of the profile, the method |
+| `auth.sessions` | `sign_out`, `revoke` | none |
+| `auth.sessions` | `expire`, by `system` | the reason |
+| `auth.access.members` | `bind`, `unbind` a profile, the uid | the group |
+| the registries | `create`, `update` renamed, `delete` | an attribute created its name, type and source, renamed its name |
+| `auth.sessions.presets` | `bind`, `unbind` an attribute | its id, whether required |
+
+A session expiring is closed by the server, `system`, in a run of its own,
+which the line of the log of the server tells: `the session … expired, …,
+run …`.

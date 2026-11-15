@@ -18,6 +18,7 @@ __all__ = (
     "AuthRevokeOtherSessionsOperation",
     "AuthRevokeOwnSessionOperation",
     "AuthRevokeOwnSessionParameters",
+    "AuthSessionExpired",
     "AuthSessionExpiredError",
     "AuthSessionInfo",
     "AuthSessionsAdminsGroup",
@@ -35,6 +36,7 @@ __all__ = (
 import dataclasses
 import datetime
 import hashlib
+import logging
 import os
 import secrets
 import typing as t
@@ -44,9 +46,11 @@ from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from ingot_auth.access.groups import AuthGroupsOwner
+from ingot_auth.activities import AUTH_SYSTEM
 from ingot_auth.caches import AuthCaller
 from ingot_auth.profiles.hashes import build_profile_hash
 from ingot_auth.storages import (
+    AuthActivityAction,
     AuthSessionCloseReason,
     AuthSessionNotFoundError,
     AuthSessionRecord,
@@ -65,6 +69,7 @@ from .items import (
     AuthListSessionsParameters,
     AuthOwnSession,
     AuthRevokeOwnSessionParameters,
+    AuthSessionExpired,
     AuthSessionInfo,
     AuthSessionToken,
 )
@@ -88,6 +93,9 @@ if t.TYPE_CHECKING:
 
     from ingot_auth.project import AuthProject
     from ingot_auth.storages import AuthAttrValue
+
+
+logger = logging.getLogger(__name__)
 
 
 class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
@@ -286,9 +294,26 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         reason: AuthSessionCloseReason,
         now: datetime.datetime,
     ) -> None:
-        """Closes an expired session and forgets it in the cache."""
+        """
+        Closes an expired session and forgets it in the cache, recorded in the
+        activity log by the server itself, :data:`AUTH_SYSTEM`, in a run of its
+        own, which the line of the log tells, to link them.
+        """
+        auth = self.project.auth
+        metadata = self.project.operations.create_metadata(AUTH_SYSTEM)
+        logger.info(
+            "the session %s expired, %s, run %s", session.id, reason, metadata.run_uid
+        )
         try:
-            await self.project.auth.storage.sessions.close(session.id, reason, now)
+            async with auth.storage.transaction():
+                await auth.storage.sessions.close(session.id, reason, now)
+                await auth.activities.record(
+                    self,
+                    session.id,
+                    AuthActivityAction.EXPIRE,
+                    metadata,
+                    context=AuthSessionExpired(reason=reason.value),
+                )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile, by another request
         await self._forget(session.token_hash)

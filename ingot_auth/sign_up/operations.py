@@ -8,11 +8,18 @@ __all__ = (
 
 import os
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
+from ingot_auth.activities import AuthActivityContext
 from ingot_auth.methods import AuthStep, AuthVerified, BaseAuthFlowOperation
-from ingot_auth.storages import AuthIdentity, AuthProfile, AuthSignUpRecord
+from ingot_auth.storages import (
+    AuthActivityAction,
+    AuthIdentity,
+    AuthProfile,
+    AuthSignUpRecord,
+)
 
 from .items import (
     AuthAnswerSignUpParameters,
@@ -28,6 +35,21 @@ if t.TYPE_CHECKING:
 
     from ingot_auth.methods import BaseAuthMethod
     from ingot_auth.storages import AuthAttrValue
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthProfileSignedUp(AuthActivityContext):
+    """The context of a profile created by a sign-up in the activity log."""
+
+    method: str
+    identifier_kind: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthIdentityBound(AuthActivityContext):
+    """The context of an identifier bound to a profile: its kind, never its value."""
+
+    kind: str
 
 
 class BaseAuthSignUpOperation[ParametersType](
@@ -73,12 +95,14 @@ class BaseAuthSignUpOperation[ParametersType](
         method: "BaseAuthMethod[t.Any, t.Any, t.Any]",
         verified: AuthVerified,
         attr_values: "Mapping[int, AuthAttrValue]",
+        metadata: OperationMetadata,
     ) -> AuthSignUpResult:
         """
         Ends the sign-up, in one transaction of the storage: binds the
         subject, an identifier of the kind of the method, to a new profile,
         keeps the secret of the profile if the method gave one, creates the
-        profile and keeps the record. The binding goes first, so of two
+        profile and keeps the record, the profile created and the identifier
+        bound recorded in the activity log. The binding goes first, so of two
         sign-ups of one identifier, by one method or two of its kind, only one
         goes on.
 
@@ -99,6 +123,24 @@ class BaseAuthSignUpOperation[ParametersType](
                 await storage.profiles.secrets.put(uid, verified.secret)
             await storage.profiles.create(AuthProfile(uid=uid, created_at=now))
             await storage.sign_up.records.add(record)
+            activities = self.project.auth.activities
+            profiles = self.project.auth.profiles
+            await activities.record(
+                profiles,
+                uid,
+                AuthActivityAction.CREATE,
+                metadata,
+                context=AuthProfileSignedUp(
+                    method=method.get_name(), identifier_kind=method.IDENTIFIER_KIND
+                ),
+            )
+            await activities.record(
+                profiles,
+                uid,
+                AuthActivityAction.BIND,
+                metadata,
+                context=AuthIdentityBound(kind=method.IDENTIFIER_KIND),
+            )
         return AuthSignedUp(uid=uid)
 
     def _create_uid(self) -> str:

@@ -7,13 +7,16 @@ __all__ = (
 )
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
+from ingot_auth.activities import AuthActivityContext
 from ingot_auth.caches import AuthCaller
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import (
     ATTR_VALUE_TYPES,
+    AuthActivityAction,
     AuthItemNotFoundError,
     AuthProfileNotFoundError,
     AuthProfileValues,
@@ -27,8 +30,23 @@ from .items import (
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
+    from ingot_auth.storages import AuthAttrValue
 
     from . import AuthProfilesUnit
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthProfileTagsSet(AuthActivityContext):
+    """The context of the tags of a profile set: the ids of them all."""
+
+    tag_ids: frozenset[int]
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthProfileAttrValuesSet(AuthActivityContext):
+    """The context of the values of a profile set: all, by the ids of the attributes."""
+
+    attr_values: "dict[int, AuthAttrValue]"
 
 
 class AuthSetProfileTagsOperation(
@@ -60,8 +78,17 @@ class AuthSetProfileTagsOperation(
         known = {tag.id for tag in await storage.tags.get_all()}
         if unknown := sorted(parameters.tag_ids - known):
             raise AuthItemNotFoundError.for_id(storage.tags.REGISTRY, unknown[0])
-        await storage.values.set_tags(parameters.uid, parameters.tag_ids)
-        await self.project.auth.sessions.forget_callers(parameters.uid)
+        auth = self.project.auth
+        async with auth.storage.transaction():
+            await storage.values.set_tags(parameters.uid, parameters.tag_ids)
+            await auth.activities.record(
+                self.parent,
+                parameters.uid,
+                AuthActivityAction.UPDATE,
+                metadata,
+                context=AuthProfileTagsSet(tag_ids=parameters.tag_ids),
+            )
+        await auth.sessions.forget_callers(parameters.uid)
         return await storage.values.get(parameters.uid)
 
 
@@ -102,8 +129,19 @@ class AuthSetProfileAttrValuesOperation(
                 raise AuthItemNotFoundError.for_id(registry, attr_id) from None
             if type(value) is not ATTR_VALUE_TYPES[attr.type]:
                 raise AuthItemInvalidError.for_value(registry, attr_id)
-        await storage.values.set_attr_values(parameters.uid, parameters.attr_values)
-        await self.project.auth.sessions.forget_callers(parameters.uid)
+        auth = self.project.auth
+        async with auth.storage.transaction():
+            await storage.values.set_attr_values(parameters.uid, parameters.attr_values)
+            await auth.activities.record(
+                self.parent,
+                parameters.uid,
+                AuthActivityAction.UPDATE,
+                metadata,
+                context=AuthProfileAttrValuesSet(
+                    attr_values=dict(parameters.attr_values)
+                ),
+            )
+        await auth.sessions.forget_callers(parameters.uid)
         return await storage.values.get(parameters.uid)
 
 

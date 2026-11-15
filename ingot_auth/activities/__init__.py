@@ -129,9 +129,10 @@ def _build_context(context: AuthActivityContext | None) -> dict[str, object]:
 
 
 def _build_value(value: object) -> object:
-    # the plain values a storage keeps: a tuple a list, a set a sorted one
+    # the plain values a storage keeps: a key a text, a tuple a list, a set a
+    # sorted one
     if isinstance(value, dict):
-        return {key: _build_value(item) for key, item in value.items()}
+        return {str(key): _build_value(item) for key, item in value.items()}
     if isinstance(value, (frozenset, set)):
         return [_build_value(item) for item in sorted(value)]
     if isinstance(value, (list, tuple)):

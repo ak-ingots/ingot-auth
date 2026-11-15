@@ -7,6 +7,7 @@ __all__ = (
 )
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
@@ -17,7 +18,8 @@ from ingot_auth.methods import (
     AuthVerified,
     BaseAuthFlowOperation,
 )
-from ingot_auth.storages import AuthIdentityNotFoundError
+from ingot_auth.activities import AuthActivityContext
+from ingot_auth.storages import AuthActivityAction, AuthIdentityNotFoundError
 
 from .items import (
     AuthAnswerSignInParameters,
@@ -33,6 +35,14 @@ if t.TYPE_CHECKING:
 
     from ingot_auth.methods import BaseAuthMethod
     from ingot_auth.storages import AuthAttrValue
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSessionSignedIn(AuthActivityContext):
+    """The context of a session opened by a sign-in: its profile, its method."""
+
+    uid: str
+    method: str
 
 
 class BaseAuthSignInOperation[ParametersType](
@@ -80,11 +90,13 @@ class BaseAuthSignInOperation[ParametersType](
         method: "BaseAuthMethod[t.Any, t.Any, t.Any]",
         verified: AuthVerified,
         attr_values: "Mapping[int, AuthAttrValue]",
+        metadata: OperationMetadata,
     ) -> AuthSignInResult:
         """
         Ends the sign-in: finds the profile of the subject, an identifier of
         the kind of the method, checks the profile may sign in by the method,
-        by the permissions the access gives it, and opens a session.
+        by the permissions the access gives it, and opens a session, recorded
+        in the activity log in one transaction.
 
         :raises AuthMethodRefusedError: the subject is bound to no profile,
             refused as a wrong secret is.
@@ -100,7 +112,15 @@ class BaseAuthSignInOperation[ParametersType](
         permissions = await auth.access.permissions.get_permissions(uid)
         if not permissions.has(method.get_sign_in_permissions()):
             raise AuthMethodDeniedError.for_name(method.get_name())
-        opened = await auth.sessions.open(uid, method.get_name(), attr_values)
+        async with auth.storage.transaction():
+            opened = await auth.sessions.open(uid, method.get_name(), attr_values)
+            await auth.activities.record(
+                auth.sessions,
+                opened.session_id,
+                AuthActivityAction.SIGN_IN,
+                metadata,
+                context=AuthSessionSignedIn(uid=uid, method=method.get_name()),
+            )
         return AuthSignedIn(session_id=opened.session_id, token=opened.token)
 
 

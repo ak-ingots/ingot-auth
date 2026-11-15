@@ -105,7 +105,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         )
         values |= build_attr_values(attrs, derived, AuthSessionAttrSource.DERIVED)
         step = await self._start_method(method, parameters, metadata)
-        return await self.proceed(method, step, values)
+        return await self.proceed(method, step, values, metadata)
 
     @t.final
     async def answer(
@@ -134,7 +134,9 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
             if failures < configs.AUTH_ATTEMPT_MAX_FAILURES:
                 await attempts.put(dataclasses.replace(attempt, failures=failures))
             raise
-        return await self.proceed(method, step, attempt.attr_values, attempt.failures)
+        return await self.proceed(
+            method, step, attempt.attr_values, metadata, attempt.failures
+        )
 
     @t.final
     async def proceed(
@@ -142,6 +144,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         method: BaseAuthMethod[t.Any, t.Any, t.Any],
         step: AuthStep,
         attr_values: "Mapping[int, AuthAttrValue]",
+        metadata: OperationMetadata,
         failures: int = 0,
     ) -> ResultType:
         """Goes on after a step of the method: to its challenge, or to the end."""
@@ -157,7 +160,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
             )
             await self.project.auth.cache.attempts.put(attempt)
             return self._create_challenge(attempt.id, step.challenge)
-        return await self._complete(method, step, attr_values)
+        return await self._complete(method, step, attr_values, metadata)
 
     @abc.abstractmethod
     def _get_method_permissions(
@@ -191,8 +194,9 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         method: BaseAuthMethod[t.Any, t.Any, t.Any],
         verified: AuthVerified,
         attr_values: "Mapping[int, AuthAttrValue]",
+        metadata: OperationMetadata,
     ) -> ResultType:
-        """Ends the flow on the subject a method verified."""
+        """Ends the flow on the subject a method verified, recorded in the log."""
         raise NotImplementedError(f"{type(self).__qualname__}._complete")
 
     def _get_now(self) -> datetime.datetime:
