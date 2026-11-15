@@ -17,12 +17,12 @@ class AuthSessionError(Exception):
 
 
 class AuthSessionNotFoundError(AuthSessionError):
-    """No open session has the token, or the id: never one, or closed."""
+    """No open session has the token, or the uid: never one, or closed."""
 
     @classmethod
     def for_token(cls) -> t.Self:
         return cls("no open session has the token")
 
     @classmethod
-    def for_id(cls, session_id: str) -> t.Self:
-        return cls(f"no open session {session_id!r}", session_id)
+    def for_uid(cls, session_uid: str) -> t.Self:
+        return cls(f"no open session {session_uid!r}", session_uid)

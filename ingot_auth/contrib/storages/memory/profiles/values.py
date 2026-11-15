@@ -29,9 +29,9 @@ class AuthMemoryProfileValuesStorage(
         return self._values.get(uid, AuthProfileValues())
 
     @t.override
-    async def _set_tags(self, uid: str, tag_ids: frozenset[int]) -> None:
+    async def _set_tags(self, uid: str, tag_uids: frozenset[int]) -> None:
         values = await self._get(uid)
-        self._values[uid] = dataclasses.replace(values, tag_ids=tag_ids)
+        self._values[uid] = dataclasses.replace(values, tag_uids=tag_uids)
 
     @t.override
     async def _set_attr_values(

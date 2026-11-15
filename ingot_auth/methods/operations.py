@@ -99,9 +99,9 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
                 attrs, transport_attr_values, AuthSessionAttrSource.TRANSPORT
             ),
         }
-        names = {attr.id: attr.name for attr in attrs}
+        names = {attr.uid: attr.name for attr in attrs}
         derived = await self.project.auth.sessions.deriver.derive(
-            {names[attr_id]: value for attr_id, value in values.items()}
+            {names[attr_uid]: value for attr_uid, value in values.items()}
         )
         values |= build_attr_values(attrs, derived, AuthSessionAttrSource.DERIVED)
         step = await self._start_method(method, parameters, metadata)
@@ -109,7 +109,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
 
     @t.final
     async def answer(
-        self, attempt_id: str, answer: object, metadata: OperationMetadata
+        self, attempt_uid: str, answer: object, metadata: OperationMetadata
     ) -> ResultType:
         """
         Answers the challenge of an attempt of the flow. The attempt is taken
@@ -122,7 +122,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         :raises AuthMethodRefusedError: the method refuses the answer.
         """
         attempts = self.project.auth.cache.attempts
-        attempt = await attempts.take(attempt_id)
+        attempt = await attempts.take(attempt_uid)
         if attempt.flow != self.FLOW:
             raise AuthAttemptNotFoundError.create()
         method = await self.get_method(attempt.method, metadata)
@@ -150,7 +150,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         """Goes on after a step of the method: to its challenge, or to the end."""
         if isinstance(step, AuthChallenge):
             attempt = AuthAttempt(
-                id=secrets.token_urlsafe(32),
+                uid=secrets.token_urlsafe(32),
                 flow=self.FLOW,
                 method=method.get_name(),
                 state=step.state,
@@ -159,7 +159,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
                 failures=failures,
             )
             await self.project.auth.cache.attempts.put(attempt)
-            return self._create_challenge(attempt.id, step.challenge)
+            return self._create_challenge(attempt.uid, step.challenge)
         return await self._complete(method, step, attr_values, metadata)
 
     @abc.abstractmethod
@@ -184,7 +184,7 @@ class BaseAuthFlowOperation[ParametersType, ResultType](
         raise NotImplementedError(f"{type(self).__qualname__}._start_method")
 
     @abc.abstractmethod
-    def _create_challenge(self, attempt_id: str, challenge: object) -> ResultType:
+    def _create_challenge(self, attempt_uid: str, challenge: object) -> ResultType:
         """The result of a challenge of the method, kept by an attempt."""
         raise NotImplementedError(f"{type(self).__qualname__}._create_challenge")
 

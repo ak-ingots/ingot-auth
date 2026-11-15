@@ -24,17 +24,17 @@ class AuthSessionExpiredError(AuthSessionError):
 
 class AuthOwnSessionNotFoundError(Exception):
     """
-    No open session of the caller has the id: never one, closed, or of
+    No open session of the caller has the uid: never one, closed, or of
     another. The caller stays signed in; ``args`` are the message, then the
-    id.
+    uid.
     """
 
     @classmethod
-    def for_id(cls, session_id: str) -> t.Self:
-        return cls(f"no open session {session_id!r} of the caller", session_id)
+    def for_uid(cls, session_uid: str) -> t.Self:
+        return cls(f"no open session {session_uid!r} of the caller", session_uid)
 
     @property
-    def session_id(self) -> str:
+    def session_uid(self) -> str:
         return t.cast(str, self.args[1])
 
     @t.override

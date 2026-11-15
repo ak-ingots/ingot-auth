@@ -46,7 +46,9 @@ class AuthCreateSessionPresetCommand(BaseAuthCreateItemCommand[AuthSessionPreset
     @t.override
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthSessionPreset:
-        return AuthSessionPreset(id=namespace.registry_id, name=namespace.registry_name)
+        return AuthSessionPreset(
+            uid=namespace.registry_uid, name=namespace.registry_name
+        )
 
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthCreateSessionPresetOperation]":
@@ -98,7 +100,7 @@ class BaseAuthSessionPresetBindingsCommand[ParametersType, ResultType](
         """Prints the bindings, one a line."""
         for binding in bindings:
             requirement = "required" if binding.required else "optional"
-            print(f"{binding.preset_id}\t{binding.attr_id}\t{requirement}")
+            print(f"{binding.preset_uid}\t{binding.attr_uid}\t{requirement}")
 
 
 class AuthBindSessionAttrCommand(
@@ -124,8 +126,8 @@ class AuthBindSessionAttrCommand(
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthSessionPresetBinding:
         return AuthSessionPresetBinding(
-            preset_id=namespace.presets_preset,
-            attr_id=namespace.presets_attr,
+            preset_uid=namespace.presets_preset,
+            attr_uid=namespace.presets_attr,
             required=namespace.presets_required,
         )
 
@@ -157,7 +159,7 @@ class AuthUnbindSessionAttrCommand(
         cls, namespace: argparse.Namespace
     ) -> AuthUnbindSessionAttrParameters:
         return AuthUnbindSessionAttrParameters(
-            preset_id=namespace.presets_preset, attr_id=namespace.presets_attr
+            preset_uid=namespace.presets_preset, attr_uid=namespace.presets_attr
         )
 
     @t.override

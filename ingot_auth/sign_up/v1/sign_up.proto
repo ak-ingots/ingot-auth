@@ -20,7 +20,7 @@ enum Permission {
 }
 
 message AnswerSignUpRequest {
-  string attempt_id = 1;
+  string attempt_uid = 1;
   // the kind of the answer, as the challenge asks for it
   oneof answer {
     string code = 2;

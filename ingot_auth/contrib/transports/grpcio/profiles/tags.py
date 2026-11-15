@@ -24,7 +24,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
     async def CreateTag(
         self, request: tags_pb2.CreateTagRequest, context: Context
     ) -> tags_pb2.CreateTagResponse:
-        tag = AuthTag(id=request.tag.id, name=request.tag.name)
+        tag = AuthTag(uid=request.tag.uid, name=request.tag.name)
         factory = self.project.auth.profiles.tags.op_create
         created = await self.run_operation(factory, tag, context)
         return tags_pb2.CreateTagResponse(tag=build_tag_message(created))
@@ -42,7 +42,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
     async def RenameTag(
         self, request: tags_pb2.RenameTagRequest, context: Context
     ) -> tags_pb2.RenameTagResponse:
-        parameters = AuthRenameItemParameters(id=request.id, name=request.name)
+        parameters = AuthRenameItemParameters(uid=request.uid, name=request.name)
         factory = self.project.auth.profiles.tags.op_rename
         renamed = await self.run_operation(factory, parameters, context)
         return tags_pb2.RenameTagResponse(tag=build_tag_message(renamed))
@@ -51,7 +51,7 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
     async def DeleteTag(
         self, request: tags_pb2.DeleteTagRequest, context: Context
     ) -> tags_pb2.DeleteTagResponse:
-        parameters = AuthDeleteItemParameters(id=request.id)
+        parameters = AuthDeleteItemParameters(uid=request.uid)
         factory = self.project.auth.profiles.tags.op_delete
         await self.run_operation(factory, parameters, context)
         return tags_pb2.DeleteTagResponse()
@@ -59,4 +59,4 @@ class AuthGrpcTagsServicer(BaseAuthGrpcServicer, tags_pb2_grpc.TagsServicer):
 
 def build_tag_message(tag: AuthTag) -> tags_pb2.Tag:
     """Internal: the message of a tag."""
-    return tags_pb2.Tag(id=tag.id, name=tag.name)
+    return tags_pb2.Tag(uid=tag.uid, name=tag.name)

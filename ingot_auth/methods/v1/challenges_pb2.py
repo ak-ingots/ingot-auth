@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&ingot_auth/methods/v1/challenges.proto\x12\x15ingot_auth.methods.v1\"b\n\tChallenge\x12\x12\n\nattempt_id\x18\x01 \x01(\t\x12\x34\n\x04\x63ode\x18\x02 \x01(\x0b\x32$.ingot_auth.methods.v1.CodeChallengeH\x00\x42\x0b\n\tchallenge\"\x1f\n\rCodeChallenge\x12\x0e\n\x06length\x18\x01 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&ingot_auth/methods/v1/challenges.proto\x12\x15ingot_auth.methods.v1\"c\n\tChallenge\x12\x13\n\x0b\x61ttempt_uid\x18\x01 \x01(\t\x12\x34\n\x04\x63ode\x18\x02 \x01(\x0b\x32$.ingot_auth.methods.v1.CodeChallengeH\x00\x42\x0b\n\tchallenge\"\x1f\n\rCodeChallenge\x12\x0e\n\x06length\x18\x01 \x01(\x05\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,7 +32,7 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.methods.v1.chall
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_CHALLENGE']._serialized_start=65
-  _globals['_CHALLENGE']._serialized_end=163
-  _globals['_CODECHALLENGE']._serialized_start=165
-  _globals['_CODECHALLENGE']._serialized_end=196
+  _globals['_CHALLENGE']._serialized_end=164
+  _globals['_CODECHALLENGE']._serialized_start=166
+  _globals['_CODECHALLENGE']._serialized_end=197
 # @@protoc_insertion_point(module_scope)

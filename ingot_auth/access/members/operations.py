@@ -89,18 +89,18 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
         self, parameters: AuthMembership, metadata: "OperationMetadata"
     ) -> None:
         self._check_group(parameters.group)
-        await self._check_uid(parameters.uid)
+        await self._check_uid(parameters.profile_uid)
         auth = self.project.auth
         async with auth.storage.transaction():
             await self._get_storage().add(parameters)
             await auth.activities.record(
                 self.parent,
-                parameters.uid,
+                parameters.profile_uid,
                 AuthActivityAction.BIND,
                 metadata,
                 context=AuthMembershipChanged(group=parameters.group),
             )
-        await auth.sessions.forget_callers(parameters.uid)
+        await auth.sessions.forget_callers(parameters.profile_uid)
 
 
 class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
@@ -126,18 +126,18 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
         self, parameters: AuthMembership, metadata: "OperationMetadata"
     ) -> None:
         self._check_group(parameters.group)
-        await self._check_uid(parameters.uid)
+        await self._check_uid(parameters.profile_uid)
         auth = self.project.auth
         async with auth.storage.transaction():
             await self._get_storage().remove(parameters)
             await auth.activities.record(
                 self.parent,
-                parameters.uid,
+                parameters.profile_uid,
                 AuthActivityAction.UNBIND,
                 metadata,
                 context=AuthMembershipChanged(group=parameters.group),
             )
-        await auth.sessions.forget_callers(parameters.uid)
+        await auth.sessions.forget_callers(parameters.profile_uid)
 
 
 class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):

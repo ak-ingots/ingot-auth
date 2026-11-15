@@ -336,9 +336,9 @@ class OperationsTestCase(unittest.TestCase):
                 ("articles.grp_editors", "a1"),
                 ("app.grp_admins", "a1"),
             ):
-                membership = AuthMembership(group=group, uid=uid)
+                membership = AuthMembership(group=group, profile_uid=uid)
                 await self.runner.run(members.op_add, membership, self.metadata)
-            removed = AuthMembership(group="articles.grp_editors", uid="b2")
+            removed = AuthMembership(group="articles.grp_editors", profile_uid="b2")
             await self.runner.run(members.op_remove, removed, self.metadata)
             return (
                 await self.runner.run(
@@ -353,7 +353,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_an_unknown_group_is_refused(self) -> None:
         members = self.access.members
-        membership = AuthMembership(group="guests", uid="a1")
+        membership = AuthMembership(group="guests", profile_uid="a1")
         for call in (
             self.runner.run(members.op_add, membership, self.metadata),
             self.runner.run(members.op_remove, membership, self.metadata),
@@ -366,7 +366,7 @@ class OperationsTestCase(unittest.TestCase):
     def test_anonymous_and_signed_in_keep_no_members(self) -> None:
         members = self.access.members
         for group in ("auth.grp_anonymous", "auth.grp_signed_in"):
-            membership = AuthMembership(group=group, uid="a1")
+            membership = AuthMembership(group=group, profile_uid="a1")
             for call in (
                 self.runner.run(members.op_add, membership, self.metadata),
                 self.runner.run(members.op_remove, membership, self.metadata),
@@ -380,7 +380,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_a_uid_of_no_profile_is_refused(self) -> None:
         members = self.access.members
-        membership = AuthMembership(group="articles.grp_editors", uid="c3")
+        membership = AuthMembership(group="articles.grp_editors", profile_uid="c3")
         for call in (
             self.runner.run(members.op_add, membership, self.metadata),
             self.runner.run(members.op_remove, membership, self.metadata),
@@ -391,7 +391,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_an_anonymous_caller_may_do_nothing(self) -> None:
         metadata = self.project.operations.create_metadata(ANONYMOUS)
-        membership = AuthMembership(group="articles.grp_editors", uid="a1")
+        membership = AuthMembership(group="articles.grp_editors", profile_uid="a1")
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(
                 self.runner.run(self.access.members.op_add, membership, metadata)
@@ -410,7 +410,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
 
     def test_a_user_has_the_union_of_what_its_groups_grant(self) -> None:
         for group in ("articles.grp_editors", "shop.grp_buyers"):
-            asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
+            asyncio.run(self.members.add(AuthMembership(group=group, profile_uid="a1")))
         self.assertEqual(
             self._get_permissions("a1"),
             masks(ShopPermissions.CAN_BUY, ArticlesPermissions.CAN_PUBLISH) | OWN,
@@ -428,7 +428,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
 
     def test_a_group_no_source_has_grants_nothing(self) -> None:
         for group in ("gone", "shop.grp_buyers"):
-            asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
+            asyncio.run(self.members.add(AuthMembership(group=group, profile_uid="a1")))
         self.assertEqual(
             self._get_permissions("a1"), masks(ShopPermissions.CAN_BUY) | OWN
         )

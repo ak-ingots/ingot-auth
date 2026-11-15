@@ -28,9 +28,9 @@ def build_attr_values(
     """
     attr_values: dict[int, AuthAttrValue] = {}
     for message in messages:
-        if message.attr_id in attr_values:
-            raise AuthItemInvalidError.for_value(registry, message.attr_id)
-        attr_values[message.attr_id] = build_attr_value(message, registry)
+        if message.attr_uid in attr_values:
+            raise AuthItemInvalidError.for_value(registry, message.attr_uid)
+        attr_values[message.attr_uid] = build_attr_value(message, registry)
     return attr_values
 
 
@@ -50,21 +50,23 @@ def build_attr_value(message: attrs_pb2.AttrValue, registry: str) -> AuthAttrVal
                 value = decimal.Decimal(message.decimal_value)
             except decimal.InvalidOperation:
                 raise AuthItemInvalidError.for_value(
-                    registry, message.attr_id
+                    registry, message.attr_uid
                 ) from None
             if not value.is_finite():
-                raise AuthItemInvalidError.for_value(registry, message.attr_id)
+                raise AuthItemInvalidError.for_value(registry, message.attr_uid)
             return value
         case "datetime_value":
             return message.datetime_value.ToDatetime(tzinfo=datetime.UTC)
         case "str_value":
             return message.str_value
-    raise AuthItemInvalidError.for_value(registry, message.attr_id)
+    raise AuthItemInvalidError.for_value(registry, message.attr_uid)
 
 
-def build_attr_value_message(attr_id: int, value: AuthAttrValue) -> attrs_pb2.AttrValue:
+def build_attr_value_message(
+    attr_uid: int, value: AuthAttrValue
+) -> attrs_pb2.AttrValue:
     """Internal: the message of the value of an attribute, of any registry."""
-    message = attrs_pb2.AttrValue(attr_id=attr_id)
+    message = attrs_pb2.AttrValue(attr_uid=attr_uid)
     if isinstance(value, bool):  # before int, a bool being one
         message.bool_value = value
     elif isinstance(value, int):

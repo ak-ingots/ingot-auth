@@ -38,8 +38,9 @@ class AuthSessionCloseReason(enum.StrEnum):
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthSessionRecord:
     """
-    A session, open or closed, the record of a sign-in: ``id`` is public, and
-    never authenticates; ``token_hash`` is the sha256 of the token, which the
+    A session, open or closed, the record of a sign-in: ``uid`` is public,
+    and never authenticates; ``profile_uid`` is that of its profile, its own
+    uid the one of a session; ``token_hash`` is the sha256 of the token, which the
     server never keeps. ``attr_values`` are the values of the attributes of
     the session, by their ids. ``seen_at`` is the time it was seen at last,
     that of its sign-in at first, written as the strategy of the lifetime
@@ -47,8 +48,8 @@ class AuthSessionRecord:
     it, the activity log tells.
     """
 
-    id: str
     uid: str
+    profile_uid: str
     method: str
     token_hash: str
     attr_values: "Mapping[int, AuthAttrValue]"
@@ -100,6 +101,6 @@ class AuthSessionPresetBinding:
     value of it or only takes one.
     """
 
-    preset_id: int
-    attr_id: int
+    preset_uid: int
+    attr_uid: int
     required: bool

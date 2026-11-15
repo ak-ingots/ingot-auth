@@ -24,14 +24,14 @@ def build_bson_attr_values(
     ``Decimal128`` of BSON, the other types are those of BSON already.
     """
     return [
-        {"attr_id": attr_id, "value": _build_bson_value(value)}
-        for attr_id, value in attr_values.items()
+        {"attr_uid": attr_uid, "value": _build_bson_value(value)}
+        for attr_uid, value in attr_values.items()
     ]
 
 
 def build_attr_values(documents: "list[Document]") -> "dict[int, AuthAttrValue]":
     """The values of the attributes from a document, as given to it."""
-    return {bound["attr_id"]: _build_value(bound["value"]) for bound in documents}
+    return {bound["attr_uid"]: _build_value(bound["value"]) for bound in documents}
 
 
 def _build_bson_value(value: "AuthAttrValue") -> object:

@@ -20,7 +20,7 @@ enum Permission {
 }
 
 message AnswerSignInRequest {
-  string attempt_id = 1;
+  string attempt_uid = 1;
   // the kind of the answer, as the challenge asks for it
   oneof answer {
     string code = 2;
@@ -43,6 +43,6 @@ message SignInResult {
 // The sign-in is over: a session is open, its token given once, which the
 // client sends with each call, and its id, public.
 message SignedIn {
-  string session_id = 1;
+  string session_uid = 1;
   string token = 2;
 }

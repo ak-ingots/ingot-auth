@@ -55,11 +55,11 @@ class AuthListOwnSessionsOperation(BaseOperation[None, tuple[AuthOwnSession, ...
             return ()
         return tuple(
             AuthOwnSession(
-                id=session.id,
+                uid=session.uid,
                 attr_values=session.attr_values,
                 opened_at=session.opened_at,
                 seen_at=session.seen_at,
-                is_current=session.id == caller.session_id,
+                is_current=session.uid == caller.session_uid,
             )
             for session in await self.project.auth.storage.sessions.get_open(caller.uid)
         )
@@ -90,23 +90,23 @@ class AuthRevokeOwnSessionOperation(
     ) -> None:
         caller = metadata.caller
         if not isinstance(caller, AuthCaller):
-            raise AuthOwnSessionNotFoundError.for_id(parameters.session_id)
+            raise AuthOwnSessionNotFoundError.for_uid(parameters.session_uid)
         auth = self.project.auth
         try:
             async with auth.storage.transaction():
                 await self.parent.close(
                     caller.uid,
-                    parameters.session_id,
+                    parameters.session_uid,
                     AuthSessionCloseReason.REVOKED,
                 )
                 await auth.activities.record(
                     self.parent,
-                    parameters.session_id,
+                    parameters.session_uid,
                     AuthActivityAction.REVOKE,
                     metadata,
                 )
         except AuthSessionNotFoundError:
-            raise AuthOwnSessionNotFoundError.for_id(parameters.session_id) from None
+            raise AuthOwnSessionNotFoundError.for_uid(parameters.session_uid) from None
 
 
 class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
@@ -130,17 +130,17 @@ class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
             return 0
         closed = 0
         for session in await self.project.auth.storage.sessions.get_open(caller.uid):
-            if session.id == caller.session_id:
+            if session.uid == caller.session_uid:
                 continue
             try:
                 async with self.project.auth.storage.transaction():
                     await self.parent.close(
                         caller.uid,
-                        session.id,
+                        session.uid,
                         AuthSessionCloseReason.REVOKED,
                     )
                     await self.project.auth.activities.record(
-                        self.parent, session.id, AuthActivityAction.REVOKE, metadata
+                        self.parent, session.uid, AuthActivityAction.REVOKE, metadata
                     )
             except AuthSessionNotFoundError:
                 continue  # closed meanwhile, by another request
@@ -171,13 +171,13 @@ class AuthListSessionsOperation(
     ) -> tuple[AuthSessionInfo, ...]:
         storage = self.project.auth.storage.sessions
         if parameters.closed:
-            sessions = await storage.get_all(parameters.uid)
+            sessions = await storage.get_all(parameters.profile_uid)
         else:
-            sessions = await storage.get_open(parameters.uid)
+            sessions = await storage.get_open(parameters.profile_uid)
         return tuple(
             AuthSessionInfo(
-                id=session.id,
                 uid=session.uid,
+                profile_uid=session.profile_uid,
                 method=session.method,
                 attr_values=session.attr_values,
                 opened_at=session.opened_at,

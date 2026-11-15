@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 // A value of an attribute, of the profiles or of the sessions, by the id of
 // the attribute in its registry, of the one variant of its type.
 message AttrValue {
-  uint32 attr_id = 1;
+  uint32 attr_uid = 1;
   oneof value {
     bool bool_value = 2;
     int64 int_value = 3;

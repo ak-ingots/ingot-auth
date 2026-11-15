@@ -70,22 +70,22 @@ Global___AttrType: _TypeAlias = AttrType  # noqa: Y015
 class Attr(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
     TYPE_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     type: Global___AttrType.ValueType
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
         type: Global___AttrType.ValueType = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name", "type", b"type"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "type", b"type", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -170,19 +170,19 @@ Global___ListAttrsResponse: _TypeAlias = ListAttrsResponse  # noqa: Y015
 class RenameAttrRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -212,16 +212,16 @@ Global___RenameAttrResponse: _TypeAlias = RenameAttrResponse  # noqa: Y015
 class DeleteAttrRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
+    uid: _builtins.int
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

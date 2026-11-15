@@ -80,7 +80,7 @@ class AuthCreateSessionAttrCommand(
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthSessionAttr:
         return AuthSessionAttr(
-            id=namespace.registry_id,
+            uid=namespace.registry_uid,
             name=namespace.registry_name,
             type=namespace.session_attrs_type,
             source=namespace.session_attrs_source,

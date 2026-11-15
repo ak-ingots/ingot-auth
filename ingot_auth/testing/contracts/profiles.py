@@ -59,21 +59,31 @@ class AuthIdentitiesStorageContract(BaseAuthContract):
 
     async def test_an_identifier_gives_its_uid(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(kind="email", value="a@b.c", uid="a1"))
+        await identities.create(
+            AuthIdentity(kind="email", value="a@b.c", profile_uid="a1")
+        )
         self.assertEqual(await identities.find_uid("email", "a@b.c"), "a1")
 
     async def test_an_identifier_is_bound_once_a_kind(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(kind="email", value="alice", uid="a1"))
-        await identities.create(AuthIdentity(kind="nickname", value="alice", uid="a1"))
+        await identities.create(
+            AuthIdentity(kind="email", value="alice", profile_uid="a1")
+        )
+        await identities.create(
+            AuthIdentity(kind="nickname", value="alice", profile_uid="a1")
+        )
         with self.assertRaises(AuthIdentityConflictError) as error:
-            await identities.create(AuthIdentity(kind="email", value="alice", uid="b2"))
+            await identities.create(
+                AuthIdentity(kind="email", value="alice", profile_uid="b2")
+            )
         self.assertEqual(error.exception.kind, "email")
         self.assertEqual(await identities.find_uid("email", "alice"), "a1")
 
     async def test_an_unbound_identifier_is_not_found(self) -> None:
         identities = self.project.auth.storage.profiles.identities
-        await identities.create(AuthIdentity(kind="email", value="a@b.c", uid="a1"))
+        await identities.create(
+            AuthIdentity(kind="email", value="a@b.c", profile_uid="a1")
+        )
         for kind, value in (("email", "b@b.c"), ("phone", "a@b.c")):
             with self.assertRaises(AuthIdentityNotFoundError) as error:
                 await identities.find_uid(kind, value)
@@ -83,7 +93,9 @@ class AuthIdentitiesStorageContract(BaseAuthContract):
         identities = self.project.auth.storage.profiles.identities
         results = await asyncio.gather(
             *(
-                identities.create(AuthIdentity(kind="email", value="a", uid=uid))
+                identities.create(
+                    AuthIdentity(kind="email", value="a", profile_uid=uid)
+                )
                 for uid in ("a1", "b2")
             ),
             return_exceptions=True,
@@ -137,10 +149,10 @@ class AuthProfileValuesStorageContract(BaseAuthContract):
         await values.set_tags("b2", frozenset({3}))
         self.assertEqual(
             await values.get("a1"),
-            AuthProfileValues(tag_ids=frozenset({1, 2}), attr_values=attr_values),
+            AuthProfileValues(tag_uids=frozenset({1, 2}), attr_values=attr_values),
         )
         self.assertEqual(
-            await values.get("b2"), AuthProfileValues(tag_ids=frozenset({3}))
+            await values.get("b2"), AuthProfileValues(tag_uids=frozenset({3}))
         )
 
     async def test_a_set_replaces_the_whole_set(self) -> None:
@@ -150,5 +162,5 @@ class AuthProfileValuesStorageContract(BaseAuthContract):
         await values.set_tags("a1", frozenset({3}))
         await values.set_attr_values("a1", {})
         self.assertEqual(
-            await values.get("a1"), AuthProfileValues(tag_ids=frozenset({3}))
+            await values.get("a1"), AuthProfileValues(tag_uids=frozenset({3}))
         )

@@ -47,7 +47,7 @@ class AuthSessionsStorage(Unit):
 
     @t.final
     async def open(self, session: AuthSessionRecord) -> None:
-        """Keeps a new session, open: its id and the hash of its token are new."""
+        """Keeps a new session, open: its uid and the hash of its token are new."""
         await self._open(session)
 
     @t.final
@@ -73,18 +73,18 @@ class AuthSessionsStorage(Unit):
         return await self._get_all(uid)
 
     @t.final
-    async def touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+    async def touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         """
         Writes the time an open session was seen at.
 
-        :raises AuthSessionNotFoundError: no session of the id is open.
+        :raises AuthSessionNotFoundError: no session of the uid is open.
         """
-        await self._touch(session_id, seen_at)
+        await self._touch(session_uid, seen_at)
 
     @t.final
     async def close(
         self,
-        session_id: str,
+        session_uid: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
     ) -> None:
@@ -92,9 +92,9 @@ class AuthSessionsStorage(Unit):
         Closes an open session for a reason, at a time; it stays kept, who
         closed it told by the activity log.
 
-        :raises AuthSessionNotFoundError: no session of the id is open.
+        :raises AuthSessionNotFoundError: no session of the uid is open.
         """
-        await self._close(session_id, reason, closed_at)
+        await self._close(session_uid, reason, closed_at)
 
     @abc.abstractmethod
     async def _open(self, session: AuthSessionRecord) -> None:
@@ -113,13 +113,13 @@ class AuthSessionsStorage(Unit):
         raise NotImplementedError(f"{type(self).__qualname__}._get_all")
 
     @abc.abstractmethod
-    async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
+    async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._touch")
 
     @abc.abstractmethod
     async def _close(
         self,
-        session_id: str,
+        session_uid: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
     ) -> None:

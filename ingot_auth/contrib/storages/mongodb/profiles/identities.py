@@ -36,7 +36,11 @@ class AuthMongoDbIdentitiesStorage(
         collection = await self._mongodb_get_collection()
         try:
             await collection.insert_one(
-                {"kind": identity.kind, "value": identity.value, "uid": identity.uid},
+                {
+                    "kind": identity.kind,
+                    "value": identity.value,
+                    "profile_uid": identity.profile_uid,
+                },
                 session=self._mongodb_get_session(),
             )
         except DuplicateKeyError as error:
@@ -50,7 +54,7 @@ class AuthMongoDbIdentitiesStorage(
         )
         if document is None:
             raise AuthIdentityNotFoundError.for_kind(kind)
-        return t.cast(str, document["uid"])
+        return t.cast(str, document["profile_uid"])
 
     @t.override
     async def _mongodb_create_indexes(

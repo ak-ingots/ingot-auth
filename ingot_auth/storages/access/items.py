@@ -13,4 +13,4 @@ class AuthMembership:
     """
 
     group: str
-    uid: str
+    profile_uid: str

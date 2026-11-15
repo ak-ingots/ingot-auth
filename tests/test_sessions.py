@@ -70,7 +70,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         self.project = ShopProject()
         self.sessions = self.project.auth.sessions
         await self.project.auth.storage.access.members.add(
-            AuthMembership(group="shop.grp_buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", profile_uid="a1")
         )
 
     async def run_operation(self, factory: t.Any, parameters: t.Any) -> t.Any:
@@ -94,12 +94,12 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         session = await self.project.auth.storage.sessions.find(
             hash_token(opened.token)
         )
-        self.assertEqual(session.id, opened.session_id)
+        self.assertEqual(session.uid, opened.session_uid)
         self.assertEqual(
             caller,
             AuthCaller(
                 uid="a1",
-                session_id=session.id,
+                session_uid=session.uid,
                 permissions=masks(ShopPermissions.CAN_BUY) | OWN,
                 profile_hash=build_profile_hash(
                     AuthProfileValues(), masks(ShopPermissions.CAN_BUY) | OWN
@@ -107,7 +107,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
             ),
         )
         self.assertEqual(
-            (session.uid, session.method, session.attr_values),
+            (session.profile_uid, session.method, session.attr_values),
             ("a1", "nickname", {1: "iPhone"}),
         )
 
@@ -145,7 +145,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         self.travel(31 * DAY)
         storage = type(self.project.auth.storage.sessions)
-        closed = AuthSessionNotFoundError.for_id("s1")
+        closed = AuthSessionNotFoundError.for_uid("s1")
         with mock.patch.object(storage, "_close", side_effect=closed):
             with self.assertRaises(AuthSessionExpiredError):
                 await self.sessions.authenticate(token)
@@ -155,7 +155,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         caller = await self.sessions.authenticate(token)
         now = datetime.datetime.now(datetime.UTC)
         await self.project.auth.storage.sessions.close(
-            caller.session_id, AuthSessionCloseReason.SIGNED_OUT, now
+            caller.session_uid, AuthSessionCloseReason.SIGNED_OUT, now
         )
         expired = AuthSessionCloseReason.EXPIRED_ABSOLUTE
         lifetime = type(self.sessions.lifetime)
@@ -181,7 +181,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         await self.project.auth.storage.access.members.remove(
-            AuthMembership(group="shop.grp_buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", profile_uid="a1")
         )
         buyer = masks(ShopPermissions.CAN_BUY) | OWN
         self.assertEqual((await self.sessions.authenticate(token)).permissions, buyer)
@@ -196,7 +196,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         for uid in ("a1", "b2"):
             await storage.profiles.create(AuthProfile(uid=uid, created_at=NOW))
         await storage.access.members.add(
-            AuthMembership(group="shop.grp_buyers", uid="b2")
+            AuthMembership(group="shop.grp_buyers", profile_uid="b2")
         )
         tokens = [
             (await self.sessions.open(uid, "nickname", {})).token
@@ -205,7 +205,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         for token in tokens:
             await self.sessions.authenticate(token)
         members = self.project.auth.access.members
-        membership = AuthMembership(group="shop.grp_buyers", uid="a1")
+        membership = AuthMembership(group="shop.grp_buyers", profile_uid="a1")
         buyer = masks(ShopPermissions.CAN_BUY) | OWN
         for factory, permissions in (
             (members.op_remove, OWN),
@@ -227,7 +227,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         await self.project.auth.storage.access.members.remove(
-            AuthMembership(group="shop.grp_buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", profile_uid="a1")
         )
         groups = self.project.auth.access.groups
         with mock.patch.object(type(groups), "get_digest", return_value="deployed"):
@@ -238,7 +238,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         caller = await self.sessions.authenticate(token)
         await self.project.auth.storage.sessions.close(
-            caller.session_id,
+            caller.session_uid,
             AuthSessionCloseReason.REVOKED,
             datetime.datetime.now(datetime.UTC),
         )
@@ -342,7 +342,7 @@ class SlidingTestCase(unittest.IsolatedAsyncioTestCase):
         token = await self.open()
         caller = await self.sessions.authenticate(token)
         # another process saw it, its cache not this one
-        await self.storage.touch(caller.session_id, self.opened_at + 50 * MINUTE)
+        await self.storage.touch(caller.session_uid, self.opened_at + 50 * MINUTE)
         self.travel(70 * MINUTE)
         self.assertEqual(await self.sessions.authenticate(token), caller)
 
@@ -351,7 +351,7 @@ class SlidingTestCase(unittest.IsolatedAsyncioTestCase):
         token = await self.open()
         caller = await self.sessions.authenticate(token)
         await self.storage.close(
-            caller.session_id, AuthSessionCloseReason.REVOKED, self.opened_at
+            caller.session_uid, AuthSessionCloseReason.REVOKED, self.opened_at
         )
         self.travel(10 * MINUTE)
         with self.assertRaises(AuthSessionNotFoundError):

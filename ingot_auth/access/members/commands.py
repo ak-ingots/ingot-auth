@@ -43,7 +43,9 @@ class BaseAuthMembershipCommand(BaseOperationCommand[AuthMembership, None]):
     @t.override
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthMembership:
-        return AuthMembership(group=namespace.members_group, uid=namespace.members_uid)
+        return AuthMembership(
+            group=namespace.members_group, profile_uid=namespace.members_uid
+        )
 
     @t.override
     async def _run(self) -> None:

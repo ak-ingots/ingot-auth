@@ -26,7 +26,7 @@ class AuthMemoryIdentitiesStorage(AuthMemoryStateMixin, BaseAuthIdentitiesStorag
         key = (identity.kind, identity.value)
         if key in self._uids:
             raise AuthIdentityConflictError.for_kind(identity.kind)
-        self._uids[key] = identity.uid
+        self._uids[key] = identity.profile_uid
 
     @t.override
     async def _find_uid(self, kind: str, value: str) -> str:

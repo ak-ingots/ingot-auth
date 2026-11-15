@@ -38,10 +38,10 @@ class AuthMongoDbActivitiesStorage(
         await collection.insert_one(
             {
                 "who": record.who,
-                "session_id": record.session_id,
+                "session_uid": record.session_uid,
                 "action": record.action.value,
                 "entity_type": record.entity_type,
-                "entity_id": record.entity_id,
+                "entity_uid": record.entity_uid,
                 "context": _build_bson(record.context),
                 "run_uid": record.run_uid,
                 "when": record.when,
@@ -56,9 +56,9 @@ class AuthMongoDbActivitiesStorage(
             field: value
             for field, value in (
                 ("entity_type", query.entity_type),
-                ("entity_id", query.entity_id),
+                ("entity_uid", query.entity_uid),
                 ("who", query.who),
-                ("session_id", query.session_id),
+                ("session_uid", query.session_uid),
                 ("action", query.action and query.action.value),
             )
             if value is not None
@@ -82,20 +82,20 @@ class AuthMongoDbActivitiesStorage(
         self, collection: "AsyncCollection[Document]"
     ) -> None:
         await collection.create_index(
-            [("entity_type", 1), ("entity_id", 1), ("when", -1)]
+            [("entity_type", 1), ("entity_uid", 1), ("when", -1)]
         )
         await collection.create_index([("who", 1), ("when", -1)])
-        await collection.create_index([("session_id", 1), ("when", -1)])
+        await collection.create_index([("session_uid", 1), ("when", -1)])
         await collection.create_index([("when", -1)])
 
 
 def _build_record(document: "Document") -> AuthActivityRecord:
     return AuthActivityRecord(
         who=document["who"],
-        session_id=document["session_id"],
+        session_uid=document["session_uid"],
         action=AuthActivityAction(document["action"]),
         entity_type=document["entity_type"],
-        entity_id=document["entity_id"],
+        entity_uid=document["entity_uid"],
         context=t.cast("dict[str, object]", _build_value(document["context"])),
         run_uid=document["run_uid"],
         when=document["when"],

@@ -23,4 +23,4 @@ class AuthMongoDbTagsStorage(AuthMongoDbRegistryStorage[AuthTag], BaseAuthTagsSt
 
     @t.override
     def _build_item(self, document: "Document") -> AuthTag:
-        return AuthTag(id=document["_id"], name=document["name"])
+        return AuthTag(uid=document["_id"], name=document["name"])

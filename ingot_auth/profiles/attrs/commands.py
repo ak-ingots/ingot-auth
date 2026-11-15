@@ -69,7 +69,7 @@ class AuthCreateAttrCommand(
     @classmethod
     def _cli_build_args(cls, namespace: argparse.Namespace) -> AuthAttr:
         return AuthAttr(
-            id=namespace.registry_id,
+            uid=namespace.registry_uid,
             name=namespace.registry_name,
             type=namespace.attrs_type,
         )

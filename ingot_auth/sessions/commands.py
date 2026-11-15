@@ -47,7 +47,7 @@ class AuthListSessionsCommand(
         cls, namespace: argparse.Namespace
     ) -> AuthListSessionsParameters:
         return AuthListSessionsParameters(
-            uid=namespace.sessions_uid, closed=namespace.sessions_closed
+            profile_uid=namespace.sessions_uid, closed=namespace.sessions_closed
         )
 
     @t.override
@@ -71,7 +71,7 @@ class AuthListSessionsCommand(
             print(
                 "\t".join(
                     (
-                        session.id,
+                        session.uid,
                         session.method,
                         session.opened_at.isoformat(),
                         session.seen_at.isoformat(),

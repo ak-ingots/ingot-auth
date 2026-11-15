@@ -48,18 +48,18 @@ class Membership(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     GROUP_FIELD_NUMBER: _builtins.int
-    UID_FIELD_NUMBER: _builtins.int
+    PROFILE_UID_FIELD_NUMBER: _builtins.int
     group: _builtins.str
-    uid: _builtins.str
+    profile_uid: _builtins.str
     def __init__(
         self,
         *,
         group: _builtins.str = ...,
-        uid: _builtins.str = ...,
+        profile_uid: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["group", b"group", "uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["group", b"group", "profile_uid", b"profile_uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -158,17 +158,17 @@ Global___ListMembersRequest: _TypeAlias = ListMembersRequest  # noqa: Y015
 class ListMembersResponse(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    UIDS_FIELD_NUMBER: _builtins.int
+    PROFILE_UIDS_FIELD_NUMBER: _builtins.int
     @_builtins.property
-    def uids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
+    def profile_uids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
     def __init__(
         self,
         *,
-        uids: _abc.Iterable[_builtins.str] | None = ...,
+        profile_uids: _abc.Iterable[_builtins.str] | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["uids", b"uids"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["profile_uids", b"profile_uids"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -178,16 +178,16 @@ Global___ListMembersResponse: _TypeAlias = ListMembersResponse  # noqa: Y015
 class ListMemberGroupsRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    UID_FIELD_NUMBER: _builtins.int
-    uid: _builtins.str
+    PROFILE_UID_FIELD_NUMBER: _builtins.int
+    profile_uid: _builtins.str
     def __init__(
         self,
         *,
-        uid: _builtins.str = ...,
+        profile_uid: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["uid", b"uid"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["profile_uid", b"profile_uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

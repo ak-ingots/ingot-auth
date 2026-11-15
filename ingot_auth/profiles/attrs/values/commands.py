@@ -72,15 +72,15 @@ class AuthSetProfileAttrValuesCommand(
     @t.override
     async def _run(self) -> None:
         attrs = self.project.auth.storage.profiles.attrs
-        types = {attr.id: attr.type for attr in await attrs.get_all()}
+        types = {attr.uid: attr.type for attr in await attrs.get_all()}
         attr_values = {
             # one of no attribute is left as typed: the operation refuses it
-            attr_id: (
-                parse_attr_value(attrs.REGISTRY, attr_id, types[attr_id], text)
-                if attr_id in types
+            attr_uid: (
+                parse_attr_value(attrs.REGISTRY, attr_uid, types[attr_uid], text)
+                if attr_uid in types
                 else text
             )
-            for attr_id, text in self.cli_args.attr_values
+            for attr_uid, text in self.cli_args.attr_values
         }
         parameters = AuthSetProfileAttrValuesParameters(
             uid=self.cli_args.uid, attr_values=attr_values
@@ -89,7 +89,7 @@ class AuthSetProfileAttrValuesCommand(
 
 
 def parse_attr_value(
-    registry: str, attr_id: int, attr_type: AuthAttrType, text: str
+    registry: str, attr_uid: int, attr_type: AuthAttrType, text: str
 ) -> AuthAttrValue:
     """
     Internal: a value as typed, by the type of its attribute.
@@ -115,14 +115,14 @@ def parse_attr_value(
             case _:  # a text
                 return text
     except KeyError, ValueError, decimal.InvalidOperation:
-        raise AuthItemInvalidError.for_value(registry, attr_id) from None
+        raise AuthItemInvalidError.for_value(registry, attr_uid) from None
 
 
 def _parse_assignment(text: str) -> tuple[int, str]:
-    attr_id, separator, value = text.partition("=")
+    attr_uid, separator, value = text.partition("=")
     if not separator:
         raise argparse.ArgumentTypeError(f"{text!r} is not ID=VALUE")
     try:
-        return int(attr_id), value
+        return int(attr_uid), value
     except ValueError:
-        raise argparse.ArgumentTypeError(f"{attr_id!r} is not an id") from None
+        raise argparse.ArgumentTypeError(f"{attr_uid!r} is not an id") from None

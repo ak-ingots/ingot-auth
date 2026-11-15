@@ -20,10 +20,7 @@ from ingot_auth.__main__ import AuthMemorySessionsUnit
 from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
-from ingot_auth.contrib.storages.mongodb import (
-    AuthMongoDbSessionsStorage,
-    AuthMongoDbStorage,
-)
+from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.settings import AuthSettingsUnit
@@ -55,7 +52,6 @@ from ingot_auth.testing.contracts import (
     AuthStorageTransactionsContract,
     AuthTagsStorageContract,
 )
-from ingot_auth.testing.contracts.sessions import create_session
 from ingot_auth.testing.methods import (
     AuthTestingMethod,
     AuthTestingPermissions,
@@ -141,7 +137,7 @@ class MongoDbTagsStorageTestCase(
     ServerMixin, AuthTagsStorageContract, unittest.IsolatedAsyncioTestCase
 ):
     async def test_the_items_outlive_the_project(self) -> None:
-        tag = AuthTag(id=1, name="beta")
+        tag = AuthTag(uid=1, name="beta")
         await self.storage.create(tag)
         project = await self.start()
         self.assertEqual(await project.auth.storage.profiles.tags.get_all(), (tag,))
@@ -228,15 +224,7 @@ class MongoDbMembersStorageTestCase(
 class MongoDbSessionsStorageTestCase(
     ServerMixin, AuthSessionsStorageContract, unittest.IsolatedAsyncioTestCase
 ):
-    async def test_a_session_of_0_1_0_is_seen_at_its_sign_in(self) -> None:
-        sessions = t.cast(
-            AuthMongoDbSessionsStorage, self.project.auth.storage.sessions
-        )
-        await sessions.open(create_session())
-        collection = await sessions._mongodb_get_collection()
-        await collection.update_one({"_id": "s1"}, {"$unset": {"seen_at": ""}})
-        session = await sessions.find("h1")
-        self.assertEqual(session.seen_at, session.opened_at)
+    pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")

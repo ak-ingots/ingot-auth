@@ -22,10 +22,10 @@ def build_profile_hash(
     client comparing it with its own knows to ask for the profile again.
     """
     content = [
-        sorted(values.tag_ids),
+        sorted(values.tag_uids),
         sorted(
-            (attr_id, type(value).__name__, _format(value))
-            for attr_id, value in values.attr_values.items()
+            (attr_uid, type(value).__name__, _format(value))
+            for attr_uid, value in values.attr_values.items()
         ),
         sorted(permissions.items()),
     ]

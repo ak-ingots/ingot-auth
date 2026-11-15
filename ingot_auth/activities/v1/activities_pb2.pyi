@@ -74,25 +74,25 @@ Global___Action: _TypeAlias = Action  # noqa: Y015
 @_typing.final
 class Activity(_message.Message):
     """A change of state, a fact as it was written. The actor, `who` with
-    `session_id`, empty of a caller of none.
+    `session_uid`, empty of a caller of none.
     """
 
     DESCRIPTOR: _descriptor.Descriptor
 
     WHO_FIELD_NUMBER: _builtins.int
-    SESSION_ID_FIELD_NUMBER: _builtins.int
+    SESSION_UID_FIELD_NUMBER: _builtins.int
     ACTION_FIELD_NUMBER: _builtins.int
     ENTITY_TYPE_FIELD_NUMBER: _builtins.int
-    ENTITY_ID_FIELD_NUMBER: _builtins.int
+    ENTITY_UID_FIELD_NUMBER: _builtins.int
     CONTEXT_FIELD_NUMBER: _builtins.int
     RUN_UID_FIELD_NUMBER: _builtins.int
     WHEN_FIELD_NUMBER: _builtins.int
     who: _builtins.str
-    session_id: _builtins.str
+    session_uid: _builtins.str
     action: Global___Action.ValueType
     entity_type: _builtins.str
     """the full name of the unit of the entity: auth.profiles"""
-    entity_id: _builtins.str
+    entity_uid: _builtins.str
     run_uid: _builtins.str
     """of the request or of a job of the server"""
     @_builtins.property
@@ -107,17 +107,17 @@ class Activity(_message.Message):
         self,
         *,
         who: _builtins.str = ...,
-        session_id: _builtins.str = ...,
+        session_uid: _builtins.str = ...,
         action: Global___Action.ValueType = ...,
         entity_type: _builtins.str = ...,
-        entity_id: _builtins.str = ...,
+        entity_uid: _builtins.str = ...,
         context: _struct_pb2.Struct | None = ...,
         run_uid: _builtins.str = ...,
         when: _timestamp_pb2.Timestamp | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["context", b"context", "when", b"when"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["action", b"action", "context", b"context", "entity_id", b"entity_id", "entity_type", b"entity_type", "run_uid", b"run_uid", "session_id", b"session_id", "when", b"when", "who", b"who"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["action", b"action", "context", b"context", "entity_type", b"entity_type", "entity_uid", b"entity_uid", "run_uid", b"run_uid", "session_uid", b"session_uid", "when", b"when", "who", b"who"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -128,18 +128,18 @@ class ListActivitiesRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     ENTITY_TYPE_FIELD_NUMBER: _builtins.int
-    ENTITY_ID_FIELD_NUMBER: _builtins.int
+    ENTITY_UID_FIELD_NUMBER: _builtins.int
     WHO_FIELD_NUMBER: _builtins.int
-    SESSION_ID_FIELD_NUMBER: _builtins.int
+    SESSION_UID_FIELD_NUMBER: _builtins.int
     ACTION_FIELD_NUMBER: _builtins.int
     SINCE_FIELD_NUMBER: _builtins.int
     UNTIL_FIELD_NUMBER: _builtins.int
     LIMIT_FIELD_NUMBER: _builtins.int
     entity_type: _builtins.str
     """each filter optional"""
-    entity_id: _builtins.str
+    entity_uid: _builtins.str
     who: _builtins.str
-    session_id: _builtins.str
+    session_uid: _builtins.str
     action: Global___Action.ValueType
     limit: _builtins.int
     """100 by default"""
@@ -153,32 +153,32 @@ class ListActivitiesRequest(_message.Message):
         self,
         *,
         entity_type: _builtins.str | None = ...,
-        entity_id: _builtins.str | None = ...,
+        entity_uid: _builtins.str | None = ...,
         who: _builtins.str | None = ...,
-        session_id: _builtins.str | None = ...,
+        session_uid: _builtins.str | None = ...,
         action: Global___Action.ValueType = ...,
         since: _timestamp_pb2.Timestamp | None = ...,
         until: _timestamp_pb2.Timestamp | None = ...,
         limit: _builtins.int = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["_entity_id", b"_entity_id", "_entity_type", b"_entity_type", "_session_id", b"_session_id", "_who", b"_who", "entity_id", b"entity_id", "entity_type", b"entity_type", "session_id", b"session_id", "since", b"since", "until", b"until", "who", b"who"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["_entity_type", b"_entity_type", "_entity_uid", b"_entity_uid", "_session_uid", b"_session_uid", "_who", b"_who", "entity_type", b"entity_type", "entity_uid", b"entity_uid", "session_uid", b"session_uid", "since", b"since", "until", b"until", "who", b"who"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["_entity_id", b"_entity_id", "_entity_type", b"_entity_type", "_session_id", b"_session_id", "_who", b"_who", "action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "limit", b"limit", "session_id", b"session_id", "since", b"since", "until", b"until", "who", b"who"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["_entity_type", b"_entity_type", "_entity_uid", b"_entity_uid", "_session_uid", b"_session_uid", "_who", b"_who", "action", b"action", "entity_type", b"entity_type", "entity_uid", b"entity_uid", "limit", b"limit", "session_uid", b"session_uid", "since", b"since", "until", b"until", "who", b"who"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    _WhichOneofReturnType__entity_id: _TypeAlias = _typing.Literal["entity_id"]  # noqa: Y015
-    _WhichOneofArgType__entity_id: _TypeAlias = _typing.Literal["_entity_id", b"_entity_id"]  # noqa: Y015
     _WhichOneofReturnType__entity_type: _TypeAlias = _typing.Literal["entity_type"]  # noqa: Y015
     _WhichOneofArgType__entity_type: _TypeAlias = _typing.Literal["_entity_type", b"_entity_type"]  # noqa: Y015
-    _WhichOneofReturnType__session_id: _TypeAlias = _typing.Literal["session_id"]  # noqa: Y015
-    _WhichOneofArgType__session_id: _TypeAlias = _typing.Literal["_session_id", b"_session_id"]  # noqa: Y015
+    _WhichOneofReturnType__entity_uid: _TypeAlias = _typing.Literal["entity_uid"]  # noqa: Y015
+    _WhichOneofArgType__entity_uid: _TypeAlias = _typing.Literal["_entity_uid", b"_entity_uid"]  # noqa: Y015
+    _WhichOneofReturnType__session_uid: _TypeAlias = _typing.Literal["session_uid"]  # noqa: Y015
+    _WhichOneofArgType__session_uid: _TypeAlias = _typing.Literal["_session_uid", b"_session_uid"]  # noqa: Y015
     _WhichOneofReturnType__who: _TypeAlias = _typing.Literal["who"]  # noqa: Y015
     _WhichOneofArgType__who: _TypeAlias = _typing.Literal["_who", b"_who"]  # noqa: Y015
     @_typing.overload
-    def WhichOneof(self, oneof_group: _WhichOneofArgType__entity_id) -> _WhichOneofReturnType__entity_id | None: ...
-    @_typing.overload
     def WhichOneof(self, oneof_group: _WhichOneofArgType__entity_type) -> _WhichOneofReturnType__entity_type | None: ...
     @_typing.overload
-    def WhichOneof(self, oneof_group: _WhichOneofArgType__session_id) -> _WhichOneofReturnType__session_id | None: ...
+    def WhichOneof(self, oneof_group: _WhichOneofArgType__entity_uid) -> _WhichOneofReturnType__entity_uid | None: ...
+    @_typing.overload
+    def WhichOneof(self, oneof_group: _WhichOneofArgType__session_uid) -> _WhichOneofReturnType__session_uid | None: ...
     @_typing.overload
     def WhichOneof(self, oneof_group: _WhichOneofArgType__who) -> _WhichOneofReturnType__who | None: ...
 

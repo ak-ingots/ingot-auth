@@ -30,7 +30,7 @@ enum Permission {
 
 // The values of a profile, by the ids of their registries.
 message ProfileValues {
-  repeated uint32 tag_ids = 1;
+  repeated uint32 tag_uids = 1;
   repeated ingot_auth.attrs.v1.AttrValue attr_values = 2;
 }
 
@@ -47,7 +47,7 @@ message GetOwnProfileResponse {
 message SetProfileTagsRequest {
   string uid = 1;
   // all the tags it is to have
-  repeated uint32 tag_ids = 2;
+  repeated uint32 tag_uids = 2;
 }
 
 message SetProfileTagsResponse {

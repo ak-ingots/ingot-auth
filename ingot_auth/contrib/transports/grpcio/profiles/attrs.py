@@ -36,7 +36,7 @@ class AuthGrpcAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
     ) -> attrs_pb2.CreateAttrResponse:
         message = request.attr
         attr = AuthAttr(
-            id=message.id, name=message.name, type=build_attr_type(message.type)
+            uid=message.uid, name=message.name, type=build_attr_type(message.type)
         )
         factory = self.project.auth.profiles.attrs.op_create
         created = await self.run_operation(factory, attr, context)
@@ -55,7 +55,7 @@ class AuthGrpcAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
     async def RenameAttr(
         self, request: attrs_pb2.RenameAttrRequest, context: Context
     ) -> attrs_pb2.RenameAttrResponse:
-        parameters = AuthRenameItemParameters(id=request.id, name=request.name)
+        parameters = AuthRenameItemParameters(uid=request.uid, name=request.name)
         factory = self.project.auth.profiles.attrs.op_rename
         renamed = await self.run_operation(factory, parameters, context)
         return attrs_pb2.RenameAttrResponse(attr=build_attr_message(renamed))
@@ -64,7 +64,7 @@ class AuthGrpcAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
     async def DeleteAttr(
         self, request: attrs_pb2.DeleteAttrRequest, context: Context
     ) -> attrs_pb2.DeleteAttrResponse:
-        parameters = AuthDeleteItemParameters(id=request.id)
+        parameters = AuthDeleteItemParameters(uid=request.uid)
         factory = self.project.auth.profiles.attrs.op_delete
         await self.run_operation(factory, parameters, context)
         return attrs_pb2.DeleteAttrResponse()
@@ -72,7 +72,7 @@ class AuthGrpcAttrsServicer(BaseAuthGrpcServicer, attrs_pb2_grpc.AttrsServicer):
 
 def build_attr_message(attr: AuthAttr) -> attrs_pb2.Attr:
     """Internal: the message of an attribute."""
-    return attrs_pb2.Attr(id=attr.id, name=attr.name, type=ATTR_TYPES[attr.type])
+    return attrs_pb2.Attr(uid=attr.uid, name=attr.name, type=ATTR_TYPES[attr.type])
 
 
 def build_attr_type(message_type: attrs_pb2.AttrType.ValueType) -> AuthAttrType:

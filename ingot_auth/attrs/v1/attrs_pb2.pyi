@@ -25,13 +25,13 @@ class AttrValue(_message.Message):
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    ATTR_ID_FIELD_NUMBER: _builtins.int
+    ATTR_UID_FIELD_NUMBER: _builtins.int
     BOOL_VALUE_FIELD_NUMBER: _builtins.int
     INT_VALUE_FIELD_NUMBER: _builtins.int
     DECIMAL_VALUE_FIELD_NUMBER: _builtins.int
     DATETIME_VALUE_FIELD_NUMBER: _builtins.int
     STR_VALUE_FIELD_NUMBER: _builtins.int
-    attr_id: _builtins.int
+    attr_uid: _builtins.int
     bool_value: _builtins.bool
     int_value: _builtins.int
     decimal_value: _builtins.str
@@ -42,7 +42,7 @@ class AttrValue(_message.Message):
     def __init__(
         self,
         *,
-        attr_id: _builtins.int = ...,
+        attr_uid: _builtins.int = ...,
         bool_value: _builtins.bool = ...,
         int_value: _builtins.int = ...,
         decimal_value: _builtins.str = ...,
@@ -51,7 +51,7 @@ class AttrValue(_message.Message):
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["bool_value", b"bool_value", "datetime_value", b"datetime_value", "decimal_value", b"decimal_value", "int_value", b"int_value", "str_value", b"str_value", "value", b"value"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_id", b"attr_id", "bool_value", b"bool_value", "datetime_value", b"datetime_value", "decimal_value", b"decimal_value", "int_value", b"int_value", "str_value", b"str_value", "value", b"value"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_uid", b"attr_uid", "bool_value", b"bool_value", "datetime_value", b"datetime_value", "decimal_value", b"decimal_value", "int_value", b"int_value", "str_value", b"str_value", "value", b"value"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     _WhichOneofReturnType_value: _TypeAlias = _typing.Literal["bool_value", "int_value", "decimal_value", "datetime_value", "str_value"]  # noqa: Y015
     _WhichOneofArgType_value: _TypeAlias = _typing.Literal["value", b"value"]  # noqa: Y015

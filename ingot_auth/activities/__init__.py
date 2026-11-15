@@ -90,7 +90,7 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     async def record(
         self,
         owner: Entity,
-        entity_id: str,
+        entity_uid: str,
         action: AuthActivityAction,
         metadata: OperationMetadata,
         *,
@@ -105,10 +105,10 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         caller = metadata.caller
         record = AuthActivityRecord(
             who=caller.uid,
-            session_id=caller.session_id if isinstance(caller, AuthCaller) else None,
+            session_uid=caller.session_uid if isinstance(caller, AuthCaller) else None,
             action=action,
             entity_type=owner.full_name,
-            entity_id=entity_id,
+            entity_uid=entity_uid,
             context=_build_context(context),
             run_uid=metadata.run_uid,
             when=self._get_now(),

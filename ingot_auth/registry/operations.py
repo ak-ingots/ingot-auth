@@ -29,7 +29,7 @@ if t.TYPE_CHECKING:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthRenameItemParameters:
-    id: int
+    uid: int
     name: str
 
 
@@ -42,7 +42,7 @@ class AuthItemRenamed(AuthActivityContext):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class AuthDeleteItemParameters:
-    id: int
+    uid: int
 
 
 class BaseAuthRegistryOperation[ItemType: AuthItem, ParametersType, ResultType](
@@ -72,14 +72,14 @@ class BaseAuthRegistryOperation[ItemType: AuthItem, ParametersType, ResultType](
     @t.final
     async def _record(
         self,
-        item_id: int,
+        item_uid: int,
         action: AuthActivityAction,
         metadata: OperationMetadata,
         context: AuthActivityContext | None = None,
     ) -> None:
         """Records the change of an item in the activity log, the registry its type."""
         await self.project.auth.activities.record(
-            self.find_parent(Unit), str(item_id), action, metadata, context=context
+            self.find_parent(Unit), str(item_uid), action, metadata, context=context
         )
 
 
@@ -94,13 +94,13 @@ class BaseAuthCreateItemOperation[ItemType: AuthItem](
     @t.override
     async def _run(self, parameters: ItemType, metadata: OperationMetadata) -> ItemType:
         storage = self._get_storage()
-        if parameters.id < 1:
-            raise AuthItemInvalidError.for_id(storage.REGISTRY, parameters.id)
+        if parameters.uid < 1:
+            raise AuthItemInvalidError.for_uid(storage.REGISTRY, parameters.uid)
         self._check_name(parameters.name)
         async with self.project.auth.storage.transaction():
             await storage.create(parameters)
             await self._record(
-                parameters.id,
+                parameters.uid,
                 AuthActivityAction.CREATE,
                 metadata,
                 self._get_created_context(parameters),
@@ -135,9 +135,9 @@ class BaseAuthRenameItemOperation[ItemType: AuthItem](
     ) -> ItemType:
         self._check_name(parameters.name)
         async with self.project.auth.storage.transaction():
-            renamed = await self._get_storage().rename(parameters.id, parameters.name)
+            renamed = await self._get_storage().rename(parameters.uid, parameters.name)
             await self._record(
-                parameters.id,
+                parameters.uid,
                 AuthActivityAction.UPDATE,
                 metadata,
                 AuthItemRenamed(name=parameters.name),
@@ -158,5 +158,5 @@ class BaseAuthDeleteItemOperation[ItemType: AuthItem](
         self, parameters: AuthDeleteItemParameters, metadata: OperationMetadata
     ) -> None:
         async with self.project.auth.storage.transaction():
-            await self._get_storage().delete(parameters.id)
-            await self._record(parameters.id, AuthActivityAction.DELETE, metadata)
+            await self._get_storage().delete(parameters.uid)
+            await self._record(parameters.uid, AuthActivityAction.DELETE, metadata)

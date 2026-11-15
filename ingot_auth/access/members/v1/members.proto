@@ -26,7 +26,7 @@ enum Permission {
 // A user bound to a group.
 message Membership {
   string group = 1;
-  string uid = 2;
+  string profile_uid = 2;
 }
 
 message AddMemberRequest {
@@ -46,11 +46,11 @@ message ListMembersRequest {
 }
 
 message ListMembersResponse {
-  repeated string uids = 1;
+  repeated string profile_uids = 1;
 }
 
 message ListMemberGroupsRequest {
-  string uid = 1;
+  string profile_uid = 1;
 }
 
 message ListMemberGroupsResponse {

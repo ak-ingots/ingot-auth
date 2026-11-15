@@ -34,14 +34,14 @@ enum Action {
 }
 
 // A change of state, a fact as it was written. The actor, `who` with
-// `session_id`, empty of a caller of none.
+// `session_uid`, empty of a caller of none.
 message Activity {
   string who = 1;
-  string session_id = 2;
+  string session_uid = 2;
   Action action = 3;
   // the full name of the unit of the entity: auth.profiles
   string entity_type = 4;
-  string entity_id = 5;
+  string entity_uid = 5;
   // the attributes the code of its time wrote, a decimal and a time as
   // texts; a client assumes none of a type of entity
   google.protobuf.Struct context = 6;
@@ -53,9 +53,9 @@ message Activity {
 message ListActivitiesRequest {
   // each filter optional
   optional string entity_type = 1;
-  optional string entity_id = 2;
+  optional string entity_uid = 2;
   optional string who = 3;
-  optional string session_id = 4;
+  optional string session_uid = 4;
   Action action = 5;
   // since included, until not
   google.protobuf.Timestamp since = 6;

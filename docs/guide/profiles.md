@@ -7,8 +7,8 @@ and the attributes, typed values, a first name, a birth date. Each is known
 by its id, the same in every environment once created, and its name:
 
 ```console
-$ python -m app auth profiles tags create --id 1 --name beta
-$ python -m app auth profiles attrs create --id 1 --name first_name --type str
+$ python -m app auth profiles tags create --uid 1 --name beta
+$ python -m app auth profiles attrs create --uid 1 --name first_name --type str
 ```
 
 ## Values

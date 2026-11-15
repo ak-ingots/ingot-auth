@@ -47,7 +47,7 @@ reads, and a value of no attribute of its name is dropped, so that an
 application keeps the IP only once it registers it:
 
 ```console
-$ python -m app auth sessions attrs create --id 1 --name ip --type str --source transport
+$ python -m app auth sessions attrs create --uid 1 --name ip --type str --source transport
 ```
 
 The name binds the attribute to the transport: renamed, it is given no
@@ -119,8 +119,8 @@ answers of the flows, `AuthGrpcSignOutBinding` apart.
 
 A session closed stays kept, with the time and the reason it closed: the
 record of a sign-in. Who closed it, its own user signing out or revoking,
-the server when it expired, the activity log tells, by the id of the
-session, `auth activities list --entity auth.sessions:<id>`
+the server when it expired, the activity log tells, by the uid of the
+session, `auth activities list --entity auth.sessions:<uid>`
 ({doc}`activities`). An operator reads the
 sessions of a profile, `auth.sessions.op_list`, those open, or all of them
 with the closed ones, by the time they opened, never a token nor its hash:

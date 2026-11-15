@@ -25,20 +25,20 @@ class Challenge(_message.Message):
 
     DESCRIPTOR: _descriptor.Descriptor
 
-    ATTEMPT_ID_FIELD_NUMBER: _builtins.int
+    ATTEMPT_UID_FIELD_NUMBER: _builtins.int
     CODE_FIELD_NUMBER: _builtins.int
-    attempt_id: _builtins.str
+    attempt_uid: _builtins.str
     @_builtins.property
     def code(self) -> Global___CodeChallenge: ...
     def __init__(
         self,
         *,
-        attempt_id: _builtins.str = ...,
+        attempt_uid: _builtins.str = ...,
         code: Global___CodeChallenge | None = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["challenge", b"challenge", "code", b"code"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["attempt_id", b"attempt_id", "challenge", b"challenge", "code", b"code"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attempt_uid", b"attempt_uid", "challenge", b"challenge", "code", b"code"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     _WhichOneofReturnType_challenge: _TypeAlias = _typing.Literal["code"]  # noqa: Y015
     _WhichOneofArgType_challenge: _TypeAlias = _typing.Literal["challenge", b"challenge"]  # noqa: Y015

@@ -1,7 +1,7 @@
 The activity log, by ADR 0015 of the ecosystem: `auth.activities`,
 `AuthActivitiesUnit`, `record()` writing a record a change of state of an
 entity in the transaction of the change, `AuthActivityRecord`: the actor,
-`who` and `session_id`, the action, `AuthActivityAction`, the type of the
+`who` and `session_uid`, the action, `AuthActivityAction`, the type of the
 entity, the full name of its unit, its id, an optional context, a
 dataclass extending `AuthActivityContext` kept as a map of its attributes,
 the uid of the run and the time. A failure to write it is for the strategy

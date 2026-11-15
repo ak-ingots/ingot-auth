@@ -47,19 +47,19 @@ Global___Permission: _TypeAlias = Permission  # noqa: Y015
 class Tag(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -144,19 +144,19 @@ Global___ListTagsResponse: _TypeAlias = ListTagsResponse  # noqa: Y015
 class RenameTagRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
     NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    uid: _builtins.int
     name: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
         name: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id", "name", b"name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["name", b"name", "uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -186,16 +186,16 @@ Global___RenameTagResponse: _TypeAlias = RenameTagResponse  # noqa: Y015
 class DeleteTagRequest(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ID_FIELD_NUMBER: _builtins.int
-    id: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
+    uid: _builtins.int
     def __init__(
         self,
         *,
-        id: _builtins.int = ...,
+        uid: _builtins.int = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["id", b"id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["uid", b"uid"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

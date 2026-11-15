@@ -33,9 +33,9 @@ class BaseAuthProfileValuesStorage(Entity):
         return await self._get(uid)
 
     @t.final
-    async def set_tags(self, uid: str, tag_ids: frozenset[int]) -> None:
+    async def set_tags(self, uid: str, tag_uids: frozenset[int]) -> None:
         """Keeps the tags of a profile, in place of those it had."""
-        await self._set_tags(uid, tag_ids)
+        await self._set_tags(uid, tag_uids)
 
     @t.final
     async def set_attr_values(
@@ -49,7 +49,7 @@ class BaseAuthProfileValuesStorage(Entity):
         raise NotImplementedError(f"{type(self).__qualname__}._get")
 
     @abc.abstractmethod
-    async def _set_tags(self, uid: str, tag_ids: frozenset[int]) -> None:
+    async def _set_tags(self, uid: str, tag_uids: frozenset[int]) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._set_tags")
 
     @abc.abstractmethod

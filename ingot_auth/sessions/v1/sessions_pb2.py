@@ -26,37 +26,37 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 from ingot_auth.attrs.v1 import attrs_pb2 as ingot__auth_dot_attrs_dot_v1_dot_attrs__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/sessions/v1/sessions.proto\x12\x16ingot_auth.sessions.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fingot_auth/attrs/v1/attrs.proto\"\xba\x01\n\x07Session\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\x12-\n\topened_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nis_current\x18\x05 \x01(\x08\"\x18\n\x16ListOwnSessionsRequest\"L\n\x17ListOwnSessionsResponse\x12\x31\n\x08sessions\x18\x01 \x03(\x0b\x32\x1f.ingot_auth.sessions.v1.Session\"-\n\x17RevokeOwnSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\"\x1a\n\x18RevokeOwnSessionResponse\"\x1c\n\x1aRevokeOtherSessionsRequest\",\n\x1bRevokeOtherSessionsResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\r\"\xc4\x02\n\rSessionRecord\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x04 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\x12-\n\topened_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\tclosed_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x39\n\x0c\x63lose_reason\x18\x08 \x01(\x0e\x32#.ingot_auth.sessions.v1.CloseReasonJ\x04\x08\t\x10\nR\tclosed_by\"2\n\x13ListSessionsRequest\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\"O\n\x14ListSessionsResponse\x12\x37\n\x08sessions\x18\x01 \x03(\x0b\x32%.ingot_auth.sessions.v1.SessionRecord*}\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n\x17PERMISSION_CAN_LIST_OWN\x10\x01\x12\x1d\n\x19PERMISSION_CAN_REVOKE_OWN\x10\x02\x12\x17\n\x13PERMISSION_CAN_LIST\x10\x04*\xbe\x01\n\x0b\x43loseReason\x12\x1c\n\x18\x43LOSE_REASON_UNSPECIFIED\x10\x00\x12\x1b\n\x17\x43LOSE_REASON_SIGNED_OUT\x10\x01\x12\x18\n\x14\x43LOSE_REASON_REVOKED\x10\x02\x12\x18\n\x14\x43LOSE_REASON_EVICTED\x10\x03\x12\x1d\n\x19\x43LOSE_REASON_EXPIRED_IDLE\x10\x04\x12!\n\x1d\x43LOSE_REASON_EXPIRED_ABSOLUTE\x10\x05\x32\xe0\x03\n\x08Sessions\x12r\n\x0fListOwnSessions\x12..ingot_auth.sessions.v1.ListOwnSessionsRequest\x1a/.ingot_auth.sessions.v1.ListOwnSessionsResponse\x12u\n\x10RevokeOwnSession\x12/.ingot_auth.sessions.v1.RevokeOwnSessionRequest\x1a\x30.ingot_auth.sessions.v1.RevokeOwnSessionResponse\x12~\n\x13RevokeOtherSessions\x12\x32.ingot_auth.sessions.v1.RevokeOtherSessionsRequest\x1a\x33.ingot_auth.sessions.v1.RevokeOtherSessionsResponse\x12i\n\x0cListSessions\x12+.ingot_auth.sessions.v1.ListSessionsRequest\x1a,.ingot_auth.sessions.v1.ListSessionsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/sessions/v1/sessions.proto\x12\x16ingot_auth.sessions.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fingot_auth/attrs/v1/attrs.proto\"\xbb\x01\n\x07Session\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\x12-\n\topened_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nis_current\x18\x05 \x01(\x08\"\x18\n\x16ListOwnSessionsRequest\"L\n\x17ListOwnSessionsResponse\x12\x31\n\x08sessions\x18\x01 \x03(\x0b\x32\x1f.ingot_auth.sessions.v1.Session\".\n\x17RevokeOwnSessionRequest\x12\x13\n\x0bsession_uid\x18\x01 \x01(\t\"\x1a\n\x18RevokeOwnSessionResponse\"\x1c\n\x1aRevokeOtherSessionsRequest\",\n\x1bRevokeOtherSessionsResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\r\"\xcd\x02\n\rSessionRecord\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x13\n\x0bprofile_uid\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x04 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\x12-\n\topened_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07seen_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\tclosed_at\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x39\n\x0c\x63lose_reason\x18\x08 \x01(\x0e\x32#.ingot_auth.sessions.v1.CloseReasonJ\x04\x08\t\x10\nR\tclosed_by\":\n\x13ListSessionsRequest\x12\x13\n\x0bprofile_uid\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\"O\n\x14ListSessionsResponse\x12\x37\n\x08sessions\x18\x01 \x03(\x0b\x32%.ingot_auth.sessions.v1.SessionRecord*}\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1b\n\x17PERMISSION_CAN_LIST_OWN\x10\x01\x12\x1d\n\x19PERMISSION_CAN_REVOKE_OWN\x10\x02\x12\x17\n\x13PERMISSION_CAN_LIST\x10\x04*\xbe\x01\n\x0b\x43loseReason\x12\x1c\n\x18\x43LOSE_REASON_UNSPECIFIED\x10\x00\x12\x1b\n\x17\x43LOSE_REASON_SIGNED_OUT\x10\x01\x12\x18\n\x14\x43LOSE_REASON_REVOKED\x10\x02\x12\x18\n\x14\x43LOSE_REASON_EVICTED\x10\x03\x12\x1d\n\x19\x43LOSE_REASON_EXPIRED_IDLE\x10\x04\x12!\n\x1d\x43LOSE_REASON_EXPIRED_ABSOLUTE\x10\x05\x32\xe0\x03\n\x08Sessions\x12r\n\x0fListOwnSessions\x12..ingot_auth.sessions.v1.ListOwnSessionsRequest\x1a/.ingot_auth.sessions.v1.ListOwnSessionsResponse\x12u\n\x10RevokeOwnSession\x12/.ingot_auth.sessions.v1.RevokeOwnSessionRequest\x1a\x30.ingot_auth.sessions.v1.RevokeOwnSessionResponse\x12~\n\x13RevokeOtherSessions\x12\x32.ingot_auth.sessions.v1.RevokeOtherSessionsRequest\x1a\x33.ingot_auth.sessions.v1.RevokeOtherSessionsResponse\x12i\n\x0cListSessions\x12+.ingot_auth.sessions.v1.ListSessionsRequest\x1a,.ingot_auth.sessions.v1.ListSessionsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sessions.v1.sessions_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=1035
-  _globals['_PERMISSION']._serialized_end=1160
-  _globals['_CLOSEREASON']._serialized_start=1163
-  _globals['_CLOSEREASON']._serialized_end=1353
+  _globals['_PERMISSION']._serialized_start=1054
+  _globals['_PERMISSION']._serialized_end=1179
+  _globals['_CLOSEREASON']._serialized_start=1182
+  _globals['_CLOSEREASON']._serialized_end=1372
   _globals['_SESSION']._serialized_start=132
-  _globals['_SESSION']._serialized_end=318
-  _globals['_LISTOWNSESSIONSREQUEST']._serialized_start=320
-  _globals['_LISTOWNSESSIONSREQUEST']._serialized_end=344
-  _globals['_LISTOWNSESSIONSRESPONSE']._serialized_start=346
-  _globals['_LISTOWNSESSIONSRESPONSE']._serialized_end=422
-  _globals['_REVOKEOWNSESSIONREQUEST']._serialized_start=424
-  _globals['_REVOKEOWNSESSIONREQUEST']._serialized_end=469
-  _globals['_REVOKEOWNSESSIONRESPONSE']._serialized_start=471
-  _globals['_REVOKEOWNSESSIONRESPONSE']._serialized_end=497
-  _globals['_REVOKEOTHERSESSIONSREQUEST']._serialized_start=499
-  _globals['_REVOKEOTHERSESSIONSREQUEST']._serialized_end=527
-  _globals['_REVOKEOTHERSESSIONSRESPONSE']._serialized_start=529
-  _globals['_REVOKEOTHERSESSIONSRESPONSE']._serialized_end=573
-  _globals['_SESSIONRECORD']._serialized_start=576
-  _globals['_SESSIONRECORD']._serialized_end=900
-  _globals['_LISTSESSIONSREQUEST']._serialized_start=902
-  _globals['_LISTSESSIONSREQUEST']._serialized_end=952
-  _globals['_LISTSESSIONSRESPONSE']._serialized_start=954
-  _globals['_LISTSESSIONSRESPONSE']._serialized_end=1033
-  _globals['_SESSIONS']._serialized_start=1356
-  _globals['_SESSIONS']._serialized_end=1836
+  _globals['_SESSION']._serialized_end=319
+  _globals['_LISTOWNSESSIONSREQUEST']._serialized_start=321
+  _globals['_LISTOWNSESSIONSREQUEST']._serialized_end=345
+  _globals['_LISTOWNSESSIONSRESPONSE']._serialized_start=347
+  _globals['_LISTOWNSESSIONSRESPONSE']._serialized_end=423
+  _globals['_REVOKEOWNSESSIONREQUEST']._serialized_start=425
+  _globals['_REVOKEOWNSESSIONREQUEST']._serialized_end=471
+  _globals['_REVOKEOWNSESSIONRESPONSE']._serialized_start=473
+  _globals['_REVOKEOWNSESSIONRESPONSE']._serialized_end=499
+  _globals['_REVOKEOTHERSESSIONSREQUEST']._serialized_start=501
+  _globals['_REVOKEOTHERSESSIONSREQUEST']._serialized_end=529
+  _globals['_REVOKEOTHERSESSIONSRESPONSE']._serialized_start=531
+  _globals['_REVOKEOTHERSESSIONSRESPONSE']._serialized_end=575
+  _globals['_SESSIONRECORD']._serialized_start=578
+  _globals['_SESSIONRECORD']._serialized_end=911
+  _globals['_LISTSESSIONSREQUEST']._serialized_start=913
+  _globals['_LISTSESSIONSREQUEST']._serialized_end=971
+  _globals['_LISTSESSIONSRESPONSE']._serialized_start=973
+  _globals['_LISTSESSIONSRESPONSE']._serialized_end=1052
+  _globals['_SESSIONS']._serialized_start=1375
+  _globals['_SESSIONS']._serialized_end=1855
 # @@protoc_insertion_point(module_scope)

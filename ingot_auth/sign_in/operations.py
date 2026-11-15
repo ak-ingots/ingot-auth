@@ -81,8 +81,10 @@ class BaseAuthSignInOperation[ParametersType](
         return await method.start_sign_in(parameters, metadata)
 
     @t.override
-    def _create_challenge(self, attempt_id: str, challenge: object) -> AuthSignInResult:
-        return AuthSignInChallenge(attempt_id=attempt_id, challenge=challenge)
+    def _create_challenge(
+        self, attempt_uid: str, challenge: object
+    ) -> AuthSignInResult:
+        return AuthSignInChallenge(attempt_uid=attempt_uid, challenge=challenge)
 
     @t.override
     async def _complete(
@@ -116,12 +118,12 @@ class BaseAuthSignInOperation[ParametersType](
             opened = await auth.sessions.open(uid, method.get_name(), attr_values)
             await auth.activities.record(
                 auth.sessions,
-                opened.session_id,
+                opened.session_uid,
                 AuthActivityAction.SIGN_IN,
                 metadata,
                 context=AuthSessionSignedIn(uid=uid, method=method.get_name()),
             )
-        return AuthSignedIn(session_id=opened.session_id, token=opened.token)
+        return AuthSignedIn(session_uid=opened.session_uid, token=opened.token)
 
 
 class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters]):
@@ -172,4 +174,6 @@ class AuthAnswerSignInOperation(BaseAuthSignInOperation[AuthAnswerSignInParamete
         self, parameters: AuthAnswerSignInParameters, metadata: OperationMetadata
     ) -> AuthSignInResult:
         async with self.project.auth.sign_in.timing.hold():
-            return await self.answer(parameters.attempt_id, parameters.answer, metadata)
+            return await self.answer(
+                parameters.attempt_uid, parameters.answer, metadata
+            )

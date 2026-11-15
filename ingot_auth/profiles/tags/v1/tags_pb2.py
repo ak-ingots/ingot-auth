@@ -24,33 +24,33 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&ingot_auth/profiles/tags/v1/tags.proto\x12\x1bingot_auth.profiles.tags.v1\"\x1f\n\x03Tag\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"A\n\x10\x43reateTagRequest\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"B\n\x11\x43reateTagResponse\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"\x11\n\x0fListTagsRequest\"B\n\x10ListTagsResponse\x12.\n\x04tags\x18\x01 \x03(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\",\n\x10RenameTagRequest\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"B\n\x11RenameTagResponse\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"\x1e\n\x10\x44\x65leteTagRequest\x12\n\n\x02id\x18\x01 \x01(\r\"\x13\n\x11\x44\x65leteTagResponse*\x92\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_UPDATE\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08\x32\xb3\x03\n\x04Tags\x12j\n\tCreateTag\x12-.ingot_auth.profiles.tags.v1.CreateTagRequest\x1a..ingot_auth.profiles.tags.v1.CreateTagResponse\x12g\n\x08ListTags\x12,.ingot_auth.profiles.tags.v1.ListTagsRequest\x1a-.ingot_auth.profiles.tags.v1.ListTagsResponse\x12j\n\tRenameTag\x12-.ingot_auth.profiles.tags.v1.RenameTagRequest\x1a..ingot_auth.profiles.tags.v1.RenameTagResponse\x12j\n\tDeleteTag\x12-.ingot_auth.profiles.tags.v1.DeleteTagRequest\x1a..ingot_auth.profiles.tags.v1.DeleteTagResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&ingot_auth/profiles/tags/v1/tags.proto\x12\x1bingot_auth.profiles.tags.v1\" \n\x03Tag\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"A\n\x10\x43reateTagRequest\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"B\n\x11\x43reateTagResponse\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"\x11\n\x0fListTagsRequest\"B\n\x10ListTagsResponse\x12.\n\x04tags\x18\x01 \x03(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"-\n\x10RenameTagRequest\x12\x0b\n\x03uid\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"B\n\x11RenameTagResponse\x12-\n\x03tag\x18\x01 \x01(\x0b\x32 .ingot_auth.profiles.tags.v1.Tag\"\x1f\n\x10\x44\x65leteTagRequest\x12\x0b\n\x03uid\x18\x01 \x01(\r\"\x13\n\x11\x44\x65leteTagResponse*\x92\x01\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_CREATE\x10\x01\x12\x17\n\x13PERMISSION_CAN_READ\x10\x02\x12\x19\n\x15PERMISSION_CAN_UPDATE\x10\x04\x12\x19\n\x15PERMISSION_CAN_DELETE\x10\x08\x32\xb3\x03\n\x04Tags\x12j\n\tCreateTag\x12-.ingot_auth.profiles.tags.v1.CreateTagRequest\x1a..ingot_auth.profiles.tags.v1.CreateTagResponse\x12g\n\x08ListTags\x12,.ingot_auth.profiles.tags.v1.ListTagsRequest\x1a-.ingot_auth.profiles.tags.v1.ListTagsResponse\x12j\n\tRenameTag\x12-.ingot_auth.profiles.tags.v1.RenameTagRequest\x1a..ingot_auth.profiles.tags.v1.RenameTagResponse\x12j\n\tDeleteTag\x12-.ingot_auth.profiles.tags.v1.DeleteTagRequest\x1a..ingot_auth.profiles.tags.v1.DeleteTagResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.profiles.tags.v1.tags_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=494
-  _globals['_PERMISSION']._serialized_end=640
+  _globals['_PERMISSION']._serialized_start=497
+  _globals['_PERMISSION']._serialized_end=643
   _globals['_TAG']._serialized_start=71
-  _globals['_TAG']._serialized_end=102
-  _globals['_CREATETAGREQUEST']._serialized_start=104
-  _globals['_CREATETAGREQUEST']._serialized_end=169
-  _globals['_CREATETAGRESPONSE']._serialized_start=171
-  _globals['_CREATETAGRESPONSE']._serialized_end=237
-  _globals['_LISTTAGSREQUEST']._serialized_start=239
-  _globals['_LISTTAGSREQUEST']._serialized_end=256
-  _globals['_LISTTAGSRESPONSE']._serialized_start=258
-  _globals['_LISTTAGSRESPONSE']._serialized_end=324
-  _globals['_RENAMETAGREQUEST']._serialized_start=326
-  _globals['_RENAMETAGREQUEST']._serialized_end=370
-  _globals['_RENAMETAGRESPONSE']._serialized_start=372
-  _globals['_RENAMETAGRESPONSE']._serialized_end=438
-  _globals['_DELETETAGREQUEST']._serialized_start=440
-  _globals['_DELETETAGREQUEST']._serialized_end=470
-  _globals['_DELETETAGRESPONSE']._serialized_start=472
-  _globals['_DELETETAGRESPONSE']._serialized_end=491
-  _globals['_TAGS']._serialized_start=643
-  _globals['_TAGS']._serialized_end=1078
+  _globals['_TAG']._serialized_end=103
+  _globals['_CREATETAGREQUEST']._serialized_start=105
+  _globals['_CREATETAGREQUEST']._serialized_end=170
+  _globals['_CREATETAGRESPONSE']._serialized_start=172
+  _globals['_CREATETAGRESPONSE']._serialized_end=238
+  _globals['_LISTTAGSREQUEST']._serialized_start=240
+  _globals['_LISTTAGSREQUEST']._serialized_end=257
+  _globals['_LISTTAGSRESPONSE']._serialized_start=259
+  _globals['_LISTTAGSRESPONSE']._serialized_end=325
+  _globals['_RENAMETAGREQUEST']._serialized_start=327
+  _globals['_RENAMETAGREQUEST']._serialized_end=372
+  _globals['_RENAMETAGRESPONSE']._serialized_start=374
+  _globals['_RENAMETAGRESPONSE']._serialized_end=440
+  _globals['_DELETETAGREQUEST']._serialized_start=442
+  _globals['_DELETETAGREQUEST']._serialized_end=473
+  _globals['_DELETETAGRESPONSE']._serialized_start=475
+  _globals['_DELETETAGRESPONSE']._serialized_end=494
+  _globals['_TAGS']._serialized_start=646
+  _globals['_TAGS']._serialized_end=1081
 # @@protoc_insertion_point(module_scope)

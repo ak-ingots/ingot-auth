@@ -239,7 +239,7 @@ class AuthGrpcOwnSessionNotFoundPolicy(BaseAuthGrpcErrorPolicy):
 
     @t.override
     def _get_metadata(self, error: Exception) -> dict[str, str]:
-        return {"session_id": t.cast(AuthOwnSessionNotFoundError, error).session_id}
+        return {"session_uid": t.cast(AuthOwnSessionNotFoundError, error).session_uid}
 
 
 class AuthGrpcErrorsUnit(GrpcErrorsUnit):

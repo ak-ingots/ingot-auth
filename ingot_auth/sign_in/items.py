@@ -35,7 +35,7 @@ class AuthStartSignInParameters:
 class AuthAnswerSignInParameters:
     """An answer to the challenge of a sign-in, to its attempt."""
 
-    attempt_id: str
+    attempt_uid: str
     answer: object
 
 
@@ -43,7 +43,7 @@ class AuthAnswerSignInParameters:
 class AuthSignInChallenge:
     """The method asks for more: the client answers to the attempt."""
 
-    attempt_id: str
+    attempt_uid: str
     challenge: object
 
 
@@ -54,7 +54,7 @@ class AuthSignedIn:
     ``repr``, the client sending it with each call, and its id, public.
     """
 
-    session_id: str
+    session_uid: str
     token: str = field(repr=False)
 
 

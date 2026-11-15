@@ -128,7 +128,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         self.metadata = self.project.operations.create_metadata(self.caller)
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
-                id=1,
+                uid=1,
                 name="device",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.CLIENT,
@@ -136,7 +136,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         )
         await self.project.auth.storage.sessions.attrs.create(
             AuthSessionAttr(
-                id=2,
+                uid=2,
                 name="ip",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.TRANSPORT,
@@ -157,8 +157,8 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             self.project.auth.sign_up.op_start, start, self.metadata
         )
 
-    async def answer(self, attempt_id: str, answer: object) -> AuthSignUpResult:
-        parameters = AuthAnswerSignUpParameters(attempt_id=attempt_id, answer=answer)
+    async def answer(self, attempt_uid: str, answer: object) -> AuthSignUpResult:
+        parameters = AuthAnswerSignUpParameters(attempt_uid=attempt_uid, answer=answer)
         return await self.project.operations.runner.run(
             self.project.auth.sign_up.op_answer, parameters, self.metadata
         )
@@ -188,12 +188,12 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         )
         assert isinstance(challenge, AuthSignUpChallenge)
         self.assertEqual(challenge.challenge, "code")
-        result = await self.answer(challenge.attempt_id, "1234")
+        result = await self.answer(challenge.attempt_uid, "1234")
         assert isinstance(result, AuthSignedUp)
         record = await self.project.auth.storage.sign_up.records.get(result.uid)
         self.assertEqual(record.attr_values, {1: "iPhone"})
         with self.assertRaises(AuthAttemptNotFoundError):
-            await self.answer(challenge.attempt_id, "1234")
+            await self.answer(challenge.attempt_uid, "1234")
 
     async def test_the_secret_of_the_method_is_kept_as_of_the_profile(self) -> None:
         secrets = self.project.auth.storage.profiles.secrets
@@ -202,7 +202,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             AuthTestingStart(subject="b", code="1234", secret="hash-b")
         )
         assert isinstance(challenge, AuthSignUpChallenge)
-        second = await self.answer(challenge.attempt_id, "1234")
+        second = await self.answer(challenge.attempt_uid, "1234")
         assert isinstance(first, AuthSignedUp) and isinstance(second, AuthSignedUp)
         self.assertEqual(await secrets.get(first.uid), "hash-a")
         self.assertEqual(await secrets.get(second.uid), "hash-b")
@@ -251,8 +251,8 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(challenge, AuthSignUpChallenge)
         for _ in range(4):
             with self.assertRaises(AuthMethodRefusedError):
-                await self.answer(challenge.attempt_id, "0000")
-        result = await self.answer(challenge.attempt_id, "1234")
+                await self.answer(challenge.attempt_uid, "0000")
+        result = await self.answer(challenge.attempt_uid, "1234")
         self.assertIsInstance(result, AuthSignedUp)
 
     async def test_the_attempt_is_over_after_the_last_refused_answer(self) -> None:
@@ -260,9 +260,9 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(challenge, AuthSignUpChallenge)
         for _ in range(5):
             with self.assertRaises(AuthMethodRefusedError):
-                await self.answer(challenge.attempt_id, "0000")
+                await self.answer(challenge.attempt_uid, "0000")
         with self.assertRaises(AuthAttemptNotFoundError):
-            await self.answer(challenge.attempt_id, "1234")
+            await self.answer(challenge.attempt_uid, "1234")
 
     async def test_an_expired_attempt_is_not_found(self) -> None:
         challenge = await self.start(AuthTestingStart(subject="a", code="1234"))
@@ -270,12 +270,12 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         later = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=11)
         with mock.patch.object(AuthMemoryAttemptsCache, "_get_now", return_value=later):
             with self.assertRaises(AuthAttemptNotFoundError):
-                await self.answer(challenge.attempt_id, "1234")
+                await self.answer(challenge.attempt_uid, "1234")
 
     async def test_an_attempt_of_another_flow_is_not_found(self) -> None:
         await self.project.auth.cache.attempts.put(
             AuthAttempt(
-                id="x",
+                uid="x",
                 flow="sign_in",
                 method="testing",
                 state=None,
@@ -334,7 +334,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
             self.project.auth.sign_up.op_start, start, self.metadata
         )
         assert isinstance(challenge, AuthSignUpChallenge)
-        result = await self.answer(challenge.attempt_id, "1234")
+        result = await self.answer(challenge.attempt_uid, "1234")
         assert isinstance(result, AuthSignedUp)
         record = await self.project.auth.storage.sign_up.records.get(result.uid)
         # country is of no attribute: the application keeps none
@@ -432,7 +432,7 @@ class SignUpTestCase(unittest.IsolatedAsyncioTestCase):
         )
         # an attempt is of a method closed meanwhile
         with self.assertRaises(OperationPermissionsError):
-            await self.answer(challenge.attempt_id, "1")
+            await self.answer(challenge.attempt_uid, "1")
         self.assertIsInstance(await self.start("c", method="one_step"), AuthSignedUp)
 
 

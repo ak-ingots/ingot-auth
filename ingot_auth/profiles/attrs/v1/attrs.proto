@@ -34,7 +34,7 @@ enum AttrType {
 }
 
 message Attr {
-  uint32 id = 1;
+  uint32 uid = 1;
   string name = 2;
   AttrType type = 3;
 }
@@ -54,7 +54,7 @@ message ListAttrsResponse {
 }
 
 message RenameAttrRequest {
-  uint32 id = 1;
+  uint32 uid = 1;
   string name = 2;
 }
 
@@ -63,7 +63,7 @@ message RenameAttrResponse {
 }
 
 message DeleteAttrRequest {
-  uint32 id = 1;
+  uint32 uid = 1;
 }
 
 message DeleteAttrResponse {}

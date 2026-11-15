@@ -60,8 +60,8 @@ class SwallowProject(AuthProject):
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 class ManyKindsSet(AuthActivityContext):
-    tag_ids: frozenset[int]
-    attr_ids: tuple[int, ...]
+    tag_uids: frozenset[int]
+    attr_uids: tuple[int, ...]
     values: dict[str, list[int]]
 
 
@@ -88,18 +88,20 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
         tags = auth.profiles.tags
         caller = AuthCaller(
             uid="op",
-            session_id="s9",
+            session_uid="s9",
             permissions=masks(*tags.permissions.flags),
             profile_hash="h",
         )
-        await self.run_operation(tags.op_create, AuthTag(id=1, name="beta"), caller)
+        await self.run_operation(tags.op_create, AuthTag(uid=1, name="beta"), caller)
         await self.run_operation(
-            tags.op_rename, AuthRenameItemParameters(id=1, name="staff"), caller
+            tags.op_rename, AuthRenameItemParameters(uid=1, name="staff"), caller
         )
-        await self.run_operation(tags.op_delete, AuthDeleteItemParameters(id=1), caller)
+        await self.run_operation(
+            tags.op_delete, AuthDeleteItemParameters(uid=1), caller
+        )
         records = await self.find()
         self.assertEqual(
-            [(r.action, r.entity_type, r.entity_id, r.context) for r in records],
+            [(r.action, r.entity_type, r.entity_uid, r.context) for r in records],
             [
                 (AuthActivityAction.DELETE, "auth.profiles.tags", "1", {}),
                 (
@@ -112,19 +114,19 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
             ],
         )
         self.assertEqual(
-            {(r.who, r.session_id, r.run_uid) for r in records}, {("op", "s9", "r1")}
+            {(r.who, r.session_uid, r.run_uid) for r in records}, {("op", "s9", "r1")}
         )
 
     async def test_an_attribute_created_tells_what_it_is(self) -> None:
         auth = self.project.auth
         await self.run_operation(
             auth.profiles.attrs.op_create,
-            AuthAttr(id=1, name="first_name", type=AuthAttrType.STR),
+            AuthAttr(uid=1, name="first_name", type=AuthAttrType.STR),
         )
         await self.run_operation(
             auth.sessions.attrs.op_create,
             AuthSessionAttr(
-                id=1,
+                uid=1,
                 name="ip",
                 type=AuthAttrType.STR,
                 source=AuthSessionAttrSource.TRANSPORT,
@@ -136,7 +138,7 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
             ("auth.profiles.attrs", {"name": "first_name", "type": "str"}),
         )
         self.assertEqual(
-            (session_attr.who, session_attr.session_id, session_attr.context),
+            (session_attr.who, session_attr.session_uid, session_attr.context),
             ("root", None, {"name": "ip", "type": "str", "source": "transport"}),
         )
 
@@ -144,7 +146,7 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
         auth = self.project.auth
         metadata = self.project.operations.create_metadata(ROOT, run_uid="r1")
         context = ManyKindsSet(
-            tag_ids=frozenset({3, 1}), attr_ids=(2, 1), values={"a": [1]}
+            tag_uids=frozenset({3, 1}), attr_uids=(2, 1), values={"a": [1]}
         )
         await auth.activities.record(
             auth.profiles, "a1", AuthActivityAction.UPDATE, metadata, context=context
@@ -152,7 +154,7 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
         (record,) = await self.find()
         self.assertEqual(
             record.context,
-            {"tag_ids": [1, 3], "attr_ids": [2, 1], "values": {"a": [1]}},
+            {"tag_uids": [1, 3], "attr_uids": [2, 1], "values": {"a": [1]}},
         )
 
     async def test_a_strict_log_fails_the_change_with_it(self) -> None:
@@ -161,7 +163,7 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
             AuthMemoryActivitiesStorage, "_append", side_effect=OSError("gone")
         ):
             with self.assertRaises(OSError):
-                await self.run_operation(tags.op_create, AuthTag(id=1, name="beta"))
+                await self.run_operation(tags.op_create, AuthTag(uid=1, name="beta"))
         self.assertEqual(await self.project.auth.storage.profiles.tags.get_all(), ())
 
     async def test_a_swallowed_failure_lets_the_change_through(self) -> None:
@@ -173,7 +175,7 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             self.assertLogs("ingot_auth.activities.failures", "ERROR") as logs,
         ):
-            await self.run_operation(tags.op_create, AuthTag(id=1, name="beta"))
+            await self.run_operation(tags.op_create, AuthTag(uid=1, name="beta"))
         self.assertEqual(
             len(await self.project.auth.storage.profiles.tags.get_all()), 1
         )
@@ -183,14 +185,14 @@ class ActivitiesTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_auditors_read_the_log_the_others_not(self) -> None:
         auth = self.project.auth
         await self.run_operation(
-            auth.profiles.tags.op_create, AuthTag(id=1, name="beta")
+            auth.profiles.tags.op_create, AuthTag(uid=1, name="beta")
         )
         auditor = Caller(
             uid="au", permissions=auth.activities.grp_auditors.get_permissions()
         )
         query = AuthListActivitiesParameters(entity_type="auth.profiles.tags")
         records = await self.run_operation(auth.activities.op_list, query, auditor)
-        self.assertEqual([r.entity_id for r in records], ["1"])
+        self.assertEqual([r.entity_uid for r in records], ["1"])
         with self.assertRaises(OperationPermissionsError):
             await self.run_operation(auth.activities.op_list, query, Caller(uid="a1"))
 
@@ -217,7 +219,7 @@ class CommandsTestCase(unittest.TestCase):
             AuthMemoryActivitiesStorage, "_find", autospec=True
         ) as find:
             find.return_value = (
-                create_record(session_id="s1", context={"ids": [1, 3]}),
+                create_record(session_uid="s1", context={"ids": [1, 3]}),
                 create_record(),
             )
             code, out = self.run_project(
@@ -250,7 +252,7 @@ class CommandsTestCase(unittest.TestCase):
         )
         query = find.call_args.args[1]
         self.assertEqual(
-            (query.entity_type, query.entity_id, query.who, query.session_id),
+            (query.entity_type, query.entity_uid, query.who, query.session_uid),
             ("auth.profiles", "a1", "root", "s1"),
         )
         self.assertEqual((query.action, query.limit), (AuthActivityAction.UPDATE, 5))

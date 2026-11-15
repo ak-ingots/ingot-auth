@@ -26,11 +26,11 @@ class BaseAuthProfileValuesCommand[ParametersType](
 
     @t.final
     def print_values(self, values: AuthProfileValues) -> None:
-        tag_ids = (str(tag_id) for tag_id in sorted(values.tag_ids))
-        print("\t".join(("tags", *tag_ids)))
+        tag_uids = (str(tag_uid) for tag_uid in sorted(values.tag_uids))
+        print("\t".join(("tags", *tag_uids)))
         attr_values = (
-            f"{attr_id}={_format_attr_value(value)}"
-            for attr_id, value in sorted(values.attr_values.items())
+            f"{attr_uid}={_format_attr_value(value)}"
+            for attr_uid, value in sorted(values.attr_values.items())
         )
         print("\t".join(("attrs", *attr_values)))
 

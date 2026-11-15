@@ -39,7 +39,7 @@ if t.TYPE_CHECKING:
 class AuthProfileTagsSet(AuthActivityContext):
     """The context of the tags of a profile set: the ids of them all."""
 
-    tag_ids: frozenset[int]
+    tag_uids: frozenset[int]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -75,18 +75,18 @@ class AuthSetProfileTagsOperation(
     ) -> AuthProfileValues:
         storage = self.project.auth.storage.profiles
         await storage.get(parameters.uid)
-        known = {tag.id for tag in await storage.tags.get_all()}
-        if unknown := sorted(parameters.tag_ids - known):
-            raise AuthItemNotFoundError.for_id(storage.tags.REGISTRY, unknown[0])
+        known = {tag.uid for tag in await storage.tags.get_all()}
+        if unknown := sorted(parameters.tag_uids - known):
+            raise AuthItemNotFoundError.for_uid(storage.tags.REGISTRY, unknown[0])
         auth = self.project.auth
         async with auth.storage.transaction():
-            await storage.values.set_tags(parameters.uid, parameters.tag_ids)
+            await storage.values.set_tags(parameters.uid, parameters.tag_uids)
             await auth.activities.record(
                 self.parent,
                 parameters.uid,
                 AuthActivityAction.UPDATE,
                 metadata,
-                context=AuthProfileTagsSet(tag_ids=parameters.tag_ids),
+                context=AuthProfileTagsSet(tag_uids=parameters.tag_uids),
             )
         await auth.sessions.forget_callers(parameters.uid)
         return await storage.values.get(parameters.uid)
@@ -121,14 +121,14 @@ class AuthSetProfileAttrValuesOperation(
         storage = self.project.auth.storage.profiles
         await storage.get(parameters.uid)
         registry = storage.attrs.REGISTRY
-        attrs = {attr.id: attr for attr in await storage.attrs.get_all()}
-        for attr_id, value in parameters.attr_values.items():
+        attrs = {attr.uid: attr for attr in await storage.attrs.get_all()}
+        for attr_uid, value in parameters.attr_values.items():
             try:
-                attr = attrs[attr_id]
+                attr = attrs[attr_uid]
             except KeyError:
-                raise AuthItemNotFoundError.for_id(registry, attr_id) from None
+                raise AuthItemNotFoundError.for_uid(registry, attr_uid) from None
             if type(value) is not ATTR_VALUE_TYPES[attr.type]:
-                raise AuthItemInvalidError.for_value(registry, attr_id)
+                raise AuthItemInvalidError.for_value(registry, attr_uid)
         auth = self.project.auth
         async with auth.storage.transaction():
             await storage.values.set_attr_values(parameters.uid, parameters.attr_values)
@@ -170,7 +170,7 @@ class AuthGetOwnProfileOperation(BaseOperation[None, AuthOwnProfile]):
             raise AuthProfileNotFoundError.for_uid(caller.uid)
         values = await self.project.auth.storage.profiles.values.get(caller.uid)
         return AuthOwnProfile(
-            tag_ids=values.tag_ids,
+            tag_uids=values.tag_uids,
             attr_values=values.attr_values,
             permissions=dict(caller.permissions),
             hash=caller.profile_hash,

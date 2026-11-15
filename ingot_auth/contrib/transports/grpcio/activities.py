@@ -41,9 +41,9 @@ class AuthGrpcActivitiesServicer(
         has = request.HasField
         parameters = AuthListActivitiesParameters(
             entity_type=request.entity_type if has("entity_type") else None,
-            entity_id=request.entity_id if has("entity_id") else None,
+            entity_uid=request.entity_uid if has("entity_uid") else None,
             who=request.who if has("who") else None,
-            session_id=request.session_id if has("session_id") else None,
+            session_uid=request.session_uid if has("session_uid") else None,
             action=ACTIONS_BY_MESSAGE.get(request.action),
             since=request.since.ToDatetime(tzinfo=UTC) if has("since") else None,
             until=request.until.ToDatetime(tzinfo=UTC) if has("until") else None,
@@ -66,10 +66,10 @@ def build_activity_message(record: AuthActivityRecord) -> activities_pb2.Activit
     """Internal: the message of a record of the log, its context a struct."""
     message = activities_pb2.Activity(
         who=record.who,
-        session_id=record.session_id or "",
+        session_uid=record.session_uid or "",
         action=ACTIONS[record.action],
         entity_type=record.entity_type,
-        entity_id=record.entity_id,
+        entity_uid=record.entity_uid,
         run_uid=record.run_uid,
     )
     message.context.update(t.cast("dict[str, t.Any]", _build_json(record.context)))

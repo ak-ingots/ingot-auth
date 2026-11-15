@@ -30,14 +30,14 @@ class BaseAuthSessionPresetsStorage(BaseAuthRegistryStorage[AuthSessionPreset]):
         await self._bind(binding)
 
     @t.final
-    async def unbind(self, preset_id: int, attr_id: int) -> None:
+    async def unbind(self, preset_uid: int, attr_uid: int) -> None:
         """
         Unbinds an attribute from a preset.
 
         :raises AuthItemNotFoundError: no preset has the id, or the attribute
             is not bound to it.
         """
-        await self._unbind(preset_id, attr_id)
+        await self._unbind(preset_uid, attr_uid)
 
     @t.final
     async def get_bindings(self) -> tuple[AuthSessionPresetBinding, ...]:
@@ -49,7 +49,7 @@ class BaseAuthSessionPresetsStorage(BaseAuthRegistryStorage[AuthSessionPreset]):
         raise NotImplementedError(f"{type(self).__qualname__}._bind")
 
     @abc.abstractmethod
-    async def _unbind(self, preset_id: int, attr_id: int) -> None:
+    async def _unbind(self, preset_uid: int, attr_uid: int) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._unbind")
 
     @abc.abstractmethod

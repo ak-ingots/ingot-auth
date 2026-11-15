@@ -36,7 +36,7 @@ class AuthStartSignUpParameters:
 class AuthAnswerSignUpParameters:
     """An answer to the challenge of a sign-up, to its attempt."""
 
-    attempt_id: str
+    attempt_uid: str
     answer: object
 
 
@@ -44,7 +44,7 @@ class AuthAnswerSignUpParameters:
 class AuthSignUpChallenge:
     """The method asks for more: the client answers to the attempt."""
 
-    attempt_id: str
+    attempt_uid: str
     challenge: object
 
 
