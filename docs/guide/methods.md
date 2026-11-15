@@ -99,7 +99,7 @@ the sign-up, and the toggles give the anonymous caller the flags of the
 flows open, so that a flow closed is refused as any operation the caller
 may not run. The anonymous caller is that of the project, of its
 `operations.callers`, `AuthCallersProvider` of `AuthProject`, with what the
-group `grp_anonymous` of the access grants ({doc}`access`): what the units of
+group `auth.grp_anonymous` of the core grants ({doc}`access`): what the units of
 the auth give anyone, the flags of the flows and of the methods open and
 the reading of the metadata. A transport runs what is open to anyone for
 it:
@@ -108,8 +108,9 @@ it:
 anonymous = project.operations.callers.get_anonymous()
 ```
 
-An application grants anyone more, or less, in its own group, `super()`
-first: the metadata closed, for one,
+An application grants anyone more, or less, by its own class of the group
+in the slot `grp_anonymous` of its auth, `super()` first: the metadata
+closed, for one,
 
 ```python
 class AppAnonymousGroup(AuthAnonymousGroup):
@@ -119,6 +120,6 @@ class AppAnonymousGroup(AuthAnonymousGroup):
         return super()._get_permissions() - metadata(metadata.flags.CAN_READ)
 
 
-class AppGroupsUnit(AuthGroupsUnit):
+class AppAuthUnit(AuthUnit):
     grp_anonymous = Slot(AppAnonymousGroup)
 ```

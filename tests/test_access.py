@@ -12,7 +12,7 @@ from ingots.defaults.operations import (
     PermissionFlags,
     Permissions,
 )
-from ingots.puer import Slot
+from ingots.puer import Slot, Unit
 from ingots.puer.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
@@ -22,18 +22,22 @@ from ingot_auth.contrib.storages.memory import (
     AuthMemoryProfilesStorage,
     AuthMemoryStorage,
 )
-from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import (
     AuthAnonymousGroup,
     AuthGroup,
     AuthGroupInfo,
     AuthGroupNotFoundError,
+    AuthGroupsOwner,
     AuthGroupsUnit,
     AuthSignedInGroup,
 )
 from ingot_auth.access.members import AuthMembersPermissions
 from ingot_auth.metadata import AuthMetadataPermissions
 from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.profiles.attrs import AuthAttrsPermissions
+from ingot_auth.profiles.tags import AuthTagsPermissions
+from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
+from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
 from ingot_auth.storages import AuthMembership, AuthProfile, AuthProfileNotFoundError
@@ -58,22 +62,22 @@ class ArticlesPermissions(PermissionFlags):
 DOMAINS.update({ShopPermissions: "shop", ArticlesPermissions: "articles"})
 
 
-# an addon: grants to a group of the application, declares one of its own
+# an addon: its domain owns its groups; it grants to a group of the
+# application by a class of no name, a mixin of what it grants
 class ShopAdminsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
         return super()._get_permissions() | masks(ShopPermissions.CAN_REFUND)
 
 
-class BuyersGroup(AuthGroup):
+class ShopBuyersGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
         return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
-class ShopGroupsUnit(AuthGroupsUnit):
-    admins = Slot(ShopAdminsGroup)
-    buyers = Slot(BuyersGroup)
+class ShopUnit(AuthGroupsOwner):
+    grp_buyers = Slot(ShopBuyersGroup)
 
 
 # another addon, the same
@@ -83,18 +87,17 @@ class ArticlesAdminsGroup(AuthGroup):
         return super()._get_permissions() | masks(ArticlesPermissions.CAN_READ)
 
 
-class EditorsGroup(AuthGroup):
+class ArticlesEditorsGroup(AuthGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
         return super()._get_permissions() | masks(ArticlesPermissions.CAN_PUBLISH)
 
 
-class ArticlesGroupsUnit(AuthGroupsUnit):
-    admins = Slot(ArticlesAdminsGroup)
-    editors = Slot(EditorsGroup)
+class ArticlesUnit(AuthGroupsOwner):
+    grp_editors = Slot(ArticlesEditorsGroup)
 
 
-# the application joins them, granting its own
+# the application joins them in a group of its own, granting its own
 class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
@@ -103,27 +106,46 @@ class AppAdminsGroup(ShopAdminsGroup, ArticlesAdminsGroup):
         )
 
 
-# the shop grants every signed-in user
+class AppUnit(AuthGroupsOwner):
+    grp_admins = Slot(AppAdminsGroup)
+
+
+class AppProject(AuthMemoryProject):
+    shop = Slot(ShopUnit)
+    articles = Slot(ArticlesUnit)
+    app = Slot(AppUnit)
+
+
+# the shop grants every signed-in user, the articles too
 class ShopSignedInGroup(AuthSignedInGroup):
     @t.override
     def _get_permissions(self) -> Permissions:
         return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
-class AppGroupsUnit(ShopGroupsUnit, ArticlesGroupsUnit):
-    admins = Slot(AppAdminsGroup)
+class ArticlesSignedInGroup(AuthSignedInGroup):
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        return super()._get_permissions() | masks(ArticlesPermissions.CAN_READ)
 
 
-class AppAccessUnit(AuthAccessUnit):
-    groups = Slot(AppGroupsUnit)
+class ShopAuthUnit(AuthMemoryUnit):
+    grp_signed_in = Slot(ShopSignedInGroup)
 
 
-class AppAuthUnit(AuthMemoryUnit):
-    access = Slot(AppAccessUnit)
+class ArticlesAuthUnit(AuthMemoryUnit):
+    grp_signed_in = Slot(ArticlesSignedInGroup)
 
 
-class AppProject(AuthMemoryProject):
-    auth = Slot(AppAuthUnit)
+CORE_GROUPS: t.Final = (
+    "auth.grp_anonymous",
+    "auth.grp_signed_in",
+    "auth.profiles.grp_consumers",
+    "auth.profiles.grp_managers",
+    "auth.sessions.grp_consumers",
+    "auth.sessions.grp_managers",
+    "auth.sessions.grp_admins",
+)
 
 
 class GroupsTestCase(unittest.TestCase):
@@ -132,18 +154,20 @@ class GroupsTestCase(unittest.TestCase):
         self.project = AppProject()
         self.groups = self.project.auth.access.groups
 
-    def test_the_groups_come_in_the_order_of_their_slots(self) -> None:
-        # of the bases, the last first, as the slots of ingots go
+    def test_the_groups_come_in_the_order_of_the_walk(self) -> None:
         names = [group.get_name() for group in self.groups.get_all()]
         self.assertEqual(
-            names, ["grp_anonymous", "grp_signed_in", "admins", "editors", "buyers"]
+            names,
+            [*CORE_GROUPS, "shop.grp_buyers", "articles.grp_editors", "app.grp_admins"],
         )
 
     def test_a_group_is_got_by_its_name(self) -> None:
-        self.assertIsInstance(self.groups.get("editors"), EditorsGroup)
+        group = self.groups.get("articles.grp_editors")
+        self.assertIs(group, self.project.articles.grp_editors)
 
     def test_an_unknown_name_is_not_found(self) -> None:
-        for name in ("guests", "op_list"):
+        # a name is the full name of a group: not its class, not its slot alone
+        for name in ("guests", "shop.buyers", "grp_buyers", "op_list"):
             with self.assertRaises(AuthGroupNotFoundError) as error:
                 self.groups.get(name)
             self.assertEqual(error.exception.name, name)
@@ -151,7 +175,7 @@ class GroupsTestCase(unittest.TestCase):
 
     def test_a_group_joins_what_the_addons_grant(self) -> None:
         self.assertEqual(
-            self.groups.get("admins").get_permissions(),
+            self.groups.get("app.grp_admins").get_permissions(),
             masks(
                 ShopPermissions.CAN_REFUND,
                 ArticlesPermissions.CAN_READ,
@@ -166,46 +190,103 @@ class GroupsTestCase(unittest.TestCase):
         for project in (AuthMemoryProject(), SignedInProject()):
             self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
         refund = masks(ShopPermissions.CAN_REFUND)
-        with mock.patch.object(BuyersGroup, "_get_permissions", return_value=refund):
+        with mock.patch.object(
+            ShopBuyersGroup, "_get_permissions", return_value=refund
+        ):
             project = AppProject()
             self.assertNotEqual(project.auth.access.groups.get_digest(), digest)
 
     def test_the_digest_is_computed_once(self) -> None:
         digest = self.groups.get_digest()
-        with mock.patch.object(BuyersGroup, "_get_permissions", side_effect=OSError):
+        with mock.patch.object(
+            ShopBuyersGroup, "_get_permissions", side_effect=OSError
+        ):
             self.assertEqual(self.groups.get_digest(), digest)
 
-    def test_the_core_declares_anonymous_and_signed_in(self) -> None:
+    def test_the_core_declares_the_groups_of_the_auth(self) -> None:
         project = AuthMemoryProject()
-        groups = project.auth.access.groups
-        self.assertEqual(groups.get_all(), (groups.grp_anonymous, groups.grp_signed_in))
-        self.assertIsInstance(groups.get("grp_anonymous"), AuthAnonymousGroup)
-        self.assertIsInstance(groups.get("grp_signed_in"), AuthSignedInGroup)
+        auth = project.auth
+        groups = auth.access.groups
+        self.assertEqual(
+            [group.get_name() for group in groups.get_all()], list(CORE_GROUPS)
+        )
+        self.assertIs(groups.get("auth.grp_anonymous"), auth.grp_anonymous)
+        self.assertIsInstance(auth.grp_anonymous, AuthAnonymousGroup)
+        self.assertIsInstance(groups.get("auth.grp_signed_in"), AuthSignedInGroup)
         # no method bound: the flows, the metadata
         self.assertEqual(
-            groups.grp_anonymous.get_permissions(),
+            auth.grp_anonymous.get_permissions(),
             masks(
                 AuthSignUpPermissions.CAN_SIGN_UP,
                 AuthSignInPermissions.CAN_SIGN_IN,
                 AuthMetadataPermissions.CAN_READ,
             ),
         )
-        self.assertEqual(groups.grp_signed_in.get_permissions(), Permissions())
+        self.assertEqual(auth.grp_signed_in.get_permissions(), Permissions())
+
+    def test_the_profiles_have_their_readers_and_keepers(self) -> None:
+        project = AuthMemoryProject()
+        profiles = project.auth.profiles
+        self.assertEqual(
+            profiles.grp_consumers.get_permissions(),
+            masks(AuthTagsPermissions.CAN_READ, AuthAttrsPermissions.CAN_READ),
+        )
+        self.assertEqual(
+            profiles.grp_managers.get_permissions(),
+            masks(*AuthTagsPermissions, *AuthAttrsPermissions),
+        )
+
+    def test_the_sessions_have_their_readers_keepers_and_binders(self) -> None:
+        project = AuthMemoryProject()
+        sessions = project.auth.sessions
+        binding = masks(
+            AuthSessionPresetsPermissions.CAN_BIND
+            | AuthSessionPresetsPermissions.CAN_UNBIND
+        )
+        everything = masks(*AuthSessionAttrsPermissions, *AuthSessionPresetsPermissions)
+        self.assertEqual(
+            sessions.grp_consumers.get_permissions(),
+            masks(
+                AuthSessionAttrsPermissions.CAN_READ,
+                AuthSessionPresetsPermissions.CAN_READ,
+            ),
+        )
+        self.assertEqual(sessions.grp_managers.get_permissions(), everything - binding)
+        self.assertEqual(sessions.grp_admins.get_permissions(), everything)
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
         # refused by mypy too
         with self.assertRaises(TypeError):
 
-            class UnjoinedGroupsUnit(  # type: ignore[misc]
-                ShopGroupsUnit, ArticlesGroupsUnit
+            class UnjoinedAuthUnit(  # type: ignore[misc]
+                ShopAuthUnit, ArticlesAuthUnit
             ):
                 pass
 
-    def test_a_name_of_a_group_is_lowercase(self) -> None:
-        with self.assertRaisesRegex(TypeError, "Admins"):
+    def test_the_groups_unit_holds_no_group(self) -> None:
+        class OwnGroupsUnit(AuthGroupsUnit):
+            cli_description = "The groups, ours."
 
-            class WrongGroups(AuthGroupsUnit):
-                Admins = Slot(EditorsGroup)
+        self.assertEqual(list(OwnGroupsUnit.slots_iter(AuthGroup)), [])
+        with self.assertRaisesRegex(TypeError, "WrongGroupsUnit.grp_admins"):
+
+            class WrongGroupsUnit(AuthGroupsUnit):
+                grp_admins = Slot(AppAdminsGroup)
+
+    def test_a_plain_unit_hides_its_groups(self) -> None:
+        class PlainUnit(Unit):
+            grp_admins = Slot(AppAdminsGroup)
+
+        class PlainProject(AuthMemoryProject):
+            plain = Slot(PlainUnit)
+
+        project = PlainProject()
+        groups = project.auth.access.groups
+        self.assertEqual(
+            [group.get_name() for group in groups.get_all()], list(CORE_GROUPS)
+        )
+        with self.assertRaises(AuthGroupNotFoundError):
+            groups.get("app.grp_admins")
 
 
 class OperationsTestCase(unittest.TestCase):
@@ -227,28 +308,38 @@ class OperationsTestCase(unittest.TestCase):
         )
         self.assertEqual(
             [group.name for group in groups],
-            ["grp_anonymous", "grp_signed_in", "admins", "editors", "buyers"],
+            [*CORE_GROUPS, "shop.grp_buyers", "articles.grp_editors", "app.grp_admins"],
         )
         self.assertEqual(
-            groups[4],
-            AuthGroupInfo(name="buyers", permissions=masks(ShopPermissions.CAN_BUY)),
+            groups[7],
+            AuthGroupInfo(
+                name="shop.grp_buyers", permissions=masks(ShopPermissions.CAN_BUY)
+            ),
         )
 
     def test_the_members_are_added_listed_removed(self) -> None:
         members = self.access.members
 
         async def run() -> tuple[tuple[str, ...], ...]:
-            for group, uid in (("editors", "b2"), ("editors", "a1"), ("admins", "a1")):
+            for group, uid in (
+                ("articles.grp_editors", "b2"),
+                ("articles.grp_editors", "a1"),
+                ("app.grp_admins", "a1"),
+            ):
                 membership = AuthMembership(group=group, uid=uid)
                 await self.runner.run(members.op_add, membership, self.metadata)
-            removed = AuthMembership(group="editors", uid="b2")
+            removed = AuthMembership(group="articles.grp_editors", uid="b2")
             await self.runner.run(members.op_remove, removed, self.metadata)
             return (
-                await self.runner.run(members.op_list, "editors", self.metadata),
+                await self.runner.run(
+                    members.op_list, "articles.grp_editors", self.metadata
+                ),
                 await self.runner.run(members.op_list_groups, "a1", self.metadata),
             )
 
-        self.assertEqual(asyncio.run(run()), (("a1",), ("admins", "editors")))
+        self.assertEqual(
+            asyncio.run(run()), (("a1",), ("app.grp_admins", "articles.grp_editors"))
+        )
 
     def test_an_unknown_group_is_refused(self) -> None:
         members = self.access.members
@@ -264,7 +355,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_anonymous_and_signed_in_keep_no_members(self) -> None:
         members = self.access.members
-        for group in ("grp_anonymous", "grp_signed_in"):
+        for group in ("auth.grp_anonymous", "auth.grp_signed_in"):
             membership = AuthMembership(group=group, uid="a1")
             for call in (
                 self.runner.run(members.op_add, membership, self.metadata),
@@ -279,7 +370,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_a_uid_of_no_profile_is_refused(self) -> None:
         members = self.access.members
-        membership = AuthMembership(group="editors", uid="c3")
+        membership = AuthMembership(group="articles.grp_editors", uid="c3")
         for call in (
             self.runner.run(members.op_add, membership, self.metadata),
             self.runner.run(members.op_remove, membership, self.metadata),
@@ -290,7 +381,7 @@ class OperationsTestCase(unittest.TestCase):
 
     def test_an_anonymous_caller_may_do_nothing(self) -> None:
         metadata = self.project.operations.create_metadata(ANONYMOUS)
-        membership = AuthMembership(group="editors", uid="a1")
+        membership = AuthMembership(group="articles.grp_editors", uid="a1")
         with self.assertRaises(OperationPermissionsError):
             asyncio.run(
                 self.runner.run(self.access.members.op_add, membership, metadata)
@@ -308,7 +399,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
         self.members = self.project.auth.storage.access.members
 
     def test_a_user_has_the_union_of_what_its_groups_grant(self) -> None:
-        for group in ("editors", "buyers"):
+        for group in ("articles.grp_editors", "shop.grp_buyers"):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
         self.assertEqual(
             self._get_permissions("a1"),
@@ -326,7 +417,7 @@ class GroupsGrantsTestCase(unittest.TestCase):
         )
 
     def test_a_group_no_source_has_grants_nothing(self) -> None:
-        for group in ("gone", "buyers"):
+        for group in ("gone", "shop.grp_buyers"):
             asyncio.run(self.members.add(AuthMembership(group=group, uid="a1")))
         self.assertEqual(self._get_permissions("a1"), masks(ShopPermissions.CAN_BUY))
 
@@ -334,20 +425,11 @@ class GroupsGrantsTestCase(unittest.TestCase):
         return asyncio.run(self.project.auth.access.permissions.get_permissions(uid))
 
 
-class SignedInGroupsUnit(AuthGroupsUnit):
-    grp_signed_in = Slot(ShopSignedInGroup)
-
-
-class SignedInAccessUnit(AuthAccessUnit):
-    groups = Slot(SignedInGroupsUnit)
-
-
 class SignedInMethodsUnit(AuthMethodsUnit):
     testing = Slot(AuthTestingMethod)
 
 
-class SignedInAuthUnit(AuthMemoryUnit):
-    access = Slot(SignedInAccessUnit)
+class SignedInAuthUnit(ShopAuthUnit):
     methods = Slot(SignedInMethodsUnit)
 
 
@@ -364,7 +446,7 @@ class SeededProfilesStorage(AuthMemoryProfilesStorage):
 class SeededMembersStorage(AuthMemoryMembersStorage):
     def __init__(self) -> None:
         super().__init__()
-        self._memberships.add(("editors", "a1"))
+        self._memberships.add(("articles.grp_editors", "a1"))
 
 
 class SeededAccessStorage(AuthMemoryAccessStorage):
@@ -376,11 +458,11 @@ class SeededStorage(AuthMemoryStorage):
     access = Slot(SeededAccessStorage)
 
 
-class SeededAuthUnit(AppAuthUnit):
+class SeededAuthUnit(AuthMemoryUnit):
     storage = Slot(SeededStorage)
 
 
-class SeededProject(AuthMemoryProject):
+class SeededProject(AppProject):
     auth = Slot(SeededAuthUnit)
 
 
@@ -403,25 +485,43 @@ class CommandsTestCase(unittest.TestCase):
             self.run_project("auth", "access", "groups", "list"),
             (
                 0,
-                "grp_anonymous\tauth.metadata=1\tauth.sign_in=1\tauth.sign_up=1\n"
-                "grp_signed_in\n"
-                "admins\tarticles=1\tauth.access.members=3\tshop=2\n"
-                "editors\tarticles=2\n"
-                "buyers\tshop=1\n",
+                "auth.grp_anonymous\tauth.metadata=1\tauth.sign_in=1"
+                "\tauth.sign_up=1\n"
+                "auth.grp_signed_in\n"
+                "auth.profiles.grp_consumers\tauth.profiles.attrs=2"
+                "\tauth.profiles.tags=2\n"
+                "auth.profiles.grp_managers\tauth.profiles.attrs=15"
+                "\tauth.profiles.tags=15\n"
+                "auth.sessions.grp_consumers\tauth.sessions.attrs=2"
+                "\tauth.sessions.presets=2\n"
+                "auth.sessions.grp_managers\tauth.sessions.attrs=15"
+                "\tauth.sessions.presets=15\n"
+                "auth.sessions.grp_admins\tauth.sessions.attrs=15"
+                "\tauth.sessions.presets=63\n"
+                "shop.grp_buyers\tshop=1\n"
+                "articles.grp_editors\tarticles=2\n"
+                "app.grp_admins\tarticles=1\tauth.access.members=3\tshop=2\n",
             ),
         )
 
     def test_the_members_are_printed(self) -> None:
         members = ("auth", "access", "members")
-        self.assertEqual(self.run_project(*members, "list", "editors"), (0, "a1\n"))
         self.assertEqual(
-            self.run_project(*members, "list-groups", "a1"), (0, "editors\n")
+            self.run_project(*members, "list", "articles.grp_editors"), (0, "a1\n")
+        )
+        self.assertEqual(
+            self.run_project(*members, "list-groups", "a1"),
+            (0, "articles.grp_editors\n"),
         )
 
     def test_a_user_is_added_and_removed_as_the_root(self) -> None:
         members = ("auth", "access", "members")
-        self.assertEqual(self.run_project(*members, "add", "admins", "a1"), (0, ""))
-        self.assertEqual(self.run_project(*members, "remove", "editors", "a1"), (0, ""))
+        self.assertEqual(
+            self.run_project(*members, "add", "app.grp_admins", "a1"), (0, "")
+        )
+        self.assertEqual(
+            self.run_project(*members, "remove", "articles.grp_editors", "a1"), (0, "")
+        )
 
     def test_an_unknown_group_fails_the_command(self) -> None:
         with self.assertLogs("ingots.puer.runner", "ERROR"):

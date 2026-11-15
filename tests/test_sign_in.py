@@ -22,8 +22,7 @@ from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.project import AuthProject
-from ingot_auth.access import AuthAccessUnit
-from ingot_auth.access.groups import AuthGroupsUnit, AuthSignedInGroup
+from ingot_auth.access.groups import AuthSignedInGroup
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.methods import (
     AuthMethodDeniedError,
@@ -103,16 +102,8 @@ class ClosedSignedInGroup(AuthSignedInGroup):
         return Permissions()
 
 
-class ClosedGroupsUnit(AuthGroupsUnit):
-    grp_signed_in = Slot(ClosedSignedInGroup)
-
-
-class ClosedAccessUnit(AuthAccessUnit):
-    groups = Slot(ClosedGroupsUnit)
-
-
 class ClosedAuthUnit(TstAuthUnit):
-    access = Slot(ClosedAccessUnit)
+    grp_signed_in = Slot(ClosedSignedInGroup)
 
 
 class ClosedProject(AuthMemoryProject):

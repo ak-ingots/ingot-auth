@@ -6,4 +6,4 @@ the metadata, the starts of the methods, the answers of the flows, extend
 whatever a call bears; the others extend `BaseAuthGrpcServicer`, for the
 caller of the token, the anonymous one with none. `_get_anonymous_caller()`
 is gone: a subclass overrides `_get_caller()`, an application closes the
-metadata by its group `grp_anonymous`.
+metadata by its group `auth.grp_anonymous`.

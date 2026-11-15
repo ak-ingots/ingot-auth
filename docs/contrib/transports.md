@@ -109,11 +109,11 @@ and the answers of the flows run for the anonymous one, signed in or not:
 
 ```python
 auth = [("authorization", f"Bearer {token}")]
-await members.ListMembers(ListMembersRequest(group="admins"), metadata=auth)
+await members.ListMembers(ListMembersRequest(group="app.grp_admins"), metadata=auth)
 ```
 
 The anonymous caller is that of the project,
-`operations.callers.get_anonymous()`, with what the group `grp_anonymous`
+`operations.callers.get_anonymous()`, with what the group `auth.grp_anonymous`
 grants ({doc}`../guide/access`). A servicer runs its
 operation by `run_operation()` of ingot-grpcio, for the caller of its hook
 `_get_caller()`: the servicers open to anyone extend `GrpcServicer` alone,

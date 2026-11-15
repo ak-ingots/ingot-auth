@@ -28,7 +28,7 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
 ):
     """
     An operation of the memberships: the group is one of a source, but
-    ``grp_anonymous`` and ``grp_signed_in``, which keep none; the uid of a
+    ``auth.grp_anonymous`` and ``auth.grp_signed_in``, which keep none; the uid of a
     profile.
     """
 
@@ -42,10 +42,10 @@ class BaseAuthMembersOperation[ParametersType, ResultType](
     def _check_group(self, name: str) -> None:
         """
         :raises AuthGroupNotFoundError: no group has the name, or it is
-            ``grp_anonymous`` or ``grp_signed_in``, which keep none.
+            ``auth.grp_anonymous`` or ``auth.grp_signed_in``, which keep none.
         """
-        groups = self.project.auth.access.groups
-        if groups.get(name) in (groups.grp_anonymous, groups.grp_signed_in):
+        auth = self.project.auth
+        if auth.access.groups.get(name) in (auth.grp_anonymous, auth.grp_signed_in):
             raise AuthGroupNotFoundError.for_members(name)
 
     @t.final
@@ -60,7 +60,7 @@ class AuthAddMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     user are forgotten in the cache: its next request has the group.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
+        ``auth.grp_anonymous`` or ``auth.grp_signed_in``, which keep none.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -88,7 +88,7 @@ class AuthRemoveMemberOperation(BaseAuthMembersOperation[AuthMembership, None]):
     no more.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
+        ``auth.grp_anonymous`` or ``auth.grp_signed_in``, which keep none.
     :raises AuthProfileNotFoundError: no profile has the uid.
     """
 
@@ -114,7 +114,7 @@ class AuthListMembersOperation(BaseAuthMembersOperation[str, tuple[str, ...]]):
     The uids of the members of a group, sorted.
 
     :raises AuthGroupNotFoundError: no group has the name, or it is
-        ``grp_anonymous`` or ``grp_signed_in``, which keep none.
+        ``auth.grp_anonymous`` or ``auth.grp_signed_in``, which keep none.
     """
 
     parent: "AuthMembersUnit"
