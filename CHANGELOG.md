@@ -2,6 +2,60 @@
 
 <!-- towncrier release notes start -->
 
+## [0.4.0] - 2026-11-15
+### Added
+- Every change of state of the core recorded in the activity log, in its
+  transaction: a profile created by a sign-up and its identifier bound, its
+  tags and values set; a session signed in, out, revoked, and expiring, the
+  last by the server itself, `AUTH_SYSTEM`, in a run of its own its line in
+  the log tells; a member bound to a group and unbound; an attribute bound
+  to a preset and unbound.
+- The activity log, by ADR 0015 of the ecosystem: `auth.activities`,
+  `AuthActivitiesUnit`, `record()` writing a record a change of state of an
+  entity in the transaction of the change, `AuthActivityRecord`: the actor,
+  `who` and `session_uid`, the action, `AuthActivityAction`, the type of the
+  entity, the full name of its unit, its id, an optional context, a
+  dataclass extending `AuthActivityContext` kept as a map of its attributes,
+  the uid of the run and the time. A failure to write it is for the strategy
+  in the slot `failure`, `AuthStrictActivityFailure`, failing the change, or
+  `AuthSwallowActivityFailure`, logging it. The auditors,
+  `auth.activities.grp_auditors`, read it by the flag `CAN_READ` of
+  `auth.activities`, `op_list`, `auth activities list` on the command line,
+  `ListActivities` of the service `Activities` over gRPC. The storage
+  `storage.activities`, `BaseAuthActivitiesStorage`, in memory and in MongoDB,
+  with its contract. The registries record their items created, renamed and
+  deleted, an attribute created with its name and type.
+
+### Changed
+- An application declares the strategy of a failure to write the activity log
+  in the slot `failure` of `AuthActivitiesUnit`; a storage of the auth
+  declares the storage of the log in the slot `activities`. The operations of
+  the registries write in a transaction of the storage.
+- An entity names its own identifier `uid`, a reference to another
+  `<entity>_uid`, never `id`, a builtin of Python, in the code, the
+  contracts of gRPC, their numbers kept, the command line and the documents
+  of MongoDB, its `_id` kept: a session its own `uid`, its profile
+  `profile_uid`, as an identity and a membership, `session_uid`, `attr_uid`,
+  `preset_uid`, `tag_uids`, `attempt_uid`, `entity_uid` in place of the
+  `*_id` before; an item of a registry its `uid`, `--uid` on the command
+  line, an attempt its `uid`; `for_uid()` in place of `for_id()` of the
+  errors. A document of MongoDB of before is read no more: the backend kept
+  no data yet.
+- The flags of a unit are nested in it as `Flags`, the modules
+  `permissions.py` gone: `AuthTagsUnit.Flags` in place of
+  `AuthTagsPermissions`, and so for every unit and method.
+- The flows take the metadata of their run to their end: `proceed()` of a
+  flow and its hook `_complete()` take it, so that the end records its
+  change.
+
+### Removed
+- `closed_by` of a session, of `AuthSessionRecord` and `AuthSessionInfo`: the
+  activity log tells who closed a session, by its id, its user signing out or
+  revoking, the server when it expired. A storage of the sessions takes no
+  `closed_by` in `_close()`; `auth.sessions.close()` takes none; the field of
+  `SessionRecord` of `ingot_auth.sessions.v1` is reserved; `auth sessions
+  list` prints no closer.
+
 ## [0.3.0] - 2026-11-15
 ### Added
 - The profile of the caller: `auth.profiles.op_get_own`, `AuthOwnProfile`, its
