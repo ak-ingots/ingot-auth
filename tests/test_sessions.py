@@ -8,13 +8,8 @@ from ingots.defaults.operations import PermissionFlags, Permissions
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
-from ingot_auth.__main__ import (
-    AuthMemoryProject,
-    AuthMemorySignInUnit,
-    AuthMemoryUnit,
-)
-from ingot_auth.access import AuthAccessUnit
-from ingot_auth.access.groups import AuthGroup, AuthGroupsUnit
+from ingot_auth.__main__ import AuthMemoryProject, AuthMemorySignInUnit
+from ingot_auth.access.groups import AuthGroup, AuthGroupsOwner
 from ingot_auth.auth import AuthUnit
 from ingot_auth.caches import AuthCaller
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
@@ -54,20 +49,12 @@ class BuyersGroup(AuthGroup):
         return super()._get_permissions() | masks(ShopPermissions.CAN_BUY)
 
 
-class ShopGroupsUnit(AuthGroupsUnit):
-    buyers = Slot(BuyersGroup)
-
-
-class ShopAccessUnit(AuthAccessUnit):
-    groups = Slot(ShopGroupsUnit)
-
-
-class ShopAuthUnit(AuthMemoryUnit):
-    access = Slot(ShopAccessUnit)
+class ShopUnit(AuthGroupsOwner):
+    grp_buyers = Slot(BuyersGroup)
 
 
 class ShopProject(AuthMemoryProject):
-    auth = Slot(ShopAuthUnit)
+    shop = Slot(ShopUnit)
 
 
 def hash_token(token: str) -> str:
@@ -81,7 +68,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         self.project = ShopProject()
         self.sessions = self.project.auth.sessions
         await self.project.auth.storage.access.members.add(
-            AuthMembership(group="buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", uid="a1")
         )
 
     async def run_operation(self, factory: t.Any, parameters: t.Any) -> t.Any:
@@ -189,7 +176,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         await self.project.auth.storage.access.members.remove(
-            AuthMembership(group="buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", uid="a1")
         )
         buyer = masks(ShopPermissions.CAN_BUY)
         self.assertEqual((await self.sessions.authenticate(token)).permissions, buyer)
@@ -205,7 +192,9 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         storage = self.project.auth.storage
         for uid in ("a1", "b2"):
             await storage.profiles.create(AuthProfile(uid=uid, created_at=NOW))
-        await storage.access.members.add(AuthMembership(group="buyers", uid="b2"))
+        await storage.access.members.add(
+            AuthMembership(group="shop.grp_buyers", uid="b2")
+        )
         tokens = [
             (await self.sessions.open(uid, "nickname", {})).token
             for uid in ("a1", "a1", "b2")
@@ -213,7 +202,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         for token in tokens:
             await self.sessions.authenticate(token)
         members = self.project.auth.access.members
-        membership = AuthMembership(group="buyers", uid="a1")
+        membership = AuthMembership(group="shop.grp_buyers", uid="a1")
         buyer = masks(ShopPermissions.CAN_BUY)
         for factory, permissions in (
             (members.op_remove, Permissions()),
@@ -235,7 +224,7 @@ class SessionsTestCase(unittest.IsolatedAsyncioTestCase):
         token = (await self.sessions.open("a1", "nickname", {})).token
         await self.sessions.authenticate(token)
         await self.project.auth.storage.access.members.remove(
-            AuthMembership(group="buyers", uid="a1")
+            AuthMembership(group="shop.grp_buyers", uid="a1")
         )
         groups = self.project.auth.access.groups
         with mock.patch.object(type(groups), "get_digest", return_value="deployed"):

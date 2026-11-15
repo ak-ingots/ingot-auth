@@ -13,19 +13,23 @@ if t.TYPE_CHECKING:
 
 class AuthGroup(Entity):
     """
-    A group of the users, a slot of :class:`AuthGroupsUnit`, its name the name
-    of the slot. What it grants is of its hook, :meth:`_get_permissions`,
-    nothing here: each class adds its own to ``super()``, so that an addon
-    and the application grant to the same group, the application declaring
-    the class that joins them.
+    A group of the users, in a slot of a unit of its domain, an
+    :class:`~.AuthGroupsOwner`, the slot prefixed ``grp_``: its name is its
+    full name, where it is, ``shop.grp_buyers``, the scripts and the
+    memberships naming it. What a group grants is of its hook,
+    :meth:`_get_permissions`, nothing here: each class adds its own to
+    ``super()``, so that an addon and the application grant to the same
+    group, the application declaring the class that joins them; a class in
+    no slot is a mixin of what it grants, for a group an application
+    declares.
     """
 
     project: "AuthProject"
 
     @t.final
     def get_name(self) -> str:
-        """The name of the group: the path of its slot in the groups."""
-        return self.project.auth.access.groups.slots_find_path(self)
+        """The name of the group, its full name."""
+        return self.full_name
 
     @t.final
     def get_permissions(self) -> Permissions:
@@ -39,11 +43,12 @@ class AuthGroup(Entity):
 
 class AuthSignedInGroup(AuthGroup):
     """
-    The group ``grp_signed_in`` of the core: every signed-in user is a member,
-    none stored. It grants what the methods give a signed-in user by their
-    toggles, the ``CAN_SIGN_IN`` of each method open; what an application
-    and its addons grant every signed-in user, they add by the hook, the
-    application declaring the class that joins them in the slot.
+    The group of every signed-in user, of the core, a member none stored,
+    in the slot ``grp_signed_in`` of the auth. It grants what the methods
+    give a signed-in user by their toggles, the ``CAN_SIGN_IN`` of each
+    method open; what an application and its addons grant every signed-in
+    user, they add by the hook, the application declaring the class that
+    joins them in the slot.
     """
 
     @t.override
@@ -54,14 +59,15 @@ class AuthSignedInGroup(AuthGroup):
 
 class AuthAnonymousGroup(AuthGroup):
     """
-    The group ``grp_anonymous`` of the core: every caller that tells no one
-    is a member, none stored, the anonymous caller of the project having
-    what it grants. It grants what anyone may of the auth, as its units tell it: the
-    flags of the sign-up and of the sign-in, those of the methods their
-    toggles open, the reading of the metadata; what an application and its
-    addons grant anyone, they add by the hook, or take, the metadata closed
-    for one, the application declaring the class that joins them in the
-    slot. A signed-in user is not a member: it has what its groups grant.
+    The group of every caller that tells no one, of the core, a member none
+    stored, in the slot ``grp_anonymous`` of the auth: the anonymous caller
+    of the project has what it grants. It grants what anyone may of the
+    auth, as its units tell it: the flags of the sign-up and of the
+    sign-in, those of the methods their toggles open, the reading of the
+    metadata; what an application and its addons grant anyone, they add by
+    the hook, or take, the metadata closed for one, the application
+    declaring the class that joins them in the slot. A signed-in user is not
+    a member: it has what its groups grant.
     """
 
     @t.override

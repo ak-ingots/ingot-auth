@@ -32,8 +32,9 @@ class AuthGrpcMetadataServicer(GrpcServicer, metadata_pb2_grpc.MetadataServicer)
     """
     The metadata, public unless told otherwise: a client asks for it before
     signing in, so it runs for the anonymous caller of the project, whatever
-    a call bears, whom the group ``grp_anonymous`` grants ``CAN_READ``; an
-    application closes it by taking the flag off in that group.
+    a call bears, whom the group ``auth.grp_anonymous`` grants ``CAN_READ``; an
+    application closes it by taking the flag off in that group, its class in
+    its slot.
     """
 
     project: "AuthProject"

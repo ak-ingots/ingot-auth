@@ -16,7 +16,7 @@ if t.TYPE_CHECKING:
 class AuthGroupsGrants(Entity):
     """
     The permissions of a signed-in user: the union of what its groups grant,
-    ``grp_signed_in`` first, of every one. A membership of a group no source
+    ``auth.grp_signed_in`` first, of every one. A membership of a group no source
     has any more grants nothing.
     """
 
@@ -25,8 +25,9 @@ class AuthGroupsGrants(Entity):
     @t.final
     async def get_permissions(self, uid: str) -> Permissions:
         """The permissions of the user of a uid, signed in."""
-        groups = self.project.auth.access.groups
-        permissions = groups.grp_signed_in.get_permissions()
+        auth = self.project.auth
+        groups = auth.access.groups
+        permissions = auth.grp_signed_in.get_permissions()
         for name in await self.project.auth.storage.access.members.get_groups(uid):
             try:
                 group = groups.get(name)

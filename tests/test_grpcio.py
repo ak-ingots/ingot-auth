@@ -27,11 +27,10 @@ from ingots.puer import Slot
 
 from ingot_auth import AuthProject
 from ingot_auth.__main__ import AuthMemorySessionsUnit, AuthMemorySignInUnit
-from ingot_auth.access import AuthAccessUnit
 from ingot_auth.access.groups import (
     AuthAnonymousGroup,
     AuthGroup,
-    AuthGroupsUnit,
+    AuthGroupsOwner,
     AuthGroupsPermissions,
 )
 from ingot_auth.access.members import AuthMembersPermissions
@@ -240,17 +239,12 @@ class AdminsGroup(AuthGroup):
         return super()._get_permissions() | masks(*AuthMembersPermissions)
 
 
-class TstGroupsUnit(AuthGroupsUnit):
-    admins = Slot(AdminsGroup)
-
-
-class TstAccessUnit(AuthAccessUnit):
-    groups = Slot(TstGroupsUnit)
+class TstAppUnit(AuthGroupsOwner):
+    grp_admins = Slot(AdminsGroup)
 
 
 class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
-    access = Slot(TstAccessUnit)
 
 
 class TstClientsUnit(GrpcClientsUnit):
@@ -283,6 +277,7 @@ class TstProject(AuthProject, GrpcProject):
     logging = Slot(TstLoggingUnit)
     auth = Slot(TstAuthUnit)
     grpc = Slot(TstGrpcUnit)
+    app = Slot(TstAppUnit)
 
 
 class TstAdminProject(TstProject):
@@ -302,16 +297,8 @@ class ClosedAnonymousGroup(AuthAnonymousGroup):
         return super()._get_permissions() - readers
 
 
-class ClosedGroupsUnit(TstGroupsUnit):
-    grp_anonymous = Slot(ClosedAnonymousGroup)
-
-
-class ClosedAccessUnit(TstAccessUnit):
-    groups = Slot(ClosedGroupsUnit)
-
-
 class ClosedAuthUnit(TstAuthUnit):
-    access = Slot(ClosedAccessUnit)
+    grp_anonymous = Slot(ClosedAnonymousGroup)
 
 
 class TstClosedProject(TstAnonymousProject):
@@ -638,15 +625,43 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             list(reply.groups),
             [
                 groups_pb2.Group(
-                    name="grp_anonymous",
+                    name="auth.grp_anonymous",
                     permissions={
                         "auth.metadata": 1,
                         "auth.sign_in": 1,
                         "auth.sign_up": 1,
                     },
                 ),
-                groups_pb2.Group(name="grp_signed_in"),
-                groups_pb2.Group(name="admins", permissions={"auth.access.members": 7}),
+                groups_pb2.Group(name="auth.grp_signed_in"),
+                groups_pb2.Group(
+                    name="auth.profiles.grp_consumers",
+                    permissions={"auth.profiles.attrs": 2, "auth.profiles.tags": 2},
+                ),
+                groups_pb2.Group(
+                    name="auth.profiles.grp_managers",
+                    permissions={"auth.profiles.attrs": 15, "auth.profiles.tags": 15},
+                ),
+                groups_pb2.Group(
+                    name="auth.sessions.grp_consumers",
+                    permissions={"auth.sessions.attrs": 2, "auth.sessions.presets": 2},
+                ),
+                groups_pb2.Group(
+                    name="auth.sessions.grp_managers",
+                    permissions={
+                        "auth.sessions.attrs": 15,
+                        "auth.sessions.presets": 15,
+                    },
+                ),
+                groups_pb2.Group(
+                    name="auth.sessions.grp_admins",
+                    permissions={
+                        "auth.sessions.attrs": 15,
+                        "auth.sessions.presets": 63,
+                    },
+                ),
+                groups_pb2.Group(
+                    name="app.grp_admins", permissions={"auth.access.members": 7}
+                ),
             ],
         )
 
@@ -655,21 +670,21 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.storage.profiles.create(
             AuthProfile(uid="a1", created_at=NOW)
         )
-        membership = members_pb2.Membership(group="admins", uid="a1")
+        membership = members_pb2.Membership(group="app.grp_admins", uid="a1")
         await members.AddMember(members_pb2.AddMemberRequest(membership=membership))
         reply = await members.ListMembers(
-            members_pb2.ListMembersRequest(group="admins")
+            members_pb2.ListMembersRequest(group="app.grp_admins")
         )
         self.assertEqual(list(reply.uids), ["a1"])
         groups = await members.ListMemberGroups(
             members_pb2.ListMemberGroupsRequest(uid="a1")
         )
-        self.assertEqual(list(groups.groups), ["admins"])
+        self.assertEqual(list(groups.groups), ["app.grp_admins"])
         await members.RemoveMember(
             members_pb2.RemoveMemberRequest(membership=membership)
         )
         reply = await members.ListMembers(
-            members_pb2.ListMembersRequest(group="admins")
+            members_pb2.ListMembersRequest(group="app.grp_admins")
         )
         self.assertEqual(list(reply.uids), [])
 
@@ -682,7 +697,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 {"group": "guests"},
             ),
             (
-                members_pb2.Membership(group="admins", uid="a1"),
+                members_pb2.Membership(group="app.grp_admins", uid="a1"),
                 "PROFILE_NOT_FOUND",
                 {"uid": "a1"},
             ),
@@ -962,7 +977,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             client.auth_access_groups.ListGroups(groups_pb2.ListGroupsRequest()),
             client.auth_access_members.ListMembers(
-                members_pb2.ListMembersRequest(group="admins")
+                members_pb2.ListMembersRequest(group="app.grp_admins")
             ),
         ):
             with self.assertRaises(GrpcError) as error:
@@ -1254,12 +1269,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
         ).result.signed_up
         await self.project.auth.storage.access.members.add(
-            AuthMembership(group="admins", uid=signed_up.uid)
+            AuthMembership(group="app.grp_admins", uid=signed_up.uid)
         )
         token = (await nickname.SignIn(sign_in)).result.signed_in.token
         bearer = [("authorization", f"Bearer {token}")]
         members = client.auth_access_members
-        request = members_pb2.ListMembersRequest(group="admins")
+        request = members_pb2.ListMembersRequest(group="app.grp_admins")
         reply = await members.ListMembers(request, metadata=bearer)
         self.assertEqual(list(reply.uids), [signed_up.uid])
         # open to anyone, signed in or not

@@ -11,7 +11,7 @@ the sign-up, the sign-in and the sessions of the users of an application.
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLoggingUnit` (`logging/`, the logger `ingot_auth`), its
 `AuthOperationsUnit` (`operations/`, whose `AuthCallersProvider` gives the
-anonymous caller what the group `grp_anonymous` grants) and `AuthUnit`
+anonymous caller what the group `auth.grp_anonymous` grants) and `AuthUnit`
 (`auth/`, the auth of the project: the units `profiles/`, with the registries `tags/`
 and `attrs/`, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
@@ -22,11 +22,16 @@ and `authenticate()` turning a token into an `AuthCaller`, the session and
 the caller cached apart, the caller by the digest of the groups
 too, its callers forgotten by `forget_callers()` on a change of the
 memberships; the `access/`, its `groups/` entities
-in slots of `AuthGroupsUnit`, declared in the code, granting by a hook, its
-`members/` the memberships in the storage, `grp_signed_in` of the core, of
+in slots `grp_*` of the units of their domains, `AuthGroupsOwner`, found by a
+walk from the project down the owners alone by `AuthGroupsUnit`, declared in
+the code, each named by its full name (`auth.profiles.grp_managers`, as the
+domain of the permissions is that of its unit), granting by a hook, its
+`members/` the memberships in the storage, `auth.grp_signed_in` of the core, of
 every signed-in user, none stored, granting the sign-in of each method open,
-`grp_anonymous` of the core, of every caller that tells no one, none stored,
-granting what anyone may of the auth as its units tell it, and
+`auth.grp_anonymous` of the core, of every caller that tells no one, none stored,
+granting what anyone may of the auth as its units tell it, both in the
+auth, the profiles and the sessions with groups of the work of their
+registries, and
 `AuthGroupsGrants`, the permissions of a user from its groups; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
@@ -63,8 +68,8 @@ that an application plugs only the backends; a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
-their CLI names from `cli_name`; the groups of the core take `grp_*`, no
-domain, the name of a group still that of its slot. The goal of the core: assume no details, as
+their CLI names from `cli_name`, and its groups `grp_*`, named by their
+full names. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in are bound by the application, the
 storage and the transport plug in. The core holds the facades; their
 implementations are in `contrib/` (`contrib/storages/<backend>/`,

@@ -32,8 +32,8 @@ class AuthGroupNotFoundError(AuthGroupError):
     @classmethod
     def for_members(cls, name: str) -> t.Self:
         """
-        The group keeps no members, ``grp_anonymous``, of every caller that
-        tells no one, or ``grp_signed_in``, of every signed-in user: none is
+        The group keeps no members, ``auth.grp_anonymous``, of every caller that
+        tells no one, or ``auth.grp_signed_in``, of every signed-in user: none is
         added, removed or listed.
         """
         return cls(f"the group {name!r} keeps no members", name)

@@ -1,11 +1,9 @@
 """
 The access: the groups of the users, what each grants, and the members of
 each. The permissions of a signed-in user are the union of what its groups
-grant, by the strategy of the slot ``permissions``. An application declares
-its groups in its own :class:`AuthGroupsUnit`::
-
-    class AppAccessUnit(AuthAccessUnit):
-        groups = Slot(AppGroupsUnit)
+grant, by the strategy of the slot ``permissions``. The groups are in the
+units of their domains, :class:`~.groups.AuthGroupsOwner`, found by
+:class:`AuthGroupsUnit`.
 """
 
 __all__ = ("AuthAccessUnit", "AuthGroupsGrants")

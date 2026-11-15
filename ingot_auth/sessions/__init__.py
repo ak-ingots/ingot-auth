@@ -1,13 +1,17 @@
 """
 The sessions: what a sign-in opens and a token stands for, the caller of a
 request, with the registry of the attributes of what a sign-up, a sign-in
-happened on and the presets asking for them. Their storage is in
+happened on and the presets asking for them, and the groups of the work of
+these registries. Their storage is in
 :mod:`ingot_auth.storages`, their caches in :mod:`ingot_auth.caches`.
 """
 
 __all__ = (
     "AuthFixedLifetime",
     "AuthSessionExpiredError",
+    "AuthSessionsAdminsGroup",
+    "AuthSessionsConsumersGroup",
+    "AuthSessionsManagersGroup",
     "AuthSlidingFixedLifetime",
     "AuthSlidingLifetime",
     "AuthSessionToken",
@@ -25,6 +29,7 @@ import typing as t
 from ingots.puer import Slot
 from ingots.puer.cli import CliUnit
 
+from ingot_auth.access.groups import AuthGroupsOwner
 from ingot_auth.caches import AuthCaller
 from ingot_auth.storages import (
     AuthSessionCloseReason,
@@ -34,6 +39,11 @@ from ingot_auth.storages import (
 
 from .attrs import AuthSessionAttrsUnit
 from .errors import AuthSessionExpiredError
+from .groups import (
+    AuthSessionsAdminsGroup,
+    AuthSessionsConsumersGroup,
+    AuthSessionsManagersGroup,
+)
 from .items import AuthSessionToken
 from .lifetimes import (
     AuthFixedLifetime,
@@ -50,7 +60,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.storages import AuthAttrValue
 
 
-class AuthSessionsUnit(CliUnit):
+class AuthSessionsUnit(AuthGroupsOwner, CliUnit):
     """
     The sessions: the registries of their attributes and of the presets, and
     the strategy of their lifetime in the slot ``lifetime``, none by default,
@@ -58,13 +68,19 @@ class AuthSessionsUnit(CliUnit):
     a request brings the token, and :meth:`authenticate` turns it into the
     caller, from the cache, or from the storage and the access on a miss. A
     change of what a caller holds forgets the callers of the profile,
-    :meth:`forget_callers`.
+    :meth:`forget_callers`. The groups of the work of the registries:
+    ``auth.sessions.grp_consumers``, who reads them, ``auth.sessions.grp_managers``,
+    who keeps them, binding none, ``auth.sessions.grp_admins``, who binds too.
     """
 
     cli_name = "sessions"
     cli_description = "The sessions of the users."
 
     project: "AuthProject"
+
+    grp_consumers = Slot(AuthSessionsConsumersGroup)
+    grp_managers = Slot(AuthSessionsManagersGroup)
+    grp_admins = Slot(AuthSessionsAdminsGroup)
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
