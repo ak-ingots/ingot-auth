@@ -3,7 +3,7 @@ syntax = "proto3";
 package ingot_auth.sessions.v1;
 
 import "google/protobuf/timestamp.proto";
-import "ingot_auth/sessions/attrs/v1/attrs.proto";
+import "ingot_auth/attrs/v1/attrs.proto";
 
 // The sessions of the caller of the token of a call, its own: those open,
 // the current one marked, revoked one by one or all but the current one;
@@ -43,7 +43,7 @@ enum CloseReason {
 message Session {
   string id = 1;
   // the device, the place: the values of its attributes, by their ids
-  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 2;
+  repeated ingot_auth.attrs.v1.AttrValue attr_values = 2;
   google.protobuf.Timestamp opened_at = 3;
   google.protobuf.Timestamp seen_at = 4;
   // that of the caller
@@ -76,7 +76,7 @@ message SessionRecord {
   string id = 1;
   string uid = 2;
   string method = 3;
-  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 4;
+  repeated ingot_auth.attrs.v1.AttrValue attr_values = 4;
   google.protobuf.Timestamp opened_at = 5;
   google.protobuf.Timestamp seen_at = 6;
   // unset while open

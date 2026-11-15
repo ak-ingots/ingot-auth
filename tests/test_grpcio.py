@@ -54,6 +54,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcSignOutBinding,
     AuthGrpcTagsServicer,
 )
+from ingot_auth.attrs.v1 import attrs_pb2
 from ingot_auth.access.groups.v1 import (
     groups_pb2,
     groups_pb2_grpc,
@@ -68,7 +69,7 @@ from ingot_auth.contrib.transports.grpcio.base import (
     get_peer_ip,
 )
 from ingot_auth.contrib.transports.grpcio.sessions.sessions import CLOSE_REASONS
-from ingot_auth.contrib.transports.grpcio.sessions.attrs import (
+from ingot_auth.contrib.transports.grpcio.attrs import (
     build_attr_value,
     build_attr_value_message,
     build_attr_values,
@@ -1144,8 +1145,10 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         ):
             with self.subTest(value=value):
                 message = build_attr_value_message(1, value)
-                self.assertEqual(build_attr_value(message), value)
-                self.assertIs(type(build_attr_value(message)), type(value))
+                self.assertEqual(build_attr_value(message, "sessions.attrs"), value)
+                self.assertIs(
+                    type(build_attr_value(message, "sessions.attrs")), type(value)
+                )
 
     async def test_the_values_of_the_attributes_go_with_the_flows(self) -> None:
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
@@ -1163,11 +1166,11 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         timestamp = Timestamp()
         timestamp.FromDatetime(moment)
         attr_values = [
-            session_attrs_pb2.AttrValue(attr_id=1, bool_value=True),
-            session_attrs_pb2.AttrValue(attr_id=2, int_value=7),
-            session_attrs_pb2.AttrValue(attr_id=3, decimal_value="1.50"),
-            session_attrs_pb2.AttrValue(attr_id=4, datetime_value=timestamp),
-            session_attrs_pb2.AttrValue(attr_id=5, str_value="iPhone"),
+            attrs_pb2.AttrValue(attr_id=1, bool_value=True),
+            attrs_pb2.AttrValue(attr_id=2, int_value=7),
+            attrs_pb2.AttrValue(attr_id=3, decimal_value="1.50"),
+            attrs_pb2.AttrValue(attr_id=4, datetime_value=timestamp),
+            attrs_pb2.AttrValue(attr_id=5, str_value="iPhone"),
         ]
         expected = {1: True, 2: 7, 3: decimal.Decimal("1.50"), 4: moment, 5: "iPhone"}
         signed_up = (
@@ -1247,7 +1250,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await nickname.SignUp(
             nickname_pb2.SignUpRequest(nickname="alice", password="x")
         )
-        no_value = session_attrs_pb2.AttrValue(attr_id=1)
+        no_value = attrs_pb2.AttrValue(attr_id=1)
         for call, code, reason, metadata in (
             (
                 nickname.SignUp(
@@ -1556,17 +1559,17 @@ class ErrorPoliciesTestCase(unittest.TestCase):
 class AttrValuesTestCase(unittest.TestCase):
     def test_what_is_no_value_of_an_attribute_is_refused(self) -> None:
         for attr_values in (
-            [session_attrs_pb2.AttrValue(attr_id=1)],
-            [session_attrs_pb2.AttrValue(attr_id=1, decimal_value="1,50")],
-            [session_attrs_pb2.AttrValue(attr_id=1, decimal_value="NaN")],
+            [attrs_pb2.AttrValue(attr_id=1)],
+            [attrs_pb2.AttrValue(attr_id=1, decimal_value="1,50")],
+            [attrs_pb2.AttrValue(attr_id=1, decimal_value="NaN")],
             [
-                session_attrs_pb2.AttrValue(attr_id=1, int_value=1),
-                session_attrs_pb2.AttrValue(attr_id=1, int_value=2),
+                attrs_pb2.AttrValue(attr_id=1, int_value=1),
+                attrs_pb2.AttrValue(attr_id=1, int_value=2),
             ],
         ):
             with self.subTest(attr_values=attr_values):
                 with self.assertRaises(AuthItemInvalidError) as error:
-                    build_attr_values(attr_values)
+                    build_attr_values(attr_values, "sessions.attrs")
                 self.assertEqual(error.exception.key, 1)
 
 

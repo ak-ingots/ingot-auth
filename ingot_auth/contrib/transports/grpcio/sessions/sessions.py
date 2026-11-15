@@ -13,7 +13,7 @@ from ingot_auth.sessions import (
 from ingot_auth.storages import AuthSessionCloseReason
 
 from ..base import BaseAuthGrpcServicer, Context
-from .attrs import build_attr_value_message
+from ..attrs import build_attr_value_message
 from ingot_auth.sessions.v1 import sessions_pb2, sessions_pb2_grpc
 
 CLOSE_REASONS: t.Final[

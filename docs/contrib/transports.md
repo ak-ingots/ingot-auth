@@ -79,7 +79,7 @@ A method of the sign-up and the sign-in runs for the anonymous caller,
 given the flags of the flows and of the methods open by their toggles,
 `AUTH_SIGN_UP_ENABLED` closing the sign-up of every method, with
 the values of the attributes of the session the client gives, `AttrValue`
-of `ingot_auth.sessions.attrs.v1`. Its start gives the result of the flow:
+of `ingot_auth.attrs.v1`. Its start gives the result of the flow:
 its end, the profile signed up or the session signed in, or what it asks
 for, `Challenge` of `ingot_auth.methods.v1`, the attempt to answer to and
 the kind of the answer, `code` of its `length` for a code sent by mail. The
