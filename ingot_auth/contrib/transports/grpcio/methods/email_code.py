@@ -9,7 +9,8 @@ from ingot_auth.sign_in import AuthStartSignInParameters
 from ingot_auth.sign_up import AuthStartSignUpParameters
 
 from ..base import Context
-from ..sessions.attrs import build_attr_values
+from ..attrs import build_attr_values
+from ..sessions.attrs import REGISTRY as SESSION_ATTRS
 from ..sign_in import build_sign_in_result
 from ..sign_up import build_sign_up_result
 from .base import BaseAuthGrpcMethodServicer
@@ -34,7 +35,7 @@ class AuthGrpcEmailCodeServicer(
         parameters = AuthStartSignUpParameters(
             method=self.METHOD,
             parameters=AuthEmailCodeStart(email=request.email),
-            attr_values=build_attr_values(request.attr_values),
+            attr_values=build_attr_values(request.attr_values, SESSION_ATTRS),
             transport_attr_values=self.get_transport_attr_values(context),
         )
         factory = self.project.auth.sign_up.op_start
@@ -48,7 +49,7 @@ class AuthGrpcEmailCodeServicer(
         parameters = AuthStartSignInParameters(
             method=self.METHOD,
             parameters=AuthEmailCodeStart(email=request.email),
-            attr_values=build_attr_values(request.attr_values),
+            attr_values=build_attr_values(request.attr_values, SESSION_ATTRS),
             transport_attr_values=self.get_transport_attr_values(context),
         )
         factory = self.project.auth.sign_in.op_start

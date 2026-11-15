@@ -96,7 +96,7 @@ the transport by their names, each bound to its reader (`ip`, the peer), what a 
 `Challenge` by the kind of its answer, in `ingot_auth/methods/v1/`, the
 results and the answers of the flows in `ingot_auth/sign_up/v1/` and
 `ingot_auth/sign_in/v1/`, the values of the
-attributes of a session, `AttrValue`, in `ingot_auth/sessions/attrs/v1/`. A set of
+attributes, of a session or a profile, `AttrValue`, in `ingot_auth/attrs/v1/`. A set of
 operations has its flags in a `permissions.py` of its own, bound by the slot
 `permissions` (`PermissionsSlot`) of its unit, an `OperationsOwner`, their
 domain the full name of the unit; an operation builds its permissions by its
