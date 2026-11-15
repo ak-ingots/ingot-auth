@@ -33,7 +33,10 @@ class AuthSignOutOperation(BaseOperation[None, None]):
             return
         try:
             await self.project.auth.sessions.close(
-                caller.uid, caller.session_id, AuthSessionCloseReason.SIGNED_OUT
+                caller.uid,
+                caller.session_id,
+                AuthSessionCloseReason.SIGNED_OUT,
+                closed_by=caller.uid,
             )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile: nothing to tell

@@ -69,7 +69,10 @@ class SignOutTestCase(unittest.IsolatedAsyncioTestCase):
             type(storage), "get_open", mock.AsyncMock(return_value=stale)
         ):
             await self.sessions.close(
-                "a1", opened.session_id, AuthSessionCloseReason.SIGNED_OUT
+                "a1",
+                opened.session_id,
+                AuthSessionCloseReason.SIGNED_OUT,
+                closed_by="a1",
             )
         with self.assertRaises(AuthSessionNotFoundError):
             await self.sessions.authenticate(opened.token)
@@ -81,6 +84,9 @@ class SignOutTestCase(unittest.IsolatedAsyncioTestCase):
         opened = await self.sessions.open("a1", "nickname", {})
         with self.assertRaises(AuthSessionNotFoundError):
             await self.sessions.close(
-                "b2", opened.session_id, AuthSessionCloseReason.SIGNED_OUT
+                "b2",
+                opened.session_id,
+                AuthSessionCloseReason.SIGNED_OUT,
+                closed_by="b2",
             )
         self.assertIsNone(self.get_close_reason(opened.session_id))

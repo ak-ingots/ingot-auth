@@ -67,6 +67,7 @@ from ingot_auth.contrib.transports.grpcio.base import (
     get_bearer_token,
     get_peer_ip,
 )
+from ingot_auth.contrib.transports.grpcio.sessions.sessions import CLOSE_REASONS
 from ingot_auth.contrib.transports.grpcio.sessions.attrs import (
     build_attr_value,
     build_attr_value_message,
@@ -668,6 +669,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 groups_pb2.Group(
                     name="auth.sessions.grp_admins",
                     permissions={
+                        "auth.sessions": 4,
                         "auth.sessions.attrs": 15,
                         "auth.sessions.presets": 63,
                     },
@@ -1077,6 +1079,60 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             sessions_pb2.RevokeOtherSessionsRequest(), metadata=bearer
         )
         self.assertEqual(others.count, 0)
+
+    async def test_an_operator_reads_the_record_of_a_profile(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        uids, tokens = [], []
+        for name in ("Alice", "Eve"):
+            uids.append(
+                (
+                    await nickname.SignUp(
+                        nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                    )
+                ).result.signed_up.uid
+            )
+            tokens.append(
+                (
+                    await nickname.SignIn(
+                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                    )
+                ).result.signed_in.token
+            )
+        alice, eve = uids
+        await client.auth_sign_out.SignOut(
+            sign_out_pb2.SignOutRequest(),
+            metadata=[("authorization", f"Bearer {tokens[0]}")],
+        )
+        await self.project.auth.storage.access.members.add(
+            AuthMembership(group="auth.sessions.grp_admins", uid=eve)
+        )
+        record = (
+            await client.auth_sessions.ListSessions(
+                sessions_pb2.ListSessionsRequest(uid=alice, closed=True),
+                metadata=[("authorization", f"Bearer {tokens[1]}")],
+            )
+        ).sessions
+        self.assertEqual(
+            [(s.uid, s.method, s.close_reason, s.closed_by) for s in record],
+            [(alice, "nickname", sessions_pb2.CLOSE_REASON_SIGNED_OUT, alice)],
+        )
+        self.assertTrue(record[0].HasField("closed_at"))
+        # an open one has no time, reason nor closer
+        open_only = (
+            await client.auth_sessions.ListSessions(
+                sessions_pb2.ListSessionsRequest(uid=eve),
+                metadata=[("authorization", f"Bearer {tokens[1]}")],
+            )
+        ).sessions
+        self.assertEqual(
+            [(s.close_reason, s.closed_by) for s in open_only],
+            [(sessions_pb2.CLOSE_REASON_UNSPECIFIED, "")],
+        )
+        self.assertFalse(open_only[0].HasField("closed_at"))
+
+    async def test_every_close_reason_has_its_message(self) -> None:
+        self.assertEqual(set(CLOSE_REASONS), set(AuthSessionCloseReason))
 
     async def test_every_value_of_an_attr_has_its_message(self) -> None:
         for value in (

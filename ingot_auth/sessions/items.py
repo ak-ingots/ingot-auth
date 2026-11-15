@@ -1,6 +1,12 @@
 """What opening a session gives, what a user sees of its own."""
 
-__all__ = ("AuthOwnSession", "AuthRevokeOwnSessionParameters", "AuthSessionToken")
+__all__ = (
+    "AuthListSessionsParameters",
+    "AuthOwnSession",
+    "AuthRevokeOwnSessionParameters",
+    "AuthSessionInfo",
+    "AuthSessionToken",
+)
 
 import datetime
 import typing as t
@@ -9,7 +15,7 @@ from dataclasses import dataclass, field
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ingot_auth.storages import AuthAttrValue
+    from ingot_auth.storages import AuthAttrValue, AuthSessionCloseReason
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -44,3 +50,30 @@ class AuthRevokeOwnSessionParameters:
     """The public id of a session of the caller's own."""
 
     session_id: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthListSessionsParameters:
+    """The uid of a profile; its closed sessions too, the record, if told."""
+
+    uid: str
+    closed: bool = False
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSessionInfo:
+    """
+    A session of a profile as an operator sees it, open or closed, the record
+    of a sign-in: never its token nor its hash. A closed one tells when, why
+    and by whom, the uid of the caller that closed it, none when it expired.
+    """
+
+    id: str
+    uid: str
+    method: str
+    attr_values: "Mapping[int, AuthAttrValue]"
+    opened_at: datetime.datetime
+    seen_at: datetime.datetime
+    closed_at: datetime.datetime | None
+    close_reason: "AuthSessionCloseReason | None"
+    closed_by: str | None

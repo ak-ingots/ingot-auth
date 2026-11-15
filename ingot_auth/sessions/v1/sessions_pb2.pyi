@@ -30,6 +30,7 @@ class _PermissionEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Permission
     PERMISSION_UNSPECIFIED: _Permission.ValueType  # 0
     PERMISSION_CAN_LIST_OWN: _Permission.ValueType  # 1
     PERMISSION_CAN_REVOKE_OWN: _Permission.ValueType  # 2
+    PERMISSION_CAN_LIST: _Permission.ValueType  # 4
 
 class Permission(_Permission, metaclass=_PermissionEnumTypeWrapper):
     """The bits of the domain `auth.sessions` its operations require: an aid for
@@ -39,7 +40,32 @@ class Permission(_Permission, metaclass=_PermissionEnumTypeWrapper):
 PERMISSION_UNSPECIFIED: Permission.ValueType  # 0
 PERMISSION_CAN_LIST_OWN: Permission.ValueType  # 1
 PERMISSION_CAN_REVOKE_OWN: Permission.ValueType  # 2
+PERMISSION_CAN_LIST: Permission.ValueType  # 4
 Global___Permission: _TypeAlias = Permission  # noqa: Y015
+
+class _CloseReason:
+    ValueType = _typing.NewType("ValueType", _builtins.int)
+    V: _TypeAlias = ValueType  # noqa: Y015
+
+class _CloseReasonEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_CloseReason.ValueType], _builtins.type):
+    DESCRIPTOR: _descriptor.EnumDescriptor
+    CLOSE_REASON_UNSPECIFIED: _CloseReason.ValueType  # 0
+    CLOSE_REASON_SIGNED_OUT: _CloseReason.ValueType  # 1
+    CLOSE_REASON_REVOKED: _CloseReason.ValueType  # 2
+    CLOSE_REASON_EVICTED: _CloseReason.ValueType  # 3
+    CLOSE_REASON_EXPIRED_IDLE: _CloseReason.ValueType  # 4
+    CLOSE_REASON_EXPIRED_ABSOLUTE: _CloseReason.ValueType  # 5
+
+class CloseReason(_CloseReason, metaclass=_CloseReasonEnumTypeWrapper):
+    """Why a session closed."""
+
+CLOSE_REASON_UNSPECIFIED: CloseReason.ValueType  # 0
+CLOSE_REASON_SIGNED_OUT: CloseReason.ValueType  # 1
+CLOSE_REASON_REVOKED: CloseReason.ValueType  # 2
+CLOSE_REASON_EVICTED: CloseReason.ValueType  # 3
+CLOSE_REASON_EXPIRED_IDLE: CloseReason.ValueType  # 4
+CLOSE_REASON_EXPIRED_ABSOLUTE: CloseReason.ValueType  # 5
+Global___CloseReason: _TypeAlias = CloseReason  # noqa: Y015
 
 @_typing.final
 class Session(_message.Message):
@@ -185,3 +211,102 @@ class RevokeOtherSessionsResponse(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___RevokeOtherSessionsResponse: _TypeAlias = RevokeOtherSessionsResponse  # noqa: Y015
+
+@_typing.final
+class SessionRecord(_message.Message):
+    """A session of a profile as an operator sees it, open or closed, the record
+    of a sign-in: never its token nor its hash.
+    """
+
+    DESCRIPTOR: _descriptor.Descriptor
+
+    ID_FIELD_NUMBER: _builtins.int
+    UID_FIELD_NUMBER: _builtins.int
+    METHOD_FIELD_NUMBER: _builtins.int
+    ATTR_VALUES_FIELD_NUMBER: _builtins.int
+    OPENED_AT_FIELD_NUMBER: _builtins.int
+    SEEN_AT_FIELD_NUMBER: _builtins.int
+    CLOSED_AT_FIELD_NUMBER: _builtins.int
+    CLOSE_REASON_FIELD_NUMBER: _builtins.int
+    CLOSED_BY_FIELD_NUMBER: _builtins.int
+    id: _builtins.str
+    uid: _builtins.str
+    method: _builtins.str
+    close_reason: Global___CloseReason.ValueType
+    closed_by: _builtins.str
+    """the uid of the caller that closed it, empty when it expired"""
+    @_builtins.property
+    def attr_values(self) -> _containers.RepeatedCompositeFieldContainer[_attrs_pb2.AttrValue]: ...
+    @_builtins.property
+    def opened_at(self) -> _timestamp_pb2.Timestamp: ...
+    @_builtins.property
+    def seen_at(self) -> _timestamp_pb2.Timestamp: ...
+    @_builtins.property
+    def closed_at(self) -> _timestamp_pb2.Timestamp:
+        """unset while open"""
+
+    def __init__(
+        self,
+        *,
+        id: _builtins.str = ...,
+        uid: _builtins.str = ...,
+        method: _builtins.str = ...,
+        attr_values: _abc.Iterable[_attrs_pb2.AttrValue] | None = ...,
+        opened_at: _timestamp_pb2.Timestamp | None = ...,
+        seen_at: _timestamp_pb2.Timestamp | None = ...,
+        closed_at: _timestamp_pb2.Timestamp | None = ...,
+        close_reason: Global___CloseReason.ValueType = ...,
+        closed_by: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["closed_at", b"closed_at", "opened_at", b"opened_at", "seen_at", b"seen_at"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["attr_values", b"attr_values", "close_reason", b"close_reason", "closed_at", b"closed_at", "closed_by", b"closed_by", "id", b"id", "method", b"method", "opened_at", b"opened_at", "seen_at", b"seen_at", "uid", b"uid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___SessionRecord: _TypeAlias = SessionRecord  # noqa: Y015
+
+@_typing.final
+class ListSessionsRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    UID_FIELD_NUMBER: _builtins.int
+    CLOSED_FIELD_NUMBER: _builtins.int
+    uid: _builtins.str
+    closed: _builtins.bool
+    """the closed ones too, the record of the sign-ins"""
+    def __init__(
+        self,
+        *,
+        uid: _builtins.str = ...,
+        closed: _builtins.bool = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["closed", b"closed", "uid", b"uid"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___ListSessionsRequest: _TypeAlias = ListSessionsRequest  # noqa: Y015
+
+@_typing.final
+class ListSessionsResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    SESSIONS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def sessions(self) -> _containers.RepeatedCompositeFieldContainer[Global___SessionRecord]:
+        """by the time they opened"""
+
+    def __init__(
+        self,
+        *,
+        sessions: _abc.Iterable[Global___SessionRecord] | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["sessions", b"sessions"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___ListSessionsResponse: _TypeAlias = ListSessionsResponse  # noqa: Y015

@@ -2,6 +2,7 @@
 
 __all__ = ("AuthSessionsStorageContract",)
 
+import dataclasses
 import datetime
 import decimal
 
@@ -72,6 +73,28 @@ class AuthSessionsStorageContract(BaseAuthContract):
         await sessions.close("s4", AuthSessionCloseReason.SIGNED_OUT, later)
         self.assertEqual(await sessions.get_open("a1"), (first, second))
         self.assertEqual(await sessions.get_open("c3"), ())
+
+    async def test_the_sessions_of_a_profile_come_closed_too(self) -> None:
+        sessions = self.project.auth.storage.sessions
+        later = NOW + datetime.timedelta(hours=1)
+        first = create_session("s3", "h3")
+        second = create_session("s1", "h1", opened_at=later)
+        for session in (second, create_session("s2", "h2", uid="b2"), first):
+            await sessions.open(session)
+        await sessions.close("s3", AuthSessionCloseReason.REVOKED, later, "a1")
+        await sessions.close("s1", AuthSessionCloseReason.EXPIRED_IDLE, later)
+        closed = dataclasses.replace(
+            first,
+            closed_at=later,
+            close_reason=AuthSessionCloseReason.REVOKED,
+            closed_by="a1",
+        )
+        expired = dataclasses.replace(
+            second, closed_at=later, close_reason=AuthSessionCloseReason.EXPIRED_IDLE
+        )
+        self.assertEqual(await sessions.get_all("a1"), (closed, expired))
+        self.assertEqual(await sessions.get_open("a1"), ())
+        self.assertEqual(await sessions.get_all("c3"), ())
 
     async def test_an_open_session_is_found_as_seen(self) -> None:
         sessions = self.project.auth.storage.sessions

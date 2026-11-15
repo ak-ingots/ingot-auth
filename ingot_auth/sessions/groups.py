@@ -67,17 +67,20 @@ class AuthSessionsManagersGroup(AuthGroup):
 class AuthSessionsAdminsGroup(AuthGroup):
     """
     Who keeps the registries of the sessions and binds the attributes to the
-    presets: all a manager does, and the bindings.
+    presets: all a manager does, and the bindings; who reads the record of
+    the sign-ins of a profile too.
     """
 
     parent: "AuthSessionsUnit"
 
     @t.override
     def _get_permissions(self) -> Permissions:
+        sessions = self.parent.permissions
         attrs = self.parent.attrs.permissions
         presets = self.parent.presets.permissions
         return (
             super()._get_permissions()
+            | sessions(sessions.flags.CAN_LIST)
             | attrs(
                 attrs.flags.CAN_CREATE,
                 attrs.flags.CAN_READ,

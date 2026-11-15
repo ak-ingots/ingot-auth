@@ -65,6 +65,14 @@ class AuthSessionsStorage(Unit):
         return await self._get_open(uid)
 
     @t.final
+    async def get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        """
+        The sessions of a profile, open and closed, by the time they opened: the
+        record of its sign-ins.
+        """
+        return await self._get_all(uid)
+
+    @t.final
     async def touch(self, session_id: str, seen_at: datetime.datetime) -> None:
         """
         Writes the time an open session was seen at.
@@ -79,13 +87,15 @@ class AuthSessionsStorage(Unit):
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
+        closed_by: str | None = None,
     ) -> None:
         """
-        Closes an open session for a reason, at a time; it stays kept.
+        Closes an open session for a reason, at a time, by the uid of a caller,
+        none when it expired; it stays kept.
 
         :raises AuthSessionNotFoundError: no session of the id is open.
         """
-        await self._close(session_id, reason, closed_at)
+        await self._close(session_id, reason, closed_at, closed_by)
 
     @abc.abstractmethod
     async def _open(self, session: AuthSessionRecord) -> None:
@@ -100,6 +110,10 @@ class AuthSessionsStorage(Unit):
         raise NotImplementedError(f"{type(self).__qualname__}._get_open")
 
     @abc.abstractmethod
+    async def _get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        raise NotImplementedError(f"{type(self).__qualname__}._get_all")
+
+    @abc.abstractmethod
     async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._touch")
 
@@ -109,5 +123,6 @@ class AuthSessionsStorage(Unit):
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
+        closed_by: str | None,
     ) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._close")

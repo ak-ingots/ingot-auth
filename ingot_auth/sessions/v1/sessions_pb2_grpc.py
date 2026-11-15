@@ -27,7 +27,8 @@ if _version_not_supported:
 
 class SessionsStub:
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     def __init__(self, channel):
@@ -51,11 +52,17 @@ class SessionsStub:
                 request_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsResponse.FromString,
                 _registered_method=True)
+        self.ListSessions = channel.unary_unary(
+                '/ingot_auth.sessions.v1.Sessions/ListSessions',
+                request_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsRequest.SerializeToString,
+                response_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsResponse.FromString,
+                _registered_method=True)
 
 
 class SessionsServicer:
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     def ListOwnSessions(self, request, context):
@@ -79,6 +86,13 @@ class SessionsServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListSessions(self, request, context):
+        """Requires PERMISSION_CAN_LIST.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SessionsServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -97,6 +111,11 @@ def add_SessionsServicer_to_server(servicer, server):
                     request_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsResponse.SerializeToString,
             ),
+            'ListSessions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListSessions,
+                    request_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsRequest.FromString,
+                    response_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'ingot_auth.sessions.v1.Sessions', rpc_method_handlers)
@@ -107,7 +126,8 @@ def add_SessionsServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class Sessions:
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     @staticmethod
@@ -181,6 +201,33 @@ class Sessions:
             '/ingot_auth.sessions.v1.Sessions/RevokeOtherSessions',
             ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeOtherSessionsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListSessions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ingot_auth.sessions.v1.Sessions/ListSessions',
+            ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsRequest.SerializeToString,
+            ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.ListSessionsResponse.FromString,
             options,
             channel_credentials,
             insecure,
