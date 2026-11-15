@@ -56,6 +56,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
                 "seen_at": session.seen_at,
                 "closed_at": None,
                 "close_reason": None,
+                "closed_by": None,
             },
             session=self._mongodb_get_session(),
         )
@@ -69,7 +70,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         )
         if document is None:
             raise AuthSessionNotFoundError.for_token()
-        return _build_open_session(document)
+        return _build_session(document)
 
     @t.override
     async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
@@ -77,7 +78,15 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         documents = collection.find(
             {"uid": uid, "closed_at": None}, session=self._mongodb_get_session()
         ).sort([("opened_at", 1), ("_id", 1)])
-        return tuple([_build_open_session(document) async for document in documents])
+        return tuple([_build_session(document) async for document in documents])
+
+    @t.override
+    async def _get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
+        collection = await self._mongodb_get_collection()
+        documents = collection.find(
+            {"uid": uid}, session=self._mongodb_get_session()
+        ).sort([("opened_at", 1), ("_id", 1)])
+        return tuple([_build_session(document) async for document in documents])
 
     @t.override
     async def _touch(self, session_id: str, seen_at: datetime.datetime) -> None:
@@ -96,11 +105,17 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         session_id: str,
         reason: AuthSessionCloseReason,
         closed_at: datetime.datetime,
+        closed_by: str | None,
     ) -> None:
         collection = await self._mongodb_get_collection()
+        changes = {
+            "closed_at": closed_at,
+            "close_reason": reason.value,
+            "closed_by": closed_by,
+        }
         result = await collection.update_one(
             {"_id": session_id, "closed_at": None},
-            {"$set": {"closed_at": closed_at, "close_reason": reason.value}},
+            {"$set": changes},
             session=self._mongodb_get_session(),
         )
         if not result.matched_count:
@@ -114,7 +129,8 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         await collection.create_index([("uid", 1), ("closed_at", 1)])
 
 
-def _build_open_session(document: "Document") -> AuthSessionRecord:
+def _build_session(document: "Document") -> AuthSessionRecord:
+    close_reason = document.get("close_reason")
     return AuthSessionRecord(
         id=document["_id"],
         uid=document["uid"],
@@ -124,4 +140,8 @@ def _build_open_session(document: "Document") -> AuthSessionRecord:
         opened_at=document["opened_at"],
         # a session opened by 0.1.0 has none: seen at its sign-in
         seen_at=document.get("seen_at") or document["opened_at"],
+        closed_at=document.get("closed_at"),
+        close_reason=close_reason and AuthSessionCloseReason(close_reason),
+        # a session closed by 0.2.0 has none: by whom is not known
+        closed_by=document.get("closed_by"),
     )

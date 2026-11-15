@@ -9,6 +9,9 @@ these registries. Their storage is in
 __all__ = (
     "AuthFixedLifetime",
     "AuthListOwnSessionsOperation",
+    "AuthListSessionsCommand",
+    "AuthListSessionsOperation",
+    "AuthListSessionsParameters",
     "AuthNoSessionAttrsDeriver",
     "AuthOwnSessionNotFoundError",
     "AuthOwnSession",
@@ -16,6 +19,7 @@ __all__ = (
     "AuthRevokeOwnSessionOperation",
     "AuthRevokeOwnSessionParameters",
     "AuthSessionExpiredError",
+    "AuthSessionInfo",
     "AuthSessionsAdminsGroup",
     "AuthSessionsConsumersGroup",
     "AuthSessionsManagersGroup",
@@ -48,6 +52,7 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
+from .commands import AuthListSessionsCommand
 from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
 from .errors import AuthOwnSessionNotFoundError, AuthSessionExpiredError
 from .groups import (
@@ -55,7 +60,13 @@ from .groups import (
     AuthSessionsConsumersGroup,
     AuthSessionsManagersGroup,
 )
-from .items import AuthOwnSession, AuthRevokeOwnSessionParameters, AuthSessionToken
+from .items import (
+    AuthListSessionsParameters,
+    AuthOwnSession,
+    AuthRevokeOwnSessionParameters,
+    AuthSessionInfo,
+    AuthSessionToken,
+)
 from .lifetimes import (
     AuthFixedLifetime,
     AuthSlidingFixedLifetime,
@@ -64,6 +75,7 @@ from .lifetimes import (
 )
 from .operations import (
     AuthListOwnSessionsOperation,
+    AuthListSessionsOperation,
     AuthRevokeOtherSessionsOperation,
     AuthRevokeOwnSessionOperation,
 )
@@ -90,7 +102,9 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     ``auth.sessions.grp_consumers``, who reads them, ``auth.sessions.grp_managers``,
     who keeps them, binding none, ``auth.sessions.grp_admins``, who binds too.
     A signed-in user lists its own open sessions and revokes them, one by one
-    or all but the current one, by the flags ``auth.grp_signed_in`` grants.
+    or all but the current one, by the flags ``auth.grp_signed_in`` grants;
+    an operator reads those of a profile, the closed ones too, the record of
+    its sign-ins, ``auth sessions list <uid> --closed``.
     """
 
     cli_name = "sessions"
@@ -107,6 +121,9 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     op_list_own = Factory(AuthListOwnSessionsOperation)
     op_revoke_own = Factory(AuthRevokeOwnSessionOperation)
     op_revoke_others = Factory(AuthRevokeOtherSessionsOperation)
+    op_list = Factory(AuthListSessionsOperation)
+
+    cmd_list = Slot(AuthListSessionsCommand)
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
@@ -192,12 +209,18 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
     @t.final
     async def close(
-        self, uid: str, session_id: str, reason: AuthSessionCloseReason
+        self,
+        uid: str,
+        session_id: str,
+        reason: AuthSessionCloseReason,
+        *,
+        closed_by: str | None,
     ) -> None:
         """
-        Closes an open session of a profile for a reason, kept, then forgets
-        it in the cache, once the storage keeps it closed: the next request of
-        its token misses the cache and finds it closed.
+        Closes an open session of a profile for a reason, by the uid of a
+        caller, kept, then forgets it in the cache, once the storage keeps it
+        closed: the next request of its token misses the cache and finds it
+        closed.
 
         :raises AuthSessionNotFoundError: no open session of the profile has
             the id.
@@ -209,7 +232,7 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
             raise AuthSessionNotFoundError.for_id(session_id)
         try:
             await self.project.auth.storage.sessions.close(
-                session.id, reason, self._get_now()
+                session.id, reason, self._get_now(), closed_by
             )
         except AuthSessionNotFoundError:
             pass  # closed meanwhile, by another request

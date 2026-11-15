@@ -37,6 +37,7 @@ from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.profiles.attrs import AuthAttrsPermissions
 from ingot_auth.profiles.tags import AuthTagsPermissions
 from ingot_auth.sessions.attrs import AuthSessionAttrsPermissions
+from ingot_auth.sessions import AuthSessionsPermissions
 from ingot_auth.sessions.presets import AuthSessionPresetsPermissions
 from ingot_auth.sign_in import AuthSignInPermissions
 from ingot_auth.sign_up import AuthSignUpPermissions
@@ -252,7 +253,10 @@ class GroupsTestCase(unittest.TestCase):
             ),
         )
         self.assertEqual(sessions.grp_managers.get_permissions(), everything - binding)
-        self.assertEqual(sessions.grp_admins.get_permissions(), everything)
+        self.assertEqual(
+            sessions.grp_admins.get_permissions(),
+            everything | masks(AuthSessionsPermissions.CAN_LIST),
+        )
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
         # refused by mypy too
@@ -498,7 +502,7 @@ class CommandsTestCase(unittest.TestCase):
                 "\tauth.sessions.presets=2\n"
                 "auth.sessions.grp_managers\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=15\n"
-                "auth.sessions.grp_admins\tauth.sessions.attrs=15"
+                "auth.sessions.grp_admins\tauth.sessions=4\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=63\n"
                 "shop.grp_buyers\tshop=1\n"
                 "articles.grp_editors\tarticles=2\n"

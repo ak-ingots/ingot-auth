@@ -6,7 +6,8 @@ import "google/protobuf/timestamp.proto";
 import "ingot_auth/sessions/attrs/v1/attrs.proto";
 
 // The sessions of the caller of the token of a call, its own: those open,
-// the current one marked, revoked one by one or all but the current one.
+// the current one marked, revoked one by one or all but the current one;
+// those of a profile, the record of its sign-ins, for an operator.
 service Sessions {
   // Requires PERMISSION_CAN_LIST_OWN.
   rpc ListOwnSessions(ListOwnSessionsRequest) returns (ListOwnSessionsResponse);
@@ -15,6 +16,8 @@ service Sessions {
   // Requires PERMISSION_CAN_REVOKE_OWN.
   rpc RevokeOtherSessions(RevokeOtherSessionsRequest)
       returns (RevokeOtherSessionsResponse);
+  // Requires PERMISSION_CAN_LIST.
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
 }
 
 // The bits of the domain `auth.sessions` its operations require: an aid for
@@ -23,6 +26,17 @@ enum Permission {
   PERMISSION_UNSPECIFIED = 0;
   PERMISSION_CAN_LIST_OWN = 1;
   PERMISSION_CAN_REVOKE_OWN = 2;
+  PERMISSION_CAN_LIST = 4;
+}
+
+// Why a session closed.
+enum CloseReason {
+  CLOSE_REASON_UNSPECIFIED = 0;
+  CLOSE_REASON_SIGNED_OUT = 1;
+  CLOSE_REASON_REVOKED = 2;
+  CLOSE_REASON_EVICTED = 3;
+  CLOSE_REASON_EXPIRED_IDLE = 4;
+  CLOSE_REASON_EXPIRED_ABSOLUTE = 5;
 }
 
 // An open session as its user sees it: its public id, never its token.
@@ -54,4 +68,31 @@ message RevokeOtherSessionsRequest {}
 message RevokeOtherSessionsResponse {
   // how many it closed
   uint32 count = 1;
+}
+
+// A session of a profile as an operator sees it, open or closed, the record
+// of a sign-in: never its token nor its hash.
+message SessionRecord {
+  string id = 1;
+  string uid = 2;
+  string method = 3;
+  repeated ingot_auth.sessions.attrs.v1.AttrValue attr_values = 4;
+  google.protobuf.Timestamp opened_at = 5;
+  google.protobuf.Timestamp seen_at = 6;
+  // unset while open
+  google.protobuf.Timestamp closed_at = 7;
+  CloseReason close_reason = 8;
+  // the uid of the caller that closed it, empty when it expired
+  string closed_by = 9;
+}
+
+message ListSessionsRequest {
+  string uid = 1;
+  // the closed ones too, the record of the sign-ins
+  bool closed = 2;
+}
+
+message ListSessionsResponse {
+  // by the time they opened
+  repeated SessionRecord sessions = 1;
 }

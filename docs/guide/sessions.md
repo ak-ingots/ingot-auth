@@ -114,3 +114,20 @@ caller may: one of no session, the anonymous one of a token closed,
 expired or unknown, signs out of nothing, so that a client retries safely
 and an attacker learns nothing. `AuthGrpcFlowsBinding` serves it with the
 answers of the flows, `AuthGrpcSignOutBinding` apart.
+
+## The record of the sign-ins
+
+A session closed stays kept, with the time, the reason and who closed it,
+`closed_by`, the uid of the caller, its own user signing out or revoking,
+none when it expired: the record of a sign-in. An operator reads the
+sessions of a profile, `auth.sessions.op_list`, those open, or all of them
+with the closed ones, by the time they opened, never a token nor its hash:
+
+```console
+$ python -m app auth sessions list 0f6c… --closed
+```
+
+Over gRPC, `ListSessions` of the service `Sessions`, which
+`AuthGrpcAdminBinding` serves too. `auth.sessions.grp_admins` grants the
+flag, `CAN_LIST` of `auth.sessions`; a user reads its own open sessions
+alone.

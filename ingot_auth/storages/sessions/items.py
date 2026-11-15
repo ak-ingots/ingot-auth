@@ -43,7 +43,8 @@ class AuthSessionRecord:
     server never keeps. ``attr_values`` are the values of the attributes of
     the session, by their ids. ``seen_at`` is the time it was seen at last,
     that of its sign-in at first, written as the strategy of the lifetime
-    says. A closed one has the time and the reason it closed at.
+    says. A closed one has the time and the reason it closed at, and who
+    closed it, ``closed_by``, the uid of the caller, none when it expired.
     """
 
     id: str
@@ -55,6 +56,7 @@ class AuthSessionRecord:
     seen_at: datetime.datetime
     closed_at: datetime.datetime | None = None
     close_reason: AuthSessionCloseReason | None = None
+    closed_by: str | None = None
 
 
 class AuthSessionAttrSource(enum.StrEnum):

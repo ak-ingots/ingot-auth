@@ -28,7 +28,8 @@ GRPC_VERSION: str
 
 class SessionsStub:
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     @_typing.overload
@@ -41,11 +42,14 @@ class SessionsStub:
     """Requires PERMISSION_CAN_REVOKE_OWN."""
     RevokeOtherSessions: _grpc.UnaryUnaryMultiCallable[_sessions_pb2.RevokeOtherSessionsRequest, _sessions_pb2.RevokeOtherSessionsResponse]
     """Requires PERMISSION_CAN_REVOKE_OWN."""
+    ListSessions: _grpc.UnaryUnaryMultiCallable[_sessions_pb2.ListSessionsRequest, _sessions_pb2.ListSessionsResponse]
+    """Requires PERMISSION_CAN_LIST."""
 
 @_typing.type_check_only
 class SessionsAsyncStub(SessionsStub):
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     def __init__(self, channel: _aio.Channel) -> None: ...
@@ -55,10 +59,13 @@ class SessionsAsyncStub(SessionsStub):
     """Requires PERMISSION_CAN_REVOKE_OWN."""
     RevokeOtherSessions: _aio.UnaryUnaryMultiCallable[_sessions_pb2.RevokeOtherSessionsRequest, _sessions_pb2.RevokeOtherSessionsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_REVOKE_OWN."""
+    ListSessions: _aio.UnaryUnaryMultiCallable[_sessions_pb2.ListSessionsRequest, _sessions_pb2.ListSessionsResponse]  # type: ignore[assignment]
+    """Requires PERMISSION_CAN_LIST."""
 
 class SessionsServicer(metaclass=_abc_1.ABCMeta):
     """The sessions of the caller of the token of a call, its own: those open,
-    the current one marked, revoked one by one or all but the current one.
+    the current one marked, revoked one by one or all but the current one;
+    those of a profile, the record of its sign-ins, for an operator.
     """
 
     @_abc_1.abstractmethod
@@ -84,5 +91,13 @@ class SessionsServicer(metaclass=_abc_1.ABCMeta):
         context: _ServicerContext,
     ) -> _typing.Union[_sessions_pb2.RevokeOtherSessionsResponse, _abc.Awaitable[_sessions_pb2.RevokeOtherSessionsResponse]]:
         """Requires PERMISSION_CAN_REVOKE_OWN."""
+
+    @_abc_1.abstractmethod
+    def ListSessions(
+        self,
+        request: _sessions_pb2.ListSessionsRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_sessions_pb2.ListSessionsResponse, _abc.Awaitable[_sessions_pb2.ListSessionsResponse]]:
+        """Requires PERMISSION_CAN_LIST."""
 
 def add_SessionsServicer_to_server(servicer: SessionsServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...

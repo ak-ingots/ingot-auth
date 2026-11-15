@@ -110,6 +110,9 @@ class AuthGrpcFlowsBinding(
 
 
 class AuthGrpcAdminBinding(
-    AuthGrpcProfilesBinding, AuthGrpcSessionRegistriesBinding, AuthGrpcAccessBinding
+    AuthGrpcProfilesBinding,
+    AuthGrpcSessionRegistriesBinding,
+    AuthGrpcSessionsBinding,
+    AuthGrpcAccessBinding,
 ):
     pass
