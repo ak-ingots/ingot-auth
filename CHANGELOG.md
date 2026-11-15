@@ -2,6 +2,136 @@
 
 <!-- towncrier release notes start -->
 
+## [0.2.0] - 2026-11-15
+### Added
+- The dispatcher of the auth, the slot `dispatcher` of `AuthUnit`,
+  `BaseAuthDispatcher` of `ingot_auth.dispatchers`, running operations of the
+  auth in the background, so that a step replies at once:
+  `dispatch(factory, parameters, metadata)` returns before the operation
+  ends. In the process, `AuthMemoryDispatcher` of
+  `ingot_auth.contrib.dispatchers.memory`: an operation run by `run_safe()`
+  of the runner in a task of asyncio, a failure logged, `join()` waiting for
+  them. An application declares it in the slot, as the storage and the
+  cache.
+- The group of every caller that tells no one, `auth.grp_anonymous`,
+  `AuthAnonymousGroup`, in the slot `grp_anonymous` of `AuthUnit`, none
+  stored, as `auth.grp_signed_in` is of every signed-in user: it grants what
+  anyone may of the auth, as its units tell it, the flags of the sign-up and
+  of the sign-in, those of the methods their toggles open, and the reading
+  of the metadata, `auth.metadata.get_anonymous_permissions()`; an
+  application grants anyone more, or less, by its own class in the slot.
+  `AuthProject` takes `AuthOperationsUnit`, whose `AuthCallersProvider`
+  gives the anonymous caller of the project,
+  `operations.callers.get_anonymous()`, what the group grants. A signed-in
+  user is not a member: it has what its groups grant alone. A membership of
+  `auth.grp_anonymous` is refused as one of `auth.grp_signed_in`, the message of
+  both `the group '<name>' keeps no members`.
+- The groups of the work of the registries of the core: in the profiles,
+  `auth.profiles.grp_consumers`, reading the tags and the attributes, and
+  `auth.profiles.grp_managers`, keeping them; in the sessions,
+  `auth.sessions.grp_consumers`, reading the attributes and the presets,
+  `auth.sessions.grp_managers`, keeping them but the bindings, and
+  `auth.sessions.grp_admins`, binding too.
+- The mailer of the auth, the slot `mailer` of `AuthUnit`, `BaseAuthMailer`
+  of `ingot_auth.mailers`, delivering an `AuthMail`, its address, subject
+  and text, the address and the text out of its `repr`. In memory,
+  `AuthMemoryMailer` of `ingot_auth.contrib.mailers.memory`, delivering
+  nothing and keeping the mail, `get_sent()`, for the tests and the addon
+  run on its own. `AuthMailerContract` tells what a backend guarantees, the
+  mail delivered as sent, read back by `get_delivered()` of its test case.
+  An application declares the mailer in the slot, as the storage and the
+  cache.
+- The method of an email and a code over gRPC: the service `EmailCode` of
+  `ingot_auth.methods.email_code.v1`, `StartSignUp` and `StartSignIn`, in
+  `AuthGrpcEmailCodeBinding`, and the answers of the flows, whatever the
+  method, `SignUp.AnswerSignUp` and `SignIn.AnswerSignIn`, in
+  `AuthGrpcFlowsBinding`, the attempt and the code. The results of the flows
+  tell what a step asks for, `challenge`, a `Challenge` of
+  `ingot_auth.methods.v1` by the kind of its answer, `code` of its `length`.
+  An attempt gone, expired or over is `NOT_FOUND`, the reason
+  `ATTEMPT_NOT_FOUND`. The servicers of the flows, open to anyone, run
+  for the anonymous caller of the project whatever a call bears.
+- The sliding lifetimes of the sessions: `AuthSlidingLifetime`, a session
+  living while used and expiring idle `AUTH_SESSION_IDLE_TTL` seconds, an
+  hour by default, `EXPIRED_IDLE`, and `AuthSlidingFixedLifetime`, sliding
+  and fixed, expiring by whichever comes first, as NIST SP 800-63B-4 and
+  OWASP ask for an overall timeout always. A sliding lifetime writes the
+  time a session is seen at, `seen_at` of `AuthSessionRecord`, by
+  `storage.sessions.touch()`, at most once per
+  `AUTH_SESSION_TOUCH_INTERVAL` seconds, five minutes by default; a
+  strategy tells it by `is_touch_due()`. A cached session past its
+  lifetime is found again in the storage before it closes, as another
+  process may have seen it since. The sessions of MongoDB opened by 0.1.0
+  are seen at their sign-in.
+- The toggle of the sign-up, `AUTH_SIGN_UP_ENABLED`, on by default: off, no
+  one signs up by any method, and the metadata lists the sign-up of each
+  method closed. The flags the flows give the anonymous caller come from
+  their units, `auth.sign_up.get_anonymous_permissions()` and
+  `auth.sign_in.get_anonymous_permissions()`, as those of the methods do.
+- The values of the attributes of the session of the source `transport`,
+  the IP: the starts of the flows take them by the names of their
+  attributes, `transport_attr_values` of `AuthStartSignUpParameters` and
+  `AuthStartSignInParameters`, which the transport alone sets, and keep
+  those the registry has of the transport, under their ids, with the
+  values of the client, in the record of the sign-up and in the session;
+  a value of no attribute is dropped, one of an attribute of another source
+  or type too, with a warning. Over gRPC, the servicers of the methods
+  extend `BaseAuthGrpcMethodServicer`, whose hook
+  `_get_transport_attr_values()` binds each name to the function reading it
+  from the call: `ip` to the IP of the peer, which an application behind a
+  proxy binds to the header of its proxy.
+
+### Changed
+- Moved on to ingots 0.34, ingot-grpcio 0.13 and ingot-pymongo 0.14. The
+  flags of the permissions take no `domain=` now: each enum is bound by the
+  slot `permissions` of its unit, a `PermissionsSlot`, the unit an
+  `OperationsOwner`, its domain the full name of the unit, the same names as
+  before, `auth.profiles.tags`, `auth.methods.nickname`. The operations
+  declare no constant `PERMISSIONS`: each builds its permissions by its hook
+  `_get_permissions()`, through the permissions of its unit, its parent; a
+  method builds its flags so in its `_get_<flow>_permissions()`,
+  `self.permissions(self.permissions.flags.CAN_SIGN_UP)`. The storages, the
+  caches, the dispatcher and the mailer in memory take no project in their
+  `__init__`.
+- The groups are in the units of their domains, as the commands are: a group
+  is a slot `grp_*` of a unit extending `AuthGroupsOwner`, found by
+  `AuthGroupsUnit` from the project down the owners alone, `get_names()`
+  giving them. The name of a group is its full name, where it is,
+  `shop.grp_buyers`, as the domain of the permissions of a unit is its full
+  name; a class in no slot is a mixin of what it grants. A group in a slot of
+  `AuthGroupsUnit`, which holds none now, is refused with its class: an
+  application moves its groups to a unit of its own, and its memberships to
+  their new names. The groups of the core: `auth.grp_anonymous`, of every
+  caller that tells no one, and `auth.grp_signed_in`, of every signed-in
+  user, `signed_in` before, in the slots of `AuthUnit`; neither keeps
+  members, so none stored moves.
+- The method of an email and a code is whole: `AuthEmailCodeMethod`, no
+  more `BaseAuthEmailCodeMethod`, which an application declared with its
+  own `_send_code()`. It builds its mail, a plain text in English, by
+  `_build_code_mail()` and `_build_denial_mail()`, which a subclass
+  overrides to change it, and sends it by the mailer of the auth in the
+  background, `AuthSendCodeOperation` and `AuthSendDenialOperation` in its
+  slots `op_send_code` and `op_send_denial`, run by the dispatcher of the
+  auth, so that a start replies at once, for an email bound and one not
+  alike: an application taking the method declares the dispatcher and the
+  mailer of its auth. A sign-in by email checks at its start that the
+  profile may sign in by the method: one that may not is asked for a code
+  all the same, none sent, and its email gets the word that the way is
+  closed.
+- The servicers of the auth run their operations by `run_operation()` of
+  ingot-grpcio 0.12.1, which the extra `grpcio` now requires, on ingots
+  0.33.2, for the caller of the hook `_get_caller()`: those open to anyone,
+  the metadata, the starts of the methods, the answers of the flows, extend
+  `GrpcServicer` alone and run for the anonymous caller of the project
+  whatever a call bears; the others extend `BaseAuthGrpcServicer`, for the
+  caller of the token, the anonymous one with none. `_get_anonymous_caller()`
+  is gone: a subclass overrides `_get_caller()`, an application closes the
+  metadata by its group `auth.grp_anonymous`.
+- What a step asks for is described by the kind of its answer, not by the
+  method: `AuthCodeChallenge(length)` of `ingot_auth.methods`, a code sent by
+  mail, an SMS, an app, in place of `AuthEmailCodeChallenge` of the method of
+  the email.
+
 ## [0.1.0] - 2026-11-12
 ### Added
 - ingot-auth, an addon of Ingots for the sign-up, the sign-in and the
