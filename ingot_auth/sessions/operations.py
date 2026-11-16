@@ -3,6 +3,7 @@
 __all__ = (
     "AuthListOwnSessionsOperation",
     "AuthListSessionsOperation",
+    "AuthRevokeAllSessionsOperation",
     "AuthRevokeOtherSessionsOperation",
     "AuthRevokeOwnSessionOperation",
 )
@@ -22,6 +23,7 @@ from .errors import AuthOwnSessionNotFoundError
 from .items import (
     AuthListSessionsParameters,
     AuthOwnSession,
+    AuthRevokeAllSessionsParameters,
     AuthRevokeOwnSessionParameters,
     AuthSessionInfo,
 )
@@ -138,6 +140,43 @@ class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
                         caller.uid,
                         session.uid,
                         AuthSessionCloseReason.REVOKED,
+                    )
+                    await self.project.auth.activities.record(
+                        self.parent, session.uid, AuthActivityAction.REVOKE, metadata
+                    )
+            except AuthSessionNotFoundError:
+                continue  # closed meanwhile, by another request
+            closed += 1
+        return closed
+
+
+class AuthRevokeAllSessionsOperation(
+    BaseOperation[AuthRevokeAllSessionsParameters, int]
+):
+    """
+    Closes every open session of a profile, ``REVOKED``, a stolen account, and
+    tells how many; none of an unknown profile. An operator runs it.
+    """
+
+    project: "AuthProject"
+    parent: "AuthSessionsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_REVOKE)
+
+    @t.override
+    async def _run(
+        self, parameters: AuthRevokeAllSessionsParameters, metadata: OperationMetadata
+    ) -> int:
+        profile_uid = parameters.profile_uid
+        closed = 0
+        for session in await self.project.auth.storage.sessions.get_open(profile_uid):
+            try:
+                async with self.project.auth.storage.transaction():
+                    await self.parent.close(
+                        profile_uid, session.uid, AuthSessionCloseReason.REVOKED
                     )
                     await self.project.auth.activities.record(
                         self.parent, session.uid, AuthActivityAction.REVOKE, metadata

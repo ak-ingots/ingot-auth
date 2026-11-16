@@ -710,7 +710,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 groups_pb2.Group(
                     name="auth.sessions.grp_admins",
                     permissions={
-                        "auth.sessions": 4,
+                        "auth.sessions": 12,
                         "auth.sessions.attrs": 15,
                         "auth.sessions.presets": 63,
                     },
@@ -1181,6 +1181,41 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             [sessions_pb2.CLOSE_REASON_UNSPECIFIED],
         )
         self.assertFalse(open_only[0].HasField("closed_at"))
+
+    async def test_an_operator_revokes_every_session_of_a_profile(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        alice, eve = [
+            (
+                await nickname.SignUp(
+                    nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                )
+            ).result.signed_up.uid
+            for name in ("Alice", "Eve")
+        ]
+        tokens = []
+        for name in ("Alice", "Alice", "Eve"):  # Alice on two devices
+            tokens.append(
+                (
+                    await nickname.SignIn(
+                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                    )
+                ).result.signed_in.token
+            )
+        await self.project.auth.storage.access.members.add(
+            AuthMembership(group="auth.sessions.grp_admins", profile_uid=eve)
+        )
+        revoked = await client.auth_sessions.RevokeSessions(
+            sessions_pb2.RevokeSessionsRequest(profile_uid=alice),
+            metadata=[("authorization", f"Bearer {tokens[2]}")],
+        )
+        self.assertEqual(revoked.count, 2)
+        with self.assertRaises(GrpcError) as raised:
+            await client.auth_sessions.ListOwnSessions(
+                sessions_pb2.ListOwnSessionsRequest(),
+                metadata=[("authorization", f"Bearer {tokens[0]}")],
+            )
+        self.assertEqual(raised.exception.code, grpc.StatusCode.UNAUTHENTICATED)
 
     async def test_an_operator_sets_the_values_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)

@@ -7,6 +7,7 @@ import typing as t
 from ingot_auth.sessions import (
     AuthListSessionsParameters,
     AuthOwnSession,
+    AuthRevokeAllSessionsParameters,
     AuthRevokeOwnSessionParameters,
     AuthSessionInfo,
 )
@@ -32,7 +33,7 @@ class AuthGrpcSessionsServicer(
 ):
     """
     The sessions of the caller of the token: its own, listed and revoked; those
-    of a profile, the record of its sign-ins, for an operator.
+    of a profile, the record of its sign-ins, revoked all, for an operator.
     """
 
     @t.override
@@ -74,6 +75,15 @@ class AuthGrpcSessionsServicer(
         return sessions_pb2.ListSessionsResponse(
             sessions=[build_session_record_message(session) for session in sessions]
         )
+
+    @t.override
+    async def RevokeSessions(
+        self, request: sessions_pb2.RevokeSessionsRequest, context: Context
+    ) -> sessions_pb2.RevokeSessionsResponse:
+        parameters = AuthRevokeAllSessionsParameters(profile_uid=request.profile_uid)
+        factory = self.project.auth.sessions.op_revoke_all
+        count = await self.run_operation(factory, parameters, context)
+        return sessions_pb2.RevokeSessionsResponse(count=count)
 
 
 def build_session_message(session: AuthOwnSession) -> sessions_pb2.Session:

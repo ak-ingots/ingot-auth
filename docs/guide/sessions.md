@@ -133,3 +133,18 @@ Over gRPC, `ListSessions` of the service `Sessions`, which
 `AuthGrpcAdminBinding` serves too. `auth.sessions.grp_admins` grants the
 flag, `CAN_LIST` of `auth.sessions`; a user reads its own open sessions
 alone.
+
+## Revoking every session of a profile
+
+An operator closes every open session of a profile, a stolen account,
+`auth.sessions.op_revoke_all`, `REVOKED`, each in the activity log by the
+operator, the tokens refused from the next request; it prints how many,
+none of an unknown profile:
+
+```console
+$ python -m app auth sessions revoke-all 0f6c…
+2
+```
+
+Over gRPC, `RevokeSessions` of the service `Sessions`, telling the count.
+`auth.sessions.grp_admins` grants the flag, `CAN_REVOKE` of `auth.sessions`.
