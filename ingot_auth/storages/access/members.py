@@ -7,7 +7,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthMembership
+from .data import AuthMembership
 
 
 class BaseAuthMembersStorage(Entity):

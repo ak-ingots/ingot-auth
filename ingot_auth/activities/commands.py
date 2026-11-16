@@ -11,7 +11,8 @@ from ingots.defaults.operations import BaseOperationCommand
 
 from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
 
-from .items import AuthListActivitiesParameters
+
+from .operations import AuthListActivitiesParameters
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

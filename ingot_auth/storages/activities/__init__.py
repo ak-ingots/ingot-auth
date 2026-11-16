@@ -15,7 +15,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthActivityAction, AuthActivityQuery, AuthActivityRecord
+from .data import AuthActivityAction, AuthActivityQuery, AuthActivityRecord
 
 
 class BaseAuthActivitiesStorage(Entity):

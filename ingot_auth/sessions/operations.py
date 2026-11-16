@@ -3,13 +3,18 @@
 __all__ = (
     "AuthListOwnSessionsOperation",
     "AuthListSessionsOperation",
+    "AuthListSessionsParameters",
     "AuthRevokeAllSessionsOperation",
+    "AuthRevokeAllSessionsParameters",
     "AuthRevokeOtherSessionsOperation",
     "AuthRevokeOwnSessionOperation",
+    "AuthRevokeOwnSessionParameters",
     "AuthSweepSessionsOperation",
+    "AuthSweepSessionsParameters",
 )
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
@@ -21,15 +26,7 @@ from ingot_auth.storages import (
 )
 
 from .errors import AuthOwnSessionNotFoundError
-from .items import (
-    AuthListSessionsParameters,
-    AuthOwnSession,
-    AuthRevokeAllSessionsParameters,
-    AuthRevokeOwnSessionParameters,
-    AuthSessionExpired,
-    AuthSessionInfo,
-    AuthSweepSessionsParameters,
-)
+from .data import AuthOwnSession, AuthSessionExpired, AuthSessionInfo
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -68,6 +65,13 @@ class AuthListOwnSessionsOperation(BaseOperation[None, tuple[AuthOwnSession, ...
             )
             for session in await self.project.auth.storage.sessions.get_open(caller.uid)
         )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthRevokeOwnSessionParameters:
+    """The public uid of a session of the caller's own."""
+
+    session_uid: str
 
 
 class AuthRevokeOwnSessionOperation(
@@ -153,6 +157,13 @@ class AuthRevokeOtherSessionsOperation(BaseOperation[None, int]):
         return closed
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthRevokeAllSessionsParameters:
+    """The uid of a profile, whose open sessions are all revoked."""
+
+    profile_uid: str
+
+
 class AuthRevokeAllSessionsOperation(
     BaseOperation[AuthRevokeAllSessionsParameters, int]
 ):
@@ -188,6 +199,13 @@ class AuthRevokeAllSessionsOperation(
                 continue  # closed meanwhile, by another request
             closed += 1
         return closed
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSweepSessionsParameters:
+    """How many open sessions a sweep reads a page, closed in a transaction."""
+
+    page_size: int = 1000
 
 
 class AuthSweepSessionsOperation(BaseOperation[AuthSweepSessionsParameters, int]):
@@ -241,6 +259,14 @@ class AuthSweepSessionsOperation(BaseOperation[AuthSweepSessionsParameters, int]
                 await self.parent._forget(session.token_hash)
             closed += len(expired)
         return closed
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthListSessionsParameters:
+    """The uid of a profile; its closed sessions too, the record, if told."""
+
+    profile_uid: str
+    closed: bool = False
 
 
 class AuthListSessionsOperation(

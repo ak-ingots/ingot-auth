@@ -5,7 +5,7 @@ __all__ = ("BaseAuthAttrsStorage",)
 import typing as t
 
 from ..registry import BaseAuthRegistryStorage
-from .items import AuthAttr
+from .data import AuthAttr
 
 
 class BaseAuthAttrsStorage(BaseAuthRegistryStorage[AuthAttr]):

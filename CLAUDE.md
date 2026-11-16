@@ -196,6 +196,12 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
   and its own package.
 - The errors of a package live in its `errors.py`, apart from the entity
   they are of, and the package exports them as before.
+- The parameters of an operation, `*Parameters`, and a result of its own,
+  `*Result`, live in its `operations.py`, above it, or above the base of
+  a family of operations they serve; `data.py` holds the data of a
+  package, bare nouns, what several parts pass around: a token, what a
+  client sees, the context of an activity, the records of a storage, the
+  items of a registry.
 - An entity names its own identifier `uid`, a reference to another
   `<entity>_uid`, `profile_uid`, `session_uid`, `attr_uid`, never `id`, a
   builtin of Python; the fields a backend stores are named alike, MongoDB

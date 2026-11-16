@@ -27,14 +27,14 @@ from ingots.defaults.operations import (
 )
 from ingots.puer import Factory, Unit
 
-from .items import (
+from .data import AuthSignedUp, AuthSignUpChallenge
+from .operations import (
+    AuthAnswerSignUpOperation,
     AuthAnswerSignUpParameters,
-    AuthSignedUp,
-    AuthSignUpChallenge,
     AuthSignUpResult,
+    AuthStartSignUpOperation,
     AuthStartSignUpParameters,
 )
-from .operations import AuthAnswerSignUpOperation, AuthStartSignUpOperation
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject

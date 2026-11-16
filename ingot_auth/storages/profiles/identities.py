@@ -12,7 +12,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthIdentity
+from .data import AuthIdentity
 
 
 class BaseAuthIdentitiesStorage(Entity):

@@ -22,7 +22,7 @@ from ingots.puer import Slot, Unit
 
 from .attrs import BaseAuthSessionAttrsStorage
 from .errors import AuthSessionError, AuthSessionNotFoundError
-from .items import (
+from .data import (
     AuthSessionAttr,
     AuthSessionAttrSource,
     AuthSessionCloseReason,

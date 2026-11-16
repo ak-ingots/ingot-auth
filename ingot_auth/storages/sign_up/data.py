@@ -9,7 +9,7 @@ from dataclasses import dataclass
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ..items import AuthAttrValue
+    from ..data import AuthAttrValue
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

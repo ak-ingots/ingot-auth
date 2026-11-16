@@ -11,16 +11,14 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperationCommand
 
-from .items import (
-    AuthListSessionsParameters,
-    AuthRevokeAllSessionsParameters,
-    AuthSessionInfo,
-    AuthSweepSessionsParameters,
-)
+from .data import AuthSessionInfo
 from .operations import (
     AuthListSessionsOperation,
+    AuthListSessionsParameters,
     AuthRevokeAllSessionsOperation,
+    AuthRevokeAllSessionsParameters,
     AuthSweepSessionsOperation,
+    AuthSweepSessionsParameters,
 )
 
 if t.TYPE_CHECKING:

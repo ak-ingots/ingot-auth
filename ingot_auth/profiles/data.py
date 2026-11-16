@@ -1,13 +1,6 @@
-"""
-The parameters of the operations of the values of the profiles, and what a
-client sees of the profile of its caller.
-"""
+"""What a client sees of the profile of its caller."""
 
-__all__ = (
-    "AuthOwnProfile",
-    "AuthSetProfileAttrValuesParameters",
-    "AuthSetProfileTagsParameters",
-)
+__all__ = ("AuthOwnProfile",)
 
 import typing as t
 from dataclasses import dataclass
@@ -16,25 +9,6 @@ if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
     from ingot_auth.storages import AuthAttrValue
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthSetProfileTagsParameters:
-    """The uid of a profile and the ids of all the tags it is to have."""
-
-    uid: str
-    tag_uids: frozenset[int]
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthSetProfileAttrValuesParameters:
-    """
-    The uid of a profile and all the values of its attributes it is to have,
-    by the ids of the attributes.
-    """
-
-    uid: str
-    attr_values: "Mapping[int, AuthAttrValue]"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -12,7 +12,7 @@ import argparse
 import typing as t
 
 from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
-from ingot_auth.profiles.items import AuthSetProfileTagsParameters
+
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
     BaseAuthDeleteItemCommand,
@@ -27,6 +27,8 @@ from .operations import (
     AuthListTagsOperation,
     AuthRenameTagOperation,
 )
+
+from ingot_auth.profiles.operations import AuthSetProfileTagsParameters
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

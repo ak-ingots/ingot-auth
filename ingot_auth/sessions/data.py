@@ -1,14 +1,13 @@
-"""What opening a session gives, what a user sees of its own."""
+"""
+What opening a session gives, what a user and an operator see of the
+sessions, and the context of one expiring in the activity log.
+"""
 
 __all__ = (
-    "AuthListSessionsParameters",
     "AuthOwnSession",
-    "AuthRevokeAllSessionsParameters",
-    "AuthRevokeOwnSessionParameters",
     "AuthSessionExpired",
     "AuthSessionInfo",
     "AuthSessionToken",
-    "AuthSweepSessionsParameters",
 )
 
 import datetime
@@ -48,35 +47,6 @@ class AuthOwnSession:
     opened_at: datetime.datetime
     seen_at: datetime.datetime
     is_current: bool
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthRevokeOwnSessionParameters:
-    """The public uid of a session of the caller's own."""
-
-    session_uid: str
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthListSessionsParameters:
-    """The uid of a profile; its closed sessions too, the record, if told."""
-
-    profile_uid: str
-    closed: bool = False
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthRevokeAllSessionsParameters:
-    """The uid of a profile, whose open sessions are all revoked."""
-
-    profile_uid: str
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthSweepSessionsParameters:
-    """How many open sessions a sweep reads a page, closed in a transaction."""
-
-    page_size: int = 1000
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

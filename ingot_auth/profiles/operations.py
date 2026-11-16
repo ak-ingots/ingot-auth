@@ -3,7 +3,9 @@
 __all__ = (
     "AuthGetOwnProfileOperation",
     "AuthSetProfileAttrValuesOperation",
+    "AuthSetProfileAttrValuesParameters",
     "AuthSetProfileTagsOperation",
+    "AuthSetProfileTagsParameters",
 )
 
 import typing as t
@@ -22,13 +24,11 @@ from ingot_auth.storages import (
     AuthProfileValues,
 )
 
-from .items import (
-    AuthOwnProfile,
-    AuthSetProfileAttrValuesParameters,
-    AuthSetProfileTagsParameters,
-)
+from .data import AuthOwnProfile
 
 if t.TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from ingot_auth.project import AuthProject
     from ingot_auth.storages import AuthAttrValue
 
@@ -47,6 +47,14 @@ class AuthProfileAttrValuesSet(AuthActivityContext):
     """The context of the values of a profile set: all, by the ids of the attributes."""
 
     attr_values: "dict[int, AuthAttrValue]"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSetProfileTagsParameters:
+    """The uid of a profile and the ids of all the tags it is to have."""
+
+    uid: str
+    tag_uids: frozenset[int]
 
 
 class AuthSetProfileTagsOperation(
@@ -90,6 +98,17 @@ class AuthSetProfileTagsOperation(
             )
         await auth.sessions.forget_callers(parameters.uid)
         return await storage.values.get(parameters.uid)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSetProfileAttrValuesParameters:
+    """
+    The uid of a profile and all the values of its attributes it is to have,
+    by the ids of the attributes.
+    """
+
+    uid: str
+    attr_values: "Mapping[int, AuthAttrValue]"
 
 
 class AuthSetProfileAttrValuesOperation(

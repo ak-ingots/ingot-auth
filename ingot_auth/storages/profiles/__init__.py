@@ -37,7 +37,7 @@ from .errors import (
     AuthSecretNotFoundError,
 )
 from .identities import BaseAuthIdentitiesStorage
-from .items import AuthAttr, AuthIdentity, AuthProfile, AuthProfileValues, AuthTag
+from .data import AuthAttr, AuthIdentity, AuthProfile, AuthProfileValues, AuthTag
 from .secrets import BaseAuthSecretsStorage
 from .tags import BaseAuthTagsStorage
 from .values import BaseAuthProfileValuesStorage

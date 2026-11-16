@@ -5,7 +5,7 @@ __all__ = ("BaseAuthTagsStorage",)
 import typing as t
 
 from ..registry import BaseAuthRegistryStorage
-from .items import AuthTag
+from .data import AuthTag
 
 
 class BaseAuthTagsStorage(BaseAuthRegistryStorage[AuthTag]):

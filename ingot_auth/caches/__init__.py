@@ -20,7 +20,7 @@ from ingots.puer import Slot, Unit
 from .attempts import BaseAuthAttemptsCache
 from .callers import BaseAuthCallersCache
 from .errors import AuthAttemptNotFoundError
-from .items import AuthAttempt, AuthCaller
+from .data import AuthAttempt, AuthCaller
 from .sessions import BaseAuthSessionsCache
 
 

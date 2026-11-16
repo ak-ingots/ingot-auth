@@ -29,15 +29,13 @@ from ingot_auth.access.groups import AuthGroupsOwner
 
 from .attrs import AuthAttrsUnit
 from .groups import AuthProfilesConsumersGroup, AuthProfilesManagersGroup
-from .items import (
-    AuthOwnProfile,
-    AuthSetProfileAttrValuesParameters,
-    AuthSetProfileTagsParameters,
-)
+from .data import AuthOwnProfile
 from .operations import (
     AuthGetOwnProfileOperation,
     AuthSetProfileAttrValuesOperation,
+    AuthSetProfileAttrValuesParameters,
     AuthSetProfileTagsOperation,
+    AuthSetProfileTagsParameters,
 )
 from .tags import AuthTagsUnit
 
