@@ -3,6 +3,7 @@
 __all__ = (
     "AuthListSessionsParameters",
     "AuthOwnSession",
+    "AuthRevokeAllSessionsParameters",
     "AuthRevokeOwnSessionParameters",
     "AuthSessionExpired",
     "AuthSessionInfo",
@@ -61,6 +62,13 @@ class AuthListSessionsParameters:
 
     profile_uid: str
     closed: bool = False
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthRevokeAllSessionsParameters:
+    """The uid of a profile, whose open sessions are all revoked."""
+
+    profile_uid: str
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

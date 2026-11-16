@@ -1,14 +1,18 @@
 """The commands of the sessions."""
 
-__all__ = ("AuthListSessionsCommand",)
+__all__ = ("AuthListSessionsCommand", "AuthRevokeAllSessionsCommand")
 
 import argparse
 import typing as t
 
 from ingots.defaults.operations import BaseOperationCommand
 
-from .items import AuthListSessionsParameters, AuthSessionInfo
-from .operations import AuthListSessionsOperation
+from .items import (
+    AuthListSessionsParameters,
+    AuthRevokeAllSessionsParameters,
+    AuthSessionInfo,
+)
+from .operations import AuthListSessionsOperation, AuthRevokeAllSessionsOperation
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
@@ -21,9 +25,8 @@ class AuthListSessionsCommand(
 ):
     """
     Prints the sessions of a profile, one a line, by the time they opened: the
-    id, the method, the times it opened and was seen at, then, closed, the time,
-    the reason and by whom, ``-`` when it expired, and the values of its
-    attributes, ``1=iPhone``.
+    uid, the method, the times it opened and was seen at, then, closed, the
+    time and the reason, and the values of its attributes, ``1=iPhone``.
     """
 
     project: "AuthProject"
@@ -80,3 +83,37 @@ class AuthListSessionsCommand(
                     )
                 )
             )
+
+
+class AuthRevokeAllSessionsCommand(
+    BaseOperationCommand[AuthRevokeAllSessionsParameters, int]
+):
+    """Revokes every open session of a profile and prints how many."""
+
+    project: "AuthProject"
+
+    cli_name = "revoke-all"
+    cli_description = "Revokes every open session of a profile: a stolen account."
+    cli_args: AuthRevokeAllSessionsParameters
+
+    @t.override
+    @classmethod
+    def _cli_prepare_parser(cls, parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("sessions_profile_uid", metavar="profile_uid")
+
+    @t.override
+    @classmethod
+    def _cli_build_args(
+        cls, namespace: argparse.Namespace
+    ) -> AuthRevokeAllSessionsParameters:
+        return AuthRevokeAllSessionsParameters(
+            profile_uid=namespace.sessions_profile_uid
+        )
+
+    @t.override
+    def _get_operation(self) -> "BoundFactory[AuthRevokeAllSessionsOperation]":
+        return self.project.auth.sessions.op_revoke_all
+
+    @t.override
+    async def _run(self) -> None:
+        print(await self.run_operation(self.cli_args))

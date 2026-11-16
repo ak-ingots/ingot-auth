@@ -283,7 +283,8 @@ class GroupsTestCase(unittest.TestCase):
         self.assertEqual(sessions.grp_managers.get_permissions(), everything - binding)
         self.assertEqual(
             sessions.grp_admins.get_permissions(),
-            everything | masks(AuthSessionsUnit.Flags.CAN_LIST),
+            everything
+            | masks(AuthSessionsUnit.Flags.CAN_LIST, AuthSessionsUnit.Flags.CAN_REVOKE),
         )
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
@@ -530,7 +531,7 @@ class CommandsTestCase(unittest.TestCase):
                 "\tauth.sessions.presets=2\n"
                 "auth.sessions.grp_managers\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=15\n"
-                "auth.sessions.grp_admins\tauth.sessions=4\tauth.sessions.attrs=15"
+                "auth.sessions.grp_admins\tauth.sessions=12\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=63\n"
                 "auth.activities.grp_auditors\tauth.activities=1\n"
                 "shop.grp_buyers\tshop=1\n"

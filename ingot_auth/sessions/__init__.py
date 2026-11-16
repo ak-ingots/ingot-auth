@@ -15,6 +15,9 @@ __all__ = (
     "AuthNoSessionAttrsDeriver",
     "AuthOwnSessionNotFoundError",
     "AuthOwnSession",
+    "AuthRevokeAllSessionsCommand",
+    "AuthRevokeAllSessionsOperation",
+    "AuthRevokeAllSessionsParameters",
     "AuthRevokeOtherSessionsOperation",
     "AuthRevokeOwnSessionOperation",
     "AuthRevokeOwnSessionParameters",
@@ -60,7 +63,7 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
-from .commands import AuthListSessionsCommand
+from .commands import AuthListSessionsCommand, AuthRevokeAllSessionsCommand
 from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
 from .errors import AuthOwnSessionNotFoundError, AuthSessionExpiredError
 from .groups import (
@@ -71,6 +74,7 @@ from .groups import (
 from .items import (
     AuthListSessionsParameters,
     AuthOwnSession,
+    AuthRevokeAllSessionsParameters,
     AuthRevokeOwnSessionParameters,
     AuthSessionExpired,
     AuthSessionInfo,
@@ -85,6 +89,7 @@ from .lifetimes import (
 from .operations import (
     AuthListOwnSessionsOperation,
     AuthListSessionsOperation,
+    AuthRevokeAllSessionsOperation,
     AuthRevokeOtherSessionsOperation,
     AuthRevokeOwnSessionOperation,
 )
@@ -115,7 +120,8 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     A signed-in user lists its own open sessions and revokes them, one by one
     or all but the current one, by the flags ``auth.grp_signed_in`` grants;
     an operator reads those of a profile, the closed ones too, the record of
-    its sign-ins, ``auth sessions list <uid> --closed``.
+    its sign-ins, ``auth sessions list <uid> --closed``, and revokes them all,
+    ``auth sessions revoke-all <profile_uid>``.
     """
 
     class Flags(PermissionFlags):
@@ -124,12 +130,13 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         ``auth.sessions``: each kept for good, as the masks are stored and sent.
         ``auth.grp_signed_in`` grants a signed-in user its own,
         ``auth.sessions.grp_admins`` the listing of those of a profile, the
-        record of its sign-ins.
+        record of its sign-ins, and their revoking.
         """
 
         CAN_LIST_OWN = 1 << 0
         CAN_REVOKE_OWN = 1 << 1
         CAN_LIST = 1 << 2
+        CAN_REVOKE = 1 << 3
 
     cli_name = "sessions"
     cli_description = "The sessions of the users."
@@ -146,8 +153,10 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     op_revoke_own = Factory(AuthRevokeOwnSessionOperation)
     op_revoke_others = Factory(AuthRevokeOtherSessionsOperation)
     op_list = Factory(AuthListSessionsOperation)
+    op_revoke_all = Factory(AuthRevokeAllSessionsOperation)
 
     cmd_list = Slot(AuthListSessionsCommand)
+    cmd_revoke_all = Slot(AuthRevokeAllSessionsCommand)
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
