@@ -28,6 +28,9 @@ dependencies = [
 [project.optional-dependencies]
 grpcio = ["ingot-grpcio>=0.13.0,<0.14"]
 pymongo = ["ingot-pymongo>=0.14.0,<0.15"]
+redis = [
+    "ingot-redis>=0.2.0,<0.3",
+]
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"

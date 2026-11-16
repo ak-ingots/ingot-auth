@@ -433,6 +433,9 @@ grpcio = [
 pymongo = [
     { name = "ingot-pymongo" },
 ]
+redis = [
+    { name = "ingot-redis" },
+]
 
 [package.dev-dependencies]
 changelog = [
@@ -464,9 +467,10 @@ requires-dist = [
     { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.13.0,<0.14" },
     { name = "ingot-mail", specifier = ">=0.2.0,<0.3" },
     { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.14.0,<0.15" },
+    { name = "ingot-redis", marker = "extra == 'redis'", specifier = ">=0.2.0,<0.3" },
     { name = "ingots", specifier = ">=0.34.0,<0.35" },
 ]
-provides-extras = ["grpcio", "pymongo"]
+provides-extras = ["grpcio", "pymongo", "redis"]
 
 [package.metadata.requires-dev]
 changelog = [{ name = "towncrier" }]
@@ -530,6 +534,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d7/82/1122e972414e6f854b8eabedc2c92b49f1f2645324bb6b8cd0ff9d71be93/ingot_pymongo-0.14.0.tar.gz", hash = "sha256:74861d12d92d518933ffd0785153247e7972738c358e17b8baa1263e6b0bffc8", size = 12046, upload-time = "2026-11-14T09:07:43.505Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fc/6b/6f0a84550c22515117df07f095608d2a4a4d11ed22e9a361bb143f652a3c/ingot_pymongo-0.14.0-py3-none-any.whl", hash = "sha256:18bffc076cdf8ca5454a3b50ec0d36cde080a83d22610d6f4df376733d1ebc28", size = 14422, upload-time = "2026-11-14T09:07:42.193Z" },
+]
+
+[[package]]
+name = "ingot-redis"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ingots" },
+    { name = "redis" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fb/29/00eb3ac15ed96ef922ea39d301e87ee991e8c4c2ac7e7443be453e9eb0bb/ingot_redis-0.2.0.tar.gz", hash = "sha256:478d0baa818e8ccfc3f06ad81608e8c0b7ebb2b7d3b15dac8057d75e466110ce", size = 11941, upload-time = "2026-11-16T20:15:08.454Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/0c/87760707a79299887451ad82c8bf115bceb8dadcb73a7988af8d82f15047/ingot_redis-0.2.0-py3-none-any.whl", hash = "sha256:590960f56d0474ee25f8efd016d45376ca064bdff8e768650cfdeefff7def113", size = 14130, upload-time = "2026-11-16T20:15:07.347Z" },
 ]
 
 [[package]]
@@ -931,6 +948,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/5e/f77dc6b9036943e285ba76b49e118d9ea929885becb0a29ba8a7c75e29fe/pyyaml-6.0.3-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c", size = 839261, upload-time = "2025-09-25T21:32:51.808Z" },
     { url = "https://files.pythonhosted.org/packages/ce/88/a9db1376aa2a228197c58b37302f284b5617f56a5d959fd1763fb1675ce6/pyyaml-6.0.3-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:66e1674c3ef6f541c35191caae2d429b967b99e02040f5ba928632d9a7f0f065", size = 805272, upload-time = "2025-09-25T21:32:52.941Z" },
     { url = "https://files.pythonhosted.org/packages/da/92/1446574745d74df0c92e6aa4a7b0b3130706a4142b2d1a5869f2eaa423c6/pyyaml-6.0.3-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:16249ee61e95f858e83976573de0f5b2893b3677ba71c9dd36b9cf8be9ac6d65", size = 829923, upload-time = "2025-09-25T21:32:54.537Z" },
+]
+
+[[package]]
+name = "redis"
+version = "8.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/99/604f0b666d4c616d891cf77ebb9db6bb21601344c051aebf1b72b9ff915f/redis-8.1.0.tar.gz", hash = "sha256:6e1a19beef9225c83efd689c7e6b7da2d5215b1f42cd13b7fc3714d0a09c7b25", size = 5254356, upload-time = "2026-07-30T08:51:00.269Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/66/9d/c5731f6e3608663d4d3656fd8d3aecee8b509c3082818f5a13eae925baea/redis-8.1.0-py3-none-any.whl", hash = "sha256:a4fe1aac3d3b3cc791d4b3d5931c5a956045dc951ee74d1c913ee3ac4d2ee9fb", size = 560618, upload-time = "2026-07-30T08:50:58.497Z" },
 ]
 
 [[package]]

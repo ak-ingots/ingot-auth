@@ -48,7 +48,8 @@ slot `failure`, strict or swallow, none by default, read by
 methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
 catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
 none bound until an application declares its slot, in
-steps kept by attempts, a hook to start each flow they take, their flows
+steps kept by attempts, the state of a step as plain values by
+`_dump_state()`/`_load_state()` for a cache out of the process, a hook to start each flow they take, their flows
 their permissions too, a domain a method, its flag a flow by a hook
 (`_get_<flow>_permissions`), given by the toggles, each naming
 the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
@@ -86,7 +87,8 @@ full names. The goal of the core: assume no details, as
 far as it goes; the methods of sign-in are bound by the application, the
 storage and the transport plug in. The core holds the facades; their
 implementations are in `contrib/` (`contrib/storages/<backend>/`,
-`contrib/transports/<addon>/`, `contrib/caches/<backend>/`,
+`contrib/transports/<addon>/`, `contrib/caches/<backend>/` (`memory`,
+`redis` on ingot-redis),
 `contrib/dispatchers/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
@@ -128,8 +130,8 @@ provides the environments and interpreters.
 make check        # what CI runs: lint, test, coverage, wheel-test, doc, cl-check
 make lint         # black --check, flake8, mypy --strict, buf lint (Buf of ingots-libs)
 make test         # unittest on the working tree
-make coverage     # the same under coverage, with MongoDB; fails below 99%
-make integration  # the storage in MongoDB against docker-compose.yml, a replica set
+make coverage     # the same under coverage, with MongoDB and Redis; fails below 99%
+make integration  # the storage in MongoDB, a replica set, and the cache in Redis
 make wheel-test   # unittest on the built wheel, PYTHONS="3.14 3.15"
 make format       # black
 make doc          # apidoc, then Sphinx; warnings are errors

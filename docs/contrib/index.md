@@ -8,11 +8,12 @@ transport runs. What implements them is in
 core. A contrib gives the class of the slot it fills, `AuthMemoryStorage`
 for the slot `storage` of the auth, no unit or project: the application
 composes, and joins the project of the addon a backend is written against,
-`MongoDbProject` of ingot-pymongo, `GrpcProject` of ingot-grpcio.
+`MongoDbProject` of ingot-pymongo, `RedisProject` of ingot-redis,
+`GrpcProject` of ingot-grpcio.
 
 | Contrib | Extra | What it gives |
 |---|---|---|
-| {doc}`caches` | | the cache in memory |
+| {doc}`caches` | `redis` | the cache in memory; in Redis |
 | {doc}`storages` | `pymongo` | the storage in memory; in MongoDB |
 | {doc}`dispatchers` | | the operations run in the background, in the process |
 | {doc}`mailers` | | the mailer of the project, ingot-mail's |

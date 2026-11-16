@@ -17,7 +17,7 @@ DOC_OUT := docs/build
 PYTHONS ?= 3.14 3.15
 
 # The extras the wheel is tested with: every integration.
-EXTRAS ?= grpcio,pymongo
+EXTRAS ?= grpcio,pymongo,redis
 
 # What `cl-check` compares the branch with.
 AGAINST ?= origin/main
@@ -65,21 +65,23 @@ proto-lint:  ## The gRPC contract by Buf STANDARD (ADR 0013)
 test:  ## unittest on the working tree
 	uv run python -m unittest discover -s tests -t .
 
-# The storage in MongoDB is tested on a real server: the targets below start the
-# one of docker-compose.yml, and need Docker. Without it `make test` skips them.
-WITH_MONGODB := trap 'docker compose down --volumes --timeout 1' EXIT; \
+# The storage in MongoDB and the cache in Redis are tested on real servers: the
+# targets below start those of docker-compose.yml, and need Docker. Without it
+# `make test` skips them.
+WITH_SERVERS := trap 'docker compose down --volumes --timeout 1' EXIT; \
 	docker compose up --detach --wait --quiet-pull; \
-	export INGOT_AUTH_TEST_PORT=$${INGOT_AUTH_TEST_PORT:-27118};
+	export INGOT_AUTH_TEST_PORT=$${INGOT_AUTH_TEST_PORT:-27118}; \
+	export INGOT_AUTH_TEST_REDIS_PORT=$${INGOT_AUTH_TEST_REDIS_PORT:-16380};
 
 .PHONY: coverage
-coverage:  ## unittest on the working tree under coverage, with MongoDB; fails below 99%
-	@$(WITH_MONGODB) \
+coverage:  ## unittest on the working tree under coverage, with MongoDB and Redis; fails below 99%
+	@$(WITH_SERVERS) \
 	uv run coverage run -m unittest discover -s tests -t . && uv run coverage report
 
 .PHONY: integration
-integration:  ## tests.test_mongodb_storage against the MongoDB of docker-compose.yml
-	@$(WITH_MONGODB) \
-	uv run python -m unittest -v tests.test_mongodb_storage
+integration:  ## the storage in MongoDB and the cache in Redis against docker-compose.yml
+	@$(WITH_SERVERS) \
+	uv run python -m unittest -v tests.test_mongodb_storage tests.test_redis_cache
 
 # ADR 0003: the tests run against the built wheel, installed into a fresh
 # virtualenv, from a copy of tests/ outside the repository, so the package can
@@ -94,7 +96,7 @@ wheel-test: all  ## unittest on the built wheel, once per interpreter in PYTHONS
 .PHONY: installed-test
 installed-test:
 	@test -n "$(WHEEL)" || { echo "WHEEL=path/to.whl is required"; exit 1; }
-	@$(WITH_MONGODB) \
+	@$(WITH_SERVERS) \
 	for py in $(PYTHONS); do \
 		echo "== $(notdir $(WHEEL)) on Python $$py"; \
 		tmp=$$(mktemp -d); \

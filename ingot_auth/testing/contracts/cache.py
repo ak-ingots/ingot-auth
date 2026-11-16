@@ -16,6 +16,7 @@ from ingot_auth.access.groups import (
     AuthGroupsUnit,
 )
 from ingot_auth.caches import AuthAttempt, AuthAttemptNotFoundError, AuthCaller
+from ingot_auth.testing.methods import AuthTestingState
 
 from .base import BaseAuthContract
 from .sessions import create_session
@@ -30,8 +31,10 @@ CALLER: t.Final = AuthCaller(
 
 class AuthAttemptsCacheContract(BaseAuthContract):
     """
-    The attempts of a cache. A state of a method is kept as it is given; a
-    cache that is not in the process tells which states it keeps.
+    The attempts of a cache. A state of a method is kept as it is given,
+    that of :class:`~ingot_auth.testing.methods.AuthTestingMethod` here: a
+    cache out of the process, which takes it as plain values from its
+    method, runs on a project whose methods bind it in the slot ``testing``.
     """
 
     def create_attempt(
@@ -43,7 +46,7 @@ class AuthAttemptsCacheContract(BaseAuthContract):
             uid=attempt_uid,
             flow="sign_up",
             method="testing",
-            state="state",
+            state=AuthTestingState(subject="al", code="123456", secret=None),
             attr_values={1: "iPhone"},
             expires_at=now + datetime.timedelta(seconds=expires_in),
             failures=failures,

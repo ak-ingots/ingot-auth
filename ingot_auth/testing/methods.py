@@ -7,9 +7,10 @@ declares it as a slot of its methods::
         testing = Slot(AuthTestingMethod)
 """
 
-__all__ = ("AuthTestingMethod", "AuthTestingStart")
+__all__ = ("AuthTestingMethod", "AuthTestingStart", "AuthTestingState")
 
 import typing as t
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from ingots.defaults.operations import (
@@ -97,6 +98,19 @@ class AuthTestingMethod(BaseAuthMethod[AuthTestingStart, str, AuthTestingState])
         if answer != state.code:
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=state.subject, secret=state.secret)
+
+    @t.override
+    def _dump_state(self, state: AuthTestingState) -> dict[str, object]:
+        return {"subject": state.subject, "code": state.code, "secret": state.secret}
+
+    @t.override
+    def _load_state(self, data: Mapping[str, object]) -> AuthTestingState:
+        secret = data["secret"]
+        return AuthTestingState(
+            subject=str(data["subject"]),
+            code=str(data["code"]),
+            secret=None if secret is None else str(secret),
+        )
 
     @t.final
     def _testing_start(self, parameters: AuthTestingStart) -> AuthStep:
