@@ -2,6 +2,36 @@
 
 <!-- towncrier release notes start -->
 
+## [0.6.0] - 2026-11-16
+### Added
+- The cache in Redis, `AuthRedisCache` of `ingot_auth.contrib.caches.redis`,
+  under the extra `redis`, on the default client of
+  [ingot-redis](https://pypi.org/project/ingot-redis/): for a project of more
+  than one process. It keeps JSON of plain values under keys of the prefix
+  `ingot_auth`, expiring at their times, an attempt taken by `GETDEL`. A
+  method gives the state of its step as plain values, `dump_state()` and
+  `load_state()` of `BaseAuthMethod`, by the hooks `_dump_state()` and
+  `_load_state()`, which a method of more than one step overrides, as
+  `AuthEmailCodeMethod` and `AuthTestingMethod` do.
+
+### Changed
+- The mail of the methods goes by the mailer of
+  [ingot-mail](https://pypi.org/project/ingot-mail/), a new dependency:
+  `AuthProject` is its `MailProject`, `AuthSettingsUnit`, `AuthLoggingUnit`
+  and `AuthConfigs` extend those of the mail, so the project declares its
+  mailer in the slot `mailer` of its `mail` unit, `MemoryMailer` or
+  `AiosmtplibMailer` of ingot-mail, and the mail goes from `MAIL_FROM`. The
+  hooks `_build_code_mail()` and `_build_denial_mail()` of
+  `AuthEmailCodeMethod` return a `Mail` of ingot-mail.
+- `AuthAttemptsCacheContract` puts the state of `AuthTestingMethod`, so that
+  a cache out of the process runs it on a project binding that method in the
+  slot `testing` of its methods.
+
+### Removed
+- The mailer of the auth: its slot `mailer`, `BaseAuthMailer` and `AuthMail`
+  of `ingot_auth.mailers`, `AuthMemoryMailer` and `AuthMailerContract`, in
+  favour of the mailer of ingot-mail.
+
 ## [0.5.0] - 2026-11-16
 ### Added
 - An admin, or a job of a schedule as `auth.system`, sweeps the expired

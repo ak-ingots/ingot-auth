@@ -13,14 +13,15 @@ applications. An addon of [Ingots](https://github.com/ak-ingots/ingots).
 profiles and of the attributes and the presets of the sessions, with their
 metadata for the consumers, all of it over gRPC; the sign-up and the
 sign-in by pluggable methods in steps, a nickname and a password, an email
-and a code sent to it by a mailer in the background, over gRPC too; the
+and a code sent to it in the background by the mailer of ingot-mail,
+SMTP among them, over gRPC too; the
 policies of what a user types,
 operations run together in groups; the groups of the users, declared in the
 code, and their members, on the command line and over gRPC; the sessions a
 sign-in opens, a token turned into a caller, revoked all at once by an
 operator, the expired ones swept by a job; the activity log of every
 change of state, read by the auditors; all of it stored in memory or in
-MongoDB.
+MongoDB, cached in memory or in Redis.
 
 ## For Consumers
 
