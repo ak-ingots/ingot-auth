@@ -6,15 +6,15 @@ import logging
 
 from ingots.defaults.settings.configs import (
     BoolConfig,
-    Configs,
     FloatConfig,
     IntConfig,
     LogLevelConfig,
 )
+from ingot_mail.settings.configs import MailConfigs
 
 
-class AuthConfigs(Configs):
-    """The configs of the defaults with those of the addon."""
+class AuthConfigs(MailConfigs):
+    """The configs of the defaults and of the mail with those of the addon."""
 
     AUTH_LOGGING_LEVEL = LogLevelConfig(logging.INFO)
     AUTH_ATTEMPT_TTL = IntConfig(600)  # seconds an attempt waits for an answer

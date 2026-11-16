@@ -6,6 +6,8 @@ a command stores is gone with it, and no mail goes out.
 
 import sys
 
+from ingot_mail.contrib.memory import MemoryMailer
+from ingot_mail.mail import MailUnit
 from ingots.defaults.logging import configure_startup_logging
 from ingots.puer import Slot
 from ingots.puer.cli import CommandRunner
@@ -14,7 +16,6 @@ from .activities import AuthActivitiesUnit, AuthStrictActivityFailure
 from .auth import AuthUnit
 from .contrib.caches.memory import AuthMemoryCache
 from .contrib.dispatchers.memory import AuthMemoryDispatcher
-from .contrib.mailers.memory import AuthMemoryMailer
 from .contrib.storages.memory import AuthMemoryStorage
 from .project import AuthProject
 from .sessions import (
@@ -38,17 +39,21 @@ class AuthMemoryActivitiesUnit(AuthActivitiesUnit):
     failure = Slot(AuthStrictActivityFailure)
 
 
+class AuthMemoryMailUnit(MailUnit):
+    mailer = Slot(MemoryMailer)
+
+
 class AuthMemoryUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
     cache = Slot(AuthMemoryCache)
     dispatcher = Slot(AuthMemoryDispatcher)
-    mailer = Slot(AuthMemoryMailer)
     sessions = Slot(AuthMemorySessionsUnit)
     sign_in = Slot(AuthMemorySignInUnit)
     activities = Slot(AuthMemoryActivitiesUnit)
 
 
 class AuthMemoryProject(AuthProject):
+    mail = Slot(AuthMemoryMailUnit)
     auth = Slot(AuthMemoryUnit)
 
 

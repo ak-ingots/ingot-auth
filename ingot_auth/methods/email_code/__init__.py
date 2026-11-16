@@ -2,7 +2,7 @@
 The method of an email and a code sent to it, of two steps: the start sends
 the code, the answer repeats it. An application declares it as a slot of its
 methods, ``email_code = Slot(AuthEmailCodeMethod)``: it builds its mail, a
-plain text in English, and sends it by the mailer of the auth, in the
+plain text in English, and sends it by the mailer of the project, in the
 background, its operations run by the dispatcher of the auth, so that a
 start replies at once. A subclass changes the mail by its hooks. The
 email of a sign-up is checked by the group of the policies of the method,
@@ -38,9 +38,9 @@ from ingots.defaults.operations import (
     Permissions,
     PermissionsSlot,
 )
+from ingot_mail.mail import Mail
 from ingots.puer import Factory
 
-from ingot_auth.mailers import AuthMail
 from ingot_auth.methods import (
     AuthChallenge,
     AuthCodeChallenge,
@@ -171,13 +171,13 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=state.email)
 
-    def _build_code_mail(self, email: str, code: str) -> AuthMail:
+    def _build_code_mail(self, email: str, code: str) -> Mail:
         """
         The mail of a code: a plain text in English here, the code in the text
         only, as the subject is in the ``repr`` of the mail.
         """
-        return AuthMail(
-            to=email,
+        return Mail(
+            to=(email,),
             subject="Your code",
             text=(
                 f"Your code is {code}.\n\n"
@@ -186,13 +186,13 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
             ),
         )
 
-    def _build_denial_mail(self, email: str) -> AuthMail:
+    def _build_denial_mail(self, email: str) -> Mail:
         """
         The mail telling the sign-in by the method is closed to the profile of
         the email: a plain text in English here.
         """
-        return AuthMail(
-            to=email,
+        return Mail(
+            to=(email,),
             subject="The sign-in by email is closed to you",
             text=(
                 "Someone asked to sign in by this email, and the sign-in by "

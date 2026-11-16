@@ -1,7 +1,7 @@
 """
 The operations of the method run in the background by the dispatcher of the
 auth: the mail of the method, built by its hooks and sent by the mailer of
-the auth.
+the mail of the project.
 """
 
 __all__ = (
@@ -61,7 +61,7 @@ class AuthSendCodeOperation(BaseOperation[AuthSendCodeParameters, None]):
     ) -> None:
         method = _get_method(self.project, parameters.method)
         mail = method._build_code_mail(parameters.email, parameters.code)
-        await self.project.auth.mailer.send(mail)
+        await self.project.mail.mailer.send(mail)
 
 
 class AuthSendDenialOperation(BaseOperation[AuthSendDenialParameters, None]):
@@ -82,7 +82,7 @@ class AuthSendDenialOperation(BaseOperation[AuthSendDenialParameters, None]):
         self, parameters: AuthSendDenialParameters, metadata: OperationMetadata
     ) -> None:
         method = _get_method(self.project, parameters.method)
-        await self.project.auth.mailer.send(method._build_denial_mail(parameters.email))
+        await self.project.mail.mailer.send(method._build_denial_mail(parameters.email))
 
 
 def _get_method(project: "AuthProject", name: str) -> "AuthEmailCodeMethod":

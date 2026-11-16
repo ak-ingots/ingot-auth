@@ -4,16 +4,16 @@ __all__ = ("AuthLoggingUnit",)
 
 import typing as t
 
-from ingots.defaults.logging import LoggingUnit
+from ingot_mail.logging import MailLoggingUnit
 
 if t.TYPE_CHECKING:
     from ..project import AuthProject
 
 
-class AuthLoggingUnit(LoggingUnit):
+class AuthLoggingUnit(MailLoggingUnit):
     """
-    The logging unit, with the logger of the addon, ``ingot_auth``, at
-    ``AUTH_LOGGING_LEVEL``.
+    The logging unit of the mail, with the logger of the addon,
+    ``ingot_auth``, at ``AUTH_LOGGING_LEVEL``.
     """
 
     project: "AuthProject"
