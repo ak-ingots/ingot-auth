@@ -1,10 +1,8 @@
-"""The context of an activity, and the parameters of the read of the log."""
+"""The context of an activity."""
 
-__all__ = ("AuthActivityContext", "AuthListActivitiesParameters")
+__all__ = ("AuthActivityContext",)
 
 from dataclasses import dataclass
-
-from ingot_auth.storages import AuthActivityQuery
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -15,8 +13,3 @@ class AuthActivityContext:
     writes, never a secret, a token, a password, a code. The log keeps it as a
     map of them; a reader assumes none of a type of entity.
     """
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class AuthListActivitiesParameters(AuthActivityQuery):
-    """What the activities read match, as :class:`AuthActivityQuery` tells."""

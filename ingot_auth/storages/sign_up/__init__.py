@@ -10,7 +10,7 @@ __all__ = (
 from ingots.puer import Slot, Unit
 
 from .errors import AuthSignUpRecordNotFoundError
-from .items import AuthSignUpRecord
+from .data import AuthSignUpRecord
 from .records import BaseAuthSignUpRecordsStorage
 
 

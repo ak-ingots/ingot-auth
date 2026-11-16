@@ -77,16 +77,7 @@ from .groups import (
     AuthSessionsConsumersGroup,
     AuthSessionsManagersGroup,
 )
-from .items import (
-    AuthListSessionsParameters,
-    AuthOwnSession,
-    AuthRevokeAllSessionsParameters,
-    AuthRevokeOwnSessionParameters,
-    AuthSessionExpired,
-    AuthSessionInfo,
-    AuthSessionToken,
-    AuthSweepSessionsParameters,
-)
+from .data import AuthOwnSession, AuthSessionExpired, AuthSessionInfo, AuthSessionToken
 from .lifetimes import (
     AuthFixedLifetime,
     AuthSlidingFixedLifetime,
@@ -96,10 +87,14 @@ from .lifetimes import (
 from .operations import (
     AuthListOwnSessionsOperation,
     AuthListSessionsOperation,
+    AuthListSessionsParameters,
     AuthRevokeAllSessionsOperation,
+    AuthRevokeAllSessionsParameters,
     AuthRevokeOtherSessionsOperation,
     AuthRevokeOwnSessionOperation,
+    AuthRevokeOwnSessionParameters,
     AuthSweepSessionsOperation,
+    AuthSweepSessionsParameters,
 )
 from .presets import AuthSessionPresetsUnit
 

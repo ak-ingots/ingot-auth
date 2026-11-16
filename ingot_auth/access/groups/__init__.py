@@ -57,7 +57,7 @@ from .entities import (
     AuthSystemGroup,
 )
 from .errors import AuthGroupError, AuthGroupNotFoundError
-from .items import AuthGroupInfo
+from .data import AuthGroupInfo
 from .operations import AuthListGroupsOperation
 from .owners import AuthGroupsOwner, find_group_names
 

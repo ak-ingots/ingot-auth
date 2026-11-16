@@ -2,12 +2,15 @@
 
 __all__ = (
     "AuthAnswerSignInOperation",
+    "AuthAnswerSignInParameters",
+    "AuthSignInResult",
     "AuthStartSignInOperation",
+    "AuthStartSignInParameters",
     "BaseAuthSignInOperation",
 )
 
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
@@ -21,13 +24,7 @@ from ingot_auth.methods import (
 from ingot_auth.activities import AuthActivityContext
 from ingot_auth.storages import AuthActivityAction, AuthIdentityNotFoundError
 
-from .items import (
-    AuthAnswerSignInParameters,
-    AuthSignedIn,
-    AuthSignInChallenge,
-    AuthSignInResult,
-    AuthStartSignInParameters,
-)
+from .data import AuthSignedIn, AuthSignInChallenge
 
 if t.TYPE_CHECKING:
     from . import AuthSignInUnit
@@ -43,6 +40,9 @@ class AuthSessionSignedIn(AuthActivityContext):
 
     uid: str
     method: str
+
+
+AuthSignInResult: t.TypeAlias = AuthSignInChallenge | AuthSignedIn
 
 
 class BaseAuthSignInOperation[ParametersType](
@@ -126,6 +126,21 @@ class BaseAuthSignInOperation[ParametersType](
         return AuthSignedIn(session_uid=opened.session_uid, token=opened.token)
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthStartSignInParameters:
+    """
+    A sign-in starting: the method, what the method starts with, and the
+    values of the attributes of the session, kept by the session: those the
+    client gives, by their ids, and those the transport gives, by their
+    names, which the transport alone sets, never from what the client sends.
+    """
+
+    method: str
+    parameters: object
+    attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
+    transport_attr_values: "Mapping[str, AuthAttrValue]" = field(default_factory=dict)
+
+
 class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters]):
     """
     Starts a sign-in by a method, with the values of the attributes of the
@@ -153,6 +168,14 @@ class AuthStartSignInOperation(BaseAuthSignInOperation[AuthStartSignInParameters
                 parameters.transport_attr_values,
                 metadata,
             )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthAnswerSignInParameters:
+    """An answer to the challenge of a sign-in, to its attempt."""
+
+    attempt_uid: str
+    answer: object
 
 
 class AuthAnswerSignInOperation(BaseAuthSignInOperation[AuthAnswerSignInParameters]):

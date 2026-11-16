@@ -6,7 +6,7 @@ import typing as t
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
-from .items import AuthGroupInfo
+from .data import AuthGroupInfo
 
 if t.TYPE_CHECKING:
     from . import AuthGroupsUnit

@@ -9,12 +9,12 @@ import datetime
 import typing as t
 from dataclasses import dataclass, field
 
-from ..items import AuthAttrType, AuthItem
+from ..data import AuthAttrType, AuthItem
 
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ..items import AuthAttrValue
+    from ..data import AuthAttrValue
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

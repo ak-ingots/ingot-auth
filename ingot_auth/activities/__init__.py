@@ -49,8 +49,8 @@ from .failures import (
     BaseAuthActivityFailure,
 )
 from .groups import AuthActivitiesAuditorsGroup
-from .items import AuthActivityContext, AuthListActivitiesParameters
-from .operations import AuthListActivitiesOperation
+from .data import AuthActivityContext
+from .operations import AuthListActivitiesOperation, AuthListActivitiesParameters
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject

@@ -12,7 +12,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthCaller
+from .data import AuthCaller
 
 
 class BaseAuthCallersCache(Entity):

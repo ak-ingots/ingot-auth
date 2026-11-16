@@ -2,13 +2,16 @@
 
 __all__ = (
     "AuthAnswerSignUpOperation",
+    "AuthAnswerSignUpParameters",
+    "AuthSignUpResult",
     "AuthStartSignUpOperation",
+    "AuthStartSignUpParameters",
     "BaseAuthSignUpOperation",
 )
 
 import os
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ingots.defaults.operations import OperationMetadata, Permissions
 
@@ -21,13 +24,7 @@ from ingot_auth.storages import (
     AuthSignUpRecord,
 )
 
-from .items import (
-    AuthAnswerSignUpParameters,
-    AuthSignedUp,
-    AuthSignUpChallenge,
-    AuthSignUpResult,
-    AuthStartSignUpParameters,
-)
+from .data import AuthSignedUp, AuthSignUpChallenge
 
 if t.TYPE_CHECKING:
     from . import AuthSignUpUnit
@@ -50,6 +47,9 @@ class AuthIdentityBound(AuthActivityContext):
     """The context of an identifier bound to a profile: its kind, never its value."""
 
     kind: str
+
+
+AuthSignUpResult: t.TypeAlias = AuthSignUpChallenge | AuthSignedUp
 
 
 class BaseAuthSignUpOperation[ParametersType](
@@ -153,6 +153,22 @@ class BaseAuthSignUpOperation[ParametersType](
         return os.urandom(16).hex()
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthStartSignUpParameters:
+    """
+    A sign-up starting: the method, what the method starts with, and the
+    values of the attributes of the session, kept by the record of the
+    sign-up: those the client gives, by their ids, and those the transport
+    gives, by their names, which the transport alone sets, never from what
+    the client sends.
+    """
+
+    method: str
+    parameters: object
+    attr_values: "Mapping[int, AuthAttrValue]" = field(default_factory=dict)
+    transport_attr_values: "Mapping[str, AuthAttrValue]" = field(default_factory=dict)
+
+
 class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters]):
     """
     Starts a sign-up by a method, with the values of the attributes of the
@@ -179,6 +195,14 @@ class AuthStartSignUpOperation(BaseAuthSignUpOperation[AuthStartSignUpParameters
             parameters.transport_attr_values,
             metadata,
         )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthAnswerSignUpParameters:
+    """An answer to the challenge of a sign-up, to its attempt."""
+
+    attempt_uid: str
+    answer: object
 
 
 class AuthAnswerSignUpOperation(BaseAuthSignUpOperation[AuthAnswerSignUpParameters]):

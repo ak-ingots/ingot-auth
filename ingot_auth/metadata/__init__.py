@@ -22,7 +22,7 @@ from ingots.defaults.operations import (
 )
 from ingots.puer import Factory, Unit
 
-from .items import (
+from .data import (
     AuthMetadata,
     AuthMethodMetadata,
     AuthProfileMetadata,

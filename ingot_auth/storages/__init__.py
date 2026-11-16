@@ -81,7 +81,7 @@ from .activities import (
     AuthActivityRecord,
     BaseAuthActivitiesStorage,
 )
-from .items import ATTR_VALUE_TYPES, AuthAttrType, AuthAttrValue, AuthItem
+from .data import ATTR_VALUE_TYPES, AuthAttrType, AuthAttrValue, AuthItem
 from .profiles import (
     AuthAttr,
     AuthIdentity,

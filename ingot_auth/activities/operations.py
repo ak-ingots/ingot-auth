@@ -1,19 +1,26 @@
 """The operation of the read of the activity log."""
 
-__all__ = ("AuthListActivitiesOperation",)
+__all__ = (
+    "AuthListActivitiesOperation",
+    "AuthListActivitiesParameters",
+)
 
 import typing as t
+from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperation, OperationMetadata, Permissions
 
 from ingot_auth.storages import AuthActivityQuery, AuthActivityRecord
 
-from .items import AuthListActivitiesParameters
-
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
     from . import AuthActivitiesUnit
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthListActivitiesParameters(AuthActivityQuery):
+    """What the activities read match, as :class:`AuthActivityQuery` tells."""
 
 
 class AuthListActivitiesOperation(

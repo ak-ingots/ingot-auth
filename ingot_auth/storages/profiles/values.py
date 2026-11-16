@@ -11,12 +11,12 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthProfileValues
+from .data import AuthProfileValues
 
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ..items import AuthAttrValue
+    from ..data import AuthAttrValue
 
 
 class BaseAuthProfileValuesStorage(Entity):

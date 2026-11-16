@@ -7,7 +7,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthAttempt
+from .data import AuthAttempt
 
 
 class BaseAuthAttemptsCache(Entity):

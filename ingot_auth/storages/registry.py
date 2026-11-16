@@ -7,7 +7,7 @@ import typing as t
 
 from ingots.puer import Entity
 
-from .items import AuthItem
+from .data import AuthItem
 
 
 class BaseAuthRegistryStorage[ItemType: AuthItem](Entity):

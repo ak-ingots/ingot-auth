@@ -17,12 +17,12 @@ import enum
 import typing as t
 from dataclasses import dataclass
 
-from ..items import AuthAttrType, AuthItem
+from ..data import AuthAttrType, AuthItem
 
 if t.TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from ..items import AuthAttrValue
+    from ..data import AuthAttrValue
 
 
 class AuthSessionCloseReason(enum.StrEnum):

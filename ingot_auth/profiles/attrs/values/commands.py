@@ -9,9 +9,11 @@ import typing as t
 from dataclasses import dataclass
 
 from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
-from ingot_auth.profiles.items import AuthSetProfileAttrValuesParameters
+
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import AuthAttrType, AuthAttrValue
+
+from ingot_auth.profiles.operations import AuthSetProfileAttrValuesParameters
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

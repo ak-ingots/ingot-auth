@@ -6,7 +6,7 @@ import abc
 import typing as t
 
 from ..registry import BaseAuthRegistryStorage
-from .items import AuthSessionPreset, AuthSessionPresetBinding
+from .data import AuthSessionPreset, AuthSessionPresetBinding
 
 
 class BaseAuthSessionPresetsStorage(BaseAuthRegistryStorage[AuthSessionPreset]):

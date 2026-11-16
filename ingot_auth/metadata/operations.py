@@ -8,7 +8,7 @@ from ingots.defaults.operations import BaseOperation, OperationMetadata, Permiss
 
 from ingot_auth.storages import AuthSessionAttrSource
 
-from .items import (
+from .data import (
     AuthMetadata,
     AuthMethodMetadata,
     AuthProfileMetadata,
