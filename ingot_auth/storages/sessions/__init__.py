@@ -73,6 +73,17 @@ class AuthSessionsStorage(Unit):
         return await self._get_all(uid)
 
     @t.final
+    async def get_all_open(
+        self, after: str | None, limit: int
+    ) -> tuple[AuthSessionRecord, ...]:
+        """
+        A page of the open sessions of every profile, by their uid: at most
+        ``limit`` of them, those after the uid ``after``, the last of the page
+        before, from the first if ``None``; none past the last.
+        """
+        return await self._get_all_open(after, limit)
+
+    @t.final
     async def touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         """
         Writes the time an open session was seen at.
@@ -111,6 +122,12 @@ class AuthSessionsStorage(Unit):
     @abc.abstractmethod
     async def _get_all(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         raise NotImplementedError(f"{type(self).__qualname__}._get_all")
+
+    @abc.abstractmethod
+    async def _get_all_open(
+        self, after: str | None, limit: int
+    ) -> tuple[AuthSessionRecord, ...]:
+        raise NotImplementedError(f"{type(self).__qualname__}._get_all_open")
 
     @abc.abstractmethod
     async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:

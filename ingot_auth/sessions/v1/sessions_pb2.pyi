@@ -32,6 +32,7 @@ class _PermissionEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Permission
     PERMISSION_CAN_REVOKE_OWN: _Permission.ValueType  # 2
     PERMISSION_CAN_LIST: _Permission.ValueType  # 4
     PERMISSION_CAN_REVOKE: _Permission.ValueType  # 8
+    PERMISSION_CAN_SWEEP: _Permission.ValueType  # 16
 
 class Permission(_Permission, metaclass=_PermissionEnumTypeWrapper):
     """The bits of the domain `auth.sessions` its operations require: an aid for
@@ -43,6 +44,7 @@ PERMISSION_CAN_LIST_OWN: Permission.ValueType  # 1
 PERMISSION_CAN_REVOKE_OWN: Permission.ValueType  # 2
 PERMISSION_CAN_LIST: Permission.ValueType  # 4
 PERMISSION_CAN_REVOKE: Permission.ValueType  # 8
+PERMISSION_CAN_SWEEP: Permission.ValueType  # 16
 Global___Permission: _TypeAlias = Permission  # noqa: Y015
 
 class _CloseReason:
@@ -349,3 +351,40 @@ class RevokeSessionsResponse(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___RevokeSessionsResponse: _TypeAlias = RevokeSessionsResponse  # noqa: Y015
+
+@_typing.final
+class SweepSessionsRequest(_message.Message):
+    """The open sessions the lifetime tells expired, of every profile."""
+
+    DESCRIPTOR: _descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___SweepSessionsRequest: _TypeAlias = SweepSessionsRequest  # noqa: Y015
+
+@_typing.final
+class SweepSessionsResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    COUNT_FIELD_NUMBER: _builtins.int
+    count: _builtins.int
+    """how many it closed"""
+    def __init__(
+        self,
+        *,
+        count: _builtins.int = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["count", b"count"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___SweepSessionsResponse: _TypeAlias = SweepSessionsResponse  # noqa: Y015

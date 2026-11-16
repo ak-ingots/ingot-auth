@@ -685,6 +685,10 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     permissions={"auth.profiles": 2, "auth.sessions": 3},
                 ),
                 groups_pb2.Group(
+                    name="auth.grp_system",
+                    permissions={"auth.sessions": 16},
+                ),
+                groups_pb2.Group(
                     name="auth.profiles.grp_consumers",
                     permissions={"auth.profiles.attrs": 2, "auth.profiles.tags": 2},
                 ),
@@ -710,7 +714,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 groups_pb2.Group(
                     name="auth.sessions.grp_admins",
                     permissions={
-                        "auth.sessions": 12,
+                        "auth.sessions": 28,
                         "auth.sessions.attrs": 15,
                         "auth.sessions.presets": 63,
                     },
@@ -1216,6 +1220,36 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 metadata=[("authorization", f"Bearer {tokens[0]}")],
             )
         self.assertEqual(raised.exception.code, grpc.StatusCode.UNAUTHENTICATED)
+
+    async def test_an_operator_sweeps_the_expired_sessions(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        _, eve = [
+            (
+                await nickname.SignUp(
+                    nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                )
+            ).result.signed_up.uid
+            for name in ("Alice", "Eve")
+        ]
+        await self.project.auth.storage.access.members.add(
+            AuthMembership(group="auth.sessions.grp_admins", profile_uid=eve)
+        )
+        await nickname.SignIn(
+            nickname_pb2.SignInRequest(nickname="Alice", password="pass word")
+        )
+        later = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=31)
+        with mock.patch.object(AuthSessionsUnit, "_get_now", return_value=later):
+            token = (
+                await nickname.SignIn(
+                    nickname_pb2.SignInRequest(nickname="Eve", password="pass word")
+                )
+            ).result.signed_in.token
+            swept = await client.auth_sessions.SweepSessions(
+                sessions_pb2.SweepSessionsRequest(),
+                metadata=[("authorization", f"Bearer {token}")],
+            )
+        self.assertEqual(swept.count, 1)
 
     async def test_an_operator_sets_the_values_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)

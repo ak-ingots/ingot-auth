@@ -15,9 +15,10 @@ source, the first: a group is a slot of a unit of its domain, an
     class ShopUnit(AuthGroupsOwner, OperationsOwner, Unit):
         grp_buyers = Slot(ShopBuyersGroup)  # the group shop.grp_buyers
 
-The core declares two in the auth, ``auth.grp_anonymous``,
-:class:`AuthAnonymousGroup`, of every caller that tells no one, and
+The core declares three in the auth, ``auth.grp_anonymous``,
+:class:`AuthAnonymousGroup`, of every caller that tells no one,
 ``auth.grp_signed_in``, :class:`AuthSignedInGroup`, of every signed-in user,
+and ``auth.grp_system``, :class:`AuthSystemGroup`, of the server itself,
 and those of the work of its registries in the profiles and the sessions.
 :class:`AuthGroupsUnit` finds them, whatever their source.
 """
@@ -33,6 +34,7 @@ __all__ = (
     "AuthListGroupsOperation",
     "AuthListGroupsCommand",
     "AuthSignedInGroup",
+    "AuthSystemGroup",
 )
 
 import hashlib
@@ -48,7 +50,12 @@ from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from .commands import AuthListGroupsCommand
-from .entities import AuthAnonymousGroup, AuthGroup, AuthSignedInGroup
+from .entities import (
+    AuthAnonymousGroup,
+    AuthGroup,
+    AuthSignedInGroup,
+    AuthSystemGroup,
+)
 from .errors import AuthGroupError, AuthGroupNotFoundError
 from .items import AuthGroupInfo
 from .operations import AuthListGroupsOperation

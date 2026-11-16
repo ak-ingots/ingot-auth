@@ -63,6 +63,11 @@ class SessionsStub:
                 request_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsRequest.SerializeToString,
                 response_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsResponse.FromString,
                 _registered_method=True)
+        self.SweepSessions = channel.unary_unary(
+                '/ingot_auth.sessions.v1.Sessions/SweepSessions',
+                request_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsRequest.SerializeToString,
+                response_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsResponse.FromString,
+                _registered_method=True)
 
 
 class SessionsServicer:
@@ -107,6 +112,13 @@ class SessionsServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SweepSessions(self, request, context):
+        """Requires PERMISSION_CAN_SWEEP.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SessionsServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -134,6 +146,11 @@ def add_SessionsServicer_to_server(servicer, server):
                     servicer.RevokeSessions,
                     request_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsRequest.FromString,
                     response_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsResponse.SerializeToString,
+            ),
+            'SweepSessions': grpc.unary_unary_rpc_method_handler(
+                    servicer.SweepSessions,
+                    request_deserializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsRequest.FromString,
+                    response_serializer=ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -275,6 +292,33 @@ class Sessions:
             '/ingot_auth.sessions.v1.Sessions/RevokeSessions',
             ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsRequest.SerializeToString,
             ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.RevokeSessionsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SweepSessions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ingot_auth.sessions.v1.Sessions/SweepSessions',
+            ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsRequest.SerializeToString,
+            ingot__auth_dot_sessions_dot_v1_dot_sessions__pb2.SweepSessionsResponse.FromString,
             options,
             channel_credentials,
             insecure,

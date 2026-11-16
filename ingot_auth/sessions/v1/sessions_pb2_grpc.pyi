@@ -47,6 +47,8 @@ class SessionsStub:
     """Requires PERMISSION_CAN_LIST."""
     RevokeSessions: _grpc.UnaryUnaryMultiCallable[_sessions_pb2.RevokeSessionsRequest, _sessions_pb2.RevokeSessionsResponse]
     """Requires PERMISSION_CAN_REVOKE."""
+    SweepSessions: _grpc.UnaryUnaryMultiCallable[_sessions_pb2.SweepSessionsRequest, _sessions_pb2.SweepSessionsResponse]
+    """Requires PERMISSION_CAN_SWEEP."""
 
 @_typing.type_check_only
 class SessionsAsyncStub(SessionsStub):
@@ -67,6 +69,8 @@ class SessionsAsyncStub(SessionsStub):
     """Requires PERMISSION_CAN_LIST."""
     RevokeSessions: _aio.UnaryUnaryMultiCallable[_sessions_pb2.RevokeSessionsRequest, _sessions_pb2.RevokeSessionsResponse]  # type: ignore[assignment]
     """Requires PERMISSION_CAN_REVOKE."""
+    SweepSessions: _aio.UnaryUnaryMultiCallable[_sessions_pb2.SweepSessionsRequest, _sessions_pb2.SweepSessionsResponse]  # type: ignore[assignment]
+    """Requires PERMISSION_CAN_SWEEP."""
 
 class SessionsServicer(metaclass=_abc_1.ABCMeta):
     """The sessions of the caller of the token of a call, its own: those open,
@@ -114,5 +118,13 @@ class SessionsServicer(metaclass=_abc_1.ABCMeta):
         context: _ServicerContext,
     ) -> _typing.Union[_sessions_pb2.RevokeSessionsResponse, _abc.Awaitable[_sessions_pb2.RevokeSessionsResponse]]:
         """Requires PERMISSION_CAN_REVOKE."""
+
+    @_abc_1.abstractmethod
+    def SweepSessions(
+        self,
+        request: _sessions_pb2.SweepSessionsRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_sessions_pb2.SweepSessionsResponse, _abc.Awaitable[_sessions_pb2.SweepSessionsResponse]]:
+        """Requires PERMISSION_CAN_SWEEP."""
 
 def add_SessionsServicer_to_server(servicer: SessionsServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...

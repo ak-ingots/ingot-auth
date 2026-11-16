@@ -101,7 +101,7 @@ class RecordTestCase(unittest.IsolatedAsyncioTestCase):
         )
         query = AuthListActivitiesParameters(entity_uid=opened.session_uid)
         (expired,) = await self.project.auth.storage.activities.find(query)
-        self.assertEqual(expired.who, "system")
+        self.assertEqual(expired.who, "auth.system")
 
     async def test_the_user_may_not_read_the_record(self) -> None:
         user = await self.caller_of("a1")

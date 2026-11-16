@@ -11,6 +11,7 @@ from ingot_auth.access.groups import (
     AuthAnonymousGroup,
     AuthGroupsOwner,
     AuthSignedInGroup,
+    AuthSystemGroup,
 )
 from ingot_auth.caches import AuthCache
 from ingot_auth.dispatchers import BaseAuthDispatcher
@@ -34,8 +35,9 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
     storage, the cache, the dispatcher of the operations run in the background
     and the mailer, abstract here: the project declares them with a backend in
     a subclass. Its groups are of the whole auth: ``auth.grp_anonymous``, of
-    every caller that tells no one, and ``auth.grp_signed_in``, of every
-    signed-in user, neither keeping members.
+    every caller that tells no one, ``auth.grp_signed_in``, of every
+    signed-in user, and ``auth.grp_system``, of the server itself, none
+    keeping members.
     """
 
     cli_name = "auth"
@@ -43,6 +45,7 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
 
     grp_anonymous = Slot(AuthAnonymousGroup)
     grp_signed_in = Slot(AuthSignedInGroup)
+    grp_system = Slot(AuthSystemGroup)
 
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots

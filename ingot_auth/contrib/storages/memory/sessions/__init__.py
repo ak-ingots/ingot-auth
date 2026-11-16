@@ -72,6 +72,20 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
         )
 
     @t.override
+    async def _get_all_open(
+        self, after: str | None, limit: int
+    ) -> tuple[AuthSessionRecord, ...]:
+        found = sorted(
+            (
+                session
+                for session in self._sessions.values()
+                if session.closed_at is None and (after is None or session.uid > after)
+            ),
+            key=lambda session: session.uid,
+        )
+        return tuple(found[:limit])
+
+    @t.override
     async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         session = self._find_open(session_uid)
         self._sessions[session_uid] = dataclasses.replace(session, seen_at=seen_at)

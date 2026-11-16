@@ -8,6 +8,7 @@ __all__ = (
     "AuthSessionExpired",
     "AuthSessionInfo",
     "AuthSessionToken",
+    "AuthSweepSessionsParameters",
 )
 
 import datetime
@@ -69,6 +70,13 @@ class AuthRevokeAllSessionsParameters:
     """The uid of a profile, whose open sessions are all revoked."""
 
     profile_uid: str
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class AuthSweepSessionsParameters:
+    """How many open sessions a sweep reads a page, closed in a transaction."""
+
+    page_size: int = 1000
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
