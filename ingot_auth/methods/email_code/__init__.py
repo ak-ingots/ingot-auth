@@ -30,6 +30,7 @@ import hmac
 import secrets
 import typing as t
 import unicodedata
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from ingots.defaults.operations import (
@@ -170,6 +171,14 @@ class AuthEmailCodeMethod(BaseAuthMethod[AuthEmailCodeStart, str, AuthEmailCodeS
         if not hmac.compare_digest(self._digest(answer), state.digest):
             raise AuthMethodRefusedError.create()
         return AuthVerified(subject=state.email)
+
+    @t.override
+    def _dump_state(self, state: AuthEmailCodeState) -> dict[str, object]:
+        return {"email": state.email, "digest": state.digest}
+
+    @t.override
+    def _load_state(self, data: Mapping[str, object]) -> AuthEmailCodeState:
+        return AuthEmailCodeState(email=str(data["email"]), digest=str(data["digest"]))
 
     def _build_code_mail(self, email: str, code: str) -> Mail:
         """

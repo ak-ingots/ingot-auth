@@ -293,6 +293,12 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         result = await self.answer(challenge.attempt_uid, "123456")
         self.assertIsInstance(result, AuthSignedUp)
 
+    def test_the_state_comes_back_from_its_plain_values(self) -> None:
+        state = AuthEmailCodeState(email="al@b.c", digest="9f86d0")
+        data = self.method.dump_state(state)
+        self.assertEqual(data, {"email": "al@b.c", "digest": "9f86d0"})
+        self.assertEqual(self.method.load_state(data), state)
+
     def test_the_mail_is_plain_english_its_secrets_out_of_its_repr(self) -> None:
         mail = self.method._build_code_mail("al@b.c", "123456")
         self.assertEqual((mail.to, mail.subject), (("al@b.c",), "Your code"))

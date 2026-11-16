@@ -17,7 +17,7 @@ from .errors import (
 from .steps import AuthStep
 
 if t.TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Mapping
 
     from ingots.defaults.operations import BaseOperation
     from ingots.puer import BoundFactories
@@ -138,6 +138,19 @@ class BaseAuthMethod[StartType, AnswerType, StateType](OperationsOwner, Unit):
         """
         return await self._answer(state, answer)
 
+    @t.final
+    def dump_state(self, state: StateType) -> dict[str, object]:
+        """
+        The state of a challenge as plain values, those of JSON, for a cache
+        out of the process to keep.
+        """
+        return self._dump_state(state)
+
+    @t.final
+    def load_state(self, data: "Mapping[str, object]") -> StateType:
+        """The state of a challenge from the plain values :meth:`dump_state` gave."""
+        return self._load_state(data)
+
     def _get_sign_up_enabled(self) -> bool:
         """A method opens the flows it takes, none here."""
         return False
@@ -169,6 +182,14 @@ class BaseAuthMethod[StartType, AnswerType, StateType](OperationsOwner, Unit):
     async def _answer(self, state: StateType, answer: AnswerType) -> AuthStep:
         """A method of one step asks for nothing, so it takes no answer."""
         raise AuthMethodRefusedError.create()
+
+    def _dump_state(self, state: StateType) -> dict[str, object]:
+        """A method of more than one step gives its state as plain values."""
+        raise NotImplementedError(f"{type(self).__qualname__}._dump_state")
+
+    def _load_state(self, data: "Mapping[str, object]") -> StateType:
+        """A method of more than one step takes its state back from them."""
+        raise NotImplementedError(f"{type(self).__qualname__}._load_state")
 
     @t.final
     async def _check[ParametersType](
