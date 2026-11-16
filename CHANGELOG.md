@@ -2,6 +2,30 @@
 
 <!-- towncrier release notes start -->
 
+## [0.5.0] - 2026-11-16
+### Added
+- An admin, or a job of a schedule as `auth.system`, sweeps the expired
+  sessions: `auth.sessions.op_sweep`, the flag `CAN_SWEEP` of `auth.sessions`
+  granted by `auth.sessions.grp_admins` and `auth.grp_system`,
+  `auth sessions sweep` on the command line, `SweepSessions` of the service
+  `Sessions` over gRPC. A storage of the sessions implements
+  `get_all_open(after, limit)`, the open ones in pages.
+- An operator revokes every open session of a profile:
+  `auth.sessions.op_revoke_all`, `AuthRevokeAllSessionsParameters`, the flag
+  `CAN_REVOKE` of `auth.sessions` granted by `auth.sessions.grp_admins`,
+  `auth sessions revoke-all <profile_uid>` on the command line,
+  `RevokeSessions` of the service `Sessions` over gRPC.
+
+### Changed
+- The parameters of the operations, and the results of the sign-up and the
+  sign-in, moved from the modules `items` to the modules `operations` of their
+  packages; the modules `items` renamed `data`. The packages export them as
+  before.
+- The server acting by itself is the caller `auth.system`, given by
+  `AuthCallersProvider.get_auth_system()` what the new group `auth.grp_system`
+  grants, keeping no members; `AUTH_SYSTEM` of `ingot_auth.activities` is
+  gone. The records of the activity log written before tell `system`.
+
 ## [0.4.0] - 2026-11-15
 ### Added
 - Every change of state of the core recorded in the activity log, in its
