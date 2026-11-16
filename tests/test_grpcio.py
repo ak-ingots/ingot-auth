@@ -20,13 +20,18 @@ from ingot_grpcio.grpc.services.export import build_descriptor_set
 from ingot_grpcio.logging import GrpcLoggingUnit
 from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
+from ingot_mail.contrib.memory import MemoryMailer
 from ingots.defaults.operations import Caller, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from google.protobuf.timestamp_pb2 import Timestamp
 from ingots.puer import Slot
 
 from ingot_auth import AuthProject
-from ingot_auth.__main__ import AuthMemorySessionsUnit, AuthMemorySignInUnit
+from ingot_auth.__main__ import (
+    AuthMemoryMailUnit,
+    AuthMemorySessionsUnit,
+    AuthMemorySignInUnit,
+)
 from ingot_auth.access.groups import (
     AuthAnonymousGroup,
     AuthGroup,
@@ -118,7 +123,6 @@ from ingot_auth.profiles import (
 from ingot_auth.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
-from ingot_auth.contrib.mailers.memory import AuthMemoryMailer
 from ingot_auth.contrib.transports.grpcio.challenges import build_challenge
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
@@ -431,7 +435,6 @@ class TstEmailCodeMethodsUnit(AuthMethodsUnit):
 class TstEmailCodeAuthUnit(TstAuthUnit):
     cache = Slot(AuthMemoryCache)
     dispatcher = Slot(AuthMemoryDispatcher)
-    mailer = Slot(AuthMemoryMailer)
     sessions = Slot(AuthMemorySessionsUnit)
     sign_in = Slot(AuthMemorySignInUnit)
     methods = Slot(TstEmailCodeMethodsUnit)
@@ -463,6 +466,7 @@ class TstEmailCodeGrpcUnit(TstGrpcUnit):
 
 
 class TstEmailCodeProject(TstProject):
+    mail = Slot(AuthMemoryMailUnit)
     settings = Slot(TstEmailCodeSettingsUnit)
     auth = Slot(TstEmailCodeAuthUnit)
     grpc = Slot(TstEmailCodeGrpcUnit)
@@ -1579,7 +1583,8 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         """The code of the last mail, once the mail is out."""
         auth = t.cast(TstEmailCodeAuthUnit, self.project.auth)
         await auth.dispatcher.join()
-        text = auth.mailer.get_sent()[-1].text
+        mailer = t.cast(MemoryMailer, self.project.mail.mailer)
+        text = mailer.get_sent()[-1].text
         match = re.match(r"Your code is (\d+)\.", text)
         assert match is not None
         return match[1]

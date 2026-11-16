@@ -7,7 +7,8 @@ repeat what README or the ADRs say: link to them.
 
 `ingot-auth`: an addon of [Ingots](https://github.com/ak-ingots/ingots) for
 the sign-up, the sign-in and the sessions of the users of an application.
-`AuthProject` (`project.py`) takes the addon's `AuthSettingsUnit` (`settings/`)
+`AuthProject` (`project.py`), the `MailProject` of ingot-mail, whose
+mailer sends the mail of the methods, takes the addon's `AuthSettingsUnit` (`settings/`)
 with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
 `AuthLoggingUnit` (`logging/`, the logger `ingot_auth`), its
 `AuthOperationsUnit` (`operations/`, whose `AuthCallersProvider` gives the
@@ -72,9 +73,9 @@ with the transactions of a backend over all its storages; and the caches
 `caches/`, the same for what lives minutes, the attempts, the sessions and
 their callers, `AuthCache` the facade, depending on the storages alone, for
 the records they keep too; the dispatcher `dispatchers/`, operations run
-in the background, `BaseAuthDispatcher` the facade; and the mailer
-`mailers/`, `BaseAuthMailer` the facade delivering an `AuthMail`, the mail
-of the email code built by the method, sent by an operation of it); a
+in the background, `BaseAuthDispatcher` the facade, the mail of the email code built by the
+method as a `Mail` of ingot-mail, sent by an operation of it by the mailer
+of the project); a
 method of the catalogue is whole, a plain default for what it sends, so
 that an application plugs only the backends; a unit lives in the
 `__init__.py` of its package, as in `ingots.defaults`, and a class takes the
@@ -86,7 +87,7 @@ far as it goes; the methods of sign-in are bound by the application, the
 storage and the transport plug in. The core holds the facades; their
 implementations are in `contrib/` (`contrib/storages/<backend>/`,
 `contrib/transports/<addon>/`, `contrib/caches/<backend>/`,
-`contrib/dispatchers/<backend>/`, `contrib/mailers/<backend>/`), each under
+`contrib/dispatchers/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
 The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013: a file per

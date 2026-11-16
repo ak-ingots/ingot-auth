@@ -20,7 +20,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 # Before 1.0 a minor version of ingots may break its addons.
-dependencies = ["ingots>=0.34.0,<0.35"]
+dependencies = [
+    "ingot-mail>=0.2.0,<0.3",
+    "ingots>=0.34.0,<0.35",
+]
 
 [project.optional-dependencies]
 grpcio = ["ingot-grpcio>=0.13.0,<0.14"]

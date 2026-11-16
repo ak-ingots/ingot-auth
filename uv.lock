@@ -422,6 +422,7 @@ name = "ingot-auth"
 version = "0.5.0"
 source = { editable = "." }
 dependencies = [
+    { name = "ingot-mail" },
     { name = "ingots" },
 ]
 
@@ -461,6 +462,7 @@ doc = [
 [package.metadata]
 requires-dist = [
     { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.13.0,<0.14" },
+    { name = "ingot-mail", specifier = ">=0.2.0,<0.3" },
     { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.14.0,<0.15" },
     { name = "ingots", specifier = ">=0.34.0,<0.35" },
 ]
@@ -503,6 +505,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ef/63/c9c58d67b5dd41663697febdc43c9edac1e2f3af6653483bebabd09d69d5/ingot_grpcio-0.13.0.tar.gz", hash = "sha256:21d77940e5e0d9748b6be5299df08f23f5e8f8ed627661c11d4c325ee6a193ac", size = 35563, upload-time = "2026-11-14T09:08:11.342Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/c7/c0282b6e4e7b54eb44d29733eea2bb86b93899f0fd402240d47cb48b31ce/ingot_grpcio-0.13.0-py3-none-any.whl", hash = "sha256:8a977aff118d4690e4f86e74afd17e03e64f4ab5a1405bc88a4cd95f9b198c27", size = 41318, upload-time = "2026-11-14T09:08:09.713Z" },
+]
+
+[[package]]
+name = "ingot-mail"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ingots" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/b7/754db36662e8ac3ac465fa51c7db8ef129b87d7a2de0f493719cf134c5a0/ingot_mail-0.2.0.tar.gz", hash = "sha256:bde0057fb1a19bedef8b63e7c752f686218e14f85dd39919c13ede639bb91b91", size = 18822, upload-time = "2026-11-16T16:29:33.534Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/86/45b26cec6db347dac54f9091515912a6a0a8f6f15e7a5d6bc29e5312afba/ingot_mail-0.2.0-py3-none-any.whl", hash = "sha256:16ac0d699465543382f6b5e164e030cbd54d3c473736a83386f44c3ddf2ec43e", size = 21382, upload-time = "2026-11-16T16:29:31.754Z" },
 ]
 
 [[package]]

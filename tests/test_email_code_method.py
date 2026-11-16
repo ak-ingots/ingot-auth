@@ -6,6 +6,8 @@ from unittest import mock
 
 from ingots.defaults.operations import Caller, Permissions
 from ingots.puer import Slot
+from ingot_mail.mail import Mail
+from ingot_mail.contrib.memory import MemoryMailer
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.methods.email_code import (
@@ -16,7 +18,6 @@ from ingot_auth.methods.email_code import (
     AuthEmailSignUpPolicies,
     AuthSendCodeParameters,
 )
-from ingot_auth.mailers import AuthMail
 from ingot_auth.methods import (
     AuthChallenge,
     AuthCodeChallenge,
@@ -93,6 +94,10 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
     project: TstProject
 
     @property
+    def mailer(self) -> MemoryMailer:
+        return self.project.mail.mailer
+
+    @property
     def method(self) -> TstEmailCodeMethod:
         return self.project.auth.methods.email_code
 
@@ -106,15 +111,15 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
     def get_codes(self) -> list[tuple[str, str]]:
         """The emails the codes went to so far, with the codes."""
         codes = []
-        for mail in self.project.auth.mailer.get_sent():
+        for mail in self.mailer.get_sent():
             if match := re.match(r"Your code is (\d+)\.", mail.text):
-                codes.append((mail.to, match[1]))
+                codes.append((mail.to[0], match[1]))
         return codes
 
     def get_denials(self) -> list[str]:
         """The emails told the sign-in is closed so far."""
-        mails = self.project.auth.mailer.get_sent()
-        return [mail.to for mail in mails if "is closed" in mail.subject]
+        mails = self.mailer.get_sent()
+        return [mail.to[0] for mail in mails if "is closed" in mail.subject]
 
     async def start(self, email: str) -> AuthSignUpChallenge:
         start = AuthStartSignUpParameters(
@@ -173,7 +178,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
             await self.start("alice.liddell@example.com")
         self.assertEqual(error.exception.field, "email")
         self.assertEqual(error.exception.policies, ("length",))
-        self.assertEqual(self.project.auth.mailer.get_sent(), ())
+        self.assertEqual(self.mailer.get_sent(), ())
         await self.sign_up("al@b.c")
 
     async def test_the_state_keeps_no_code(self) -> None:
@@ -232,7 +237,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         assert isinstance(step, AuthChallenge)
         await self.project.auth.dispatcher.join()
         self.assertEqual(step.challenge, AuthCodeChallenge(length=6))
-        self.assertEqual(self.project.auth.mailer.get_sent(), ())
+        self.assertEqual(self.mailer.get_sent(), ())
         for code in ("000000", "123456"):
             with self.assertRaises(AuthMethodRefusedError):
                 await self.method.answer(step.state, code)
@@ -253,13 +258,13 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
             await self.method.answer(step.state, code)
 
     async def test_a_start_replies_before_the_mail_is_sent(self) -> None:
-        mailer = self.project.auth.mailer
+        mailer = self.mailer
         sending = asyncio.Event()
         send = type(mailer)._send
 
-        async def send_later(self: t.Any, mail: AuthMail) -> None:
+        async def send_later(self: t.Any, mail: Mail, sender: str) -> None:
             await sending.wait()
-            await send(self, mail)
+            await send(self, mail, sender)
 
         with mock.patch.object(type(mailer), "_send", send_later):
             step = await self.method.start_sign_up(
@@ -275,7 +280,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
         logger = self.enterContext(
             mock.patch("ingots.defaults.operations.runner.logger")
         )
-        mailer = type(self.project.auth.mailer)
+        mailer = MemoryMailer
         with (
             mock.patch.object(mailer, "_send", side_effect=OSError),
             mock.patch.object(self.method, "_create_code", return_value="123456"),
@@ -290,7 +295,7 @@ class EmailCodeMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     def test_the_mail_is_plain_english_its_secrets_out_of_its_repr(self) -> None:
         mail = self.method._build_code_mail("al@b.c", "123456")
-        self.assertEqual((mail.to, mail.subject), ("al@b.c", "Your code"))
+        self.assertEqual((mail.to, mail.subject), (("al@b.c",), "Your code"))
         self.assertIn("Your code is 123456.", mail.text)
         self.assertNotIn("al@b.c", repr(mail))
         self.assertNotIn("123456", repr(mail))

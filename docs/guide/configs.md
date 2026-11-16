@@ -1,7 +1,9 @@
 # Configs
 
 Set as environment variables with the prefix of the project
-(`APP_AUTH_LOGGING_LEVEL`), in a `--configs-file` or with `--config`.
+(`APP_AUTH_LOGGING_LEVEL`), in a `--configs-file` or with `--config`. Those
+of the mail, `MAIL_FROM` the sender of the mail of the methods and
+`MAIL_SMTP_*`, are of [ingot-mail](https://pypi.org/project/ingot-mail/).
 
 | Name | Default | Meaning |
 |---|---|---|

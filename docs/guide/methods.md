@@ -44,7 +44,7 @@ An identifier is bound to a profile once, whatever method verifies it: a
 method names the kind of its identifier, `nickname`, `email`. An email and
 a code sent to it comes too, of two steps, `AuthEmailCodeMethod`, whole as
 every method of the catalogue is: the application declares it and plugs a
-mailer into its auth ({doc}`../contrib/mailers`), nothing more.
+mailer into its project ({doc}`../contrib/mailers`), nothing more.
 
 ```python
 from ingot_auth.methods.email_code import AuthEmailCodeMethod
@@ -71,8 +71,8 @@ its language, a template, by the hooks that build it:
 ```python
 class AppEmailCodeMethod(AuthEmailCodeMethod):
     @t.override
-    def _build_code_mail(self, email: str, code: str) -> AuthMail:
-        return AuthMail(to=email, subject="Votre code", text=f"Code : {code}")
+    def _build_code_mail(self, email: str, code: str) -> Mail:
+        return Mail(to=(email,), subject="Votre code", text=f"Code : {code}")
 ```
 
 ## Toggles and permissions

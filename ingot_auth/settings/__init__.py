@@ -2,13 +2,13 @@
 
 __all__ = ("AuthSettingsUnit",)
 
-from ingots.defaults.settings import SettingsUnit
+from ingot_mail.settings import MailSettingsUnit
 from ingots.puer import Slot
 
 from .configs import AuthConfigs
 
 
-class AuthSettingsUnit(SettingsUnit):
-    """The settings unit, with the addon's :class:`AuthConfigs`."""
+class AuthSettingsUnit(MailSettingsUnit):
+    """The settings unit of the mail, with the addon's :class:`AuthConfigs`."""
 
     configs = Slot(AuthConfigs)

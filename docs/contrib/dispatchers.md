@@ -9,7 +9,7 @@ does, for the caller of the metadata, and returns before it ends. The
 method of the email sends its mail so: `AuthSendCodeOperation` and
 `AuthSendDenialOperation`, in its slots `op_send_code` and
 `op_send_denial`, build the mail by the hooks of the method and hand it to
-the mailer ({doc}`mailers`); their parameters keep the email and the code
+the mailer of the project ({doc}`mailers`); their parameters keep the email and the code
 out of their `repr`, as the runner logs them.
 
 ## In the process
