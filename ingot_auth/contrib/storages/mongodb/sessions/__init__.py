@@ -34,7 +34,8 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
     The storage of the sessions in MongoDB: a document a session, its id the
     ``_id``, a unique index over the hashes of the tokens, which a request
     finds an open one by, and one over the uids, which the open sessions of a
-    profile are found by; and the storages of its slots.
+    profile are found by, and one over the open ones by their ids, which a
+    sweep pages through; and the storages of its slots.
     """
 
     MONGODB_COLLECTION: t.ClassVar[str] = "auth_sessions"
@@ -88,6 +89,21 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         return tuple([_build_session(document) async for document in documents])
 
     @t.override
+    async def _get_all_open(
+        self, after: str | None, limit: int
+    ) -> tuple[AuthSessionRecord, ...]:
+        collection = await self._mongodb_get_collection()
+        query: "Document" = {"closed_at": None}
+        if after is not None:
+            query["_id"] = {"$gt": after}
+        documents = (
+            collection.find(query, session=self._mongodb_get_session())
+            .sort("_id", 1)
+            .limit(limit)
+        )
+        return tuple([_build_session(document) async for document in documents])
+
+    @t.override
     async def _touch(self, session_uid: str, seen_at: datetime.datetime) -> None:
         collection = await self._mongodb_get_collection()
         result = await collection.update_one(
@@ -121,6 +137,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
     ) -> None:
         await collection.create_index("token_hash", unique=True)
         await collection.create_index([("profile_uid", 1), ("closed_at", 1)])
+        await collection.create_index([("closed_at", 1), ("_id", 1)])
 
 
 def _build_session(document: "Document") -> AuthSessionRecord:

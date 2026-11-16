@@ -10,6 +10,7 @@ from ingot_auth.sessions import (
     AuthRevokeAllSessionsParameters,
     AuthRevokeOwnSessionParameters,
     AuthSessionInfo,
+    AuthSweepSessionsParameters,
 )
 from ingot_auth.storages import AuthSessionCloseReason
 
@@ -84,6 +85,16 @@ class AuthGrpcSessionsServicer(
         factory = self.project.auth.sessions.op_revoke_all
         count = await self.run_operation(factory, parameters, context)
         return sessions_pb2.RevokeSessionsResponse(count=count)
+
+    @t.override
+    async def SweepSessions(
+        self, request: sessions_pb2.SweepSessionsRequest, context: Context
+    ) -> sessions_pb2.SweepSessionsResponse:
+        factory = self.project.auth.sessions.op_sweep
+        count = await self.run_operation(
+            factory, AuthSweepSessionsParameters(), context
+        )
+        return sessions_pb2.SweepSessionsResponse(count=count)
 
 
 def build_session_message(session: AuthOwnSession) -> sessions_pb2.Session:

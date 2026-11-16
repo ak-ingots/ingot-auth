@@ -10,7 +10,12 @@ flags of the sign-up and of the sign-in, those of the methods open, the
 reading of the metadata; an application grants anyone more, or less, by
 its own `AuthAnonymousGroup` in the slot `grp_anonymous`. A signed-in user
 is not a member of `auth.grp_anonymous`: one its groups do not let in uses
-what is open to anyone until it signs in, refused once it has.
+what is open to anyone until it signs in, refused once it has. The server
+acting by itself, a job of a schedule, is the caller `auth.system` of
+`project.operations.callers.get_auth_system()`, with what the group
+`auth.grp_system` of the core grants, none stored either: the sweep of the
+expired sessions; an application gives its jobs more by its own
+`AuthSystemGroup` in the slot `grp_system`.
 
 ## Groups
 

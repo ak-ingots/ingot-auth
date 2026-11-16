@@ -148,3 +148,24 @@ $ python -m app auth sessions revoke-all 0f6c…
 
 Over gRPC, `RevokeSessions` of the service `Sessions`, telling the count.
 `auth.sessions.grp_admins` grants the flag, `CAN_REVOKE` of `auth.sessions`.
+
+## Sweeping the expired sessions
+
+A session expires when a request brings its token; one never brought again
+stays open in the storage. `auth.sessions.op_sweep` closes every open
+session the lifetime tells expired, with its reason, a page of the storage
+at a time, each page in a transaction of its own, so a sweep stopped
+halfway keeps what it closed; it prints how many. A schedule of the
+application runs it, cron or a job, as `auth.system`, which the group
+`auth.grp_system` grants the flag ({doc}`access`):
+
+```console
+$ python -m app auth sessions sweep
+17
+```
+
+An admin sweeps over gRPC, `SweepSessions` of the service `Sessions`, its
+uid in each record `expire` of the activity log.
+`auth.sessions.grp_admins` grants the flag, `CAN_SWEEP` of `auth.sessions`.
+A storage of the sessions gives the open ones in pages by their uid,
+`get_all_open(after, limit)`.

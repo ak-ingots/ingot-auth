@@ -121,3 +121,19 @@ class AuthSessionsStorageContract(BaseAuthContract):
             with self.assertRaises(AuthSessionNotFoundError) as error:
                 await sessions.close(session_uid, reason, NOW)
             self.assertIn(session_uid, str(error.exception))
+
+    async def test_the_open_sessions_of_all_come_in_pages_by_uid(self) -> None:
+        sessions = self.project.auth.storage.sessions
+        opened = [
+            create_session(f"s{n}", f"h{n}", uid=uid)
+            for n, uid in ((4, "a1"), (2, "b2"), (5, "a1"), (1, "c3"), (3, "b2"))
+        ]
+        for session in opened:
+            await sessions.open(session)
+        await sessions.close("s3", AuthSessionCloseReason.SIGNED_OUT, NOW)
+        first = await sessions.get_all_open(None, 2)
+        self.assertEqual([s.uid for s in first], ["s1", "s2"])
+        self.assertEqual(first[0], opened[3])
+        second = await sessions.get_all_open("s2", 2)
+        self.assertEqual([s.uid for s in second], ["s4", "s5"])
+        self.assertEqual(await sessions.get_all_open("s5", 2), ())

@@ -147,7 +147,7 @@ class ActivityRecordsTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             (expired.who, expired.session_uid, expired.action, expired.context),
             (
-                "system",
+                "auth.system",
                 None,
                 AuthActivityAction.EXPIRE,
                 {"reason": "expired_absolute"},

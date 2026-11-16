@@ -68,7 +68,8 @@ class AuthSessionsAdminsGroup(AuthGroup):
     """
     Who keeps the registries of the sessions and binds the attributes to the
     presets: all a manager does, and the bindings; who reads the record of
-    the sign-ins of a profile too, and who revokes its sessions.
+    the sign-ins of a profile too, who revokes its sessions, and who sweeps
+    the expired ones.
     """
 
     parent: "AuthSessionsUnit"
@@ -80,7 +81,11 @@ class AuthSessionsAdminsGroup(AuthGroup):
         presets = self.parent.presets.permissions
         return (
             super()._get_permissions()
-            | sessions(sessions.flags.CAN_LIST, sessions.flags.CAN_REVOKE)
+            | sessions(
+                sessions.flags.CAN_LIST,
+                sessions.flags.CAN_REVOKE,
+                sessions.flags.CAN_SWEEP,
+            )
             | attrs(
                 attrs.flags.CAN_CREATE,
                 attrs.flags.CAN_READ,

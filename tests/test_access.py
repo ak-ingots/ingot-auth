@@ -164,6 +164,7 @@ class ArticlesAuthUnit(AuthMemoryUnit):
 CORE_GROUPS: t.Final = (
     "auth.grp_anonymous",
     "auth.grp_signed_in",
+    "auth.grp_system",
     "auth.profiles.grp_consumers",
     "auth.profiles.grp_managers",
     "auth.sessions.grp_consumers",
@@ -284,7 +285,11 @@ class GroupsTestCase(unittest.TestCase):
         self.assertEqual(
             sessions.grp_admins.get_permissions(),
             everything
-            | masks(AuthSessionsUnit.Flags.CAN_LIST, AuthSessionsUnit.Flags.CAN_REVOKE),
+            | masks(
+                AuthSessionsUnit.Flags.CAN_LIST,
+                AuthSessionsUnit.Flags.CAN_REVOKE,
+                AuthSessionsUnit.Flags.CAN_SWEEP,
+            ),
         )
 
     def test_a_group_held_by_two_bases_must_be_joined(self) -> None:
@@ -386,9 +391,9 @@ class OperationsTestCase(unittest.TestCase):
                 asyncio.run(call)
             self.assertEqual(error.exception.name, "guests")
 
-    def test_anonymous_and_signed_in_keep_no_members(self) -> None:
+    def test_anonymous_signed_in_and_system_keep_no_members(self) -> None:
         members = self.access.members
-        for group in ("auth.grp_anonymous", "auth.grp_signed_in"):
+        for group in ("auth.grp_anonymous", "auth.grp_signed_in", "auth.grp_system"):
             membership = AuthMembership(group=group, profile_uid="a1")
             for call in (
                 self.runner.run(members.op_add, membership, self.metadata),
@@ -523,6 +528,7 @@ class CommandsTestCase(unittest.TestCase):
                 "auth.grp_anonymous\tauth.metadata=1\tauth.sign_in=1"
                 "\tauth.sign_up=1\n"
                 "auth.grp_signed_in\tauth.profiles=2\tauth.sessions=3\n"
+                "auth.grp_system\tauth.sessions=16\n"
                 "auth.profiles.grp_consumers\tauth.profiles.attrs=2"
                 "\tauth.profiles.tags=2\n"
                 "auth.profiles.grp_managers\tauth.profiles=1\tauth.profiles.attrs=15"
@@ -531,7 +537,7 @@ class CommandsTestCase(unittest.TestCase):
                 "\tauth.sessions.presets=2\n"
                 "auth.sessions.grp_managers\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=15\n"
-                "auth.sessions.grp_admins\tauth.sessions=12\tauth.sessions.attrs=15"
+                "auth.sessions.grp_admins\tauth.sessions=28\tauth.sessions.attrs=15"
                 "\tauth.sessions.presets=63\n"
                 "auth.activities.grp_auditors\tauth.activities=1\n"
                 "shop.grp_buyers\tshop=1\n"

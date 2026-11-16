@@ -6,6 +6,7 @@ __all__ = (
     "AuthRevokeAllSessionsOperation",
     "AuthRevokeOtherSessionsOperation",
     "AuthRevokeOwnSessionOperation",
+    "AuthSweepSessionsOperation",
 )
 
 import typing as t
@@ -25,7 +26,9 @@ from .items import (
     AuthOwnSession,
     AuthRevokeAllSessionsParameters,
     AuthRevokeOwnSessionParameters,
+    AuthSessionExpired,
     AuthSessionInfo,
+    AuthSweepSessionsParameters,
 )
 
 if t.TYPE_CHECKING:
@@ -187,13 +190,66 @@ class AuthRevokeAllSessionsOperation(
         return closed
 
 
+class AuthSweepSessionsOperation(BaseOperation[AuthSweepSessionsParameters, int]):
+    """
+    Closes every open session the strategy of the lifetime tells expired, with
+    its reason, as :meth:`AuthSessionsUnit.authenticate` closes one, and tells
+    how many: a page of the storage at a time, each in a transaction of its
+    own, so that a sweep stopped halfway keeps what it closed. Its caller is
+    in the log, an admin, or ``auth.system``, a job of a schedule.
+    """
+
+    project: "AuthProject"
+    parent: "AuthSessionsUnit"
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        permissions = self.parent.permissions
+        return permissions(permissions.flags.CAN_SWEEP)
+
+    @t.override
+    async def _run(
+        self, parameters: AuthSweepSessionsParameters, metadata: OperationMetadata
+    ) -> int:
+        auth = self.project.auth
+        now = self.parent._get_now()
+        closed = 0
+        after: str | None = None
+        while page := await auth.storage.sessions.get_all_open(
+            after, parameters.page_size
+        ):
+            after = page[-1].uid
+            expired = []
+            async with auth.storage.transaction():
+                for session in page:
+                    reason = self.parent.lifetime.check(session, now)
+                    if reason is None:
+                        continue
+                    try:
+                        await auth.storage.sessions.close(session.uid, reason, now)
+                    except AuthSessionNotFoundError:
+                        continue  # closed meanwhile, by another request
+                    await auth.activities.record(
+                        self.parent,
+                        session.uid,
+                        AuthActivityAction.EXPIRE,
+                        metadata,
+                        context=AuthSessionExpired(reason=reason.value),
+                    )
+                    expired.append(session)
+            for session in expired:  # once the storage keeps them closed
+                await self.parent._forget(session.token_hash)
+            closed += len(expired)
+        return closed
+
+
 class AuthListSessionsOperation(
     BaseOperation[AuthListSessionsParameters, tuple[AuthSessionInfo, ...]]
 ):
     """
     The sessions of a profile, by the time they opened: those open, or all of
-    them, the closed ones with when, why and by whom, the record of its
-    sign-ins. An operator reads it, not the user.
+    them, the closed ones with when and why, the record of its sign-ins. An
+    operator reads it, not the user.
     """
 
     project: "AuthProject"

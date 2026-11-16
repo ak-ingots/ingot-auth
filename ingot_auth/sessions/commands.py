@@ -1,6 +1,10 @@
 """The commands of the sessions."""
 
-__all__ = ("AuthListSessionsCommand", "AuthRevokeAllSessionsCommand")
+__all__ = (
+    "AuthListSessionsCommand",
+    "AuthRevokeAllSessionsCommand",
+    "AuthSweepSessionsCommand",
+)
 
 import argparse
 import typing as t
@@ -11,10 +15,16 @@ from .items import (
     AuthListSessionsParameters,
     AuthRevokeAllSessionsParameters,
     AuthSessionInfo,
+    AuthSweepSessionsParameters,
 )
-from .operations import AuthListSessionsOperation, AuthRevokeAllSessionsOperation
+from .operations import (
+    AuthListSessionsOperation,
+    AuthRevokeAllSessionsOperation,
+    AuthSweepSessionsOperation,
+)
 
 if t.TYPE_CHECKING:
+    from ingots.defaults.operations import Caller
     from ingots.puer import BoundFactory
 
     from ingot_auth.project import AuthProject
@@ -113,6 +123,38 @@ class AuthRevokeAllSessionsCommand(
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthRevokeAllSessionsOperation]":
         return self.project.auth.sessions.op_revoke_all
+
+    @t.override
+    async def _run(self) -> None:
+        print(await self.run_operation(self.cli_args))
+
+
+class AuthSweepSessionsCommand(BaseOperationCommand[AuthSweepSessionsParameters, int]):
+    """
+    Sweeps the expired sessions and prints how many: a job of a schedule of
+    the application, cron or another, run as ``auth.system``.
+    """
+
+    project: "AuthProject"
+
+    cli_name = "sweep"
+    cli_description = "Closes the expired sessions: a job of a schedule."
+    cli_args: AuthSweepSessionsParameters
+
+    @t.override
+    @classmethod
+    def _cli_build_args(
+        cls, namespace: argparse.Namespace
+    ) -> AuthSweepSessionsParameters:
+        return AuthSweepSessionsParameters()
+
+    @t.override
+    def _get_operation(self) -> "BoundFactory[AuthSweepSessionsOperation]":
+        return self.project.auth.sessions.op_sweep
+
+    @t.override
+    def _get_caller(self) -> "Caller":
+        return self.project.operations.callers.get_auth_system()
 
     @t.override
     async def _run(self) -> None:

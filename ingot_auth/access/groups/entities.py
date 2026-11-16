@@ -1,6 +1,6 @@
 """The groups: what each grants, declared in the code."""
 
-__all__ = ("AuthAnonymousGroup", "AuthGroup", "AuthSignedInGroup")
+__all__ = ("AuthAnonymousGroup", "AuthGroup", "AuthSignedInGroup", "AuthSystemGroup")
 
 import typing as t
 
@@ -89,3 +89,19 @@ class AuthAnonymousGroup(AuthGroup):
             | auth.methods.get_anonymous_permissions()
             | auth.metadata.get_anonymous_permissions()
         )
+
+
+class AuthSystemGroup(AuthGroup):
+    """
+    The group of the server acting by itself, of the core, a member none
+    stored, in the slot ``grp_system`` of the auth: the caller ``auth.system``
+    of the project has what it grants, a job of a schedule running as it. It
+    grants the sweep of the expired sessions; what an application gives a
+    job of its own, it adds by the hook, the application declaring the class
+    that joins them in the slot.
+    """
+
+    @t.override
+    def _get_permissions(self) -> Permissions:
+        sessions = self.project.auth.sessions.permissions
+        return super()._get_permissions() | sessions(sessions.flags.CAN_SWEEP)

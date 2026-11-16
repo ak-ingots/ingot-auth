@@ -31,6 +31,9 @@ __all__ = (
     "AuthSlidingLifetime",
     "AuthSessionToken",
     "AuthSessionsUnit",
+    "AuthSweepSessionsCommand",
+    "AuthSweepSessionsOperation",
+    "AuthSweepSessionsParameters",
     "BaseAuthSessionAttrsDeriver",
     "BaseAuthSessionLifetime",
 )
@@ -52,7 +55,6 @@ from ingots.puer import Factory, Slot
 from ingots.puer.cli import CliUnit
 
 from ingot_auth.access.groups import AuthGroupsOwner
-from ingot_auth.activities import AUTH_SYSTEM
 from ingot_auth.caches import AuthCaller
 from ingot_auth.profiles.hashes import build_profile_hash
 from ingot_auth.storages import (
@@ -63,7 +65,11 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
-from .commands import AuthListSessionsCommand, AuthRevokeAllSessionsCommand
+from .commands import (
+    AuthListSessionsCommand,
+    AuthRevokeAllSessionsCommand,
+    AuthSweepSessionsCommand,
+)
 from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
 from .errors import AuthOwnSessionNotFoundError, AuthSessionExpiredError
 from .groups import (
@@ -79,6 +85,7 @@ from .items import (
     AuthSessionExpired,
     AuthSessionInfo,
     AuthSessionToken,
+    AuthSweepSessionsParameters,
 )
 from .lifetimes import (
     AuthFixedLifetime,
@@ -92,6 +99,7 @@ from .operations import (
     AuthRevokeAllSessionsOperation,
     AuthRevokeOtherSessionsOperation,
     AuthRevokeOwnSessionOperation,
+    AuthSweepSessionsOperation,
 )
 from .presets import AuthSessionPresetsUnit
 
@@ -121,7 +129,8 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     or all but the current one, by the flags ``auth.grp_signed_in`` grants;
     an operator reads those of a profile, the closed ones too, the record of
     its sign-ins, ``auth sessions list <uid> --closed``, and revokes them all,
-    ``auth sessions revoke-all <profile_uid>``.
+    ``auth sessions revoke-all <profile_uid>``; an admin, or a job of a
+    schedule as ``auth.system``, sweeps the expired ones, ``auth sessions sweep``.
     """
 
     class Flags(PermissionFlags):
@@ -130,13 +139,14 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         ``auth.sessions``: each kept for good, as the masks are stored and sent.
         ``auth.grp_signed_in`` grants a signed-in user its own,
         ``auth.sessions.grp_admins`` the listing of those of a profile, the
-        record of its sign-ins, and their revoking.
+        record of its sign-ins, their revoking, and the sweep of the expired.
         """
 
         CAN_LIST_OWN = 1 << 0
         CAN_REVOKE_OWN = 1 << 1
         CAN_LIST = 1 << 2
         CAN_REVOKE = 1 << 3
+        CAN_SWEEP = 1 << 4
 
     cli_name = "sessions"
     cli_description = "The sessions of the users."
@@ -154,9 +164,11 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     op_revoke_others = Factory(AuthRevokeOtherSessionsOperation)
     op_list = Factory(AuthListSessionsOperation)
     op_revoke_all = Factory(AuthRevokeAllSessionsOperation)
+    op_sweep = Factory(AuthSweepSessionsOperation)
 
     cmd_list = Slot(AuthListSessionsCommand)
     cmd_revoke_all = Slot(AuthRevokeAllSessionsCommand)
+    cmd_sweep = Slot(AuthSweepSessionsCommand)
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
@@ -320,11 +332,12 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     ) -> None:
         """
         Closes an expired session and forgets it in the cache, recorded in the
-        activity log by the server itself, :data:`AUTH_SYSTEM`, in a run of its
+        activity log by the server itself, ``auth.system``, in a run of its
         own, which the line of the log tells, to link them.
         """
         auth = self.project.auth
-        metadata = self.project.operations.create_metadata(AUTH_SYSTEM)
+        operations = self.project.operations
+        metadata = operations.create_metadata(operations.callers.get_auth_system())
         logger.info(
             "the session %s expired, %s, run %s", session.uid, reason, metadata.run_uid
         )

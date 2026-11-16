@@ -8,11 +8,12 @@ An operation records its change, an action, with a context if it needs one::
     )
 
 The actor is the caller of the metadata and its session; the server doing a
-thing by itself acts as :data:`AUTH_SYSTEM`, in a run of its own.
+thing by itself acts as ``auth.system``, the caller of
+:meth:`~ingot_auth.operations.AuthCallersProvider.get_auth_system`, in a run
+of its own.
 """
 
 __all__ = (
-    "AUTH_SYSTEM",
     "AuthActivitiesAuditorsGroup",
     "AuthActivitiesUnit",
     "AuthActivityContext",
@@ -29,7 +30,6 @@ import datetime
 import typing as t
 
 from ingots.defaults.operations import (
-    Caller,
     OperationMetadata,
     OperationsOwner,
     PermissionFlags,
@@ -54,10 +54,6 @@ from .operations import AuthListActivitiesOperation
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
-
-# the caller of what the server does by itself, a session expiring: not the
-# initiative of a user, nor of an operator
-AUTH_SYSTEM: t.Final = Caller(uid="system")
 
 
 class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
