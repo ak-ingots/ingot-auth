@@ -37,7 +37,7 @@ from ingot_auth.storages import (
     AuthSessionAttrSource,
     AuthTag,
 )
-from ingot_auth.testing.contracts.activities import create_record
+from ingot_auth.testing.contracts import create_record
 from tests import QUIET, ROOT, masks
 
 

@@ -27,9 +27,11 @@ __all__ = (
     "AuthSignUpRecordsStorageContract",
     "AuthStorageTransactionsContract",
     "AuthTagsStorageContract",
+    "create_record",
+    "create_session",
 )
 
-from .activities import AuthActivitiesStorageContract
+from .activities import AuthActivitiesStorageContract, create_record
 from .access import AuthMembersStorageContract
 from .cache import (
     AuthAttemptsCacheContract,
@@ -42,7 +44,7 @@ from .profiles import (
     AuthProfilesStorageContract,
     AuthSecretsStorageContract,
 )
-from .sessions import AuthSessionsStorageContract
+from .sessions import AuthSessionsStorageContract, create_session
 from .sign_up import AuthSignUpRecordsStorageContract
 from .storage import (
     AuthAttrsStorageContract,

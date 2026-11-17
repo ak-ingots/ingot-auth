@@ -114,7 +114,7 @@ from ingot_auth.activities import (
 )
 from ingot_auth.activities.v1 import activities_pb2
 from ingot_auth.contrib.transports.grpcio.activities import ACTIONS
-from ingot_auth.testing.contracts.activities import create_record
+from ingot_auth.testing.contracts import create_record
 from ingot_auth.profiles.v1 import profiles_pb2
 from ingot_auth.profiles import (
     AuthProfilesUnit,
