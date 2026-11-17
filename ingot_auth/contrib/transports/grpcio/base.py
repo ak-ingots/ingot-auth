@@ -1,6 +1,12 @@
 """The base of the servicers."""
 
-__all__ = ("PROFILE_HASH_KEY", "BaseAuthGrpcServicer", "Context")
+__all__ = (
+    "PROFILE_HASH_KEY",
+    "BaseAuthGrpcServicer",
+    "Context",
+    "get_bearer_token",
+    "get_peer_ip",
+)
 
 import ipaddress
 import typing as t
@@ -67,9 +73,9 @@ def get_bearer_token(
     metadata: "Iterable[tuple[str, str | bytes]] | None",
 ) -> str | None:
     """
-    Internal: the token of the header ``authorization`` of a call, of the
-    scheme ``Bearer`` in any case (RFC 6750), ``None`` without one: a header
-    of another scheme tells no token either.
+    The token of the header ``authorization`` of a call, of the scheme
+    ``Bearer`` in any case (RFC 6750), ``None`` without one: a header of
+    another scheme tells no token either.
     """
     for key, value in metadata or ():
         if key == "authorization" and isinstance(value, str):
@@ -81,7 +87,7 @@ def get_bearer_token(
 
 def get_peer_ip(context: Context) -> str | None:
     """
-    Internal: the IP of the peer of a call, as grpcio tells it,
+    The IP of the peer of a call, as grpcio tells it,
     ``ipv4:10.0.0.1:5000``, ``ipv6:[::1]:5000``, escaped by some versions,
     ``ipv6:%5B::1%5D:5000``; an IPv4 mapped to IPv6 as the IPv4; ``None``
     for a peer of no IP, a Unix socket. Behind a proxy it is the proxy.

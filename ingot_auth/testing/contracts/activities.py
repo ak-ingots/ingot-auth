@@ -1,6 +1,6 @@
 """The contract of the storage of the activity log."""
 
-__all__ = ("AuthActivitiesStorageContract",)
+__all__ = ("AuthActivitiesStorageContract", "create_record")
 
 import dataclasses
 import datetime

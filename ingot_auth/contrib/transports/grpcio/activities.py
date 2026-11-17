@@ -1,6 +1,6 @@
 """The activity log over gRPC."""
 
-__all__ = ("AuthGrpcActivitiesBinding", "AuthGrpcActivitiesServicer")
+__all__ = ("ACTIONS", "AuthGrpcActivitiesBinding", "AuthGrpcActivitiesServicer")
 
 import datetime
 import decimal
@@ -15,6 +15,7 @@ from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
 from .base import BaseAuthGrpcServicer, Context
 from ingot_auth.activities.v1 import activities_pb2, activities_pb2_grpc
 
+#: The action of an activity as the contract names it, each of the domain.
 ACTIONS: t.Final[dict[AuthActivityAction, activities_pb2.Action.ValueType]] = {
     AuthActivityAction.CREATE: activities_pb2.ACTION_CREATE,
     AuthActivityAction.UPDATE: activities_pb2.ACTION_UPDATE,

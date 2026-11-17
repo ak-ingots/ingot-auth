@@ -1,6 +1,6 @@
 """The sessions over gRPC: of the caller's own, of a profile."""
 
-__all__ = ("AuthGrpcSessionsServicer",)
+__all__ = ("CLOSE_REASONS", "AuthGrpcSessionsServicer")
 
 import typing as t
 
@@ -18,6 +18,7 @@ from ..base import BaseAuthGrpcServicer, Context
 from ..attrs import build_attr_value_message
 from ingot_auth.sessions.v1 import sessions_pb2, sessions_pb2_grpc
 
+#: The reason a session closed as the contract names it, each of the domain.
 CLOSE_REASONS: t.Final[
     dict[AuthSessionCloseReason, sessions_pb2.CloseReason.ValueType]
 ] = {

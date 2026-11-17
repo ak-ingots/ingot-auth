@@ -32,7 +32,7 @@ from ingot_auth.testing.contracts import (
     AuthCallersCacheContract,
     AuthSessionsCacheContract,
 )
-from ingot_auth.testing.contracts.sessions import create_session
+from ingot_auth.testing.contracts import create_session
 from ingot_auth.testing.methods import AuthTestingMethod, AuthTestingState
 
 PORT = os.environ.get("INGOT_AUTH_TEST_REDIS_PORT")
