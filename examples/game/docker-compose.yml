@@ -1,5 +1,6 @@
-# The game and its servers, as it runs in production. Only the port of the
-# app and the API of Mailpit reach the host, for the scenarios.
+# The game and its servers, as it runs in production: two processes behind
+# their ports, the scenarios calling each. Only those ports and the API of
+# Mailpit reach the host, for the scenarios.
 
 # The application, as both its services run it: the image and the
 # environment, APP_*, the servers by their names in the network.
@@ -33,6 +34,22 @@ services:
     <<: *app
     ports:
       - "127.0.0.1:${GAME_TEST_GRPC_DEFAULT_PORT:-50061}:50051"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import socket; socket.create_connection(("localhost", 50051), 1)
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # The second process of the game, sharing the servers of the first: a
+  # session opened on one is known to the other, by the cache in Redis.
+  app2:
+    <<: *app
+    ports:
+      - "127.0.0.1:${GAME_TEST_GAME_SECOND_PORT:-50062}:50051"
     healthcheck:
       test:
         - CMD
