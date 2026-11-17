@@ -9,13 +9,13 @@ import datetime
 import os
 import typing as t
 import unittest
-from unittest import mock
 
 from ingot_redis import RedisProject
 from ingot_redis.logging import RedisLoggingUnit
 from ingot_redis.settings import RedisSettingsUnit
 from ingot_redis.settings.configs import RedisConfigs
 from ingots.puer import Slot
+from ingots.testing import ProjectFixture, ProjectTestCase
 
 from ingot_auth import AuthProject
 from ingot_auth.auth import AuthUnit
@@ -67,38 +67,23 @@ class TstProject(AuthProject, RedisProject):
     auth = Slot(TstAuthUnit)
 
 
-if t.TYPE_CHECKING:
-    TestCase: t.TypeAlias = unittest.IsolatedAsyncioTestCase
-else:
-    TestCase = object
+class ServerMixin:
+    """The server of the tests, its database empty for each."""
 
+    server = ProjectFixture(
+        TstProject,
+        configs={"REDIS_DEFAULT_HOST": "127.0.0.1", "REDIS_DEFAULT_PORT": str(PORT)},
+    )
 
-class ServerMixin(TestCase):
     async def create_project(self) -> AuthProject:
-        self.enterContext(
-            mock.patch.dict(
-                os.environ,
-                {
-                    "INGOT_REDIS_DEFAULT_HOST": "127.0.0.1",
-                    "INGOT_REDIS_DEFAULT_PORT": str(PORT),
-                    "INGOT_IS_PRINT_CONFIGS": "off",
-                },
-                clear=True,
-            )
-        )
-        # the logging is not under test: keep the handlers of the test run
-        self.enterContext(mock.patch("logging.config.dictConfig"))
-        project = TstProject()
-        await project._configure()
-        self.addAsyncCleanup(project._do_shut_down)
-        client = await project.redis.clients.default
+        client = await self.server.redis.clients.default
         await client.client.flushdb()
-        return project
+        return self.server
 
 
 @unittest.skipUnless(PORT, "no Redis: run make integration")
 class RedisAttemptsCacheTestCase(
-    ServerMixin, AuthAttemptsCacheContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthAttemptsCacheContract, ProjectTestCase
 ):
     async def test_the_state_is_kept_as_its_method_gives_it(self) -> None:
         attempts = self.project.auth.cache.attempts
@@ -109,7 +94,7 @@ class RedisAttemptsCacheTestCase(
 
     async def test_an_attempt_is_json_under_the_prefix(self) -> None:
         await self.project.auth.cache.attempts.put(self.create_attempt())
-        client = await t.cast(TstProject, self.project).redis.clients.default
+        client = await self.server.redis.clients.default
         self.assertEqual(await client.client.keys(), [b"ingot_auth:attempt:x"])
         data = await client.client.get("ingot_auth:attempt:x")
         self.assertIn(b'"subject": "al"', t.cast(bytes, data))
@@ -117,7 +102,7 @@ class RedisAttemptsCacheTestCase(
 
 @unittest.skipUnless(PORT, "no Redis: run make integration")
 class RedisSessionsCacheTestCase(
-    ServerMixin, AuthSessionsCacheContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSessionsCacheContract, ProjectTestCase
 ):
     async def test_a_closed_session_is_got_as_put(self) -> None:
         sessions = self.project.auth.cache.sessions
@@ -132,9 +117,7 @@ class RedisSessionsCacheTestCase(
 
 
 @unittest.skipUnless(PORT, "no Redis: run make integration")
-class RedisCallersCacheTestCase(
-    ServerMixin, AuthCallersCacheContract, unittest.IsolatedAsyncioTestCase
-):
+class RedisCallersCacheTestCase(ServerMixin, AuthCallersCacheContract, ProjectTestCase):
     pass
 
 

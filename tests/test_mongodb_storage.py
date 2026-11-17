@@ -15,6 +15,7 @@ from ingot_pymongo.settings import MongoDbSettingsUnit
 from ingot_pymongo.settings.configs import MongoDbConfigs
 from ingots.defaults.operations import Caller
 from ingots.puer import Slot
+from ingots.testing import ProjectFixture, ProjectTestCase
 
 from ingot_auth.__main__ import AuthMemorySessionsUnit
 from ingot_auth import AuthProject
@@ -97,137 +98,121 @@ class TstProject(AuthProject, MongoDbProject):
     auth = Slot(TstAuthUnit)
 
 
-if t.TYPE_CHECKING:
-    TestCase: t.TypeAlias = unittest.IsolatedAsyncioTestCase
-else:
-    TestCase = object
+SERVER_CONFIGS: t.Final = {
+    "MONGODB_DEFAULT_HOST": "127.0.0.1",
+    "MONGODB_DEFAULT_PORT": str(PORT),
+    "MONGODB_DEFAULT_SERVER_SELECTION_TIMEOUT": "5",
+}
 
 
-class ServerMixin(TestCase):
-    async def start(self) -> TstProject:
-        project = TstProject()
-        await project._configure()
-        self.addAsyncCleanup(project._do_shut_down)
-        return project
+class ServerMixin:
+    """The server of the tests, its database empty for each."""
+
+    server = ProjectFixture(TstProject, configs=SERVER_CONFIGS)
 
     async def create_project(self) -> AuthProject:
-        self.enterContext(
-            mock.patch.dict(
-                os.environ,
-                {
-                    "INGOT_MONGODB_DEFAULT_HOST": "127.0.0.1",
-                    "INGOT_MONGODB_DEFAULT_PORT": str(PORT),
-                    "INGOT_MONGODB_DEFAULT_SERVER_SELECTION_TIMEOUT": "5",
-                    "INGOT_IS_PRINT_CONFIGS": "off",
-                },
-                clear=True,
-            )
-        )
-        # the logging is not under test: keep the handlers of the test run
-        self.enterContext(mock.patch("logging.config.dictConfig"))
-        project = await self.start()
-        client = await project.mongodb.clients.default
+        client = await self.server.mongodb.clients.default
         await client.client.drop_database("ingot_auth")
-        return project
+        return self.server
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
-class MongoDbTagsStorageTestCase(
-    ServerMixin, AuthTagsStorageContract, unittest.IsolatedAsyncioTestCase
-):
+class MongoDbTagsStorageTestCase(ServerMixin, AuthTagsStorageContract, ProjectTestCase):
+    other = ProjectFixture(TstProject, configs=SERVER_CONFIGS)
+
     async def test_the_items_outlive_the_project(self) -> None:
         tag = AuthTag(uid=1, name="beta")
         await self.storage.create(tag)
-        project = await self.start()
-        self.assertEqual(await project.auth.storage.profiles.tags.get_all(), (tag,))
+        storage = self.other.auth.storage
+        self.assertEqual(await storage.profiles.tags.get_all(), (tag,))
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbAttrsStorageTestCase(
-    ServerMixin, AuthAttrsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthAttrsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSessionAttrsStorageTestCase(
-    ServerMixin, AuthSessionAttrsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSessionAttrsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSessionPresetsStorageTestCase(
-    ServerMixin, AuthSessionPresetsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSessionPresetsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbStorageTransactionsTestCase(
-    ServerMixin, AuthStorageTransactionsContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthStorageTransactionsContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbProfilesStorageTestCase(
-    ServerMixin, AuthProfilesStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthProfilesStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbIdentitiesStorageTestCase(
-    ServerMixin, AuthIdentitiesStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthIdentitiesStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbProfileValuesStorageTestCase(
-    ServerMixin, AuthProfileValuesStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthProfileValuesStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbActivitiesStorageTestCase(
-    ServerMixin, AuthActivitiesStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthActivitiesStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSecretsStorageTestCase(
-    ServerMixin, AuthSecretsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSecretsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSignUpRecordsStorageTestCase(
-    ServerMixin, AuthSignUpRecordsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSignUpRecordsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbMembersStorageTestCase(
-    ServerMixin, AuthMembersStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthMembersStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
 class MongoDbSessionsStorageTestCase(
-    ServerMixin, AuthSessionsStorageContract, unittest.IsolatedAsyncioTestCase
+    ServerMixin, AuthSessionsStorageContract, ProjectTestCase
 ):
     pass
 
 
 @unittest.skipUnless(PORT, "no MongoDB: run make integration")
-class MongoDbSignUpTestCase(ServerMixin, unittest.IsolatedAsyncioTestCase):
+class MongoDbSignUpTestCase(ServerMixin, ProjectTestCase):
     """A sign-up on the storage in MongoDB: its end is one transaction."""
 
     @t.override
