@@ -8,14 +8,17 @@ x-app: &app
     context: ../..
     dockerfile: examples/game/Dockerfile
     args:
-      PYTHON: "${GAME_PYTHON:?the Python of the image, by make example-test}"
+      # by make example-test: a build needs it, a command in cli does not
+      PYTHON: ${GAME_PYTHON:-}
   environment:
+    # a wrong config fails the start, not falls back to its default
+    APP_IS_STRICT_CONFIGS: "on"
     APP_MONGODB_DEFAULT_HOST: mongodb
     APP_REDIS_DEFAULT_HOST: redis
     APP_MAIL_FROM: game@example.com
     APP_MAIL_SMTP_HOST: mailpit
     APP_MAIL_SMTP_PORT: "1025"
-    APP_MAIL_SMTP_TLS: none
+    APP_MAIL_SMTP_TLS: NONE
   depends_on:
     mongodb:
       condition: service_healthy
