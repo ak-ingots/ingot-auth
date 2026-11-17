@@ -1,6 +1,6 @@
 """The contract of the storage of the sessions themselves."""
 
-__all__ = ("AuthSessionsStorageContract",)
+__all__ = ("AuthSessionsStorageContract", "create_session")
 
 import dataclasses
 import datetime
