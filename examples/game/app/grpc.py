@@ -9,6 +9,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
     AuthGrpcProfilesBinding,
+    AuthGrpcSessionsBinding,
 )
 
 
@@ -18,6 +19,7 @@ class AppGrpcServer(
     AuthGrpcEmailCodeBinding,
     AuthGrpcFlowsBinding,
     AuthGrpcProfilesBinding,
+    AuthGrpcSessionsBinding,
     DefaultGrpcServer,
 ):
     pass

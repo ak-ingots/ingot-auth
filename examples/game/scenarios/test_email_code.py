@@ -29,3 +29,25 @@ class EmailCodeScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(grpc.aio.AioRpcError) as caught:
             await self.answer_sign_up(attempt_uid, wrong)
         self.assertEqual(caught.exception.code(), grpc.StatusCode.UNAUTHENTICATED)
+
+    async def test_a_taken_email_is_refused_on_the_sign_up(self) -> None:
+        email = new_email()
+        attempt_uid = await self.start_sign_up_by_email(email)
+        await self.answer_sign_up(attempt_uid, await self.mailpit.read_code(email))
+        attempt_uid = await self.start_sign_up_by_email(email)
+        code = await self.mailpit.read_code(email)
+        error = await self.assert_refused(
+            self.answer_sign_up(attempt_uid, code),
+            grpc.StatusCode.ALREADY_EXISTS,
+            "IDENTITY_CONFLICT",
+        )
+        self.assertEqual(error.metadata, {"kind": "email"})
+
+    async def test_a_sign_in_of_an_unknown_email_is_asked_alike(self) -> None:
+        attempt_uid = await self.start_sign_in_by_email(new_email())
+        self.assertTrue(attempt_uid)
+        await self.assert_refused(
+            self.answer_sign_in(attempt_uid, "000000"),
+            grpc.StatusCode.UNAUTHENTICATED,
+            "METHOD_REFUSED",
+        )

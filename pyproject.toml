@@ -113,6 +113,11 @@ exclude = ["_pb2(_grpc)?\\.py$"]
 module = ["ingot_auth.*.v1.*"]
 disable_error_code = ["explicit-override"]
 
+[[tool.mypy.overrides]]
+# googleapis-common-protos ships the stubs of its code, without py.typed
+module = ["google.rpc.*"]
+follow_untyped_imports = true
+
 [tool.towncrier]
 name = "ingot-auth"
 directory = "changelog.d"
