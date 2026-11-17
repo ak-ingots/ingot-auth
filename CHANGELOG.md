@@ -2,6 +2,22 @@
 
 <!-- towncrier release notes start -->
 
+## [0.7.0] - 2026-11-17
+### Added
+- Exported what the tests of an application may take: the factories of the
+  data of the contracts, `create_record()` and `create_session()` of
+  `ingot_auth.testing.contracts`; of the gRPC transport, `ACTIONS` of the
+  activities, `CLOSE_REASONS` of the sessions, `get_bearer_token()` and
+  `get_peer_ip()`.
+- The extra `game`, the stack of the backend of a game: gRPC, MongoDB, Redis
+  and the mail by SMTP; `examples/game` composes it, its scenarios run by
+  `make example-test` against it in Docker.
+
+### Changed
+- Moved on to ingots 0.35, ingot-grpcio 0.14, ingot-pymongo 0.15, ingot-redis
+  0.3 and ingot-mail 0.3; the tests of the storage in MongoDB and the cache in
+  Redis take their server as a fixture of `ingots.testing`.
+
 ## [0.6.0] - 2026-11-16
 ### Added
 - The cache in Redis, `AuthRedisCache` of `ingot_auth.contrib.caches.redis`,
