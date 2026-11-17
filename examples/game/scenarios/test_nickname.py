@@ -2,7 +2,7 @@ import unittest
 
 import grpc
 
-from .steps import GameMixin, new_nickname, skip_without_game
+from .steps import PASSWORD, GameMixin, new_nickname, skip_without_game
 
 
 @skip_without_game
@@ -29,3 +29,28 @@ class NicknameScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(grpc.aio.AioRpcError) as caught:
             await self.get_own_profile("no-such-token")
         self.assertEqual(caught.exception.code(), grpc.StatusCode.UNAUTHENTICATED)
+
+    async def test_a_taken_nickname_is_refused_on_the_sign_up(self) -> None:
+        nickname = new_nickname()
+        await self.sign_up_by_nickname(nickname, PASSWORD)
+        error = await self.assert_refused(
+            self.sign_up_by_nickname(nickname, PASSWORD),
+            grpc.StatusCode.ALREADY_EXISTS,
+            "IDENTITY_CONFLICT",
+        )
+        self.assertEqual(error.metadata, {"kind": "nickname"})
+
+    async def test_a_sign_in_of_no_player_replies_as_a_wrong_password(self) -> None:
+        nickname = new_nickname()
+        await self.sign_up_by_nickname(nickname, PASSWORD)
+        wrong = await self.assert_refused(
+            self.sign_in_by_nickname(nickname, "wrong-password"),
+            grpc.StatusCode.UNAUTHENTICATED,
+            "METHOD_REFUSED",
+        )
+        nobody = await self.assert_refused(
+            self.sign_in_by_nickname(new_nickname(), PASSWORD),
+            grpc.StatusCode.UNAUTHENTICATED,
+            "METHOD_REFUSED",
+        )
+        self.assertEqual(nobody.status, wrong.status)
