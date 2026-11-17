@@ -51,7 +51,7 @@ from ingot_auth.storages import (
     AuthTag,
 )
 
-from tests import ANONYMOUS, ROOT, masks
+from tests import ANONYMOUS, QUIET, ROOT, masks
 
 BETA: t.Final = AuthTag(uid=1, name="beta")
 STAFF: t.Final = AuthTag(uid=2, name="staff")
@@ -252,16 +252,13 @@ class RegistryCommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(
         self, *argv: str, project_cls: type[AuthMemoryProject] = AuthMemoryProject
     ) -> str:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            code = CommandRunner(
-                project_cls, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-            ).run()
+            code = CommandRunner(project_cls, [*QUIET, *argv]).run()
         self.assertEqual(code, 0)
         return out.getvalue()
 
@@ -330,8 +327,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
             code = CommandRunner(
                 SeededProject,
                 [
-                    "--config",
-                    "IS_PRINT_CONFIGS=off",
+                    *QUIET,
                     *presets,
                     "unbind",
                     "--preset",
@@ -358,8 +354,7 @@ class RegistryCommandsTestCase(unittest.TestCase):
                     code = CommandRunner(
                         AuthMemoryProject,
                         [
-                            "--config",
-                            "IS_PRINT_CONFIGS=off",
+                            *QUIET,
                             "auth",
                             unit,
                             registry,

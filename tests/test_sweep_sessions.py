@@ -18,6 +18,7 @@ from ingot_auth.storages import (
     AuthMembership,
     AuthSessionNotFoundError,
 )
+from tests import QUIET
 from tests.test_sessions_record import SeededProject
 
 LATER = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=31)
@@ -107,14 +108,11 @@ class CommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            code = CommandRunner(
-                SeededProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-            ).run()
+            code = CommandRunner(SeededProject, [*QUIET, *argv]).run()
         return code, out.getvalue()
 
     def test_a_job_sweeps_as_the_auth_system(self) -> None:
