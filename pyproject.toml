@@ -28,9 +28,9 @@ dependencies = [
 [project.optional-dependencies]
 grpcio = ["ingot-grpcio>=0.13.0,<0.14"]
 pymongo = ["ingot-pymongo>=0.14.0,<0.15"]
-redis = [
-    "ingot-redis>=0.2.0,<0.3",
-]
+redis = ["ingot-redis>=0.2.0,<0.3"]
+# The stacks of the kinds of applications, run by examples/<kind>/.
+game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.2.0,<0.3"]
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
@@ -58,6 +58,7 @@ dev = [
     "flake8-class-attributes-order",
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
+    "ingot-mail[aiosmtplib]>=0.2.0,<0.3",
     "ingot-grpcio>=0.13.0,<0.14",
     "ingot-pymongo>=0.14.0,<0.15",
     "ingot-redis>=0.2.0,<0.3",

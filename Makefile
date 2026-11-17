@@ -9,7 +9,7 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 .DELETE_ON_ERROR:
 
-SRC := ingot_auth tests docs/conf.py
+SRC := ingot_auth tests docs/conf.py examples
 DOC_OUT := docs/build
 
 # Supported interpreters: keep in step with the classifiers and the `wheel`
@@ -33,7 +33,7 @@ DOC_PORT ?= 8000
 
 # The `ci` workflow runs exactly these targets, one per job.
 .PHONY: check
-check: lint test coverage wheel-test doc cl-check  ## Every check: lint, test, coverage, wheel-test, doc, cl-check
+check: lint test coverage wheel-test example-test doc cl-check  ## Every check: lint, test, coverage, wheel-test, example-test, doc, cl-check
 
 # docs/conf.py is checked too: mypy needs the doc group to see Sphinx.
 .PHONY: lint
@@ -107,6 +107,22 @@ installed-test:
 			|| { rm -rf "$$tmp"; exit 1; }; \
 		rm -rf "$$tmp"; \
 	done
+
+# The game of examples/game as an application runs it (ADR 0016 of
+# ingots-libs): its image installs the wheel and the versions of uv.lock, its
+# servers by its docker-compose.yml; the scenarios call it from here. The
+# image takes the newest of PYTHONS, as a new application would; the others
+# are proven by wheel-test.
+GAME := examples/game
+export GAME_PYTHON := $(lastword $(PYTHONS))
+.PHONY: example-test
+example-test: all  ## the scenarios of examples/game against the game in Docker
+	uv export --quiet --no-dev --extra game --no-emit-project --no-hashes \
+		--output-file dist/game-requirements.txt
+	@trap 'docker compose -f $(GAME)/docker-compose.yml down --volumes --timeout 1' EXIT; \
+	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
+	GAME_TEST_PORT=$${GAME_TEST_PORT:-50061} \
+	uv run python -m unittest discover -v -s $(GAME)/scenarios -t $(GAME)
 
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
 # stubs of mypy-protobuf, committed next to them. A contract lies at the path of

@@ -21,6 +21,16 @@ MongoDB, cached in memory or in Redis.
 uv add ingot-auth
 ```
 
+The stack of a kind of application comes as one extra: `game`, the
+transport by gRPC, the storage in MongoDB, the cache in Redis and the mail
+by SMTP, as the backend of the
+[game](https://github.com/ak-ingots/ingot-auth/tree/main/examples/game)
+composes them, run by its scenarios on each change.
+
+```sh
+uv add 'ingot-auth[game]'
+```
+
 ## Where to go next
 
 - {doc}`guide/index`: the methods, the sign-in, the access, the sessions

@@ -13,6 +13,15 @@ supported-markers = [
 ]
 
 [[package]]
+name = "aiosmtplib"
+version = "5.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/5c/9cabc5db6d607616e81ba6d8f1f231cd5a75955807a308c1090a59072d6d/aiosmtplib-5.1.3.tar.gz", hash = "sha256:ac2b418d3260ba62d9cfd0fe7359726e9dc009a4e8e8d9909fdfae332f522a7c", size = 77010, upload-time = "2026-09-08T02:11:20.532Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/0a/b56ab8163d54960337fdca475d3dfd56c8badf6172e79cf2ad00d5335dc1/aiosmtplib-5.1.3-py3-none-any.whl", hash = "sha256:f7d76ce3d4995a65a178c1f11e1bd1607706b921d00cb768e7a2c7f7ef5517a8", size = 30116, upload-time = "2026-09-08T02:11:19.352Z" },
+]
+
+[[package]]
 name = "alabaster"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -427,6 +436,12 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+game = [
+    { name = "ingot-grpcio" },
+    { name = "ingot-mail", extra = ["aiosmtplib"] },
+    { name = "ingot-pymongo" },
+    { name = "ingot-redis" },
+]
 grpcio = [
     { name = "ingot-grpcio" },
 ]
@@ -449,6 +464,7 @@ dev = [
     { name = "flake8-pyproject" },
     { name = "grpcio-tools" },
     { name = "ingot-grpcio" },
+    { name = "ingot-mail", extra = ["aiosmtplib"] },
     { name = "ingot-pymongo" },
     { name = "ingot-redis" },
     { name = "mypy" },
@@ -465,13 +481,15 @@ doc = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ingot-auth", extras = ["grpcio", "pymongo", "redis"], marker = "extra == 'game'" },
     { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.13.0,<0.14" },
     { name = "ingot-mail", specifier = ">=0.2.0,<0.3" },
+    { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'game'", specifier = ">=0.2.0,<0.3" },
     { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.14.0,<0.15" },
     { name = "ingot-redis", marker = "extra == 'redis'", specifier = ">=0.2.0,<0.3" },
     { name = "ingots", specifier = ">=0.34.0,<0.35" },
 ]
-provides-extras = ["grpcio", "pymongo", "redis"]
+provides-extras = ["grpcio", "pymongo", "redis", "game"]
 
 [package.metadata.requires-dev]
 changelog = [{ name = "towncrier" }]
@@ -483,6 +501,7 @@ dev = [
     { name = "flake8-pyproject" },
     { name = "grpcio-tools", specifier = ">=1.84.1" },
     { name = "ingot-grpcio", specifier = ">=0.13.0,<0.14" },
+    { name = "ingot-mail", extras = ["aiosmtplib"], specifier = ">=0.2.0,<0.3" },
     { name = "ingot-pymongo", specifier = ">=0.14.0,<0.15" },
     { name = "ingot-redis", specifier = ">=0.2.0,<0.3" },
     { name = "mypy" },
@@ -523,6 +542,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/57/b7/754db36662e8ac3ac465fa51c7db8ef129b87d7a2de0f493719cf134c5a0/ingot_mail-0.2.0.tar.gz", hash = "sha256:bde0057fb1a19bedef8b63e7c752f686218e14f85dd39919c13ede639bb91b91", size = 18822, upload-time = "2026-11-16T16:29:33.534Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d5/86/45b26cec6db347dac54f9091515912a6a0a8f6f15e7a5d6bc29e5312afba/ingot_mail-0.2.0-py3-none-any.whl", hash = "sha256:16ac0d699465543382f6b5e164e030cbd54d3c473736a83386f44c3ddf2ec43e", size = 21382, upload-time = "2026-11-16T16:29:31.754Z" },
+]
+
+[package.optional-dependencies]
+aiosmtplib = [
+    { name = "aiosmtplib" },
 ]
 
 [[package]]
