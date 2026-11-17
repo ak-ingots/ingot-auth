@@ -57,6 +57,12 @@ from ingot_auth.testing.methods import (
     AuthTestingMethod,
 )
 
+# the options of a command run by a test, as a fixture of ingots.testing
+# configures its project: the configs not printed, the logging of the run kept
+QUIET: t.Final = (
+    *("--config", "IS_PRINT_CONFIGS=off"),
+    *("--config", "IS_CONFIGURE_LOGGING=off"),
+)
 ROOT: t.Final = CallersProvider.ROOT
 ANONYMOUS: t.Final = Caller(uid="anonymous")
 

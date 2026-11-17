@@ -67,7 +67,7 @@ from ingot_auth.testing.methods import (
     AuthTestingMethod,
 )
 
-from tests import ANONYMOUS, DOMAINS, OWN, ROOT, masks
+from tests import ANONYMOUS, DOMAINS, OWN, QUIET, ROOT, masks
 
 NOW: t.Final = datetime.datetime(2026, 11, 9, tzinfo=datetime.UTC)
 
@@ -510,14 +510,11 @@ class CommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            code = CommandRunner(
-                SeededProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-            ).run()
+            code = CommandRunner(SeededProject, [*QUIET, *argv]).run()
         return code, out.getvalue()
 
     def test_the_groups_are_printed_with_their_grants(self) -> None:

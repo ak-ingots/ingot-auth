@@ -20,7 +20,7 @@ from ingot_auth.storages import (
     AuthSessionCloseReason,
     AuthSessionRecord,
 )
-from tests import ROOT
+from tests import QUIET, ROOT
 
 NOW = datetime.datetime(2026, 11, 15, 12, tzinfo=datetime.UTC)
 
@@ -169,14 +169,11 @@ class CommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
-            code = CommandRunner(
-                SeededProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-            ).run()
+            code = CommandRunner(SeededProject, [*QUIET, *argv]).run()
         return code, out.getvalue()
 
     def test_the_record_of_a_profile_is_printed(self) -> None:

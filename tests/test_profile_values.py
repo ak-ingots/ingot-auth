@@ -35,7 +35,7 @@ from ingot_auth.storages import (
     AuthProfileValues,
     AuthTag,
 )
-from tests import ANONYMOUS, ROOT
+from tests import ANONYMOUS, QUIET, ROOT
 
 NOW = datetime.datetime(2026, 11, 15, 12, tzinfo=datetime.UTC)
 
@@ -215,15 +215,12 @@ class CommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
             try:
-                code = CommandRunner(
-                    SeededProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-                ).run()
+                code = CommandRunner(SeededProject, [*QUIET, *argv]).run()
             except SystemExit as error:  # argparse refuses what it cannot read
                 code = int(error.code or 0)
         return code, out.getvalue()

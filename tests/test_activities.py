@@ -38,7 +38,7 @@ from ingot_auth.storages import (
     AuthTag,
 )
 from ingot_auth.testing.contracts.activities import create_record
-from tests import ROOT, masks
+from tests import QUIET, ROOT, masks
 
 
 class SwallowActivitiesUnit(AuthActivitiesUnit):
@@ -201,15 +201,12 @@ class CommandsTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
             try:
-                code = CommandRunner(
-                    AuthMemoryProject, ["--config", "IS_PRINT_CONFIGS=off", *argv]
-                ).run()
+                code = CommandRunner(AuthMemoryProject, [*QUIET, *argv]).run()
             except SystemExit as error:  # argparse refuses what it cannot read
                 code = int(error.code or 0)
         return code, out.getvalue()

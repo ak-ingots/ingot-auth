@@ -1,7 +1,6 @@
 import datetime
 import decimal
 import hashlib
-import os
 import re
 import socket
 import typing as t
@@ -25,6 +24,7 @@ from ingots.defaults.operations import Caller, Permissions
 from ingots.defaults.settings.configs import BoolConfig
 from google.protobuf.timestamp_pb2 import Timestamp
 from ingots.puer import Slot
+from ingots.testing import ProjectFixture
 
 from ingot_auth import AuthProject
 from ingot_auth.__main__ import (
@@ -521,24 +521,20 @@ def find_free_port() -> int:
 
 
 class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
-    @t.override
-    async def asyncSetUp(self) -> None:
-        environ = {
-            "INGOT_GRPC_DEFAULT_LISTEN_HOST": "127.0.0.1",
-            "INGOT_GRPC_DEFAULT_HOST": "127.0.0.1",
-            "INGOT_GRPC_DEFAULT_PORT": str(find_free_port()),
-            "INGOT_IS_PRINT_CONFIGS": "off",
-        }
-        self.enterContext(mock.patch.dict(os.environ, environ, clear=True))
-        # the logging is not under test: keep the handlers of the test run
-        self.enterContext(mock.patch("logging.config.dictConfig"))
-
     async def connect(
-        self, project_cls: type[TstProject] = TstAdminProject
+        self, project_cls: type[TstProject] = TstAdminProject, **configs: str
     ) -> TstClient:
-        self.project = project_cls()
-        await self.project._configure()
-        self.addAsyncCleanup(self.project._do_shut_down)
+        """The project of the test, of the class it chooses, its server and client."""
+        fixture = ProjectFixture(
+            project_cls,
+            configs={
+                "GRPC_DEFAULT_LISTEN_HOST": "127.0.0.1",
+                "GRPC_DEFAULT_HOST": "127.0.0.1",
+                "GRPC_DEFAULT_PORT": str(find_free_port()),
+                **configs,
+            },
+        )
+        self.project = await fixture.create(self)
         await self.project.grpc.servers.default
         return await self.project.grpc.clients.default
 
@@ -1662,8 +1658,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_a_flow_its_toggle_closes_is_refused(self) -> None:
-        os.environ["INGOT_AUTH_SIGN_UP_NICKNAME_ENABLED"] = "off"
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        nickname = (
+            await self.connect(TstNicknameProject, AUTH_SIGN_UP_NICKNAME_ENABLED="off")
+        ).auth_methods_nickname
         with self.assertRaises(GrpcError) as error:
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(nickname="a", password="x")
@@ -1673,8 +1670,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_sign_up_its_toggle_closes_is_refused_the_sign_in_not(
         self,
     ) -> None:
-        os.environ["INGOT_AUTH_SIGN_UP_ENABLED"] = "off"
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
+        nickname = (
+            await self.connect(TstNicknameProject, AUTH_SIGN_UP_ENABLED="off")
+        ).auth_methods_nickname
         for call, code_of_status in (
             (
                 nickname.SignUp(nickname_pb2.SignUpRequest(nickname="a", password="x")),

@@ -14,20 +14,20 @@ from ingot_auth.settings.configs import AuthConfigs
 from ingots.defaults import Project
 from ingots.puer.cli import CommandRunner
 
+from tests import QUIET
+
 
 class ProjectTestCase(unittest.TestCase):
     @t.override
     def setUp(self) -> None:
         self.enterContext(mock.patch.dict(os.environ, clear=True))
-        # the logging is not under test: keep the handlers of the test run
-        self.enterContext(mock.patch("logging.config.dictConfig"))
 
     def run_project(self, *argv: str) -> tuple[int, str]:
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = CommandRunner(
                 ingot_auth.AuthProject,
-                ["--config", "IS_PRINT_CONFIGS=off", *argv],
+                [*QUIET, *argv],
             ).run()
         return code, out.getvalue()
 
@@ -53,6 +53,7 @@ class ProjectTestCase(unittest.TestCase):
 
     def test_the_addon_runs_on_its_own(self) -> None:
         os.environ["INGOT_IS_PRINT_CONFIGS"] = "off"
+        os.environ["INGOT_IS_CONFIGURE_LOGGING"] = "off"
         with (
             mock.patch("sys.argv", ["ingot_auth", "logging", "info"]),
             contextlib.redirect_stdout(io.StringIO()) as out,
