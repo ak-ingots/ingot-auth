@@ -22,7 +22,7 @@ classifiers = [
 # Before 1.0 a minor version of ingots may break its addons.
 dependencies = [
     "ingot-mail>=0.3.0,<0.4",
-    "ingots>=0.35.0,<0.36",
+    "ingots>=0.35.1,<0.36",
 ]
 
 [project.optional-dependencies]
@@ -112,11 +112,6 @@ exclude = ["_pb2(_grpc)?\\.py$"]
 # the stubs mypy-protobuf generates override without @override
 module = ["ingot_auth.*.v1.*"]
 disable_error_code = ["explicit-override"]
-
-[[tool.mypy.overrides]]
-# googleapis-common-protos ships the stubs of its code, without py.typed
-module = ["google.rpc.*"]
-follow_untyped_imports = true
 
 [tool.towncrier]
 name = "ingot-auth"

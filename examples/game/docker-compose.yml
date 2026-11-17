@@ -32,7 +32,7 @@ services:
   app:
     <<: *app
     ports:
-      - "127.0.0.1:${GAME_TEST_PORT:-50061}:50051"
+      - "127.0.0.1:${GAME_TEST_GRPC_DEFAULT_PORT:-50061}:50051"
     healthcheck:
       test:
         - CMD

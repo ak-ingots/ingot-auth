@@ -1,13 +1,12 @@
-import unittest
+from ingots.testing import ProjectTestCase
 
 from ingot_auth.profiles.v1 import profiles_pb2
 from ingot_auth.sessions.v1 import sessions_pb2
 
-from .steps import GameMixin, bear, read_profile_hash, skip_without_game
+from .steps import GameMixin, bear, read_profile_hash
 
 
-@skip_without_game
-class ProfileScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
+class ProfileScenario(GameMixin, ProjectTestCase):
     async def test_a_player_gets_its_profile_and_its_permissions(self) -> None:
         (token,) = await self.sign_up_and_in()
         profile = await self.get_own_profile(token)

@@ -1,12 +1,10 @@
-import unittest
-
 import grpc
+from ingots.testing import ProjectTestCase
 
-from .steps import GameMixin, new_email, skip_without_game
+from .steps import GameMixin, new_email
 
 
-@skip_without_game
-class EmailCodeScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
+class EmailCodeScenario(GameMixin, ProjectTestCase):
     async def test_a_player_signs_up_and_in_by_the_code_of_its_email(
         self,
     ) -> None:
@@ -26,9 +24,11 @@ class EmailCodeScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
         attempt_uid = await self.start_sign_up_by_email(email)
         code = await self.mailpit.read_code(email)
         wrong = "0" * len(code) if code != "0" * len(code) else "1" * len(code)
-        with self.assertRaises(grpc.aio.AioRpcError) as caught:
-            await self.answer_sign_up(attempt_uid, wrong)
-        self.assertEqual(caught.exception.code(), grpc.StatusCode.UNAUTHENTICATED)
+        await self.assert_refused(
+            self.answer_sign_up(attempt_uid, wrong),
+            grpc.StatusCode.UNAUTHENTICATED,
+            "METHOD_REFUSED",
+        )
 
     async def test_a_taken_email_is_refused_on_the_sign_up(self) -> None:
         email = new_email()

@@ -1,18 +1,18 @@
-import unittest
-
 import grpc
+from ingots.testing import ProjectTestCase
 
-from .steps import GameMixin, new_nickname, skip_without_game
+from .steps import GameMixin, new_nickname
 
 
-@skip_without_game
-class SignOutScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
+class SignOutScenario(GameMixin, ProjectTestCase):
     async def test_a_player_signs_out_and_its_token_is_refused(self) -> None:
         nickname = new_nickname()
         await self.sign_up_by_nickname(nickname, "s3cret-password")
         token = await self.sign_in_by_nickname(nickname, "s3cret-password")
         await self.get_own_profile(token)
         await self.sign_out_of(token)
-        with self.assertRaises(grpc.aio.AioRpcError) as caught:
-            await self.get_own_profile(token)
-        self.assertEqual(caught.exception.code(), grpc.StatusCode.UNAUTHENTICATED)
+        await self.assert_refused(
+            self.get_own_profile(token),
+            grpc.StatusCode.UNAUTHENTICATED,
+            "SESSION_NOT_FOUND",
+        )
