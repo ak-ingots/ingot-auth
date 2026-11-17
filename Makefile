@@ -118,6 +118,7 @@ GAME := examples/game
 export GAME_PYTHON := $(lastword $(PYTHONS))
 export GAME_TEST_GRPC_DEFAULT_HOST ?= 127.0.0.1
 export GAME_TEST_GRPC_DEFAULT_PORT ?= 50061
+export GAME_TEST_GAME_SECOND_PORT ?= 50062
 export GAME_TEST_MAILPIT_PORT ?= 18025
 export GAME_TEST_IS_STRICT_CONFIGS ?= on
 .PHONY: example-test

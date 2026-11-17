@@ -105,6 +105,43 @@ class Mailpit:
         urllib.request.urlopen(request, timeout=5).close()
 
 
+class Operator:
+    """
+    The operator of the game, on its command line: the service ``cli`` of
+    compose, ``python -m app`` as the root of the auth.
+    """
+
+    def __init__(self, compose_file: str) -> None:
+        self.compose_file = compose_file
+
+    async def run(self, *argv: str) -> str:
+        """What a command prints; it fails the scenario if the command fails."""
+        code, out, err = await self._exec(argv)
+        assert code == 0, f"{' '.join(argv)}: exit {code}\n{err[-2000:]}"
+        return out
+
+    async def run_refused(self, *argv: str) -> str:
+        """The error a failing command logs, its line of the runner."""
+        code, _, err = await self._exec(argv)
+        assert code != 0, f"{' '.join(argv)}: passed"
+        return next(line for line in err.splitlines() if " failed: " in line)
+
+    async def _exec(self, argv: tuple[str, ...]) -> tuple[int, str, str]:
+        process = await asyncio.create_subprocess_exec(
+            *("docker", "compose", "-f", self.compose_file, "exec", "-T", "cli"),
+            *("python", "-m", "app", "--config", "IS_PRINT_CONFIGS=off", *argv),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        out, err = await process.communicate()
+        return t.cast(int, process.returncode), out.decode(), err.decode()
+
+
+def read_lines(out: str) -> list[list[str]]:
+    """The rows a command prints, its fields split by tabs."""
+    return [line.split("\t") for line in out.splitlines()]
+
+
 class GameMixin(TestCase):
     """
     The client of the game, of the project of each scenario, configured as
@@ -125,7 +162,9 @@ class GameMixin(TestCase):
         self.profiles = game.auth_profiles
         self.sessions = game.auth_sessions
         self.metadata = game.auth_metadata
-        self.mailpit = Mailpit(self.project.settings.configs.MAILPIT_PORT)
+        configs = self.project.settings.configs
+        self.mailpit = Mailpit(configs.MAILPIT_PORT)
+        self.operator = Operator(configs.GAME_COMPOSE_FILE)
 
     async def sign_up_by_nickname(self, nickname: str, password: str) -> str:
         request = nickname_pb2.SignUpRequest(nickname=nickname, password=password)
@@ -166,11 +205,30 @@ class GameMixin(TestCase):
 
     async def sign_up_and_in(self, times: int = 1) -> list[str]:
         """A new player, signed in ``times``, a device each: its tokens."""
+        _, tokens = await self.new_player(times)
+        return tokens
+
+    async def new_player(self, times: int = 1) -> tuple[str, list[str]]:
+        """A new player, its uid, signed in ``times``: its tokens."""
         nickname = new_nickname()
-        await self.sign_up_by_nickname(nickname, PASSWORD)
-        return [
+        uid = await self.sign_up_by_nickname(nickname, PASSWORD)
+        tokens = [
             await self.sign_in_by_nickname(nickname, PASSWORD) for _ in range(times)
         ]
+        return uid, tokens
+
+    async def get_own_profile_on_second(
+        self, token: str
+    ) -> profiles_pb2.GetOwnProfileResponse:
+        """The profile of the player, asked of the second process of the game."""
+        second = await self.project.grpc.clients.second
+        request = profiles_pb2.GetOwnProfileRequest()
+        return await second.auth_profiles.GetOwnProfile(request, metadata=bear(token))
+
+    async def sign_out_on_second(self, token: str) -> None:
+        second = await self.project.grpc.clients.second
+        request = sign_out_pb2.SignOutRequest()
+        await second.auth_sign_out.SignOut(request, metadata=bear(token))
 
     async def list_own_sessions(self, token: str) -> list[sessions_pb2.Session]:
         request = sessions_pb2.ListOwnSessionsRequest()
