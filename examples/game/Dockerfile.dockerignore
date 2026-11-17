@@ -1,0 +1,5 @@
+*
+!dist/*.whl
+!dist/game-requirements.txt
+!examples/game/app/
+**/__pycache__
