@@ -1,12 +1,11 @@
-import unittest
+from ingots.testing import ProjectTestCase
 
 from ingot_auth.metadata.v1 import metadata_pb2
 
-from .steps import GameMixin, skip_without_game
+from .steps import GameMixin
 
 
-@skip_without_game
-class MetadataScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
+class MetadataScenario(GameMixin, ProjectTestCase):
     async def test_the_client_learns_the_methods_before_any_sign_in(self) -> None:
         metadata = await self.get_metadata()
         self.assertEqual(

@@ -487,7 +487,7 @@ requires-dist = [
     { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'game'", specifier = ">=0.3.0,<0.4" },
     { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.15.0,<0.16" },
     { name = "ingot-redis", marker = "extra == 'redis'", specifier = ">=0.3.0,<0.4" },
-    { name = "ingots", specifier = ">=0.35.0,<0.36" },
+    { name = "ingots", specifier = ">=0.35.1,<0.36" },
 ]
 provides-extras = ["grpcio", "pymongo", "redis", "game"]
 
@@ -577,11 +577,11 @@ wheels = [
 
 [[package]]
 name = "ingots"
-version = "0.35.0"
+version = "0.35.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/42/6a/c7fe35694107070d3c01d49208144dbdfdcddbc9d2034db52644ce4140da/ingots-0.35.0.tar.gz", hash = "sha256:fcb48bdf4be593b791c913a4410ffcbf295b8616dca4eab40a31422b432f3ae7", size = 47053, upload-time = "2026-11-17T19:59:33.946Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/01/93/9b0ec30e8114309672cdf92d6bc6a5d737596e8e488a3450515dd4ba8f10/ingots-0.35.1.tar.gz", hash = "sha256:dedc446dbb763f0f0a4a6e2c82321d3e7a56828f9d9d1e387ecd059297888064", size = 49413, upload-time = "2026-11-17T22:17:33.476Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/dd/0ea25c8cfcc282b2730803a13dabbd6b1e835af7d82a18d54d601fe26316/ingots-0.35.0-py3-none-any.whl", hash = "sha256:6ce12c9c2dd89767120fc0254739dfe2afbf55162ee4a5475b99c6ac15dd9ab7", size = 68115, upload-time = "2026-11-17T19:59:32.672Z" },
+    { url = "https://files.pythonhosted.org/packages/af/a8/c7e6659b413abbb4d639b67e7f5c04c8af50e31e74ce4f3dc7935d9b2c14/ingots-0.35.1-py3-none-any.whl", hash = "sha256:1350accf0abcdb6f1ad9bdcd57be0ad63d9f8fc7fc6394f425baec29b3b73e12", size = 71526, upload-time = "2026-11-17T22:17:32.234Z" },
 ]
 
 [[package]]

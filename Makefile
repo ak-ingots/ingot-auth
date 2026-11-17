@@ -110,19 +110,23 @@ installed-test:
 
 # The game of examples/game as an application runs it (ADR 0016 of
 # ingots-libs): its image installs the wheel and the versions of uv.lock, its
-# servers by its docker-compose.yml; the scenarios call it from here. The
-# image takes the newest of PYTHONS, as a new application would; the others
-# are proven by wheel-test.
+# servers by its docker-compose.yml; the scenarios, a project of their own,
+# call it from here, `testing run` of ingots. The image takes the newest of
+# PYTHONS, as a new application would; the others are proven by wheel-test.
+# GAME_TEST_* configure the scenarios and the ports compose publishes alike.
 GAME := examples/game
 export GAME_PYTHON := $(lastword $(PYTHONS))
+export GAME_TEST_GRPC_DEFAULT_HOST ?= 127.0.0.1
+export GAME_TEST_GRPC_DEFAULT_PORT ?= 50061
+export GAME_TEST_MAILPIT_PORT ?= 18025
+export GAME_TEST_IS_STRICT_CONFIGS ?= on
 .PHONY: example-test
 example-test: all  ## the scenarios of examples/game against the game in Docker
 	uv export --quiet --no-dev --extra game --no-emit-project --no-hashes \
 		--output-file dist/game-requirements.txt
 	@trap 'docker compose -f $(GAME)/docker-compose.yml down --volumes --timeout 1' EXIT; \
 	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
-	GAME_TEST_PORT=$${GAME_TEST_PORT:-50061} \
-	uv run python -m unittest discover -v -s $(GAME)/scenarios -t $(GAME)
+	(cd $(GAME) && uv run python -m scenarios testing run -v)
 
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
 # stubs of mypy-protobuf, committed next to them. A contract lies at the path of

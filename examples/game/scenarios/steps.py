@@ -2,44 +2,39 @@
 
 import asyncio
 import json
-import os
 import re
 import time
 import typing as t
-import unittest
 import urllib.parse
 import urllib.request
 import uuid
 
 import grpc
-from google.rpc.status_pb2 import Status
-from grpc import aio
 from ingot_grpcio.grpc.errors import GrpcError
+from ingots.testing import ProjectFixture, ProjectTestCase
 
 from ingot_auth.contrib.transports.grpcio.base import PROFILE_HASH_KEY
-from ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc
-from ingot_auth.methods.email_code.v1 import email_code_pb2, email_code_pb2_grpc
-from ingot_auth.methods.nickname.v1 import nickname_pb2, nickname_pb2_grpc
-from ingot_auth.profiles.v1 import profiles_pb2, profiles_pb2_grpc
-from ingot_auth.sessions.v1 import sessions_pb2, sessions_pb2_grpc
-from ingot_auth.sign_in.v1 import sign_in_pb2, sign_in_pb2_grpc
-from ingot_auth.sign_out.v1 import sign_out_pb2, sign_out_pb2_grpc
-from ingot_auth.sign_up.v1 import sign_up_pb2, sign_up_pb2_grpc
+from ingot_auth.metadata.v1 import metadata_pb2
+from ingot_auth.methods.email_code.v1 import email_code_pb2
+from ingot_auth.methods.nickname.v1 import nickname_pb2
+from ingot_auth.profiles.v1 import profiles_pb2
+from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.sign_in.v1 import sign_in_pb2
+from ingot_auth.sign_out.v1 import sign_out_pb2
+from ingot_auth.sign_up.v1 import sign_up_pb2
 
-PORT = os.environ.get("GAME_TEST_PORT")
-MAILPIT_PORT = os.environ.get("GAME_TEST_MAILPIT_PORT", "18025")
+from .project import ScenariosProject
+
 # the mail of a code goes in the background: how long a scenario waits for it
 MAIL_TIMEOUT = 10.0
 
 # the password of every player of a scenario: its strength is not under test
 PASSWORD = "s3cret-password"
 
-skip_without_game = unittest.skipUnless(PORT, "no game: run make example-test")
-
 Metadata: t.TypeAlias = list[tuple[str, str]]
 
 if t.TYPE_CHECKING:
-    TestCase: t.TypeAlias = unittest.IsolatedAsyncioTestCase
+    TestCase: t.TypeAlias = ProjectTestCase
 else:
     TestCase = object
 
@@ -58,14 +53,6 @@ def bear(token: str) -> Metadata:
     return [("authorization", f"Bearer {token}")]
 
 
-def read_error(error: aio.AioRpcError) -> GrpcError:
-    """The error of a refused call as the client of ingot-grpcio reads it."""
-    for key, value in error.trailing_metadata() or ():
-        if key == "grpc-status-details-bin" and isinstance(value, bytes):
-            return GrpcError.from_status(Status.FromString(value))
-    raise AssertionError(f"no status details: {error}")
-
-
 async def read_profile_hash(call: t.Any) -> str:
     """The hash of the profile of the caller a reply tells, trailing it."""
     for key, value in await call.trailing_metadata() or ():
@@ -77,7 +64,7 @@ async def read_profile_hash(call: t.Any) -> str:
 class Mailpit:
     """The mailbox of every player, read by the API of Mailpit."""
 
-    def __init__(self, port: str) -> None:
+    def __init__(self, port: int) -> None:
         self.url = f"http://127.0.0.1:{port}/api/v1"
 
     async def read_code(self, email: str) -> str:
@@ -119,22 +106,26 @@ class Mailpit:
 
 
 class GameMixin(TestCase):
-    """The client of the game, its channel opened for each scenario."""
+    """
+    The client of the game, of the project of each scenario, configured as
+    ``testing run`` is; a scenario takes it before ``ProjectTestCase``.
+    """
+
+    project = ProjectFixture(ScenariosProject)
 
     @t.override
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        channel = aio.insecure_channel(f"127.0.0.1:{PORT}")
-        self.addAsyncCleanup(channel.close)
-        self.nickname = nickname_pb2_grpc.NicknameStub(channel)
-        self.email_code = email_code_pb2_grpc.EmailCodeStub(channel)
-        self.sign_up = sign_up_pb2_grpc.SignUpStub(channel)
-        self.sign_in = sign_in_pb2_grpc.SignInStub(channel)
-        self.sign_out = sign_out_pb2_grpc.SignOutStub(channel)
-        self.profiles = profiles_pb2_grpc.ProfilesStub(channel)
-        self.sessions = sessions_pb2_grpc.SessionsStub(channel)
-        self.metadata = metadata_pb2_grpc.MetadataStub(channel)
-        self.mailpit = Mailpit(MAILPIT_PORT)
+        game = await self.project.grpc.clients.default
+        self.nickname = game.auth_methods_nickname
+        self.email_code = game.auth_methods_email_code
+        self.sign_up = game.auth_sign_up
+        self.sign_in = game.auth_sign_in
+        self.sign_out = game.auth_sign_out
+        self.profiles = game.auth_profiles
+        self.sessions = game.auth_sessions
+        self.metadata = game.auth_metadata
+        self.mailpit = Mailpit(self.project.settings.configs.MAILPIT_PORT)
 
     async def sign_up_by_nickname(self, nickname: str, password: str) -> str:
         request = nickname_pb2.SignUpRequest(nickname=nickname, password=password)
@@ -204,8 +195,8 @@ class GameMixin(TestCase):
         self, call: t.Awaitable[object], code: grpc.StatusCode, reason: str
     ) -> GrpcError:
         """A call refused with the code and the reason: its error."""
-        with self.assertRaises(aio.AioRpcError) as caught:
+        with self.assertRaises(GrpcError) as caught:
             await call
-        error = read_error(caught.exception)
+        error = caught.exception
         self.assertEqual((error.code, error.reason), (code, reason))
         return error

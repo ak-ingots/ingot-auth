@@ -1,16 +1,14 @@
-import unittest
-
 import grpc
+from ingots.testing import ProjectTestCase
 
 from ingot_auth.sessions.v1 import sessions_pb2
 
-from .steps import GameMixin, bear, skip_without_game
+from .steps import GameMixin, bear
 
 UNAUTHENTICATED = grpc.StatusCode.UNAUTHENTICATED
 
 
-@skip_without_game
-class SessionsScenario(GameMixin, unittest.IsolatedAsyncioTestCase):
+class SessionsScenario(GameMixin, ProjectTestCase):
     async def test_a_player_sees_the_session_of_each_device(self) -> None:
         phone, laptop = await self.sign_up_and_in(times=2)
         sessions = await self.list_own_sessions(phone)
