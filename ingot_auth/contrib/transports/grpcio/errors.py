@@ -18,6 +18,7 @@ __all__ = (
     "AuthGrpcProfileNotFoundPolicy",
     "AuthGrpcSessionExpiredPolicy",
     "AuthGrpcSessionNotFoundPolicy",
+    "AuthGrpcSessionsLimitPolicy",
     "BaseAuthGrpcErrorPolicy",
     "BaseAuthGrpcItemPolicy",
 )
@@ -39,7 +40,11 @@ from ingot_auth.methods import (
     AuthMethodUnsupportedError,
 )
 from ingot_auth.registry import AuthItemInvalidError
-from ingot_auth.sessions import AuthOwnSessionNotFoundError, AuthSessionExpiredError
+from ingot_auth.sessions import (
+    AuthOwnSessionNotFoundError,
+    AuthSessionExpiredError,
+    AuthSessionsLimitError,
+)
 from ingot_auth.storages import (
     AuthIdentityConflictError,
     AuthIdentityError,
@@ -242,6 +247,21 @@ class AuthGrpcOwnSessionNotFoundPolicy(BaseAuthGrpcErrorPolicy):
         return {"session_uid": t.cast(AuthOwnSessionNotFoundError, error).session_uid}
 
 
+class AuthGrpcSessionsLimitPolicy(BaseAuthGrpcErrorPolicy):
+    """
+    A sign-in refused over the limit of the sessions of the profile: the user
+    signs out of another first. Tells how many are open.
+    """
+
+    EXCEPTION = AuthSessionsLimitError
+    CODE = grpc.StatusCode.RESOURCE_EXHAUSTED
+    REASON = "SESSIONS_LIMIT"
+
+    @t.override
+    def _get_metadata(self, error: Exception) -> dict[str, str]:
+        return {"count": str(t.cast(AuthSessionsLimitError, error).count)}
+
+
 class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     """The policies of the auth: the errors unit of the gRPC takes it as a base."""
 
@@ -261,3 +281,4 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_session_not_found = Slot(AuthGrpcSessionNotFoundPolicy)
     auth_session_expired = Slot(AuthGrpcSessionExpiredPolicy)
     auth_own_session_not_found = Slot(AuthGrpcOwnSessionNotFoundPolicy)
+    auth_sessions_limit = Slot(AuthGrpcSessionsLimitPolicy)

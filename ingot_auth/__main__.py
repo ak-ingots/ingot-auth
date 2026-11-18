@@ -19,6 +19,7 @@ from .contrib.dispatchers.memory import AuthMemoryDispatcher
 from .contrib.storages.memory import AuthMemoryStorage
 from .project import AuthProject
 from .sessions import (
+    AuthEvictOldestLimit,
     AuthFixedLifetime,
     AuthNoSessionAttrsDeriver,
     AuthSessionsUnit,
@@ -29,6 +30,7 @@ from .sign_in import AuthNoTiming, AuthSignInUnit
 class AuthMemorySessionsUnit(AuthSessionsUnit):
     lifetime = Slot(AuthFixedLifetime)
     deriver = Slot(AuthNoSessionAttrsDeriver)
+    limit = Slot(AuthEvictOldestLimit)
 
 
 class AuthMemorySignInUnit(AuthSignInUnit):

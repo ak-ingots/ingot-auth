@@ -20,7 +20,9 @@ many, all on the shared `registry/`, the sessions themselves kept by the hash
 of their token, their lifetime a strategy in the slot `lifetime`, none by
 default, sliding, fixed or both, the time seen written once an interval,
 the values of their attributes of the source `derived` given by the
-strategy in the slot `deriver`, none by default, a user listing and
+strategy in the slot `deriver`, none by default, over `AUTH_SESSIONS_MAX`
+a sign-in evicting or refused by the strategy in the slot `limit`, none by
+default, a user listing and
 revoking its own by the flags `auth.grp_signed_in` grants, a closed one
 kept, the record of the sign-ins an operator reads, who closed it in the
 activity log,

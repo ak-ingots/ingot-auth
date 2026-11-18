@@ -77,7 +77,7 @@ class AuthMongoDbSessionsStorage(AuthMongoDbCollectionMixin, AuthSessionsStorage
         collection = await self._mongodb_get_collection()
         documents = collection.find(
             {"profile_uid": uid, "closed_at": None}, session=self._mongodb_get_session()
-        ).sort([("opened_at", 1), ("_id", 1)])
+        )
         return tuple([_build_session(document) async for document in documents])
 
     @t.override

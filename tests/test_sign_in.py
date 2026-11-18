@@ -32,6 +32,7 @@ from ingot_auth.methods import (
     AuthMethodsUnit,
 )
 from ingot_auth.sessions import (
+    AuthEvictOldestLimit,
     AuthFixedLifetime,
     AuthSessionsUnit,
     BaseAuthSessionAttrsDeriver,
@@ -131,6 +132,7 @@ class CountryDeriver(BaseAuthSessionAttrsDeriver):
 class DerivingSessionsUnit(AuthSessionsUnit):
     lifetime = Slot(AuthFixedLifetime)
     deriver = Slot(CountryDeriver)
+    limit = Slot(AuthEvictOldestLimit)
 
 
 class DerivingAuthUnit(AuthUnit):

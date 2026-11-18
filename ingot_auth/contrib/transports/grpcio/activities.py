@@ -26,6 +26,7 @@ ACTIONS: t.Final[dict[AuthActivityAction, activities_pb2.Action.ValueType]] = {
     AuthActivityAction.SIGN_OUT: activities_pb2.ACTION_SIGN_OUT,
     AuthActivityAction.REVOKE: activities_pb2.ACTION_REVOKE,
     AuthActivityAction.EXPIRE: activities_pb2.ACTION_EXPIRE,
+    AuthActivityAction.EVICT: activities_pb2.ACTION_EVICT,
 }
 ACTIONS_BY_MESSAGE: t.Final = {message: action for action, message in ACTIONS.items()}
 

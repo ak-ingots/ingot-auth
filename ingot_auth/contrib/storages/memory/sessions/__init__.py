@@ -48,14 +48,9 @@ class AuthMemorySessionsStorage(AuthMemoryStateMixin, AuthSessionsStorage):
     @t.override
     async def _get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
         return tuple(
-            sorted(
-                (
-                    session
-                    for session in self._sessions.values()
-                    if session.profile_uid == uid and session.closed_at is None
-                ),
-                key=lambda session: (session.opened_at, session.uid),
-            )
+            session
+            for session in self._sessions.values()
+            if session.profile_uid == uid and session.closed_at is None
         )
 
     @t.override

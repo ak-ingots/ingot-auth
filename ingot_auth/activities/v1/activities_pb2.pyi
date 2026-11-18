@@ -55,6 +55,7 @@ class _ActionEnumTypeWrapper(_enum_type_wrapper._EnumTypeWrapper[_Action.ValueTy
     ACTION_SIGN_OUT: _Action.ValueType  # 7
     ACTION_REVOKE: _Action.ValueType  # 8
     ACTION_EXPIRE: _Action.ValueType  # 9
+    ACTION_EVICT: _Action.ValueType  # 10
 
 class Action(_Action, metaclass=_ActionEnumTypeWrapper):
     """What a change of state was."""
@@ -69,6 +70,7 @@ ACTION_SIGN_IN: Action.ValueType  # 6
 ACTION_SIGN_OUT: Action.ValueType  # 7
 ACTION_REVOKE: Action.ValueType  # 8
 ACTION_EXPIRE: Action.ValueType  # 9
+ACTION_EVICT: Action.ValueType  # 10
 Global___Action: _TypeAlias = Action  # noqa: Y015
 
 @_typing.final
