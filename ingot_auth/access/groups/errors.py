@@ -4,8 +4,10 @@ __all__ = ("AuthGroupError", "AuthGroupNotFoundError")
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthGroupError(Exception):
+
+class AuthGroupError(UserError):
     """
     An error of a group. ``args`` are the message and the name of the
     group, so the error survives pickling; create it with the class methods

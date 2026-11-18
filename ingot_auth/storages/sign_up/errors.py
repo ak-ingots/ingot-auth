@@ -4,8 +4,10 @@ __all__ = ("AuthSignUpRecordNotFoundError",)
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthSignUpRecordNotFoundError(Exception):
+
+class AuthSignUpRecordNotFoundError(UserError):
     """No record has the uid. ``args`` are the message and the uid."""
 
     @classmethod

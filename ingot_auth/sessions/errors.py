@@ -7,6 +7,8 @@ __all__ = ("AuthOwnSessionNotFoundError", "AuthSessionExpiredError")
 
 import typing as t
 
+from ingots.puer import UserError
+
 from ingot_auth.storages import AuthSessionCloseReason, AuthSessionError
 
 
@@ -22,7 +24,7 @@ class AuthSessionExpiredError(AuthSessionError):
         return t.cast(AuthSessionCloseReason, self.args[1])
 
 
-class AuthOwnSessionNotFoundError(Exception):
+class AuthOwnSessionNotFoundError(UserError):
     """
     No open session of the caller has the uid: never one, closed, or of
     another. The caller stays signed in; ``args`` are the message, then the

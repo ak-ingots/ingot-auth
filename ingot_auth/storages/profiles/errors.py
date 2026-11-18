@@ -12,8 +12,10 @@ __all__ = (
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthProfileError(Exception):
+
+class AuthProfileError(UserError):
     """An error of a profile. ``args`` are the message and the uid."""
 
     @property
@@ -41,7 +43,7 @@ class AuthProfileNotFoundError(AuthProfileError):
         return cls(f"no profile {uid!r}", uid)
 
 
-class AuthIdentityError(Exception):
+class AuthIdentityError(UserError):
     """
     An error of an identity. ``args`` are the message and the kind, not the
     identifier, an email or a phone that has no place in the logs.
