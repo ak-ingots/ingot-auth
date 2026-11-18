@@ -129,6 +129,12 @@ example-test: all  ## the scenarios of examples/game against the game in Docker
 	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
 	(cd $(GAME) && uv run python -m scenarios testing run -v)
 
+# The load of the game against the release BASELINE, on the dev server
+# alone (story 9 of its design); examples/game/perf/run.sh tells the knobs.
+.PHONY: perf
+perf:  ## the load of the game, the tree against a release [BASELINE=X.Y.Z CLIENTS=...]
+	examples/game/perf/run.sh
+
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
 # stubs of mypy-protobuf, committed next to them. A contract lies at the path of
 # its proto package, ingot_auth/<path>/v<N>/<service>.proto, so its code is
