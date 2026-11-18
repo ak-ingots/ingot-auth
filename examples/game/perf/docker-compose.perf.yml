@@ -1,0 +1,27 @@
+# The game under the load: over docker-compose.yml of the role, the
+# baseline's or the candidate's, each service on cores of its own. A core
+# n of the dev server is its cpus 2n and 2n+1: the system on core 0, a
+# process of the game on core 1 and on core 2, the servers on core 3, the
+# load on cores 4 and 5, which run.sh pins.
+
+x-perf: &perf
+  # the floor of the timing of a sign-in off: the throughput, not the wait
+  APP_AUTH_SIGN_IN_MIN_DURATION: "0"
+
+services:
+  app:
+    cpuset: "2,3"
+    environment: *perf
+  app2:
+    cpuset: "4,5"
+    environment: *perf
+  cli:
+    cpuset: "0,1"
+  mongodb:
+    cpuset: "6,7"
+    # its cache capped, as the host has little memory
+    command: [--replSet=rs0, --bind_ip_all, --wiredTigerCacheSizeGB=0.5]
+  redis:
+    cpuset: "6,7"
+  mailpit:
+    cpuset: "0,1"
