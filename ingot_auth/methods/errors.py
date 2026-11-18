@@ -11,8 +11,10 @@ __all__ = (
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthMethodError(Exception):
+
+class AuthMethodError(UserError):
     """
     An error of a method. ``args`` are the message and what it is about, so
     the error survives pickling; create it with the class methods of its

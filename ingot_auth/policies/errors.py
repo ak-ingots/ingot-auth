@@ -4,8 +4,10 @@ __all__ = ("AuthPolicyViolationError",)
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthPolicyViolationError(Exception):
+
+class AuthPolicyViolationError(UserError):
     """
     A value breaks a policy. ``args`` are the message and the name of the
     policy, not the value, a password, say.

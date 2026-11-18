@@ -4,8 +4,10 @@ __all__ = ("AuthSessionError", "AuthSessionNotFoundError")
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthSessionError(Exception):
+
+class AuthSessionError(UserError):
     """
     An error of a session: a client signs in again. ``args`` are the message,
     then what it is of.

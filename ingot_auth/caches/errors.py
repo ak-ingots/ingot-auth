@@ -4,8 +4,10 @@ __all__ = ("AuthAttemptNotFoundError",)
 
 import typing as t
 
+from ingots.puer import UserError
 
-class AuthAttemptNotFoundError(Exception):
+
+class AuthAttemptNotFoundError(UserError):
     """
     No attempt has the id: there never was one, it expired or it is over.
     ``args`` are the message.

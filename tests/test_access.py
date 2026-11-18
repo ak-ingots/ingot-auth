@@ -562,9 +562,13 @@ class CommandsTestCase(unittest.TestCase):
             self.run_project(*members, "remove", "articles.grp_editors", "a1"), (0, "")
         )
 
-    def test_an_unknown_group_fails_the_command(self) -> None:
-        with self.assertLogs("ingots.puer.runner", "ERROR"):
+    def test_an_unknown_group_fails_the_command_by_its_message(self) -> None:
+        with self.assertLogs("ingots.puer.runner", "ERROR") as logs:
             code, _ = self.run_project(
                 "auth", "access", "members", "add", "guests", "a1"
             )
         self.assertEqual(code, 1)
+        # a mistake of the operator, a UserError: told with no traceback
+        [record] = logs.records
+        self.assertEqual(record.getMessage(), "the workflow failed: no group 'guests'")
+        self.assertIsNone(record.exc_info)

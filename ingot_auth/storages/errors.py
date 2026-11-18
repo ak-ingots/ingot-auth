@@ -9,6 +9,8 @@ __all__ = (
 
 import typing as t
 
+from ingots.puer import UserError
+
 
 class AuthTransactionError(Exception):
     """
@@ -29,7 +31,7 @@ class AuthTransactionError(Exception):
         return str(self.args[0])
 
 
-class AuthRegistryError(Exception):
+class AuthRegistryError(UserError):
     """
     An error of a registry. ``args`` are the message, the registry and the
     id or the name in question, so the error survives pickling; create it

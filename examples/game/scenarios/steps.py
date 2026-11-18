@@ -121,9 +121,13 @@ class Operator:
         return out
 
     async def run_refused(self, *argv: str) -> str:
-        """The error a failing command logs, its line of the runner."""
+        """
+        The error a failing command logs, its line of the runner: the
+        mistake of the operator, told without a traceback.
+        """
         code, _, err = await self._exec(argv)
         assert code != 0, f"{' '.join(argv)}: passed"
+        assert "Traceback" not in err, err[-2000:]
         return next(line for line in err.splitlines() if " failed: " in line)
 
     async def _exec(self, argv: tuple[str, ...]) -> tuple[int, str, str]:
