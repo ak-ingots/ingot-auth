@@ -35,6 +35,44 @@ its reason, and the request is refused. A strategy of the application's
 own extends `BaseAuthSessionLifetime`: a session of an operator living an
 hour, the others a month.
 
+## Limit
+
+How many open sessions a profile keeps is the config `AUTH_SESSIONS_MAX`,
+10 by default, at least 1, which the operator of the application sets;
+what a sign-in does over it is the strategy in the slot `limit` of the
+sessions, which the application declares, as the sessions have none:
+
+- `AuthEvictOldestLimit`: signs out the sessions seen longest ago, closed
+  `EVICTED`, so that a user who lost a device is not locked out; a game
+  keeping one session a player sets `AUTH_SESSIONS_MAX=1`, a later sign-in
+  signing out an earlier one;
+- `AuthRefuseLimit`: refuses the sign-in, `AuthSessionsLimitError`, over
+  gRPC `RESOURCE_EXHAUSTED`, the reason `SESSIONS_LIMIT`: the user signs
+  out of another first;
+- `AuthNoLimit`: none, the config unread, no session read by a sign-in.
+
+```python
+class AppSessionsUnit(AuthSessionsUnit):
+    lifetime = Slot(AuthSlidingFixedLifetime)
+    limit = Slot(AuthEvictOldestLimit)
+```
+
+The first two extend `BaseAuthMaxSessionsLimit`, the limit by the count:
+the open sessions the lifetime tells expired take no room, left to their
+requests and the sweep to close; over the limit, the sign-in closes those
+the strategy picks in its transaction, each recorded in the activity log
+in the run of the sign-in, `evict`, and forgotten by the cache after the
+commit, their tokens refused at once. The time seen is as precise as the
+lifetime writes it. A lower limit applies at the next sign-in of each
+profile. Two sign-ins of a profile at once may leave one session over: a
+soft limit.
+
+A strategy of the application's own picks which sessions give way, by
+another sign than the time seen, the kind of the device, extending
+`BaseAuthMaxSessionsLimit` by `_select_evicted()`, the open sessions alive
+given in no order, sorting them by its own sign, or raising to refuse; one not counting at
+all extends `BaseAuthSessionsLimit` by `_make_room()`.
+
 ## Attributes
 
 A session keeps the values of its attributes, what it was opened on, as

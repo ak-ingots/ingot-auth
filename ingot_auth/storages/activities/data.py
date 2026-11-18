@@ -27,6 +27,7 @@ class AuthActivityAction(enum.StrEnum):
     SIGN_OUT = "sign_out"
     REVOKE = "revoke"
     EXPIRE = "expire"
+    EVICT = "evict"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

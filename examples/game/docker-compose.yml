@@ -20,6 +20,9 @@ x-app: &app
     APP_MAIL_SMTP_HOST: mailpit
     APP_MAIL_SMTP_PORT: "1025"
     APP_MAIL_SMTP_TLS: NONE
+    # a real game keeps one; three, for the scenarios of a player's devices
+    # till a web example takes them
+    APP_AUTH_SESSIONS_MAX: "3"
   depends_on:
     mongodb:
       condition: service_healthy

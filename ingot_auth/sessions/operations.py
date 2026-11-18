@@ -29,7 +29,10 @@ from .errors import AuthOwnSessionNotFoundError
 from .data import AuthOwnSession, AuthSessionExpired, AuthSessionInfo
 
 if t.TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from ingot_auth.project import AuthProject
+    from ingot_auth.storages import AuthSessionRecord
 
     from . import AuthSessionsUnit
 
@@ -63,7 +66,9 @@ class AuthListOwnSessionsOperation(BaseOperation[None, tuple[AuthOwnSession, ...
                 seen_at=session.seen_at,
                 is_current=session.uid == caller.session_uid,
             )
-            for session in await self.project.auth.storage.sessions.get_open(caller.uid)
+            for session in _by_opening(
+                await self.project.auth.storage.sessions.get_open(caller.uid)
+            )
         )
 
 
@@ -294,7 +299,7 @@ class AuthListSessionsOperation(
         if parameters.closed:
             sessions = await storage.get_all(parameters.profile_uid)
         else:
-            sessions = await storage.get_open(parameters.profile_uid)
+            sessions = _by_opening(await storage.get_open(parameters.profile_uid))
         return tuple(
             AuthSessionInfo(
                 uid=session.uid,
@@ -308,3 +313,10 @@ class AuthListSessionsOperation(
             )
             for session in sessions
         )
+
+
+def _by_opening(
+    sessions: "Iterable[AuthSessionRecord]",
+) -> "tuple[AuthSessionRecord, ...]":
+    """The sessions by the time they opened, as a list shows them."""
+    return tuple(sorted(sessions, key=lambda session: (session.opened_at, session.uid)))

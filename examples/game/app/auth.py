@@ -11,6 +11,7 @@ from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.methods.email_code import AuthEmailCodeMethod
 from ingot_auth.methods.nickname import AuthNicknameMethod
 from ingot_auth.sessions import (
+    AuthEvictOldestLimit,
     AuthNoSessionAttrsDeriver,
     AuthSessionsUnit,
     AuthSlidingFixedLifetime,
@@ -30,6 +31,7 @@ class AppMethodsUnit(AuthMethodsUnit):
 class AppSessionsUnit(AuthSessionsUnit):
     lifetime = Slot(AuthSlidingFixedLifetime)
     deriver = Slot(AuthNoSessionAttrsDeriver)
+    limit = Slot(AuthEvictOldestLimit)
 
 
 class AppSignInUnit(AuthSignInUnit):

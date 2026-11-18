@@ -165,6 +165,7 @@ from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings.configs import AuthConfigs
 from ingot_auth.sessions import (
     AuthSessionExpiredError,
+    AuthSessionsLimitError,
     AuthSessionsUnit,
 )
 from ingot_auth.sign_in import (
@@ -1826,6 +1827,13 @@ class ErrorPoliciesTestCase(unittest.TestCase):
                 grpc.StatusCode.UNAUTHENTICATED,
                 "SESSION_EXPIRED",
                 {"reason": "expired_absolute"},
+            ),
+            (
+                errors.auth_sessions_limit,
+                AuthSessionsLimitError.for_count(3),
+                grpc.StatusCode.RESOURCE_EXHAUSTED,
+                "SESSIONS_LIMIT",
+                {"count": "3"},
             ),
         ):
             with self.subTest(reason=reason):

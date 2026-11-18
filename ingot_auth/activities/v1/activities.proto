@@ -31,6 +31,7 @@ enum Action {
   ACTION_SIGN_OUT = 7;
   ACTION_REVOKE = 8;
   ACTION_EXPIRE = 9;
+  ACTION_EVICT = 10;
 }
 
 // A change of state, a fact as it was written. The actor, `who` with

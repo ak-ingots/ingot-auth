@@ -62,7 +62,7 @@ class AuthSessionsStorageContract(BaseAuthContract):
             await sessions.find("h1")
         self.assertEqual((await sessions.find("h2")).uid, "s2")
 
-    async def test_the_open_sessions_of_a_profile_come_as_opened(self) -> None:
+    async def test_the_open_sessions_of_a_profile_come_in_any_order(self) -> None:
         sessions = self.project.auth.storage.sessions
         later = NOW + datetime.timedelta(hours=1)
         first = create_session("s3", "h3")
@@ -71,7 +71,7 @@ class AuthSessionsStorageContract(BaseAuthContract):
             await sessions.open(session)
         await sessions.open(create_session("s4", "h4"))
         await sessions.close("s4", AuthSessionCloseReason.SIGNED_OUT, later)
-        self.assertEqual(await sessions.get_open("a1"), (first, second))
+        self.assertCountEqual(await sessions.get_open("a1"), (first, second))
         self.assertEqual(await sessions.get_open("c3"), ())
 
     async def test_the_sessions_of_a_profile_come_closed_too(self) -> None:

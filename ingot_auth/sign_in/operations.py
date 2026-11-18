@@ -97,13 +97,15 @@ class BaseAuthSignInOperation[ParametersType](
         """
         Ends the sign-in: finds the profile of the subject, an identifier of
         the kind of the method, checks the profile may sign in by the method,
-        by the permissions the access gives it, and opens a session, recorded
-        in the activity log in one transaction.
+        by the permissions the access gives it, makes room by the limit of the
+        sessions and opens a session, recorded in the activity log in one
+        transaction.
 
         :raises AuthMethodRefusedError: the subject is bound to no profile,
             refused as a wrong secret is.
         :raises AuthMethodDeniedError: the profile may not sign in by the
             method.
+        :raises AuthSessionsLimitError: the limit of the sessions refuses it.
         """
         auth = self.project.auth
         identities = auth.storage.profiles.identities
@@ -115,6 +117,7 @@ class BaseAuthSignInOperation[ParametersType](
         if not permissions.has(method.get_sign_in_permissions()):
             raise AuthMethodDeniedError.for_name(method.get_name())
         async with auth.storage.transaction():
+            closed = await auth.sessions.make_room(uid, metadata)
             opened = await auth.sessions.open(uid, method.get_name(), attr_values)
             await auth.activities.record(
                 auth.sessions,
@@ -123,6 +126,7 @@ class BaseAuthSignInOperation[ParametersType](
                 metadata,
                 context=AuthSessionSignedIn(uid=uid, method=method.get_name()),
             )
+        await auth.sessions.forget_closed(closed)
         return AuthSignedIn(session_uid=opened.session_uid, token=opened.token)
 
 

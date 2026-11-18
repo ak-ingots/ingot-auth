@@ -7,13 +7,16 @@ these registries. Their storage is in
 """
 
 __all__ = (
+    "AuthEvictOldestLimit",
     "AuthFixedLifetime",
     "AuthListOwnSessionsOperation",
     "AuthListSessionsCommand",
     "AuthListSessionsOperation",
     "AuthListSessionsParameters",
+    "AuthNoLimit",
     "AuthNoSessionAttrsDeriver",
     "AuthOwnSessionNotFoundError",
+    "AuthRefuseLimit",
     "AuthOwnSession",
     "AuthRevokeAllSessionsCommand",
     "AuthRevokeAllSessionsOperation",
@@ -26,6 +29,7 @@ __all__ = (
     "AuthSessionInfo",
     "AuthSessionsAdminsGroup",
     "AuthSessionsConsumersGroup",
+    "AuthSessionsLimitError",
     "AuthSessionsManagersGroup",
     "AuthSlidingFixedLifetime",
     "AuthSlidingLifetime",
@@ -35,7 +39,9 @@ __all__ = (
     "AuthSweepSessionsOperation",
     "AuthSweepSessionsParameters",
     "BaseAuthSessionAttrsDeriver",
+    "BaseAuthMaxSessionsLimit",
     "BaseAuthSessionLifetime",
+    "BaseAuthSessionsLimit",
 )
 
 import dataclasses
@@ -71,7 +77,11 @@ from .commands import (
     AuthSweepSessionsCommand,
 )
 from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
-from .errors import AuthOwnSessionNotFoundError, AuthSessionExpiredError
+from .errors import (
+    AuthOwnSessionNotFoundError,
+    AuthSessionExpiredError,
+    AuthSessionsLimitError,
+)
 from .groups import (
     AuthSessionsAdminsGroup,
     AuthSessionsConsumersGroup,
@@ -83,6 +93,13 @@ from .lifetimes import (
     AuthSlidingFixedLifetime,
     AuthSlidingLifetime,
     BaseAuthSessionLifetime,
+)
+from .limits import (
+    AuthEvictOldestLimit,
+    AuthNoLimit,
+    AuthRefuseLimit,
+    BaseAuthMaxSessionsLimit,
+    BaseAuthSessionsLimit,
 )
 from .operations import (
     AuthListOwnSessionsOperation,
@@ -99,7 +116,9 @@ from .operations import (
 from .presets import AuthSessionPresetsUnit
 
 if t.TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Iterable, Mapping
+
+    from ingots.defaults.operations import OperationMetadata
 
     from ingot_auth.project import AuthProject
     from ingot_auth.storages import AuthAttrValue
@@ -111,9 +130,10 @@ logger = logging.getLogger(__name__)
 class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     """
     The sessions: the registries of their attributes and of the presets, the
-    strategy of their lifetime in the slot ``lifetime`` and the one deriving
-    values of their attributes in the slot ``deriver``, none by default, which
-    a project declares. A sign-in opens a session and gives its token;
+    strategy of their lifetime in the slot ``lifetime``, the one deriving
+    values of their attributes in the slot ``deriver`` and the one of their
+    limit in the slot ``limit``, none by default, which a project declares. A
+    sign-in makes room, :meth:`make_room`, opens a session and gives its token;
     a request brings the token, and :meth:`authenticate` turns it into the
     caller, from the cache, or from the storage and the access on a miss. A
     change of what a caller holds forgets the callers of the profile,
@@ -171,6 +191,26 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     # one is an open question of ingots
     lifetime = Slot(BaseAuthSessionLifetime)  # type: ignore[type-abstract]
     deriver = Slot(BaseAuthSessionAttrsDeriver)  # type: ignore[type-abstract]
+    limit = Slot(BaseAuthSessionsLimit)  # type: ignore[type-abstract]
+
+    @t.final
+    async def make_room(
+        self, uid: str, metadata: "OperationMetadata"
+    ) -> "tuple[AuthSessionRecord, ...]":
+        """
+        Makes room for a session of a profile by the strategy of the limit, in
+        the transaction of the sign-in: gives the sessions it closed, which
+        :meth:`forget_closed` forgets after the commit.
+
+        :raises AuthSessionsLimitError: the strategy refuses the sign-in.
+        """
+        return await self.limit.make_room(uid, self._get_now(), metadata)
+
+    @t.final
+    async def forget_closed(self, sessions: "Iterable[AuthSessionRecord]") -> None:
+        """Forgets sessions closed in the cache, once the storage keeps them so."""
+        for session in sessions:
+            await self._forget(session.token_hash)
 
     @t.final
     async def open(

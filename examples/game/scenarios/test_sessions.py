@@ -3,9 +3,12 @@ from ingots.testing import ProjectTestCase
 
 from ingot_auth.sessions.v1 import sessions_pb2
 
-from .steps import GameMixin, bear
+from .steps import GameMixin, bear, read_lines
 
 UNAUTHENTICATED = grpc.StatusCode.UNAUTHENTICATED
+
+# APP_AUTH_SESSIONS_MAX of the game in its compose
+SESSIONS_MAX = 3
 
 
 class SessionsScenario(GameMixin, ProjectTestCase):
@@ -38,6 +41,21 @@ class SessionsScenario(GameMixin, ProjectTestCase):
                 self.get_own_profile(token), UNAUTHENTICATED, "SESSION_NOT_FOUND"
             )
         await self.get_own_profile(this)
+
+    async def test_a_sign_in_over_the_limit_signs_out_the_oldest_device(
+        self,
+    ) -> None:
+        uid, (oldest, *kept) = await self.new_player(times=SESSIONS_MAX + 1)
+        await self.assert_refused(
+            self.get_own_profile(oldest), UNAUTHENTICATED, "SESSION_NOT_FOUND"
+        )
+        for token in kept:
+            await self.get_own_profile(token)
+        self.assertEqual(len(await self.list_own_sessions(kept[-1])), SESSIONS_MAX)
+        rows = read_lines(
+            await self.operator.run("auth", "sessions", "list", uid, "--closed")
+        )
+        self.assertEqual([row[-1] for row in rows if len(row) == 6], ["evicted"])
 
     async def test_a_session_of_another_player_is_not_found(self) -> None:
         (mine,) = await self.sign_up_and_in()

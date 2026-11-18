@@ -61,7 +61,10 @@ class AuthSessionsStorage(Unit):
 
     @t.final
     async def get_open(self, uid: str) -> tuple[AuthSessionRecord, ...]:
-        """The open sessions of a profile, by the time they opened."""
+        """
+        The open sessions of a profile, in no order: the fastest a backend
+        gives them; a consumer sorts them as it needs.
+        """
         return await self._get_open(uid)
 
     @t.final
