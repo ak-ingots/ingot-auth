@@ -2,6 +2,23 @@
 
 <!-- towncrier release notes start -->
 
+## [0.8.0] - 2026-11-18
+### Changed
+- Requires ingots 0.35.1: the scenarios of `examples/game` are a project of their own, a client of the game on ingot-grpcio, run by its `testing run`, configured by `GAME_TEST_*`.
+- The errors of the domain, of a profile, an identity, a registry, a session,
+  a group, a method, an attempt, a policy, are `UserError`s of ingots: a
+  command failing on one, the mistake of its operator, tells its message with
+  no traceback.
+- The sessions of a profile are limited: `AUTH_SESSIONS_MAX`, 10 by
+  default, set by the operator, and the strategy in the new slot `limit` of
+  the sessions, which has none, so that an application declares one:
+  `AuthEvictOldestLimit` signs out the sessions seen longest ago, `evicted`,
+  a new action `evict` in the activity log; `AuthRefuseLimit` refuses the
+  sign-in, `AuthSessionsLimitError`, over gRPC `RESOURCE_EXHAUSTED`,
+  `SESSIONS_LIMIT`; `AuthNoLimit` keeps any number. An expired session
+  takes no room. `get_open` of the storage of the sessions gives them in no
+  order.
+
 ## [0.7.0] - 2026-11-17
 ### Added
 - Exported what the tests of an application may take: the factories of the
