@@ -2,6 +2,10 @@
 
 <!-- towncrier release notes start -->
 
+## [0.9.0] - 2026-11-20
+### Changed
+- Moved on to ingots 0.36, ingot-grpcio 0.15, ingot-pymongo 0.16, ingot-redis 0.4 and ingot-mail 0.4.
+
 ## [0.8.0] - 2026-11-18
 ### Changed
 - Requires ingots 0.35.1: the scenarios of `examples/game` are a project of their own, a client of the game on ingot-grpcio, run by its `testing run`, configured by `GAME_TEST_*`.
