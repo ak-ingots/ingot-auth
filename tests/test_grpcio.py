@@ -147,7 +147,7 @@ from ingot_auth.methods.nickname import (
     AuthNicknameConfigs,
     AuthNicknameMethod,
 )
-from ingot_auth.methods.password import AuthPassword
+from ingot_auth.methods.password import AuthPassword, AuthScryptPasswordHasher
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.profiles.attrs import (
     AuthAttrsUnit,
@@ -380,8 +380,12 @@ class TstMethodsProject(TstAnonymousProject):
     auth = Slot(TstMethodsAuthUnit)
 
 
-class CheapPassword(AuthPassword):
+class CheapHasher(AuthScryptPasswordHasher):
     SCRYPT_LOG_N = 4
+
+
+class CheapPassword(AuthPassword):
+    hasher_default = Slot(CheapHasher)
 
 
 class TstNicknameMethodsUnit(AuthMethodsUnit):
