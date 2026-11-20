@@ -23,6 +23,7 @@ from ingot_auth.methods.password import (
     AuthPassword,
     AuthPasswordSetParameters,
     AuthPasswordSetPolicies,
+    AuthScryptPasswordHasher,
 )
 from ingot_auth.methods import (
     AuthMethodInvalidError,
@@ -69,13 +70,21 @@ SIGNING_IN: t.Final = Caller(
 )
 
 
-class TstPassword(AuthPassword):
+class TstHasher(AuthScryptPasswordHasher):
     # cheap for the tests
     SCRYPT_LOG_N = 4
 
 
-class TstCostlierPassword(TstPassword):
+class TstCostlierHasher(TstHasher):
     SCRYPT_LOG_N = 5
+
+
+class TstPassword(AuthPassword):
+    hasher_default = Slot(TstHasher)
+
+
+class TstCostlierPassword(TstPassword):
+    hasher_default = Slot(TstCostlierHasher)
 
 
 class TstMethodsUnit(AuthMethodsUnit):

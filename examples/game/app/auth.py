@@ -10,6 +10,7 @@ from ingot_auth.contrib.storages.mongodb import AuthMongoDbStorage
 from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.methods.email_code import AuthEmailCodeMethod
 from ingot_auth.methods.nickname import AuthNicknameMethod
+from ingot_auth.methods.password import AuthPassword, AuthScryptPasswordHasher
 from ingot_auth.sessions import (
     AuthEvictOldestLimit,
     AuthNoSessionAttrsDeriver,
@@ -23,9 +24,21 @@ class AppMailUnit(MailUnit):
     mailer = Slot(AiosmtplibMailer)
 
 
+class AppPasswordHasher(AuthScryptPasswordHasher):
+    # of a like defence by OWASP, 16 MiB a hash and half the CPU of the
+    # default on the servers of the game, as their load measured
+    SCRYPT_LOG_N = 14
+    SCRYPT_P = 5
+
+
+class AppPassword(AuthPassword):
+    hasher_default = Slot(AppPasswordHasher)
+
+
 class AppMethodsUnit(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
     email_code = Slot(AuthEmailCodeMethod)
+    password = Slot(AppPassword)
 
 
 class AppSessionsUnit(AuthSessionsUnit):

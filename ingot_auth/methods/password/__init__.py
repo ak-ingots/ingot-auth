@@ -3,8 +3,9 @@ The password of a profile, one whatever identifier it signs in by, its hash
 the secret of the profile: what the methods of a password share, in the slot
 ``password`` of the methods. A new password is checked by the group of the
 policies ``policies_set``, empty unless an application gives policies to it
-in a subclass, by whatever method it is set. How it hashes is changed by
-subclassing.
+in a subclass, by whatever method it is set. It is hashed by the hasher of
+its slot ``hasher_default`` and verified by the one of its slots
+``hasher_*`` whose algorithm the hash names.
 """
 
 __all__ = (
@@ -12,13 +13,16 @@ __all__ = (
     "AuthPassword",
     "AuthPasswordSetParameters",
     "AuthPasswordSetPolicies",
+    "AuthPbkdf2PasswordHasher",
+    "AuthScryptPasswordHasher",
+    "BaseAuthPasswordHasher",
 )
 
 import asyncio
 import typing as t
 import unicodedata
 
-from ingots.puer import Unit
+from ingots.puer import Slot, Unit
 
 from ingot_auth.storages import AuthSecretNotFoundError
 
@@ -27,7 +31,10 @@ from .policies import (
     AuthPasswordSetParameters,
     AuthPasswordSetPolicies,
 )
-from .scrypt import hash_password, verify_password
+from .hashers import BaseAuthPasswordHasher
+from .pbkdf2 import AuthPbkdf2PasswordHasher
+from .phc import get_name
+from .scrypt import AuthScryptPasswordHasher
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -42,19 +49,25 @@ class AuthPassword(Unit):
     with no secret, is verified against a hash of nothing all the same, so
     that the time of the refusal tells nothing of it.
 
-    The hash is that of :meth:`_hash`, verified by :meth:`_verify`: scrypt
-    with the parameters of OWASP, ``2 ** SCRYPT_LOG_N`` the cost.
+    A password is hashed by the hasher of the slot ``hasher_default``, none
+    by default, as every strategy, and verified by the hasher of the slots
+    ``hasher_*`` whose :attr:`~BaseAuthPasswordHasher.NAME` the hash names,
+    those of the standard library here, ``hasher_scrypt`` and
+    ``hasher_pbkdf2``: another default, or another cost, keeps the passwords
+    set before, and a password verified by a hash the default would not make
+    is hashed again by it, as OWASP upgrades a work factor. A hasher of
+    another library comes in a slot of its own.
     """
 
-    SCRYPT_LOG_N: t.ClassVar[int] = 17
-    SCRYPT_R: t.ClassVar[int] = 8
-    SCRYPT_P: t.ClassVar[int] = 1
-
     project: "AuthProject"
+    hasher_default = Slot(BaseAuthPasswordHasher)  # type: ignore[type-abstract]
+    hasher_scrypt = Slot(AuthScryptPasswordHasher)
+    hasher_pbkdf2 = Slot(AuthPbkdf2PasswordHasher)
 
     policies_set = AuthPasswordSetPolicies()
 
     _dummy_secret: str
+    _hashers: dict[str, BaseAuthPasswordHasher]
 
     @t.final
     def normalize(self, password: str) -> str:
@@ -78,19 +91,44 @@ class AuthPassword(Unit):
                 secret = await self.project.auth.storage.profiles.secrets.get(uid)
             except AuthSecretNotFoundError:
                 pass
-        if secret is None:
+        if secret is None or uid is None:
             dummy = await asyncio.to_thread(self._get_dummy_secret)
             await asyncio.to_thread(self._verify, password, dummy)
             return False
-        return await asyncio.to_thread(self._verify, password, secret)
+        if not await asyncio.to_thread(self._verify, password, secret):
+            return False
+        if self.hasher_default.needs_rehash(secret):
+            # the default of today and its cost, as OWASP upgrades a work factor
+            secret = await self.hash(password)
+            await self.project.auth.storage.profiles.secrets.put(uid, secret)
+        return True
 
     def _hash(self, password: str) -> str:
-        """The hash of a password, run in a thread."""
-        return hash_password(password, self.SCRYPT_LOG_N, self.SCRYPT_R, self.SCRYPT_P)
+        """The hash of a password by the default hasher, run in a thread."""
+        return self.hasher_default.hash(password)
 
     def _verify(self, password: str, secret: str) -> bool:
-        """Whether a password is that of a hash :meth:`_hash` made, in a thread."""
-        return verify_password(password, secret)
+        """
+        Whether a password is that of a hash, by the hasher of its algorithm;
+        ``False`` for a hash of none of them. Run in a thread.
+        """
+        hasher = self._get_hashers().get(get_name(secret))
+        return hasher is not None and hasher.verify(password, secret)
+
+    @t.final
+    def _get_hashers(self) -> dict[str, BaseAuthPasswordHasher]:
+        """The hashers of the slots ``hasher_*`` by their names, the default first."""
+        try:
+            return self._hashers
+        except AttributeError:
+            pass
+        hashers: dict[str, BaseAuthPasswordHasher] = {}
+        kind = BaseAuthPasswordHasher
+        for name, _ in type(self).slots_iter(kind):  # type: ignore[type-abstract]
+            hasher = self.slots_find_entity(name, kind)  # type: ignore[type-abstract]
+            hashers.setdefault(hasher.NAME, hasher)
+        self._hashers = hashers
+        return self._hashers
 
     @t.final
     def _get_dummy_secret(self) -> str:

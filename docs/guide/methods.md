@@ -20,8 +20,8 @@ password, which is of the profile, one whatever identifier it signs in by:
 `policies_set` of `AuthPassword`, the slot `password` of the methods. Both
 are empty unless the application gives policies to them in a subclass, each
 an operation, run together, so that a client learns every policy broken at
-once; the parameters of the hash of the password, scrypt, are changed by
-subclassing too:
+once; how the password is hashed is the strategy of its slot
+`hasher_default`, none by default, as every strategy:
 
 ```python
 class AppPasswordLength(AuthLengthPolicy):
@@ -31,12 +31,67 @@ class AppPasswordLength(AuthLengthPolicy):
 class AppPassword(AuthPassword):
     # a new password, by any method
     policies_set = AuthPasswordSetPolicies(AppPasswordLength)
+    hasher_default = Slot(AuthScryptPasswordHasher)
 
 
 class AppMethods(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
     password = Slot(AppPassword)
 ```
+
+The hashers are those of the standard library, entities extending
+`BaseAuthPasswordHasher`, each of one algorithm. `AuthScryptPasswordHasher`
+is scrypt with the parameters of
+[OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html),
+`N = 2 ** 17`, `r = 8`, `p = 1`: 128 MiB and about a second of a core a
+hash, memory-hard, so dear on a GPU too; `AuthPbkdf2PasswordHasher`, PBKDF2
+with HMAC-SHA256 and 600 000 iterations, is approved by FIPS but cheap on a
+GPU, for where FIPS is required.
+
+A hash keeps its algorithm and its cost, and `AuthPassword` verifies it by
+the hasher of its slots `hasher_*` of that algorithm, `hasher_scrypt` and
+`hasher_pbkdf2` here: another default, or another cost, keeps the passwords
+set before, and a sign-in that verified one of another algorithm or cost
+hashes it again by the default. A hasher of another library comes in a slot
+of its own, `hasher_argon2`, say.
+
+The cost is of the class of the hasher, the highest of OWASP by default,
+another by a subclass. OWASP gives settings of scrypt of a like defence,
+less memory paid by more parallelism:
+
+| `SCRYPT_LOG_N` | `SCRYPT_P` | Memory a hash | CPU a hash, measured |
+|---|---|---|---|
+| 17 | 1 | 128 MiB | 1, the default |
+| 16 | 2 | 64 MiB | 0.85–0.9 |
+| 15 | 3 | 32 MiB | 0.55–0.6 |
+| 14 | 5 | 16 MiB | 0.45 |
+| 13 | 10 | 8 MiB | |
+
+The CPU is that of a sign-in under the load of the game on a Ryzen 5 5500U,
+its cache of 8 MiB: a smaller table fits the caches better, so it is
+cheaper than its arithmetic says, by how much depending on the server.
+Measure on yours, under the load, before the cost changes, and again before
+the servers do:
+
+```python
+from ingot_auth.methods.password import AuthScryptPasswordHasher
+
+
+class AppPasswordHasher(AuthScryptPasswordHasher):
+    # 16 MiB a hash, a half of the CPU on our servers, OWASP still
+    SCRYPT_LOG_N = 14
+    SCRYPT_P = 5
+
+
+class AppPassword(AuthPassword):
+    hasher_default = Slot(AppPasswordHasher)
+```
+
+A setting below these is cheaper still, `SCRYPT_LOG_N = 14` with
+`SCRYPT_P = 1` a tenth of the default, but below the minimum of OWASP: a
+cheap hash pays for itself the day the storage leaks, the passwords of its
+users, used elsewhere too, found the sooner. And a dear one makes every
+sign-in a second of a core: a sign-in is to be limited either way.
 
 ## Identifiers
 
