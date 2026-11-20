@@ -2,6 +2,10 @@
 
 <!-- towncrier release notes start -->
 
+## [0.10.0] - 2026-11-20
+### Changed
+- A password is hashed by the strategy of the slot `hasher_default` of `AuthPassword`, none by default, as every strategy: `AuthScryptPasswordHasher`, scrypt with the parameters of OWASP, or `AuthPbkdf2PasswordHasher`, PBKDF2-HMAC-SHA256, for where FIPS is required, both entities of `BaseAuthPasswordHasher`, another cost by a subclass. `AuthPassword` verifies a hash by the hasher of its slots `hasher_*` of the algorithm the hash names, so that the passwords set before another default or another cost still verify, and a sign-in hashes such a password again by the default. `AuthPassword.SCRYPT_LOG_N`, `SCRYPT_R` and `SCRYPT_P` moved to `AuthScryptPasswordHasher`; an application declares `hasher_default`.
+
 ## [0.9.0] - 2026-11-20
 ### Changed
 - Moved on to ingots 0.36, ingot-grpcio 0.15, ingot-pymongo 0.16, ingot-redis 0.4 and ingot-mail 0.4.
