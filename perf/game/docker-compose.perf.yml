@@ -2,7 +2,7 @@
 # baseline's or the candidate's, each service on cores of its own. A core
 # n of the dev server is its cpus 2n and 2n+1: the system on core 0, a
 # process of the game on core 1 and on core 2, the servers on core 3, the
-# load on cores 4 and 5, which run.sh pins.
+# load on cores 4 and 5, PERF_LOAD_CPUS, which the runner pins.
 
 x-perf: &perf
   # the floor of the timing of a sign-in off: the throughput, not the wait
