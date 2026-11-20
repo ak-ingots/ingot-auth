@@ -21,16 +21,16 @@ classifiers = [
 ]
 # Before 1.0 a minor version of ingots may break its addons.
 dependencies = [
-    "ingot-mail>=0.3.0,<0.4",
-    "ingots>=0.35.1,<0.36",
+    "ingot-mail>=0.4.0,<0.5",
+    "ingots>=0.36.0,<0.37",
 ]
 
 [project.optional-dependencies]
-grpcio = ["ingot-grpcio>=0.14.0,<0.15"]
-pymongo = ["ingot-pymongo>=0.15.0,<0.16"]
-redis = ["ingot-redis>=0.3.0,<0.4"]
+grpcio = ["ingot-grpcio>=0.15.0,<0.16"]
+pymongo = ["ingot-pymongo>=0.16.0,<0.17"]
+redis = ["ingot-redis>=0.4.0,<0.5"]
 # The stacks of the kinds of applications, run by examples/<kind>/.
-game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.3.0,<0.4"]
+game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.4.0,<0.5"]
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
@@ -58,10 +58,10 @@ dev = [
     "flake8-class-attributes-order",
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
-    "ingot-mail[aiosmtplib]>=0.3.0,<0.4",
-    "ingot-grpcio>=0.14.0,<0.15",
-    "ingot-pymongo>=0.15.0,<0.16",
-    "ingot-redis>=0.3.0,<0.4",
+    "ingot-mail[aiosmtplib]>=0.4.0,<0.5",
+    "ingot-grpcio>=0.15.0,<0.16",
+    "ingot-pymongo>=0.16.0,<0.17",
+    "ingot-redis>=0.4.0,<0.5",
     "mypy",
     "mypy-protobuf>=5.1.0",
     "types-grpcio>=1.84.0.20261021",

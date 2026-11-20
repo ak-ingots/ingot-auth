@@ -9,7 +9,7 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 .DELETE_ON_ERROR:
 
-SRC := ingot_auth tests docs/conf.py examples
+SRC := ingot_auth tests docs/conf.py examples perf
 DOC_OUT := docs/build
 
 # Supported interpreters: keep in step with the classifiers and the `wheel`
@@ -129,11 +129,26 @@ example-test: all  ## the scenarios of examples/game against the game in Docker
 	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
 	(cd $(GAME) && uv run python -m scenarios testing run -v)
 
-# The load of the game against the release BASELINE, on the dev server
-# alone (story 9 of its design); examples/game/perf/run.sh tells the knobs.
-.PHONY: perf
-perf:  ## the load of the game, the tree against a release [BASELINE=X.Y.Z CLIENTS=...]
-	examples/game/perf/run.sh
+# What a stand builds a role by, its tree the candidate's or a worktree of
+# the baseline: the distributions the example installs. The load itself
+# runs from ingots-libs, perf/README.md telling how.
+.PHONY: perf-build
+perf-build: all  ## the distributions of the example, what a stand builds a role by
+	uv export --quiet --no-dev --extra game --no-emit-project --no-hashes \
+		--output-file dist/game-requirements.txt
+
+# The scenarios of the stands, dry, against the game in Docker: they run,
+# no number measured.
+PERF_PYTHON ?= uv run python
+
+.PHONY: perf-smoke
+perf-smoke: perf-build  ## the scenarios of the stands of perf/, dry, against the game in Docker
+	@trap 'docker compose -f $(GAME)/docker-compose.yml down --volumes --timeout 1' EXIT; \
+	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
+	(cd $(GAME) && for scenario in ../../perf/game/scenarios/*.py; do \
+		$(PERF_PYTHON) -m ingots.perf $$scenario \
+			--config IS_PRINT_CONFIGS=off perf smoke; \
+	done)
 
 # The code of the .proto files: grpcio's _pb2.py and _pb2_grpc.py, with the
 # stubs of mypy-protobuf, committed next to them. A contract lies at the path of
