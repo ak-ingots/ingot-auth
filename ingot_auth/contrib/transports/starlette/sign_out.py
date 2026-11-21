@@ -21,8 +21,9 @@ SERVICE: t.Final = sign_out_pb2.DESCRIPTOR.services_by_name["SignOut"]
 
 class AuthStarletteSignOutEndpoint(AuthSignOutRpcMixin, BaseAuthStarletteEndpoint):
     """
-    The sign-out, of :class:`~..contract.AuthSignOutRpcMixin`, of the caller
-    of the token, ``Authorization: Bearer <token>``: ``POST
+    The sign-out, of
+    :class:`~ingot_auth.contrib.transports.contract.AuthSignOutRpcMixin`, of the
+    caller of the token, ``Authorization: Bearer <token>``: ``POST
     /v1/session:signOut``.
     """
 

@@ -14,7 +14,10 @@ from ingot_auth.sign_out.v1 import sign_out_pb2, sign_out_pb2_grpc
 class AuthGrpcSignOutServicer(
     AuthSignOutRpcMixin, BaseAuthGrpcServicer, sign_out_pb2_grpc.SignOutServicer
 ):
-    """The sign-out, of :class:`~..contract.AuthSignOutRpcMixin`, over gRPC."""
+    """
+    The sign-out, of
+    :class:`~ingot_auth.contrib.transports.contract.AuthSignOutRpcMixin`, over gRPC.
+    """
 
     @t.override
     async def SignOut(

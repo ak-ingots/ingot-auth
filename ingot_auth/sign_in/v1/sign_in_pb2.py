@@ -22,26 +22,29 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ingot_auth.methods.v1 import challenges_pb2 as ingot__auth_dot_methods_dot_v1_dot_challenges__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#ingot_auth/sign_in/v1/sign_in.proto\x12\x15ingot_auth.sign_in.v1\x1a&ingot_auth/methods/v1/challenges.proto\"D\n\x13\x41nswerSignInRequest\x12\x13\n\x0b\x61ttempt_uid\x18\x01 \x01(\t\x12\x0e\n\x04\x63ode\x18\x02 \x01(\tH\x00\x42\x08\n\x06\x61nswer\"K\n\x14\x41nswerSignInResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_in.v1.SignInResult\"\x85\x01\n\x0cSignInResult\x12\x35\n\tchallenge\x18\x01 \x01(\x0b\x32 .ingot_auth.methods.v1.ChallengeH\x00\x12\x34\n\tsigned_in\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.sign_in.v1.SignedInH\x00\x42\x08\n\x06result\".\n\x08SignedIn\x12\x13\n\x0bsession_uid\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t*D\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x01\x32q\n\x06SignIn\x12g\n\x0c\x41nswerSignIn\x12*.ingot_auth.sign_in.v1.AnswerSignInRequest\x1a+.ingot_auth.sign_in.v1.AnswerSignInResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#ingot_auth/sign_in/v1/sign_in.proto\x12\x15ingot_auth.sign_in.v1\x1a\x1cgoogle/api/annotations.proto\x1a&ingot_auth/methods/v1/challenges.proto\"D\n\x13\x41nswerSignInRequest\x12\x13\n\x0b\x61ttempt_uid\x18\x01 \x01(\t\x12\x0e\n\x04\x63ode\x18\x02 \x01(\tH\x00\x42\x08\n\x06\x61nswer\"K\n\x14\x41nswerSignInResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_in.v1.SignInResult\"\x85\x01\n\x0cSignInResult\x12\x35\n\tchallenge\x18\x01 \x01(\x0b\x32 .ingot_auth.methods.v1.ChallengeH\x00\x12\x34\n\tsigned_in\x18\x02 \x01(\x0b\x32\x1f.ingot_auth.sign_in.v1.SignedInH\x00\x42\x08\n\x06result\".\n\x08SignedIn\x12\x13\n\x0bsession_uid\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t*D\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x01\x32\x90\x01\n\x06SignIn\x12\x85\x01\n\x0c\x41nswerSignIn\x12*.ingot_auth.sign_in.v1.AnswerSignInRequest\x1a+.ingot_auth.sign_in.v1.AnswerSignInResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/signIn:answer:\x01*b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sign_in.v1.sign_in_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=433
-  _globals['_PERMISSION']._serialized_end=501
-  _globals['_ANSWERSIGNINREQUEST']._serialized_start=102
-  _globals['_ANSWERSIGNINREQUEST']._serialized_end=170
-  _globals['_ANSWERSIGNINRESPONSE']._serialized_start=172
-  _globals['_ANSWERSIGNINRESPONSE']._serialized_end=247
-  _globals['_SIGNINRESULT']._serialized_start=250
-  _globals['_SIGNINRESULT']._serialized_end=383
-  _globals['_SIGNEDIN']._serialized_start=385
-  _globals['_SIGNEDIN']._serialized_end=431
-  _globals['_SIGNIN']._serialized_start=503
-  _globals['_SIGNIN']._serialized_end=616
+  _globals['_SIGNIN'].methods_by_name['AnswerSignIn']._loaded_options = None
+  _globals['_SIGNIN'].methods_by_name['AnswerSignIn']._serialized_options = b'\202\323\344\223\002\026\"\021/v1/signIn:answer:\001*'
+  _globals['_PERMISSION']._serialized_start=463
+  _globals['_PERMISSION']._serialized_end=531
+  _globals['_ANSWERSIGNINREQUEST']._serialized_start=132
+  _globals['_ANSWERSIGNINREQUEST']._serialized_end=200
+  _globals['_ANSWERSIGNINRESPONSE']._serialized_start=202
+  _globals['_ANSWERSIGNINRESPONSE']._serialized_end=277
+  _globals['_SIGNINRESULT']._serialized_start=280
+  _globals['_SIGNINRESULT']._serialized_end=413
+  _globals['_SIGNEDIN']._serialized_start=415
+  _globals['_SIGNEDIN']._serialized_end=461
+  _globals['_SIGNIN']._serialized_start=534
+  _globals['_SIGNIN']._serialized_end=678
 # @@protoc_insertion_point(module_scope)

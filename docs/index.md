@@ -5,8 +5,9 @@ The sign-up, the sign-in and the sessions of the users of
 
 **Status:** pre-alpha: the registries of the tags and the attributes of the
 profiles and of the attributes and the presets of the sessions, with their
-metadata for the consumers, all of it over gRPC, the metadata, the method
-of a nickname and the sign-out over HTTP too, the JSON of the same contract
+metadata for the consumers, all of it over gRPC, and over HTTP too what a
+client of the web needs, the metadata, the methods, the flows, the sessions
+and the profile of the caller's own, the JSON of the same contract
 transcoded on ingot-starlette, no grpcio; the sign-up and the
 sign-in by pluggable methods in steps, a nickname and a password, an email
 and a code sent to it in the background by the mailer of ingot-mail,

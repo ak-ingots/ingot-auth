@@ -7,7 +7,7 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ...contract import AuthNicknameRpcMixin
+from ingot_auth.contrib.transports.contract import AuthNicknameRpcMixin
 from ..base import BaseAuthStarletteEndpoint
 from ingot_auth.methods.nickname.v1 import nickname_pb2
 
@@ -22,7 +22,7 @@ SERVICE: t.Final = nickname_pb2.DESCRIPTOR.services_by_name["Nickname"]
 class AuthStarletteNicknameEndpoint(AuthNicknameRpcMixin, BaseAuthStarletteEndpoint):
     """
     The flows of the method of a nickname, of
-    :class:`~...contract.AuthNicknameRpcMixin`: ``POST
+    :class:`~ingot_auth.contrib.transports.contract.AuthNicknameRpcMixin`: ``POST
     /v1/methods/nickname:signUp`` and ``:signIn``, of the method in the slot
     ``nickname``.
     """

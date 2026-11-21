@@ -21,8 +21,9 @@ SERVICE: t.Final = metadata_pb2.DESCRIPTOR.services_by_name["Metadata"]
 
 class AuthStarletteMetadataEndpoint(AuthMetadataRpcMixin, BaseAuthStarletteEndpoint):
     """
-    The metadata, of :class:`~..contract.AuthMetadataRpcMixin`, open to
-    anyone: ``GET /v1/metadata``.
+    The metadata, of
+    :class:`~ingot_auth.contrib.transports.contract.AuthMetadataRpcMixin`, open
+    to anyone: ``GET /v1/metadata``.
     """
 
     project: "AuthProject"

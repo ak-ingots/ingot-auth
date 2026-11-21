@@ -172,7 +172,16 @@ uv add 'ingot-auth[starlette]'
 |---|---|
 | `AuthStarletteMetadataEndpoint` | `GET /v1/metadata` |
 | `AuthStarletteNicknameEndpoint` | `POST /v1/methods/nickname:signUp`, `POST /v1/methods/nickname:signIn` |
+| `AuthStarletteEmailCodeEndpoint` | `POST /v1/methods/emailCode:startSignUp`, `POST /v1/methods/emailCode:startSignIn` |
+| `AuthStarletteSignUpEndpoint` | `POST /v1/signUp:answer`, the answer of a method of more steps |
+| `AuthStarletteSignInEndpoint` | `POST /v1/signIn:answer` |
 | `AuthStarletteSignOutEndpoint` | `POST /v1/session:signOut` |
+| `AuthStarletteOwnSessionsEndpoint` | `GET /v1/ownSessions`, `POST /v1/ownSessions/{session_uid}:revoke`, `POST /v1/ownSessions:revokeOthers`, the sessions of the caller's own |
+| `AuthStarletteOwnProfileEndpoint` | `GET /v1/ownProfile`, the profile of the caller, its values, its permissions and its hash |
+
+The administration, the registries, the sessions and the values of the
+profiles of an operator, the access and the activity log, is served over
+gRPC alone for now.
 
 An application mounts those it serves in the subtree of its API, of JSON
 alone, with the middleware telling the hash of the profile of the caller,
@@ -183,24 +192,39 @@ from ingot_starlette import StarletteProject
 from ingot_starlette.starlette import StarletteApiUnit, StarletteEndpoint, StarletteUnit
 
 from ingot_auth.contrib.transports.starlette import (
+    AuthStarletteEmailCodeEndpoint,
     AuthStarletteErrorsUnit,
     AuthStarletteMetadataEndpoint,
-    AuthStarletteNicknameEndpoint,
+    AuthStarletteOwnProfileEndpoint,
+    AuthStarletteOwnSessionsEndpoint,
     AuthStarletteProfileHashMiddleware,
+    AuthStarletteSignInEndpoint,
     AuthStarletteSignOutEndpoint,
+    AuthStarletteSignUpEndpoint,
 )
 
 
 class AppAuthEndpoint(StarletteEndpoint, Unit):
     metadata = Slot(AuthStarletteMetadataEndpoint)
-    nickname = Slot(AuthStarletteNicknameEndpoint)
+    email_code = Slot(AuthStarletteEmailCodeEndpoint)
+    sign_up = Slot(AuthStarletteSignUpEndpoint)  # the answers of the code
+    sign_in = Slot(AuthStarletteSignInEndpoint)
     sign_out = Slot(AuthStarletteSignOutEndpoint)
+    own_sessions = Slot(AuthStarletteOwnSessionsEndpoint)
+    own_profile = Slot(AuthStarletteOwnProfileEndpoint)
 
     @t.override
     def _iter_routes(self):
-        yield from self.metadata.get_routes()
-        yield from self.nickname.get_routes()
-        yield from self.sign_out.get_routes()
+        for endpoint in (
+            self.metadata,
+            self.email_code,
+            self.sign_up,
+            self.sign_in,
+            self.sign_out,
+            self.own_sessions,
+            self.own_profile,
+        ):
+            yield from endpoint.get_routes()
 
 
 class AppApiUnit(StarletteApiUnit):

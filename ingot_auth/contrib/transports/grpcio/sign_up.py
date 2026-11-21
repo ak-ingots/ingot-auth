@@ -1,4 +1,4 @@
-"""The sign-up over gRPC: the results of its steps, and its answers."""
+"""The sign-up over gRPC: its answers."""
 
 __all__ = ("AuthGrpcSignUpBinding", "AuthGrpcSignUpServicer", "build_sign_up_result")
 
@@ -6,23 +6,21 @@ import typing as t
 
 from ingot_grpcio.grpc.services import GrpcService, GrpcServicer
 
-from ingot_auth.sign_up import (
-    AuthAnswerSignUpParameters,
-)
-
-from .base import Context
+from ..contract import AuthSignUpRpcMixin
 from ..contract.results import build_sign_up_result
+from .base import Context, GrpcAuthRpcContext
 from ingot_auth.sign_up.v1 import sign_up_pb2, sign_up_pb2_grpc
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthGrpcSignUpServicer(GrpcServicer, sign_up_pb2_grpc.SignUpServicer):
+class AuthGrpcSignUpServicer(
+    AuthSignUpRpcMixin, GrpcServicer, sign_up_pb2_grpc.SignUpServicer
+):
     """
-    The answers of a sign-up, by any method or factor, open to anyone, as
-    every flow is, run for the anonymous caller of the project: whose
-    challenge it is, the attempt knows.
+    The answers, of :class:`~ingot_auth.contrib.transports.contract.AuthSignUpRpcMixin`,
+    over gRPC.
     """
 
     project: "AuthProject"
@@ -31,13 +29,7 @@ class AuthGrpcSignUpServicer(GrpcServicer, sign_up_pb2_grpc.SignUpServicer):
     async def AnswerSignUp(
         self, request: sign_up_pb2.AnswerSignUpRequest, context: Context
     ) -> sign_up_pb2.AnswerSignUpResponse:
-        # the one kind of an answer, a code: one not given is a wrong one
-        parameters = AuthAnswerSignUpParameters(
-            attempt_uid=request.attempt_uid, answer=request.code
-        )
-        factory = self.project.auth.sign_up.op_answer
-        result = await self.run_operation(factory, parameters, context)
-        return sign_up_pb2.AnswerSignUpResponse(result=build_sign_up_result(result))
+        return await self.rpc_answer_sign_up(request, GrpcAuthRpcContext(context))
 
 
 class AuthGrpcSignUpBinding:

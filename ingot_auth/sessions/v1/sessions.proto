@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package ingot_auth.sessions.v1;
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "ingot_auth/attrs/v1/attrs.proto";
 
@@ -11,12 +12,18 @@ import "ingot_auth/attrs/v1/attrs.proto";
 // operator.
 service Sessions {
   // Requires PERMISSION_CAN_LIST_OWN.
-  rpc ListOwnSessions(ListOwnSessionsRequest) returns (ListOwnSessionsResponse);
+  rpc ListOwnSessions(ListOwnSessionsRequest) returns (ListOwnSessionsResponse) {
+    option (google.api.http) = {get: "/v1/ownSessions"};
+  }
   // Requires PERMISSION_CAN_REVOKE_OWN.
-  rpc RevokeOwnSession(RevokeOwnSessionRequest) returns (RevokeOwnSessionResponse);
+  rpc RevokeOwnSession(RevokeOwnSessionRequest) returns (RevokeOwnSessionResponse) {
+    option (google.api.http) = {post: "/v1/ownSessions/{session_uid}:revoke" body: "*"};
+  }
   // Requires PERMISSION_CAN_REVOKE_OWN.
   rpc RevokeOtherSessions(RevokeOtherSessionsRequest)
-      returns (RevokeOtherSessionsResponse);
+      returns (RevokeOtherSessionsResponse) {
+    option (google.api.http) = {post: "/v1/ownSessions:revokeOthers" body: "*"};
+  }
   // Requires PERMISSION_CAN_LIST.
   rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
   // Requires PERMISSION_CAN_REVOKE.

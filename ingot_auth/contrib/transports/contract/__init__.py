@@ -9,11 +9,16 @@ needs protobuf alone, no grpcio.
 
 __all__ = (
     "PROFILE_HASH_KEY",
+    "AuthEmailCodeRpcMixin",
     "AuthMetadataRpcMixin",
     "AuthNicknameRpcMixin",
+    "AuthProfilesRpcMixin",
     "AuthRpcMixin",
     "AuthSessionRpcMixin",
+    "AuthSessionsRpcMixin",
+    "AuthSignInRpcMixin",
     "AuthSignOutRpcMixin",
+    "AuthSignUpRpcMixin",
     "BaseAuthMethodRpcMixin",
     "BaseAuthRpcContext",
     "parse_bearer_token",
@@ -27,5 +32,9 @@ from .base import (
 )
 from .context import BaseAuthRpcContext
 from .metadata import AuthMetadataRpcMixin
-from .methods import AuthNicknameRpcMixin, BaseAuthMethodRpcMixin
+from .methods import AuthEmailCodeRpcMixin, AuthNicknameRpcMixin, BaseAuthMethodRpcMixin
+from .profiles import AuthProfilesRpcMixin
+from .sessions import AuthSessionsRpcMixin
+from .sign_in import AuthSignInRpcMixin
 from .sign_out import AuthSignOutRpcMixin
+from .sign_up import AuthSignUpRpcMixin
