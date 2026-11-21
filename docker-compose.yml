@@ -11,6 +11,8 @@ services:
       - --replSet=rs0
       - --bind_ip_all
       - --port=${INGOT_AUTH_TEST_PORT:-27118}
+      # no log of each connection, the healthchecks' among them
+      - --quiet
     ports:
       - "127.0.0.1:${INGOT_AUTH_TEST_PORT:-27118}:${INGOT_AUTH_TEST_PORT:-27118}"
     # the open files MongoDB recommends: a test drops the database and the next
