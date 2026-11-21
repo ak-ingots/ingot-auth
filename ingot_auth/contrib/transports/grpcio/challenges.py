@@ -1,4 +1,7 @@
-"""What a step of a flow asks for, as a message: that of :mod:`..contract`."""
+"""
+What a step of a flow asks for, as a message: that of
+:mod:`~ingot_auth.contrib.transports.contract`.
+"""
 
 __all__ = ("build_challenge",)
 

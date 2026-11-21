@@ -17,7 +17,10 @@ if t.TYPE_CHECKING:
 class AuthGrpcMetadataServicer(
     AuthMetadataRpcMixin, GrpcServicer, metadata_pb2_grpc.MetadataServicer
 ):
-    """The metadata, of :class:`~..contract.AuthMetadataRpcMixin`, over gRPC."""
+    """
+    The metadata, of
+    :class:`~ingot_auth.contrib.transports.contract.AuthMetadataRpcMixin`, over gRPC.
+    """
 
     project: "AuthProject"
 

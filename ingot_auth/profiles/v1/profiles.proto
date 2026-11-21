@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package ingot_auth.profiles.v1;
 
+import "google/api/annotations.proto";
 import "ingot_auth/attrs/v1/attrs.proto";
 
 // The profiles themselves: the profile of the caller, as its client sees
@@ -12,7 +13,9 @@ import "ingot_auth/attrs/v1/attrs.proto";
 // it differs from its own.
 service Profiles {
   // Requires PERMISSION_CAN_READ_OWN.
-  rpc GetOwnProfile(GetOwnProfileRequest) returns (GetOwnProfileResponse);
+  rpc GetOwnProfile(GetOwnProfileRequest) returns (GetOwnProfileResponse) {
+    option (google.api.http) = {get: "/v1/ownProfile"};
+  }
   // Requires PERMISSION_CAN_UPDATE.
   rpc SetProfileTags(SetProfileTagsRequest) returns (SetProfileTagsResponse);
   // Requires PERMISSION_CAN_UPDATE.

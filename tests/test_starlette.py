@@ -1,5 +1,6 @@
 """The auth over HTTP: the RPCs of the contract, transcoded to JSON."""
 
+import re
 import subprocess
 import sys
 import typing as t
@@ -20,23 +21,34 @@ from starlette.routing import Mount
 from starlette.testclient import TestClient, WebSocketDenialResponse
 
 from ingot_auth import AuthProject
-from ingot_auth.__main__ import AuthMemorySessionsUnit, AuthMemorySignInUnit
+from ingot_auth.__main__ import (
+    AuthMemoryMailUnit,
+    AuthMemorySessionsUnit,
+    AuthMemorySignInUnit,
+)
 from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
+from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.contract import PROFILE_HASH_KEY
 from ingot_auth.contrib.transports.grpcio import AuthGrpcErrorsUnit
 from ingot_auth.contrib.transports.grpcio.errors import BaseAuthGrpcErrorPolicy
 from ingot_auth.contrib.transports.starlette import (
+    AuthStarletteEmailCodeEndpoint,
     AuthStarletteErrorsUnit,
     AuthStarletteMetadataEndpoint,
     AuthStarletteNicknameEndpoint,
+    AuthStarletteOwnProfileEndpoint,
+    AuthStarletteOwnSessionsEndpoint,
     AuthStarletteProfileHashMiddleware,
+    AuthStarletteSignInEndpoint,
     AuthStarletteSignOutEndpoint,
+    AuthStarletteSignUpEndpoint,
     BaseAuthStarletteErrorPolicy,
 )
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.methods import AuthMethodsUnit
+from ingot_auth.methods.email_code import AuthEmailCodeConfigs, AuthEmailCodeMethod
 from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
 from ingot_auth.methods.password import AuthPassword, AuthScryptPasswordHasher
 from ingot_auth.settings import AuthSettingsUnit
@@ -51,7 +63,9 @@ PASSWORD: t.Final = "a passphrase long enough"
 PROBLEM: t.Final = "application/problem+json"
 
 
-class TstConfigs(AuthNicknameConfigs, AuthConfigs, StarletteConfigs):
+class TstConfigs(
+    AuthNicknameConfigs, AuthEmailCodeConfigs, AuthConfigs, StarletteConfigs
+):
     pass
 
 
@@ -73,12 +87,14 @@ class CheapPassword(AuthPassword):
 
 class TstMethodsUnit(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
+    email_code = Slot(AuthEmailCodeMethod)
     password = Slot(CheapPassword)
 
 
 class TstAuthUnit(AuthUnit):
     storage = Slot(AuthMemoryStorage)
     cache = Slot(AuthMemoryCache)
+    dispatcher = Slot(AuthMemoryDispatcher)
     sessions = Slot(AuthMemorySessionsUnit)
     sign_in = Slot(AuthMemorySignInUnit)
     methods = Slot(TstMethodsUnit)
@@ -87,13 +103,26 @@ class TstAuthUnit(AuthUnit):
 class TstAuthEndpoint(StarletteEndpoint, Unit):
     metadata = Slot(AuthStarletteMetadataEndpoint)
     nickname = Slot(AuthStarletteNicknameEndpoint)
+    email_code = Slot(AuthStarletteEmailCodeEndpoint)
+    sign_up = Slot(AuthStarletteSignUpEndpoint)
+    sign_in = Slot(AuthStarletteSignInEndpoint)
     sign_out = Slot(AuthStarletteSignOutEndpoint)
+    own_sessions = Slot(AuthStarletteOwnSessionsEndpoint)
+    own_profile = Slot(AuthStarletteOwnProfileEndpoint)
 
     @t.override
     def _iter_routes(self) -> "Iterator[BaseRoute]":
-        yield from self.metadata.get_routes()
-        yield from self.nickname.get_routes()
-        yield from self.sign_out.get_routes()
+        for endpoint in (
+            self.metadata,
+            self.nickname,
+            self.email_code,
+            self.sign_up,
+            self.sign_in,
+            self.sign_out,
+            self.own_sessions,
+            self.own_profile,
+        ):
+            yield from endpoint.get_routes()
 
 
 class TstApiUnit(StarletteApiUnit):
@@ -114,6 +143,7 @@ class TstStarletteUnit(StarletteUnit):
 
 
 class TstProject(AuthProject, StarletteProject):
+    mail = Slot(AuthMemoryMailUnit)
     settings = Slot(TstSettingsUnit)
     logging = Slot(TstLoggingUnit)
     auth = Slot(TstAuthUnit)
@@ -139,6 +169,77 @@ class StarletteTestCase(unittest.TestCase):
         self.assertEqual(signed_in.status_code, 200, signed_in.text)
         token: str = signed_in.json()["result"]["signed_in"]["token"]
         return token
+
+    def get(self, path: str, token: str) -> t.Any:
+        headers = {"authorization": f"Bearer {token}"}
+        return self.client.get(f"/api/auth/v1/{path}", headers=headers)
+
+    def get_code(self) -> str:
+        """The code of the last mail, once the mail is out."""
+        project = t.cast(TstProject, self.runner.project)
+        portal = self.client.portal
+        assert portal is not None
+        portal.call(project.auth.dispatcher.join)
+        mailer = project.mail.mailer
+        match = re.match(r"Your code is (\d+)\.", mailer.get_sent()[-1].text)
+        assert match is not None
+        return match[1]
+
+    def test_an_email_signs_up_and_in_by_its_code(self) -> None:
+        for flow, start in (("signUp", "startSignUp"), ("signIn", "startSignIn")):
+            with self.subTest(flow=flow):
+                started = self.post(
+                    f"methods/emailCode:{start}", {"email": "al@example.com"}
+                )
+                self.assertEqual(started.status_code, 200, started.text)
+                challenge = started.json()["result"]["challenge"]
+                self.assertEqual(challenge["code"], {"length": 6})
+                answer = {
+                    "attempt_uid": challenge["attempt_uid"],
+                    "code": self.get_code(),
+                }
+                answered = self.post(f"{flow}:answer", answer)
+                self.assertEqual(answered.status_code, 200, answered.text)
+        self.assertTrue(answered.json()["result"]["signed_in"]["token"])
+
+    def test_a_wrong_code_is_refused(self) -> None:
+        started = self.post(
+            "methods/emailCode:startSignUp", {"email": "al@example.com"}
+        )
+        attempt_uid = started.json()["result"]["challenge"]["attempt_uid"]
+        self.get_code()
+        answered = self.post("signUp:answer", {"attempt_uid": attempt_uid, "code": "x"})
+        self.assertEqual(answered.status_code, 401)
+        self.assertEqual(answered.json()["reason"], "METHOD_REFUSED")
+
+    def test_the_sessions_of_the_caller_s_own(self) -> None:
+        first = self.sign_up_and_in()
+        credentials = {"nickname": "al", "password": PASSWORD}
+        second = self.post("methods/nickname:signIn", credentials).json()["result"]
+        second_uid = second["signed_in"]["session_uid"]
+        listed = self.get("ownSessions", first).json()["sessions"]
+        self.assertEqual(len(listed), 2)
+        self.assertEqual(sum(session["is_current"] for session in listed), 1)
+        revoked = self.post(f"ownSessions/{second_uid}:revoke", {}, first)
+        self.assertEqual((revoked.status_code, revoked.json()), (200, {}))
+        third = self.post("methods/nickname:signIn", credentials).json()["result"]
+        others = self.post("ownSessions:revokeOthers", {}, first)
+        self.assertEqual(others.json(), {"count": 1})
+        self.assertEqual(
+            self.get("ownSessions", third["signed_in"]["token"]).status_code, 401
+        )
+        gone = self.post("ownSessions/nope:revoke", {}, first)
+        self.assertEqual(gone.json()["reason"], "OWN_SESSION_NOT_FOUND")
+
+    def test_the_profile_of_the_caller(self) -> None:
+        token = self.sign_up_and_in()
+        response = self.get("ownProfile", token)
+        self.assertEqual(response.status_code, 200)
+        profile = response.json()
+        self.assertEqual(profile["hash"], response.headers[PROFILE_HASH_KEY])
+        self.assertIn("auth.sessions", profile["permissions"])
+        anonymous = self.client.get("/api/auth/v1/ownProfile")
+        self.assertEqual(anonymous.status_code, 403)
 
     def test_the_metadata_is_open_to_anyone(self) -> None:
         for headers in ({}, {"authorization": "Bearer unknown"}):

@@ -66,19 +66,20 @@ class GrpcAuthRpcContext(BaseAuthRpcContext):
 
 class BaseAuthGrpcServicer(AuthSessionRpcMixin, GrpcServicer):
     """
-    A servicer of the auth: an RPC turns its request into the parameters of
-    an operation and the result into its reply, nothing else, the RPCs of
-    :mod:`..contract` mixed in where they are shared with HTTP. The operation
-    runs for the caller of the session of the token of a call, ``Bearer
-    <token>`` in the header ``authorization``, or with no token the
-    anonymous one of the project, ``operations.callers.get_anonymous()``; its
-    exceptions reach the policies of :class:`~..errors.AuthGrpcErrorsUnit`.
-    A servicer of an application serving signed-in callers extends it too:
-    every reply to one tells the hash of its profile in its trailing
-    metadata, ``PROFILE_HASH_KEY``, no interceptor, which would see no
-    caller; a reply refused tells it not, the refusal itself telling the
-    client to ask again. A servicer open to anyone extends ``GrpcServicer``
-    alone, so that it runs for the anonymous one, whatever the call bears.
+    A servicer of the auth: an RPC turns its request into the parameters of an
+    operation and the result into its reply, nothing else, the RPCs of
+    :mod:`~ingot_auth.contrib.transports.contract` mixed in where they are
+    shared with HTTP. The operation runs for the caller of the session of the
+    token of a call, ``Bearer <token>`` in the header ``authorization``, or with
+    no token the anonymous one of the project,
+    ``operations.callers.get_anonymous()``; its exceptions reach the policies of
+    :class:`~..errors.AuthGrpcErrorsUnit`. A servicer of an application serving
+    signed-in callers extends it too: every reply to one tells the hash of its
+    profile in its trailing metadata, ``PROFILE_HASH_KEY``, no interceptor,
+    which would see no caller; a reply refused tells it not, the refusal itself
+    telling the client to ask again. A servicer open to anyone extends
+    ``GrpcServicer`` alone, so that it runs for the anonymous one, whatever the
+    call bears.
     """
 
     project: "AuthProject"

@@ -1,6 +1,6 @@
 """
 The auth over HTTP, with the extra ``starlette``: the RPCs of the contract,
-of :mod:`..contract`, transcoded to JSON by the annotations
+of :mod:`~ingot_auth.contrib.transports.contract`, transcoded to JSON by the annotations
 ``google.api.http`` of their methods, by ingot-starlette, no grpcio. An
 endpoint a service, so that an application mounts those it serves in the
 subtree of its API, the method it binds, with the policies of the auth and
@@ -42,11 +42,16 @@ nothing: as over gRPC, the RPCs being the same.
 
 __all__ = (
     "PROFILE_HASH_STATE",
+    "AuthStarletteEmailCodeEndpoint",
     "AuthStarletteErrorsUnit",
     "AuthStarletteMetadataEndpoint",
     "AuthStarletteNicknameEndpoint",
+    "AuthStarletteOwnProfileEndpoint",
+    "AuthStarletteOwnSessionsEndpoint",
     "AuthStarletteProfileHashMiddleware",
+    "AuthStarletteSignInEndpoint",
     "AuthStarletteSignOutEndpoint",
+    "AuthStarletteSignUpEndpoint",
     "BaseAuthStarletteEndpoint",
     "BaseAuthStarletteErrorPolicy",
     "StarletteAuthRpcContext",
@@ -55,6 +60,10 @@ __all__ = (
 from .base import PROFILE_HASH_STATE, BaseAuthStarletteEndpoint, StarletteAuthRpcContext
 from .errors import AuthStarletteErrorsUnit, BaseAuthStarletteErrorPolicy
 from .metadata import AuthStarletteMetadataEndpoint
-from .methods import AuthStarletteNicknameEndpoint
+from .methods import AuthStarletteEmailCodeEndpoint, AuthStarletteNicknameEndpoint
 from .middleware import AuthStarletteProfileHashMiddleware
+from .profiles import AuthStarletteOwnProfileEndpoint
+from .sessions import AuthStarletteOwnSessionsEndpoint
+from .sign_in import AuthStarletteSignInEndpoint
 from .sign_out import AuthStarletteSignOutEndpoint
+from .sign_up import AuthStarletteSignUpEndpoint

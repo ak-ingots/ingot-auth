@@ -4,7 +4,7 @@ __all__ = ("AuthGrpcNicknameServicer",)
 
 import typing as t
 
-from ...contract import AuthNicknameRpcMixin
+from ingot_auth.contrib.transports.contract import AuthNicknameRpcMixin
 from ..base import Context
 from .base import BaseAuthGrpcMethodServicer
 from ingot_auth.methods.nickname.v1 import nickname_pb2, nickname_pb2_grpc
@@ -18,7 +18,7 @@ class AuthGrpcNicknameServicer(
 ):
     """
     The flows of the method of a nickname, of
-    :class:`~...contract.AuthNicknameRpcMixin`, over gRPC.
+    :class:`~ingot_auth.contrib.transports.contract.AuthNicknameRpcMixin`, over gRPC.
     """
 
     METHOD: t.ClassVar[str] = "nickname"

@@ -22,10 +22,11 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ingot_auth.attrs.v1 import attrs_pb2 as ingot__auth_dot_attrs_dot_v1_dot_attrs__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/profiles/v1/profiles.proto\x12\x16ingot_auth.profiles.v1\x1a\x1fingot_auth/attrs/v1/attrs.proto\"V\n\rProfileValues\x12\x10\n\x08tag_uids\x18\x01 \x03(\r\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"\x16\n\x14GetOwnProfileRequest\"\xe5\x01\n\x15GetOwnProfileResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues\x12S\n\x0bpermissions\x18\x02 \x03(\x0b\x32>.ingot_auth.profiles.v1.GetOwnProfileResponse.PermissionsEntry\x12\x0c\n\x04hash\x18\x03 \x01(\t\x1a\x32\n\x10PermissionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"6\n\x15SetProfileTagsRequest\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x10\n\x08tag_uids\x18\x02 \x03(\r\"O\n\x16SetProfileTagsResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues\"_\n\x1bSetProfileAttrValuesRequest\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"U\n\x1cSetProfileAttrValuesResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues*`\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_UPDATE\x10\x01\x12\x1b\n\x17PERMISSION_CAN_READ_OWN\x10\x02\x32\xed\x02\n\x08Profiles\x12l\n\rGetOwnProfile\x12,.ingot_auth.profiles.v1.GetOwnProfileRequest\x1a-.ingot_auth.profiles.v1.GetOwnProfileResponse\x12o\n\x0eSetProfileTags\x12-.ingot_auth.profiles.v1.SetProfileTagsRequest\x1a..ingot_auth.profiles.v1.SetProfileTagsResponse\x12\x81\x01\n\x14SetProfileAttrValues\x12\x33.ingot_auth.profiles.v1.SetProfileAttrValuesRequest\x1a\x34.ingot_auth.profiles.v1.SetProfileAttrValuesResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/profiles/v1/profiles.proto\x12\x16ingot_auth.profiles.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fingot_auth/attrs/v1/attrs.proto\"V\n\rProfileValues\x12\x10\n\x08tag_uids\x18\x01 \x03(\r\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"\x16\n\x14GetOwnProfileRequest\"\xe5\x01\n\x15GetOwnProfileResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues\x12S\n\x0bpermissions\x18\x02 \x03(\x0b\x32>.ingot_auth.profiles.v1.GetOwnProfileResponse.PermissionsEntry\x12\x0c\n\x04hash\x18\x03 \x01(\t\x1a\x32\n\x10PermissionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x04:\x02\x38\x01\"6\n\x15SetProfileTagsRequest\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x10\n\x08tag_uids\x18\x02 \x03(\r\"O\n\x16SetProfileTagsResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues\"_\n\x1bSetProfileAttrValuesRequest\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"U\n\x1cSetProfileAttrValuesResponse\x12\x35\n\x06values\x18\x01 \x01(\x0b\x32%.ingot_auth.profiles.v1.ProfileValues*`\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x19\n\x15PERMISSION_CAN_UPDATE\x10\x01\x12\x1b\n\x17PERMISSION_CAN_READ_OWN\x10\x02\x32\x86\x03\n\x08Profiles\x12\x84\x01\n\rGetOwnProfile\x12,.ingot_auth.profiles.v1.GetOwnProfileRequest\x1a-.ingot_auth.profiles.v1.GetOwnProfileResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/ownProfile\x12o\n\x0eSetProfileTags\x12-.ingot_auth.profiles.v1.SetProfileTagsRequest\x1a..ingot_auth.profiles.v1.SetProfileTagsResponse\x12\x81\x01\n\x14SetProfileAttrValues\x12\x33.ingot_auth.profiles.v1.SetProfileAttrValuesRequest\x1a\x34.ingot_auth.profiles.v1.SetProfileAttrValuesResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,24 +35,26 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._loaded_options = None
   _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._serialized_options = b'8\001'
-  _globals['_PERMISSION']._serialized_start=763
-  _globals['_PERMISSION']._serialized_end=859
-  _globals['_PROFILEVALUES']._serialized_start=98
-  _globals['_PROFILEVALUES']._serialized_end=184
-  _globals['_GETOWNPROFILEREQUEST']._serialized_start=186
-  _globals['_GETOWNPROFILEREQUEST']._serialized_end=208
-  _globals['_GETOWNPROFILERESPONSE']._serialized_start=211
-  _globals['_GETOWNPROFILERESPONSE']._serialized_end=440
-  _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._serialized_start=390
-  _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._serialized_end=440
-  _globals['_SETPROFILETAGSREQUEST']._serialized_start=442
-  _globals['_SETPROFILETAGSREQUEST']._serialized_end=496
-  _globals['_SETPROFILETAGSRESPONSE']._serialized_start=498
-  _globals['_SETPROFILETAGSRESPONSE']._serialized_end=577
-  _globals['_SETPROFILEATTRVALUESREQUEST']._serialized_start=579
-  _globals['_SETPROFILEATTRVALUESREQUEST']._serialized_end=674
-  _globals['_SETPROFILEATTRVALUESRESPONSE']._serialized_start=676
-  _globals['_SETPROFILEATTRVALUESRESPONSE']._serialized_end=761
-  _globals['_PROFILES']._serialized_start=862
-  _globals['_PROFILES']._serialized_end=1227
+  _globals['_PROFILES'].methods_by_name['GetOwnProfile']._loaded_options = None
+  _globals['_PROFILES'].methods_by_name['GetOwnProfile']._serialized_options = b'\202\323\344\223\002\020\022\016/v1/ownProfile'
+  _globals['_PERMISSION']._serialized_start=793
+  _globals['_PERMISSION']._serialized_end=889
+  _globals['_PROFILEVALUES']._serialized_start=128
+  _globals['_PROFILEVALUES']._serialized_end=214
+  _globals['_GETOWNPROFILEREQUEST']._serialized_start=216
+  _globals['_GETOWNPROFILEREQUEST']._serialized_end=238
+  _globals['_GETOWNPROFILERESPONSE']._serialized_start=241
+  _globals['_GETOWNPROFILERESPONSE']._serialized_end=470
+  _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._serialized_start=420
+  _globals['_GETOWNPROFILERESPONSE_PERMISSIONSENTRY']._serialized_end=470
+  _globals['_SETPROFILETAGSREQUEST']._serialized_start=472
+  _globals['_SETPROFILETAGSREQUEST']._serialized_end=526
+  _globals['_SETPROFILETAGSRESPONSE']._serialized_start=528
+  _globals['_SETPROFILETAGSRESPONSE']._serialized_end=607
+  _globals['_SETPROFILEATTRVALUESREQUEST']._serialized_start=609
+  _globals['_SETPROFILEATTRVALUESREQUEST']._serialized_end=704
+  _globals['_SETPROFILEATTRVALUESRESPONSE']._serialized_start=706
+  _globals['_SETPROFILEATTRVALUESRESPONSE']._serialized_end=791
+  _globals['_PROFILES']._serialized_start=892
+  _globals['_PROFILES']._serialized_end=1282
 # @@protoc_insertion_point(module_scope)

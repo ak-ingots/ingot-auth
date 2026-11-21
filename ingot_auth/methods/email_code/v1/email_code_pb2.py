@@ -22,28 +22,33 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ingot_auth.attrs.v1 import attrs_pb2 as ingot__auth_dot_attrs_dot_v1_dot_attrs__pb2
 from ingot_auth.sign_in.v1 import sign_in_pb2 as ingot__auth_dot_sign__in_dot_v1_dot_sign__in__pb2
 from ingot_auth.sign_up.v1 import sign_up_pb2 as ingot__auth_dot_sign__up_dot_v1_dot_sign__up__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n1ingot_auth/methods/email_code/v1/email_code.proto\x12 ingot_auth.methods.email_code.v1\x1a\x1fingot_auth/attrs/v1/attrs.proto\x1a#ingot_auth/sign_in/v1/sign_in.proto\x1a#ingot_auth/sign_up/v1/sign_up.proto\"X\n\x12StartSignUpRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"J\n\x13StartSignUpResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_up.v1.SignUpResult\"X\n\x12StartSignInRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"J\n\x13StartSignInResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_in.v1.SignInResult*`\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_UP\x10\x01\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x02\x32\x83\x02\n\tEmailCode\x12z\n\x0bStartSignUp\x12\x34.ingot_auth.methods.email_code.v1.StartSignUpRequest\x1a\x35.ingot_auth.methods.email_code.v1.StartSignUpResponse\x12z\n\x0bStartSignIn\x12\x34.ingot_auth.methods.email_code.v1.StartSignInRequest\x1a\x35.ingot_auth.methods.email_code.v1.StartSignInResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n1ingot_auth/methods/email_code/v1/email_code.proto\x12 ingot_auth.methods.email_code.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fingot_auth/attrs/v1/attrs.proto\x1a#ingot_auth/sign_in/v1/sign_in.proto\x1a#ingot_auth/sign_up/v1/sign_up.proto\"X\n\x12StartSignUpRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"J\n\x13StartSignUpResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_up.v1.SignUpResult\"X\n\x12StartSignInRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x33\n\x0b\x61ttr_values\x18\x02 \x03(\x0b\x32\x1e.ingot_auth.attrs.v1.AttrValue\"J\n\x13StartSignInResponse\x12\x33\n\x06result\x18\x01 \x01(\x0b\x32#.ingot_auth.sign_in.v1.SignInResult*`\n\nPermission\x12\x1a\n\x16PERMISSION_UNSPECIFIED\x10\x00\x12\x1a\n\x16PERMISSION_CAN_SIGN_UP\x10\x01\x12\x1a\n\x16PERMISSION_CAN_SIGN_IN\x10\x02\x32\xe1\x02\n\tEmailCode\x12\xa8\x01\n\x0bStartSignUp\x12\x34.ingot_auth.methods.email_code.v1.StartSignUpRequest\x1a\x35.ingot_auth.methods.email_code.v1.StartSignUpResponse\",\x82\xd3\xe4\x93\x02&\"!/v1/methods/emailCode:startSignUp:\x01*\x12\xa8\x01\n\x0bStartSignIn\x12\x34.ingot_auth.methods.email_code.v1.StartSignInRequest\x1a\x35.ingot_auth.methods.email_code.v1.StartSignInResponse\",\x82\xd3\xe4\x93\x02&\"!/v1/methods/emailCode:startSignIn:\x01*b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.methods.email_code.v1.email_code_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_PERMISSION']._serialized_start=526
-  _globals['_PERMISSION']._serialized_end=622
-  _globals['_STARTSIGNUPREQUEST']._serialized_start=194
-  _globals['_STARTSIGNUPREQUEST']._serialized_end=282
-  _globals['_STARTSIGNUPRESPONSE']._serialized_start=284
-  _globals['_STARTSIGNUPRESPONSE']._serialized_end=358
-  _globals['_STARTSIGNINREQUEST']._serialized_start=360
-  _globals['_STARTSIGNINREQUEST']._serialized_end=448
-  _globals['_STARTSIGNINRESPONSE']._serialized_start=450
-  _globals['_STARTSIGNINRESPONSE']._serialized_end=524
-  _globals['_EMAILCODE']._serialized_start=625
-  _globals['_EMAILCODE']._serialized_end=884
+  _globals['_EMAILCODE'].methods_by_name['StartSignUp']._loaded_options = None
+  _globals['_EMAILCODE'].methods_by_name['StartSignUp']._serialized_options = b'\202\323\344\223\002&\"!/v1/methods/emailCode:startSignUp:\001*'
+  _globals['_EMAILCODE'].methods_by_name['StartSignIn']._loaded_options = None
+  _globals['_EMAILCODE'].methods_by_name['StartSignIn']._serialized_options = b'\202\323\344\223\002&\"!/v1/methods/emailCode:startSignIn:\001*'
+  _globals['_PERMISSION']._serialized_start=556
+  _globals['_PERMISSION']._serialized_end=652
+  _globals['_STARTSIGNUPREQUEST']._serialized_start=224
+  _globals['_STARTSIGNUPREQUEST']._serialized_end=312
+  _globals['_STARTSIGNUPRESPONSE']._serialized_start=314
+  _globals['_STARTSIGNUPRESPONSE']._serialized_end=388
+  _globals['_STARTSIGNINREQUEST']._serialized_start=390
+  _globals['_STARTSIGNINREQUEST']._serialized_end=478
+  _globals['_STARTSIGNINRESPONSE']._serialized_start=480
+  _globals['_STARTSIGNINRESPONSE']._serialized_end=554
+  _globals['_EMAILCODE']._serialized_start=655
+  _globals['_EMAILCODE']._serialized_end=1008
 # @@protoc_insertion_point(module_scope)

@@ -2,13 +2,16 @@ syntax = "proto3";
 
 package ingot_auth.sign_up.v1;
 
+import "google/api/annotations.proto";
 import "ingot_auth/methods/v1/challenges.proto";
 
 // The answers of a sign-up, by any method: whose challenge it is, the attempt
 // knows.
 service SignUp {
   // Requires PERMISSION_CAN_SIGN_UP, and that of the method of the attempt.
-  rpc AnswerSignUp(AnswerSignUpRequest) returns (AnswerSignUpResponse);
+  rpc AnswerSignUp(AnswerSignUpRequest) returns (AnswerSignUpResponse) {
+    option (google.api.http) = {post: "/v1/signUp:answer" body: "*"};
+  }
 }
 
 // The bits of the domain `auth.sign_up` a sign-up requires, besides the flag
