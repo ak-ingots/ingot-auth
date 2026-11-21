@@ -6,7 +6,7 @@ import typing as t
 
 from ingot_grpcio.grpc.services import GrpcServicer
 
-from ..base import Context, get_peer_ip
+from ..base import Context, GrpcAuthRpcContext, get_peer_ip
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -29,6 +29,13 @@ class BaseAuthGrpcMethodServicer(GrpcServicer):
     METHOD: t.ClassVar[str]
 
     project: "AuthProject"
+
+    @t.final
+    def get_rpc_context(self, context: Context) -> GrpcAuthRpcContext:
+        """The context of a call, as the RPCs of the methods see it."""
+        return GrpcAuthRpcContext(
+            context, lambda: self.get_transport_attr_values(context)
+        )
 
     @t.final
     def get_transport_attr_values(self, context: Context) -> "dict[str, AuthAttrValue]":

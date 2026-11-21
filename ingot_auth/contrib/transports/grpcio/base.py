@@ -4,6 +4,7 @@ __all__ = (
     "PROFILE_HASH_KEY",
     "BaseAuthGrpcServicer",
     "Context",
+    "GrpcAuthRpcContext",
     "get_bearer_token",
     "get_peer_ip",
 )
@@ -16,30 +17,68 @@ from grpc import aio
 from ingot_grpcio.grpc.services import GrpcServicer
 from ingots.defaults.operations import Caller
 
+from ..contract import (
+    PROFILE_HASH_KEY,
+    AuthSessionRpcMixin,
+    BaseAuthRpcContext,
+    parse_bearer_token,
+)
+
 if t.TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
 
     from ingot_auth.project import AuthProject
+    from ingot_auth.storages import AuthAttrValue
 
 Context: t.TypeAlias = aio.ServicerContext[t.Any, t.Any]
 
-# the key of the trailing metadata telling the hash of the profile of the
-# caller, one for every transport: lowercase with hyphens, as gRPC takes no
-# other key, and no X- (RFC 6648)
-PROFILE_HASH_KEY: t.Final = "ingot-auth-user-profile-hash"
+
+class GrpcAuthRpcContext(BaseAuthRpcContext):
+    """
+    The context of a call of gRPC as the RPCs of the auth see it: its
+    invocation metadata, the values of the attributes of its transport its
+    servicer reads, the hash of the profile in its trailing metadata.
+    """
+
+    def __init__(
+        self,
+        context: Context,
+        transport_attr_values: "Callable[[], dict[str, AuthAttrValue]]" = dict,
+    ) -> None:
+        self._context = context
+        self._transport_attr_values = transport_attr_values
+
+    @t.override
+    def get_metadata(self, key: str) -> str | None:
+        for name, value in self._context.invocation_metadata() or ():
+            if name == key and isinstance(value, str):
+                return value
+        return None
+
+    @t.override
+    def get_transport_attr_values(self) -> "dict[str, AuthAttrValue]":
+        return self._transport_attr_values()
+
+    @t.override
+    def set_profile_hash(self, profile_hash: str) -> None:
+        self._context.set_trailing_metadata(((PROFILE_HASH_KEY, profile_hash),))
 
 
-class BaseAuthGrpcServicer(GrpcServicer):
+class BaseAuthGrpcServicer(AuthSessionRpcMixin, GrpcServicer):
     """
     A servicer of the auth: an RPC turns its request into the parameters of
-    an operation and the result into its reply, nothing else. The operation
-    runs by ``run_operation()`` of the servicer for the caller of
-    :meth:`_get_caller`; its exceptions reach the policies of
-    :class:`~..errors.AuthGrpcErrorsUnit`. A servicer of an application
-    serving signed-in callers extends it too: every reply to one tells the
-    hash of its profile in its trailing metadata, ``PROFILE_HASH_KEY``, no
-    interceptor, which would see no caller; a reply refused tells it not,
-    the refusal itself telling the client to ask again.
+    an operation and the result into its reply, nothing else, the RPCs of
+    :mod:`..contract` mixed in where they are shared with HTTP. The operation
+    runs for the caller of the session of the token of a call, ``Bearer
+    <token>`` in the header ``authorization``, or with no token the
+    anonymous one of the project, ``operations.callers.get_anonymous()``; its
+    exceptions reach the policies of :class:`~..errors.AuthGrpcErrorsUnit`.
+    A servicer of an application serving signed-in callers extends it too:
+    every reply to one tells the hash of its profile in its trailing
+    metadata, ``PROFILE_HASH_KEY``, no interceptor, which would see no
+    caller; a reply refused tells it not, the refusal itself telling the
+    client to ask again. A servicer open to anyone extends ``GrpcServicer``
+    alone, so that it runs for the anonymous one, whatever the call bears.
     """
 
     project: "AuthProject"
@@ -47,26 +86,10 @@ class BaseAuthGrpcServicer(GrpcServicer):
     @t.override
     async def _get_caller(self, context: Context) -> Caller:
         """
-        The caller of a call: that of the session of its token, ``Bearer
-        <token>`` in the header ``authorization``, or with no token the
-        anonymous one of the project, ``operations.callers.get_anonymous()``,
-        with what anyone may. A servicer open to anyone extends
-        ``GrpcServicer`` alone, so that it runs for the anonymous one, whatever
-        the call bears.
-
         :raises AuthSessionNotFoundError: no open session has the token.
         :raises AuthSessionExpiredError: its session expired, closed now.
         """
-        # the one way a call bears its credential for now, Bearer; it moves
-        # into a strategy in a slot later (a cookie of gRPC-Web, mTLS, an API
-        # key...), for an application to pick one or write its own, which
-        # until then overrides this hook
-        token = get_bearer_token(context.invocation_metadata())
-        if token is None:
-            return await super()._get_caller(context)
-        caller = await self.project.auth.sessions.authenticate(token)
-        context.set_trailing_metadata(((PROFILE_HASH_KEY, caller.profile_hash),))
-        return caller
+        return await self._rpc_get_caller(GrpcAuthRpcContext(context))
 
 
 def get_bearer_token(
@@ -79,9 +102,7 @@ def get_bearer_token(
     """
     for key, value in metadata or ():
         if key == "authorization" and isinstance(value, str):
-            scheme, _, token = value.partition(" ")
-            if scheme.lower() == "bearer" and token.strip():
-                return token.strip()
+            return parse_bearer_token(value)
     return None
 
 
