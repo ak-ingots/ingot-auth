@@ -1,5 +1,3 @@
-from ingot_mail.contrib.aiosmtplib import AiosmtplibMailer
-from ingot_mail.mail import MailUnit
 from ingots.puer import Slot
 
 from ingot_auth.activities import AuthActivitiesUnit, AuthStrictActivityFailure
@@ -18,10 +16,6 @@ from ingot_auth.sessions import (
     AuthSlidingFixedLifetime,
 )
 from ingot_auth.sign_in import AuthFloorTiming, AuthSignInUnit
-
-
-class AppMailUnit(MailUnit):
-    mailer = Slot(AiosmtplibMailer)
 
 
 class AppPasswordHasher(AuthScryptPasswordHasher):

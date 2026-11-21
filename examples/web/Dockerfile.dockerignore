@@ -1,5 +1,5 @@
 *
 !dist/*.whl
 !dist/web-requirements.txt
-!examples/web/app/
+!examples/web/
 **/__pycache__
