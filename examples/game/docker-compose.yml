@@ -73,7 +73,7 @@ services:
   # known by its name in the network.
   mongodb:
     image: mongo:9
-    command: [--replSet=rs0, --bind_ip_all]
+    command: [--replSet=rs0, --bind_ip_all, --quiet]
     healthcheck:
       test:
         - CMD
@@ -84,7 +84,10 @@ services:
           try { rs.status() } catch (e) { rs.initiate({_id: "rs0", members:
           [{_id: 0, host: "mongodb:27017"}]}) };
           quit(db.hello().isWritablePrimary ? 0 : 1)
-      interval: 2s
+      # often while it starts, then seldom: each check is a connection it logs
+      start_period: 60s
+      start_interval: 2s
+      interval: 30s
       timeout: 5s
       retries: 30
 

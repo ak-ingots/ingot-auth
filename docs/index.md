@@ -28,10 +28,12 @@ The stack of a kind of application comes as one extra: `game`, the
 transport by gRPC, the storage in MongoDB, the cache in Redis and the mail
 by SMTP, as the backend of the
 [game](https://github.com/ak-ingots/ingot-auth/tree/main/examples/game)
-composes them, run by its scenarios on each change.
+composes them; `web`, the same over HTTP and JSON, served by uvicorn, as
+the [site](https://github.com/ak-ingots/ingot-auth/tree/main/examples/web)
+composes them; each run by its scenarios on each change.
 
 ```sh
-uv add 'ingot-auth[game]'
+uv add 'ingot-auth[game]'   # or 'ingot-auth[web]'
 ```
 
 ## Where to go next

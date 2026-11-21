@@ -40,7 +40,12 @@ check: lint test coverage wheel-test example-test doc cl-check  ## Every check: 
 lint: proto-lint  ## black --check, flake8, mypy --strict, the contract by Buf
 	uv run black --check --diff $(SRC)
 	uv run flake8 $(SRC)
-	uv run --group doc mypy $(SRC)
+	uv run --group doc mypy $(filter-out examples perf,$(SRC))
+	# each example an application of its own, its modules at its root: a run
+	# each, as two have modules of one name; the stand of the load with the
+	# game, whose scenarios it imports
+	uv run --group doc mypy $(GAME) perf
+	uv run --group doc mypy $(WEB)
 
 # The gRPC contract by buf.yaml, by Buf of the version the ecosystem pins:
 # that of ingots-libs when this repository lies in its checkout, fetched there
@@ -126,13 +131,23 @@ export GAME_TEST_GRPC_DEFAULT_PORT ?= 50061
 export GAME_TEST_GAME_SECOND_PORT ?= 50062
 export GAME_TEST_MAILPIT_PORT ?= 18025
 export GAME_TEST_IS_STRICT_CONFIGS ?= on
+WEB := examples/web
+export WEB_PYTHON := $(lastword $(PYTHONS))
+export WEB_TEST_SITE_PORT ?= 8080
+export WEB_TEST_MAILPIT_PORT ?= 8081
+export WEB_TEST_IS_STRICT_CONFIGS ?= on
 .PHONY: example-test
-example-test: all  ## the scenarios of examples/game against the game in Docker
+example-test: all  ## the scenarios of examples/game and examples/web against them in Docker
 	uv export --quiet --no-dev --extra game --no-emit-project --no-hashes \
 		--output-file dist/game-requirements.txt
+	uv export --quiet --no-dev --extra web --no-emit-project --no-hashes \
+		--output-file dist/web-requirements.txt
 	@trap 'docker compose -f $(GAME)/docker-compose.yml down --volumes --timeout 1' EXIT; \
 	docker compose -f $(GAME)/docker-compose.yml up --build --detach --wait --quiet-pull; \
 	(cd $(GAME) && uv run python -m scenarios testing run -v)
+	@trap 'docker compose -f $(WEB)/docker-compose.yml down --volumes --timeout 1' EXIT; \
+	docker compose -f $(WEB)/docker-compose.yml up --build --detach --wait --quiet-pull; \
+	(cd $(WEB) && uv run python -m scenarios testing run -v)
 
 # What a stand builds a role by, its tree the candidate's or a worktree of
 # the baseline: the distributions the example installs. The load itself
