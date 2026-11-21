@@ -2,12 +2,16 @@ syntax = "proto3";
 
 package ingot_auth.metadata.v1;
 
+import "google/api/annotations.proto";
+
 // The registries and the methods as the consumers read them: a client asks
 // for them before signing in, so a server gives anyone PERMISSION_CAN_READ by
 // default.
 service Metadata {
   // Requires PERMISSION_CAN_READ.
-  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
+  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse) {
+    option (google.api.http) = {get: "/v1/metadata"};
+  }
 }
 
 // The bits of the domain `auth.metadata` the RPCs require: an aid for a client

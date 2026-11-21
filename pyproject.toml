@@ -29,6 +29,8 @@ dependencies = [
 grpcio = ["ingot-grpcio>=0.15.0,<0.16"]
 pymongo = ["ingot-pymongo>=0.16.0,<0.17"]
 redis = ["ingot-redis>=0.4.0,<0.5"]
+# The transport of HTTP and JSON, transcoding the contract: no grpcio.
+starlette = ["ingot-starlette[protobuf]>=0.3.1,<0.4"]
 # The stacks of the kinds of applications, run by examples/<kind>/.
 game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.4.0,<0.5"]
 
@@ -62,6 +64,8 @@ dev = [
     "ingot-grpcio>=0.15.0,<0.16",
     "ingot-pymongo>=0.16.0,<0.17",
     "ingot-redis>=0.4.0,<0.5",
+    "ingot-starlette[protobuf]>=0.3.1,<0.4",
+    "httpx",
     "mypy",
     "mypy-protobuf>=5.1.0",
     "types-grpcio>=1.84.0.20261021",
@@ -112,6 +116,11 @@ exclude = ["_pb2(_grpc)?\\.py$"]
 # the stubs mypy-protobuf generates override without @override
 module = ["ingot_auth.*.v1.*"]
 disable_error_code = ["explicit-override"]
+
+[[tool.mypy.overrides]]
+# googleapis-common-protos ships the stubs of its code, without py.typed
+module = ["google.api", "google.api.*", "google.rpc", "google.rpc.*"]
+follow_untyped_imports = true
 
 [tool.towncrier]
 name = "ingot-auth"

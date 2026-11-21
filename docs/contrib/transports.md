@@ -154,3 +154,106 @@ class AppNicknameServicer(AppTransportAttrs, AuthGrpcNicknameServicer):
 class AppNicknameBinding(AuthGrpcNicknameBinding):
     auth_methods_nickname = GrpcService(NicknameStub, AppNicknameServicer)
 ```
+
+## HTTP
+
+`ingot_auth.contrib.transports.starlette`, with the extra `starlette`, on
+[ingot-starlette](https://github.com/ak-ingots/ingot-starlette): the project
+joins `StarletteProject`, no grpcio. Its endpoints are the services of the
+contract, the same RPCs gRPC serves, transcoded to JSON by the annotations
+`google.api.http` of their methods (AIP-127): the request and the reply are
+the canonical JSON of proto3 of their messages, the fields of their names.
+
+```sh
+uv add 'ingot-auth[starlette]'
+```
+
+| Endpoint | Routes |
+|---|---|
+| `AuthStarletteMetadataEndpoint` | `GET /v1/metadata` |
+| `AuthStarletteNicknameEndpoint` | `POST /v1/methods/nickname:signUp`, `POST /v1/methods/nickname:signIn` |
+| `AuthStarletteSignOutEndpoint` | `POST /v1/session:signOut` |
+
+An application mounts those it serves in the subtree of its API, of JSON
+alone, with the middleware telling the hash of the profile of the caller,
+and takes `AuthStarletteErrorsUnit` as the base of its errors unit:
+
+```python
+from ingot_starlette import StarletteProject
+from ingot_starlette.starlette import StarletteApiUnit, StarletteEndpoint, StarletteUnit
+
+from ingot_auth.contrib.transports.starlette import (
+    AuthStarletteErrorsUnit,
+    AuthStarletteMetadataEndpoint,
+    AuthStarletteNicknameEndpoint,
+    AuthStarletteProfileHashMiddleware,
+    AuthStarletteSignOutEndpoint,
+)
+
+
+class AppAuthEndpoint(StarletteEndpoint, Unit):
+    metadata = Slot(AuthStarletteMetadataEndpoint)
+    nickname = Slot(AuthStarletteNicknameEndpoint)
+    sign_out = Slot(AuthStarletteSignOutEndpoint)
+
+    @t.override
+    def _iter_routes(self):
+        yield from self.metadata.get_routes()
+        yield from self.nickname.get_routes()
+        yield from self.sign_out.get_routes()
+
+
+class AppApiUnit(StarletteApiUnit):
+    auth = Slot(AppAuthEndpoint)
+
+    @t.override
+    def _iter_routes(self):
+        yield Mount("/auth", routes=self.auth.get_routes())
+
+    @t.override
+    def _iter_middleware(self):
+        yield Middleware(AuthStarletteProfileHashMiddleware)
+
+
+class AppStarletteUnit(StarletteUnit):
+    errors = Slot(AuthStarletteErrorsUnit)
+    api = Slot(AppApiUnit)
+
+
+class AppProject(AuthProject, StarletteProject):
+    # joined with those of the auth, as for gRPC
+    settings = Slot(AppSettingsUnit)
+    logging = Slot(AppLoggingUnit)
+    starlette = Slot(AppStarletteUnit)
+    auth = Slot(AppAuthUnit)
+```
+
+A sign-in, then a request of the caller, its token in `Authorization`:
+
+```text
+POST /api/auth/v1/methods/nickname:signIn
+{"nickname": "alice", "password": "..."}
+→ 200 {"result": {"signed_in": {"session_uid": "...", "token": "..."}}}
+
+POST /api/auth/v1/session:signOut
+Authorization: Bearer <token>
+→ 200 {}   ingot-auth-user-profile-hash: ...
+```
+
+The caller is told as over gRPC: the metadata and the methods run for the
+anonymous one, whatever a request bears; the sign-out for the caller of the
+token, the anonymous one of a token closed, expired or unknown; the
+others, `BaseAuthStarletteEndpoint` with an RPC of the signed-in, for the
+caller of the token. A failure is a problem of RFC 9457,
+`application/problem+json`, of the status of HTTP of the code of gRPC
+(AIP-193), with the reason, the domain and the metadata of the `ErrorInfo`
+gRPC tells: a wrong password is 401, the reason `METHOD_REFUSED`; a
+nickname taken 409, `IDENTITY_CONFLICT`, the metadata `{"kind":
+"nickname"}`; a request not of its message 400. A response to a caller
+signed in tells the hash of its profile in the header
+`ingot-auth-user-profile-hash`, by the middleware.
+
+The attributes of the transport are read as over gRPC, by the hook
+`_get_transport_attr_values()` of `BaseAuthStarletteEndpoint`: `ip` the
+client of the connection; behind a proxy, `uvicorn --proxy-headers` tells
+the forwarded one, or a subclass reads the header of the proxy.

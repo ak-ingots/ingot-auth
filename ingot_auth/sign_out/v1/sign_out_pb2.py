@@ -22,19 +22,22 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/sign_out/v1/sign_out.proto\x12\x16ingot_auth.sign_out.v1\"\x10\n\x0eSignOutRequest\"\x11\n\x0fSignOutResponse2e\n\x07SignOut\x12Z\n\x07SignOut\x12&.ingot_auth.sign_out.v1.SignOutRequest\x1a\'.ingot_auth.sign_out.v1.SignOutResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%ingot_auth/sign_out/v1/sign_out.proto\x12\x16ingot_auth.sign_out.v1\x1a\x1cgoogle/api/annotations.proto\"\x10\n\x0eSignOutRequest\"\x11\n\x0fSignOutResponse2\x85\x01\n\x07SignOut\x12z\n\x07SignOut\x12&.ingot_auth.sign_out.v1.SignOutRequest\x1a\'.ingot_auth.sign_out.v1.SignOutResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/session:signOut:\x01*b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ingot_auth.sign_out.v1.sign_out_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_SIGNOUTREQUEST']._serialized_start=65
-  _globals['_SIGNOUTREQUEST']._serialized_end=81
-  _globals['_SIGNOUTRESPONSE']._serialized_start=83
-  _globals['_SIGNOUTRESPONSE']._serialized_end=100
-  _globals['_SIGNOUT']._serialized_start=102
-  _globals['_SIGNOUT']._serialized_end=203
+  _globals['_SIGNOUT'].methods_by_name['SignOut']._loaded_options = None
+  _globals['_SIGNOUT'].methods_by_name['SignOut']._serialized_options = b'\202\323\344\223\002\030\"\023/v1/session:signOut:\001*'
+  _globals['_SIGNOUTREQUEST']._serialized_start=95
+  _globals['_SIGNOUTREQUEST']._serialized_end=111
+  _globals['_SIGNOUTRESPONSE']._serialized_start=113
+  _globals['_SIGNOUTRESPONSE']._serialized_end=130
+  _globals['_SIGNOUT']._serialized_start=133
+  _globals['_SIGNOUT']._serialized_end=266
 # @@protoc_insertion_point(module_scope)
