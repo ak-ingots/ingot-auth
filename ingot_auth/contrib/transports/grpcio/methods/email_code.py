@@ -9,10 +9,8 @@ from ingot_auth.sign_in import AuthStartSignInParameters
 from ingot_auth.sign_up import AuthStartSignUpParameters
 
 from ..base import Context
-from ..attrs import build_attr_values
-from ..sessions.attrs import REGISTRY as SESSION_ATTRS
-from ..sign_in import build_sign_in_result
-from ..sign_up import build_sign_up_result
+from ...contract.attrs import SESSION_ATTRS, build_attr_values
+from ...contract.results import build_sign_in_result, build_sign_up_result
 from .base import BaseAuthGrpcMethodServicer
 from ingot_auth.methods.email_code.v1 import email_code_pb2, email_code_pb2_grpc
 

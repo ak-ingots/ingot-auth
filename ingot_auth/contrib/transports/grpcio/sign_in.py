@@ -8,12 +8,10 @@ from ingot_grpcio.grpc.services import GrpcService, GrpcServicer
 
 from ingot_auth.sign_in import (
     AuthAnswerSignInParameters,
-    AuthSignedIn,
-    AuthSignInResult,
 )
 
 from .base import Context
-from .challenges import build_challenge
+from ..contract.results import build_sign_in_result
 from ingot_auth.sign_in.v1 import sign_in_pb2, sign_in_pb2_grpc
 
 if t.TYPE_CHECKING:
@@ -44,16 +42,3 @@ class AuthGrpcSignInServicer(GrpcServicer, sign_in_pb2_grpc.SignInServicer):
 
 class AuthGrpcSignInBinding:
     auth_sign_in = GrpcService(sign_in_pb2_grpc.SignInStub, AuthGrpcSignInServicer)
-
-
-def build_sign_in_result(result: AuthSignInResult) -> sign_in_pb2.SignInResult:
-    """Internal: the message of the result of a step of a sign-in."""
-    if isinstance(result, AuthSignedIn):
-        return sign_in_pb2.SignInResult(
-            signed_in=sign_in_pb2.SignedIn(
-                session_uid=result.session_uid, token=result.token
-            )
-        )
-    return sign_in_pb2.SignInResult(
-        challenge=build_challenge(result.attempt_uid, result.challenge)
-    )
