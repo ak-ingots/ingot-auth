@@ -4,7 +4,7 @@ import typing as t
 
 from ingots.perf import LoadClient, LoadGroup, PerfUnit
 from ingots.puer import Slot
-from project import GamePerfProject, PlayersSeed, SeededPlayer, get_client
+from load import GamePerfProject, PlayersSeed, SeededPlayer, get_client
 from scenarios.steps import bear
 
 from ingot_auth.profiles.v1 import profiles_pb2

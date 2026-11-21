@@ -5,7 +5,7 @@ import typing as t
 
 from ingots.perf import CsvSeed, LoadClient, LoadGroup, PerfUnit
 from ingots.puer import Slot
-from project import GamePerfProject, get_client
+from load import GamePerfProject, get_client
 from scenarios.steps import PASSWORD, new_nickname
 
 from ingot_auth.methods.nickname.v1 import nickname_pb2

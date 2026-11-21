@@ -1,6 +1,6 @@
 """
-The commands of the site: ``python -m app auth ...``, the operator's; the
-site itself is served by ``uvicorn app.asgi:app``.
+The commands of the site, from its root: ``python . auth ...``, the
+operator's; the site itself is served by ``uvicorn asgi:app``.
 """
 
 import sys
@@ -8,7 +8,7 @@ import sys
 from ingots.defaults.logging import configure_startup_logging
 from ingots.puer.cli import CommandRunner
 
-from .project import AppProject
+from project import AppProject
 
 
 def main() -> None:

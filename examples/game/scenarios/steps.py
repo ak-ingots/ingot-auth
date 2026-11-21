@@ -108,7 +108,7 @@ class Mailpit:
 class Operator:
     """
     The operator of the game, on its command line: the service ``cli`` of
-    compose, ``python -m app`` as the root of the auth.
+    compose, ``python /srv`` as the root of the auth.
     """
 
     def __init__(self, compose_file: str) -> None:
@@ -133,7 +133,7 @@ class Operator:
     async def _exec(self, argv: tuple[str, ...]) -> tuple[int, str, str]:
         process = await asyncio.create_subprocess_exec(
             *("docker", "compose", "-f", self.compose_file, "exec", "-T", "cli"),
-            *("python", "-m", "app", "--config", "IS_PRINT_CONFIGS=off", *argv),
+            *("python", "/srv", "--config", "IS_PRINT_CONFIGS=off", *argv),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

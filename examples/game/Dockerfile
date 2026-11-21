@@ -10,6 +10,7 @@ COPY dist/ /dist/
 RUN uv pip install --system --no-cache -r /dist/game-requirements.txt \
     "$(ls /dist/*.whl)[game]"
 WORKDIR /srv
-COPY examples/game/app/ app/
-ENTRYPOINT ["python", "-m", "app"]
+# the root of the example is that of the application, its modules on sys.path
+COPY examples/game/ ./
+ENTRYPOINT ["python", "/srv"]
 CMD ["components", "run-forever", "--component", "grpc.servers.default"]

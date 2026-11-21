@@ -64,7 +64,7 @@ services:
       retries: 30
 
   # The command line of the operator, idle till a command runs in it:
-  # docker compose exec cli python -m app auth access members add ...
+  # docker compose exec cli python /srv auth access members add ...
   cli:
     <<: *app
     entrypoint: [sleep, infinity]
