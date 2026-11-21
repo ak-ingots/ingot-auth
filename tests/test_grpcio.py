@@ -970,10 +970,13 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_public_export_holds_the_metadata_alone(self) -> None:
         exported = build_descriptor_set([AuthGrpcMetadataBinding.auth_metadata])
+        names = [file.name for file in exported.file]
+        # of the auth the metadata alone, beside the annotations of HTTP it needs
         self.assertEqual(
-            [file.name for file in exported.file],
+            [name for name in names if name.startswith("ingot_auth/")],
             ["ingot_auth/metadata/v1/metadata.proto"],
         )
+        self.assertIn("google/api/annotations.proto", names)
 
     async def test_an_attr_needs_a_type(self) -> None:
         attrs = (await self.connect()).auth_profiles_attrs

@@ -100,7 +100,14 @@ subdomain it serves, `ingot_auth/profiles/tags/v1/tags.proto` for
 `ingot_auth.profiles.tags.v1`, an RPC a verb then its subject,
 `ListTags(ListTagsRequest)`, as `buf.yaml` lints it; `make proto` generates
 the code next to it, committed, imported as `protoc` writes it, by
-`contrib/transports/grpcio/` alone: the core imports no `v1` module. A method
+the transports alone: the core imports no `v1` module. A method takes its
+annotation `google.api.http` (AIP-127), `buf breaking` keeping the JSON of
+the contract too (`WIRE_JSON`). `contrib/transports/contract/` is the
+business layer of the transports, protobuf alone: the RPCs as mixins
+(`rpc_*`, a call told by `BaseAuthRpcContext`) and the statuses of the
+errors (`errors.py`, `google.rpc.Code`, reason, metadata); `grpcio/` mixes
+them into its servicers, `starlette/`, the extra `starlette`, into the
+endpoints ingot-starlette transcodes to JSON, no grpcio. A method
 of the core has its service in its package, `ingot_auth/methods/nickname/v1/`,
 its servicer in `contrib/transports/grpcio/methods/`, extending
 `BaseAuthGrpcMethodServicer`, which gives the values of the attributes of

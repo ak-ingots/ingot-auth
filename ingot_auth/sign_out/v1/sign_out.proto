@@ -2,12 +2,16 @@ syntax = "proto3";
 
 package ingot_auth.sign_out.v1;
 
+import "google/api/annotations.proto";
+
 // The sign-out of the caller, the token of the call working no more from the
 // very next request. Open to any caller: a token closed, expired or unknown,
 // or none, signs out of nothing, so that a client may retry.
 service SignOut {
   // Requires no permission.
-  rpc SignOut(SignOutRequest) returns (SignOutResponse);
+  rpc SignOut(SignOutRequest) returns (SignOutResponse) {
+    option (google.api.http) = {post: "/v1/session:signOut" body: "*"};
+  }
 }
 
 message SignOutRequest {}

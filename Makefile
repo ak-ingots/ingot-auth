@@ -17,7 +17,7 @@ DOC_OUT := docs/build
 PYTHONS ?= 3.14 3.15
 
 # The extras the wheel is tested with: every integration.
-EXTRAS ?= grpcio,pymongo,redis
+EXTRAS ?= grpcio,pymongo,redis,starlette
 
 # What `cl-check` compares the branch with.
 AGAINST ?= origin/main
@@ -60,6 +60,8 @@ proto-lint:  ## The gRPC contract by Buf STANDARD (ADR 0013)
 		echo "PATH the version ingots-libs pins in"; \
 		echo ".github/actions/setup-buf/version, or give its path as BUF"; exit 1; }
 	$(BUF) lint
+	# the contract of main kept, its JSON too (WIRE_JSON of buf.yaml)
+	$(BUF) breaking --against '.git#ref=$(AGAINST)'
 
 .PHONY: test
 test:  ## unittest on the working tree
@@ -90,7 +92,10 @@ integration:  ## the storage in MongoDB and the cache in Redis against docker-co
 wheel-test: all  ## unittest on the built wheel, once per interpreter in PYTHONS
 	@$(MAKE) --no-print-directory installed-test WHEEL="$$(echo dist/*.whl)"
 
-# The tests of tests/ on WHEEL, once per interpreter in PYTHONS: for `wheel-test`
+# What the tests need beside the wheel: the client of Starlette's TestClient.
+TOOLS ?= httpx
+
+# The tests of tests/ on WHEEL, with TOOLS, once per interpreter in PYTHONS: for `wheel-test`
 # and for the workflow `index-test` of the meta repository, which the `release`
 # workflow calls between TestPyPI and PyPI, on the files it has just published.
 .PHONY: installed-test
@@ -101,7 +106,7 @@ installed-test:
 		echo "== $(notdir $(WHEEL)) on Python $$py"; \
 		tmp=$$(mktemp -d); \
 		uv venv --quiet --python $$py "$$tmp/venv"; \
-		uv pip install --quiet --python "$$tmp/venv/bin/python" "$(WHEEL)[$(EXTRAS)]"; \
+		uv pip install --quiet --python "$$tmp/venv/bin/python" "$(WHEEL)[$(EXTRAS)]" $(TOOLS); \
 		cp -r tests README.md "$$tmp/"; \
 		(cd "$$tmp" && INGOT_AUTH_WHEEL_TEST=1 venv/bin/python -m unittest discover -s tests -t .) \
 			|| { rm -rf "$$tmp"; exit 1; }; \
@@ -154,9 +159,12 @@ perf-smoke: perf-build  ## the scenarios of the stands of perf/, dry, against th
 # stubs of mypy-protobuf, committed next to them. A contract lies at the path of
 # its proto package, ingot_auth/<path>/v<N>/<service>.proto, so its code is
 # imported as protoc writes it (ADR 0011): no rewrite.
+# The protos of google.api, of googleapis-common-protos, beside its code
+GOOGLEAPIS = $(shell uv run python -c "import google.api.annotations_pb2 as m, pathlib; print(pathlib.Path(m.__file__).parents[2])")
+
 .PHONY: proto
 proto:  ## Generate the code of the .proto files
-	uv run python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. \
+	uv run python -m grpc_tools.protoc -I . -I $(GOOGLEAPIS) --python_out=. --grpc_python_out=. \
 		--mypy_out=. --mypy_grpc_out=. $$(find ingot_auth -name '*.proto')
 
 .PHONY: format
