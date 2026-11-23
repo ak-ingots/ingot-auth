@@ -1,6 +1,6 @@
 from ingots.testing import ProjectTestCase
 
-from ingot_auth.metadata.v1 import metadata_pb2
+from ingot_auth.api.metadata.v1 import metadata_pb2
 
 from .steps import GameMixin
 

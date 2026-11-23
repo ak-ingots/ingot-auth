@@ -1,7 +1,7 @@
 from ingots.testing import ProjectTestCase
 
-from ingot_auth.profiles.v1 import profiles_pb2
-from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.api.profiles.v1 import profiles_pb2
+from ingot_auth.api.sessions.v1 import sessions_pb2
 
 from .steps import GameMixin, bear, read_profile_hash
 

@@ -7,7 +7,7 @@ from ingots.puer import Slot
 from load import GamePerfProject, PlayersSeed, SeededPlayer, get_client
 from scenarios.steps import PASSWORD
 
-from ingot_auth.methods.nickname.v1 import nickname_pb2
+from ingot_auth.api.methods.nickname.v1 import nickname_pb2
 
 
 class SigningIn(LoadClient["PerfProject", "SigningInGroup"]):
@@ -15,7 +15,7 @@ class SigningIn(LoadClient["PerfProject", "SigningInGroup"]):
     async def asyncSetUp(self) -> None:
         seeded = self.group.seeded
         game = await get_client(self.project, seeded.is_second)
-        self.nickname = game.auth_methods_nickname
+        self.nickname = game.auth_methods_nickname_temp
         self.request = nickname_pb2.SignInRequest(
             nickname=seeded.nickname, password=PASSWORD
         )

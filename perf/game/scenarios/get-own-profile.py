@@ -7,7 +7,7 @@ from ingots.puer import Slot
 from load import GamePerfProject, PlayersSeed, SeededPlayer, get_client
 from scenarios.steps import bear
 
-from ingot_auth.profiles.v1 import profiles_pb2
+from ingot_auth.api.profiles.v1 import profiles_pb2
 
 
 class Player(LoadClient["PerfProject", "PlayerGroup"]):
@@ -15,7 +15,7 @@ class Player(LoadClient["PerfProject", "PlayerGroup"]):
     async def asyncSetUp(self) -> None:
         seeded = self.group.seeded
         game = await get_client(self.project, seeded.is_second)
-        self.profiles = game.auth_profiles
+        self.profiles = game.auth_profiles_temp
         self.metadata = bear(seeded.token)
 
     @t.override

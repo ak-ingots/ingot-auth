@@ -12,7 +12,7 @@ import typing as t
 from ingots.perf import CsvSeed, PerfConfigs
 from ingots.puer import Slot
 
-from ingot_auth.methods.nickname.v1 import nickname_pb2
+from ingot_auth.api.methods.nickname.v1 import nickname_pb2
 
 from scenarios.project import GameClient, ScenariosConfigs, ScenariosProject
 from scenarios.project import ScenariosSettingsUnit
@@ -66,10 +66,10 @@ class PlayersSeed(CsvSeed[SeededPlayer]):
             nickname = new_nickname()
             client = await get_client(self.project, is_second)
             async with semaphore:
-                await client.auth_methods_nickname.SignUp(
+                await client.auth_methods_nickname_temp.SignUp(
                     nickname_pb2.SignUpRequest(nickname=nickname, password=PASSWORD)
                 )
-                response = await client.auth_methods_nickname.SignIn(
+                response = await client.auth_methods_nickname_temp.SignIn(
                     nickname_pb2.SignInRequest(nickname=nickname, password=PASSWORD)
                 )
             return SeededPlayer(nickname, response.result.signed_in.token, is_second)

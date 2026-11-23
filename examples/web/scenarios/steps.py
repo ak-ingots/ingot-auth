@@ -12,7 +12,7 @@ import uuid
 import httpx
 from ingots.testing import ProjectFixture, ProjectTestCase
 
-from ingot_auth.contrib.transports.contract import PROFILE_HASH_KEY
+from ingot_auth.api import PROFILE_HASH_KEY
 
 from .project import ScenariosProject
 
