@@ -1,8 +1,3 @@
-"""
-The tests of test_grpcio over :mod:`ingot_auth.api`, its services bound as
-``*_temp`` beside the old ones. Temporary, till the old API is removed.
-"""
-
 import datetime
 import decimal
 import hashlib
@@ -50,23 +45,21 @@ from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
-    AuthGrpcMetadataServicer,
-    AuthGrpcMetadataServicerTemp,
     AuthGrpcAdminBinding,
-    AuthGrpcAttrsServicerTemp,
+    AuthGrpcAttrsServicer,
     AuthGrpcEmailCodeBinding,
     AuthGrpcErrorsUnit,
     AuthGrpcFlowsBinding,
-    AuthGrpcGroupsServicerTemp,
-    AuthGrpcMembersServicerTemp,
+    AuthGrpcGroupsServicer,
+    AuthGrpcMembersServicer,
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
-    AuthGrpcNicknameServicerTemp,
-    AuthGrpcSessionAttrsServicerTemp,
-    AuthGrpcSessionPresetsServicerTemp,
+    AuthGrpcNicknameServicer,
+    AuthGrpcSessionAttrsServicer,
+    AuthGrpcSessionPresetsServicer,
     AuthGrpcSessionsBinding,
     AuthGrpcSignOutBinding,
-    AuthGrpcTagsServicerTemp,
+    AuthGrpcTagsServicer,
 )
 from ingot_auth.api.attrs.v1 import attrs_pb2
 from ingot_auth.api.access.groups.v1 import (
@@ -84,7 +77,7 @@ from ingot_auth.contrib.transports.grpcio.base import (
     get_peer_ip,
 )
 from ingot_auth.contrib.transports.grpcio.sessions.sessions import CLOSE_REASONS
-from ingot_auth.contrib.transports.grpcio.attrs_temp import (
+from ingot_auth.contrib.transports.grpcio.attrs import (
     build_attr_value,
     build_attr_value_message,
     build_attr_values,
@@ -120,7 +113,7 @@ from ingot_auth.activities import (
     AuthActivitiesUnit,
 )
 from ingot_auth.api.activities.v1 import activities_pb2
-from ingot_auth.contrib.transports.grpcio.activities_temp import ACTIONS
+from ingot_auth.contrib.transports.grpcio.activities import ACTIONS
 from ingot_auth.testing.contracts import create_record
 from ingot_auth.api.profiles.v1 import profiles_pb2
 from ingot_auth.profiles import (
@@ -130,7 +123,7 @@ from ingot_auth.profiles import (
 from ingot_auth.api.sign_up.v1 import sign_up_pb2
 from ingot_auth.caches import AuthAttemptNotFoundError
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
-from ingot_auth.contrib.transports.grpcio.challenges_temp import build_challenge
+from ingot_auth.contrib.transports.grpcio.challenges import build_challenge
 from ingot_auth.methods.email_code import (
     AuthEmailCodeConfigs,
     AuthEmailCodeMethod,
@@ -218,45 +211,41 @@ class AdminCaller:
         return ADMIN
 
 
-class TagsServicer(AdminCaller, AuthGrpcTagsServicerTemp):
+class TagsServicer(AdminCaller, AuthGrpcTagsServicer):
     pass
 
 
-class AttrsServicer(AdminCaller, AuthGrpcAttrsServicerTemp):
+class AttrsServicer(AdminCaller, AuthGrpcAttrsServicer):
     pass
 
 
-class SessionAttrsServicer(AdminCaller, AuthGrpcSessionAttrsServicerTemp):
+class SessionAttrsServicer(AdminCaller, AuthGrpcSessionAttrsServicer):
     pass
 
 
-class SessionPresetsServicer(AdminCaller, AuthGrpcSessionPresetsServicerTemp):
+class SessionPresetsServicer(AdminCaller, AuthGrpcSessionPresetsServicer):
     pass
 
 
-class GroupsServicer(AdminCaller, AuthGrpcGroupsServicerTemp):
+class GroupsServicer(AdminCaller, AuthGrpcGroupsServicer):
     pass
 
 
-class MembersServicer(AdminCaller, AuthGrpcMembersServicerTemp):
+class MembersServicer(AdminCaller, AuthGrpcMembersServicer):
     pass
 
 
 class TstAdminBinding:
-    auth_profiles_tags_temp = GrpcService(profile_tags_pb2_grpc.TagsStub, TagsServicer)
-    auth_profiles_attrs_temp = GrpcService(
-        profile_attrs_pb2_grpc.AttrsStub, AttrsServicer
-    )
-    auth_sessions_attrs_temp = GrpcService(
+    auth_profiles_tags = GrpcService(profile_tags_pb2_grpc.TagsStub, TagsServicer)
+    auth_profiles_attrs = GrpcService(profile_attrs_pb2_grpc.AttrsStub, AttrsServicer)
+    auth_sessions_attrs = GrpcService(
         session_attrs_pb2_grpc.AttrsStub, SessionAttrsServicer
     )
-    auth_sessions_presets_temp = GrpcService(
+    auth_sessions_presets = GrpcService(
         presets_pb2_grpc.PresetsStub, SessionPresetsServicer
     )
-    auth_access_groups_temp = GrpcService(groups_pb2_grpc.GroupsStub, GroupsServicer)
-    auth_access_members_temp = GrpcService(
-        members_pb2_grpc.MembersStub, MembersServicer
-    )
+    auth_access_groups = GrpcService(groups_pb2_grpc.GroupsStub, GroupsServicer)
+    auth_access_members = GrpcService(members_pb2_grpc.MembersStub, MembersServicer)
 
 
 class TstAnonymousServer(
@@ -496,7 +485,7 @@ def get_forwarded_ip(context: Context) -> str | None:
     return None
 
 
-class ForwardedNicknameServicer(AuthGrpcNicknameServicerTemp):
+class ForwardedNicknameServicer(AuthGrpcNicknameServicer):
     """Behind a proxy: the IP is of the header it sets."""
 
     @t.override
@@ -509,7 +498,7 @@ class ForwardedNicknameServicer(AuthGrpcNicknameServicerTemp):
 
 
 class ForwardedNicknameBinding(AuthGrpcNicknameBinding):
-    auth_methods_nickname_temp = GrpcService(
+    auth_methods_nickname = GrpcService(
         nickname_pb2_grpc.NicknameStub, ForwardedNicknameServicer
     )
 
@@ -554,33 +543,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.grpc.servers.default
         return await self.project.grpc.clients.default
 
-    async def test_the_old_names_alias_those_of_the_api(self) -> None:
-        client = await self.connect(TstAnonymousProject)
-        self.assertIs(client.auth_metadata, client.auth_metadata_temp)
-        server = t.cast(TstAnonymousServer, await self.project.grpc.servers.default)
-        self.assertIs(server.auth_metadata, server.auth_metadata_temp)
-        self.assertIs(
-            AuthGrpcMetadataBinding.auth_metadata,
-            AuthGrpcMetadataBinding.auth_metadata_temp,
-        )
-        self.assertIs(AuthGrpcMetadataServicer, AuthGrpcMetadataServicerTemp)
-        # each service bound once, under the name of the API
-        names = [service.name for service in TstAnonymousServer.grpc_services_iter()]
-        self.assertIn("auth_metadata_temp", names)
-        self.assertNotIn("auth_metadata", names)
-
-    def test_the_old_modules_give_the_names_of_the_api(self) -> None:
-        from ingot_auth.contrib.transports.grpcio import attrs as old_attrs
-        from ingot_auth.contrib.transports.grpcio import attrs_temp
-        from ingot_auth.contrib.transports.grpcio import challenges as old_challenges
-        from ingot_auth.contrib.transports.grpcio import challenges_temp
-
-        self.assertIs(old_attrs.build_attr_values, attrs_temp.build_attr_values)
-        self.assertIs(old_challenges.build_challenge, challenges_temp.build_challenge)
-
     async def test_the_metadata_is_public_by_default(self) -> None:
         client = await self.connect(TstAnonymousProject)
-        reply = await client.auth_metadata_temp.GetMetadata(
+        reply = await client.auth_metadata.GetMetadata(
             metadata_pb2.GetMetadataRequest()
         )
         self.assertEqual(
@@ -593,14 +558,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_an_application_may_close_the_metadata(self) -> None:
         client = await self.connect(TstClosedProject)
         with self.assertRaises(GrpcError) as error:
-            await client.auth_metadata_temp.GetMetadata(
-                metadata_pb2.GetMetadataRequest()
-            )
+            await client.auth_metadata.GetMetadata(metadata_pb2.GetMetadataRequest())
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
 
     async def test_the_metadata_gives_the_methods_with_their_flows(self) -> None:
         client = await self.connect(TstMethodsProject)
-        reply = await client.auth_metadata_temp.GetMetadata(
+        reply = await client.auth_metadata.GetMetadata(
             metadata_pb2.GetMetadataRequest()
         )
         self.assertEqual(
@@ -613,12 +576,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_metadata_gives_the_registries(self) -> None:
         client = await self.connect()
-        await client.auth_profiles_tags_temp.CreateTag(
+        await client.auth_profiles_tags.CreateTag(
             profile_tags_pb2.CreateTagRequest(
                 tag=profile_tags_pb2.Tag(uid=1, name="beta")
             )
         )
-        await client.auth_profiles_attrs_temp.CreateAttr(
+        await client.auth_profiles_attrs.CreateAttr(
             profile_attrs_pb2.CreateAttrRequest(
                 attr=profile_attrs_pb2.Attr(
                     uid=7, name="title/en", type=profile_attrs_pb2.ATTR_TYPE_STR
@@ -629,7 +592,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (1, "device", session_attrs_pb2.ATTR_SOURCE_CLIENT),
             (2, "ip", session_attrs_pb2.ATTR_SOURCE_TRANSPORT),
         ):
-            await client.auth_sessions_attrs_temp.CreateAttr(
+            await client.auth_sessions_attrs.CreateAttr(
                 session_attrs_pb2.CreateAttrRequest(
                     attr=session_attrs_pb2.Attr(
                         uid=attr_uid,
@@ -639,7 +602,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     )
                 )
             )
-        presets = client.auth_sessions_presets_temp
+        presets = client.auth_sessions_presets
         await presets.CreatePreset(
             presets_pb2.CreatePresetRequest(
                 preset=presets_pb2.Preset(uid=1, name="sign_in")
@@ -653,7 +616,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     )
                 )
             )
-        reply = await client.auth_metadata_temp.GetMetadata(
+        reply = await client.auth_metadata.GetMetadata(
             metadata_pb2.GetMetadataRequest()
         )
         self.assertEqual(
@@ -686,7 +649,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_tags_are_managed(self) -> None:
-        tags = (await self.connect()).auth_profiles_tags_temp
+        tags = (await self.connect()).auth_profiles_tags
         beta = profile_tags_pb2.Tag(uid=1, name="beta")
         self.assertEqual(
             (await tags.CreateTag(profile_tags_pb2.CreateTagRequest(tag=beta))).tag,
@@ -709,7 +672,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_groups_are_listed_with_their_grants(self) -> None:
-        groups = (await self.connect()).auth_access_groups_temp
+        groups = (await self.connect()).auth_access_groups
         reply = await groups.ListGroups(groups_pb2.ListGroupsRequest())
         self.assertEqual(
             list(reply.groups),
@@ -772,7 +735,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_members_are_managed(self) -> None:
-        members = (await self.connect()).auth_access_members_temp
+        members = (await self.connect()).auth_access_members
         await self.project.auth.storage.profiles.create(
             AuthProfile(uid="a1", created_at=NOW)
         )
@@ -795,7 +758,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(list(reply.profile_uids), [])
 
     async def test_the_errors_of_the_members_have_their_statuses(self) -> None:
-        members = (await self.connect()).auth_access_members_temp
+        members = (await self.connect()).auth_access_members
         for membership, reason, metadata in (
             (
                 members_pb2.Membership(group="guests", profile_uid="a1"),
@@ -823,7 +786,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_the_attrs_are_managed(self) -> None:
-        attrs = (await self.connect()).auth_profiles_attrs_temp
+        attrs = (await self.connect()).auth_profiles_attrs
         attr = profile_attrs_pb2.Attr(
             uid=1, name="phone", type=profile_attrs_pb2.ATTR_TYPE_STR
         )
@@ -852,7 +815,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_session_attrs_are_managed(self) -> None:
-        session_attrs = (await self.connect()).auth_sessions_attrs_temp
+        session_attrs = (await self.connect()).auth_sessions_attrs
         ip = session_attrs_pb2.Attr(
             uid=1,
             name="ip",
@@ -878,7 +841,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_session_presets_are_managed(self) -> None:
         client = await self.connect()
-        await client.auth_sessions_attrs_temp.CreateAttr(
+        await client.auth_sessions_attrs.CreateAttr(
             session_attrs_pb2.CreateAttrRequest(
                 attr=session_attrs_pb2.Attr(
                     uid=1,
@@ -888,7 +851,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 )
             )
         )
-        presets = client.auth_sessions_presets_temp
+        presets = client.auth_sessions_presets
         preset = presets_pb2.Preset(uid=1, name="sign_in")
         created = await presets.CreatePreset(
             presets_pb2.CreatePresetRequest(preset=preset)
@@ -915,7 +878,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(listed.presets), 0)
 
     async def test_an_attr_not_bound_is_not_found(self) -> None:
-        presets = (await self.connect()).auth_sessions_presets_temp
+        presets = (await self.connect()).auth_sessions_presets
         await presets.CreatePreset(
             presets_pb2.CreatePresetRequest(preset=presets_pb2.Preset(uid=1, name="a"))
         )
@@ -937,7 +900,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, names - {"ATTR_SOURCE_UNSPECIFIED"})
 
     async def test_a_session_attr_needs_a_type_and_a_source(self) -> None:
-        session_attrs = (await self.connect()).auth_sessions_attrs_temp
+        session_attrs = (await self.connect()).auth_sessions_attrs
         for attr_type, source, key in (
             (
                 session_attrs_pb2.ATTR_TYPE_UNSPECIFIED,
@@ -1006,7 +969,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(values, expected)
 
     async def test_a_public_export_holds_the_metadata_alone(self) -> None:
-        exported = build_descriptor_set([AuthGrpcMetadataBinding.auth_metadata_temp])
+        exported = build_descriptor_set([AuthGrpcMetadataBinding.auth_metadata])
         names = [file.name for file in exported.file]
         # of the auth the metadata alone, beside the annotations of HTTP it needs
         self.assertEqual(
@@ -1016,7 +979,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertIn("google/api/annotations.proto", names)
 
     async def test_an_attr_needs_a_type(self) -> None:
-        attrs = (await self.connect()).auth_profiles_attrs_temp
+        attrs = (await self.connect()).auth_profiles_attrs
         with self.assertRaises(GrpcError) as error:
             await attrs.CreateAttr(
                 profile_attrs_pb2.CreateAttrRequest(
@@ -1031,7 +994,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(error.exception.reason, "ITEM_INVALID")
 
     async def test_the_errors_of_the_registries_have_their_statuses(self) -> None:
-        tags = (await self.connect()).auth_profiles_tags_temp
+        tags = (await self.connect()).auth_profiles_tags
         await tags.CreateTag(
             profile_tags_pb2.CreateTagRequest(
                 tag=profile_tags_pb2.Tag(uid=1, name="beta")
@@ -1080,23 +1043,19 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_administration_refuses_who_it_cannot_tell(self) -> None:
         client = await self.connect(TstAnonymousProject)
         for call in (
-            client.auth_profiles_tags_temp.ListTags(profile_tags_pb2.ListTagsRequest()),
-            client.auth_profiles_tags_temp.CreateTag(
+            client.auth_profiles_tags.ListTags(profile_tags_pb2.ListTagsRequest()),
+            client.auth_profiles_tags.CreateTag(
                 profile_tags_pb2.CreateTagRequest(
                     tag=profile_tags_pb2.Tag(uid=1, name="beta")
                 )
             ),
-            client.auth_profiles_attrs_temp.ListAttrs(
-                profile_attrs_pb2.ListAttrsRequest()
-            ),
-            client.auth_sessions_attrs_temp.ListAttrs(
-                session_attrs_pb2.ListAttrsRequest()
-            ),
-            client.auth_sessions_presets_temp.ListBindings(
+            client.auth_profiles_attrs.ListAttrs(profile_attrs_pb2.ListAttrsRequest()),
+            client.auth_sessions_attrs.ListAttrs(session_attrs_pb2.ListAttrsRequest()),
+            client.auth_sessions_presets.ListBindings(
                 presets_pb2.ListBindingsRequest()
             ),
-            client.auth_access_groups_temp.ListGroups(groups_pb2.ListGroupsRequest()),
-            client.auth_access_members_temp.ListMembers(
+            client.auth_access_groups.ListGroups(groups_pb2.ListGroupsRequest()),
+            client.auth_access_members.ListMembers(
                 members_pb2.ListMembersRequest(group="app.grp_admins")
             ),
         ):
@@ -1106,7 +1065,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(error.exception.reason, "PERMISSION_DENIED")
 
     async def test_a_nickname_signs_up_and_in_by_its_service(self) -> None:
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname_temp
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
@@ -1124,7 +1083,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_caller_signs_out_by_its_service(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         await nickname.SignUp(
             nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
         )
@@ -1135,19 +1094,19 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         ).result.signed_in
         bearer = [("authorization", f"Bearer {signed_in.token}")]
         request = sign_out_pb2.SignOutRequest()
-        await client.auth_sign_out_temp.SignOut(request, metadata=bearer)
+        await client.auth_sign_out.SignOut(request, metadata=bearer)
         with self.assertRaises(AuthSessionNotFoundError):
             await self.project.auth.sessions.authenticate(signed_in.token)
         # a token closed, unknown or none signs out of nothing: a client retries
         for metadata in (bearer, [("authorization", "Bearer unknown")], []):
             with self.subTest(metadata=metadata):
-                await client.auth_sign_out_temp.SignOut(request, metadata=metadata)
+                await client.auth_sign_out.SignOut(request, metadata=metadata)
 
     async def test_a_user_lists_and_revokes_its_sessions_by_its_service(
         self,
     ) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         await nickname.SignUp(
             nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
         )
@@ -1156,7 +1115,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (await nickname.SignIn(sign_in)).result.signed_in for _ in range(2)
         ]
         bearer = [("authorization", f"Bearer {laptop.token}")]
-        sessions = client.auth_sessions_temp
+        sessions = client.auth_sessions
         own = (
             await sessions.ListOwnSessions(
                 sessions_pb2.ListOwnSessionsRequest(), metadata=bearer
@@ -1186,7 +1145,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_operator_reads_the_record_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         uids, tokens = [], []
         for name in ("Alice", "Eve"):
             uids.append(
@@ -1204,7 +1163,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 ).result.signed_in.token
             )
         alice, eve = uids
-        await client.auth_sign_out_temp.SignOut(
+        await client.auth_sign_out.SignOut(
             sign_out_pb2.SignOutRequest(),
             metadata=[("authorization", f"Bearer {tokens[0]}")],
         )
@@ -1212,7 +1171,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             AuthMembership(group="auth.sessions.grp_admins", profile_uid=eve)
         )
         record = (
-            await client.auth_sessions_temp.ListSessions(
+            await client.auth_sessions.ListSessions(
                 sessions_pb2.ListSessionsRequest(profile_uid=alice, closed=True),
                 metadata=[("authorization", f"Bearer {tokens[1]}")],
             )
@@ -1224,7 +1183,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(record[0].HasField("closed_at"))
         # an open one has no time, reason nor closer
         open_only = (
-            await client.auth_sessions_temp.ListSessions(
+            await client.auth_sessions.ListSessions(
                 sessions_pb2.ListSessionsRequest(profile_uid=eve),
                 metadata=[("authorization", f"Bearer {tokens[1]}")],
             )
@@ -1237,7 +1196,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_operator_revokes_every_session_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         alice, eve = [
             (
                 await nickname.SignUp(
@@ -1258,13 +1217,13 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await self.project.auth.storage.access.members.add(
             AuthMembership(group="auth.sessions.grp_admins", profile_uid=eve)
         )
-        revoked = await client.auth_sessions_temp.RevokeSessions(
+        revoked = await client.auth_sessions.RevokeSessions(
             sessions_pb2.RevokeSessionsRequest(profile_uid=alice),
             metadata=[("authorization", f"Bearer {tokens[2]}")],
         )
         self.assertEqual(revoked.count, 2)
         with self.assertRaises(GrpcError) as raised:
-            await client.auth_sessions_temp.ListOwnSessions(
+            await client.auth_sessions.ListOwnSessions(
                 sessions_pb2.ListOwnSessionsRequest(),
                 metadata=[("authorization", f"Bearer {tokens[0]}")],
             )
@@ -1272,7 +1231,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_operator_sweeps_the_expired_sessions(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         _, eve = [
             (
                 await nickname.SignUp(
@@ -1294,7 +1253,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                     nickname_pb2.SignInRequest(nickname="Eve", password="pass word")
                 )
             ).result.signed_in.token
-            swept = await client.auth_sessions_temp.SweepSessions(
+            swept = await client.auth_sessions.SweepSessions(
                 sessions_pb2.SweepSessionsRequest(),
                 metadata=[("authorization", f"Bearer {token}")],
             )
@@ -1302,7 +1261,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_operator_sets_the_values_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         uids, tokens = [], []
         for name in ("Alice", "Eve"):
             uids.append(
@@ -1328,7 +1287,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             AuthMembership(group="auth.profiles.grp_managers", profile_uid=uids[1])
         )
         bearer = [("authorization", f"Bearer {tokens[1]}")]
-        profiles = client.auth_profiles_temp
+        profiles = client.auth_profiles
         await profiles.SetProfileTags(
             profiles_pb2.SetProfileTagsRequest(uid=uids[0], tag_uids=[1]),
             metadata=bearer,
@@ -1356,7 +1315,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_every_reply_tells_the_hash_of_the_profile(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(nickname="Alice", password="pass word")
@@ -1368,7 +1327,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             )
         ).result.signed_in
         bearer = [("authorization", f"Bearer {signed_in.token}")]
-        call = client.auth_profiles_temp.GetOwnProfile(
+        call = client.auth_profiles.GetOwnProfile(
             profiles_pb2.GetOwnProfileRequest(), metadata=bearer
         )
         profile = await call
@@ -1382,18 +1341,18 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             self.project.auth.profiles.op_set_tags,
             AuthSetProfileTagsParameters(uid=signed_up.uid, tag_uids=frozenset({1})),
         )
-        sessions_call = client.auth_sessions_temp.ListOwnSessions(
+        sessions_call = client.auth_sessions.ListOwnSessions(
             sessions_pb2.ListOwnSessionsRequest(), metadata=bearer
         )
         await sessions_call
         changed = dict(await sessions_call.trailing_metadata())[PROFILE_HASH_KEY]
         self.assertNotEqual(changed, told)
-        profile = await client.auth_profiles_temp.GetOwnProfile(
+        profile = await client.auth_profiles.GetOwnProfile(
             profiles_pb2.GetOwnProfileRequest(), metadata=bearer
         )
         self.assertEqual((list(profile.values.tag_uids), profile.hash), ([1], changed))
         # the anonymous caller has no profile to tell
-        metadata_call = client.auth_metadata_temp.GetMetadata(
+        metadata_call = client.auth_metadata.GetMetadata(
             metadata_pb2.GetMetadataRequest()
         )
         await metadata_call
@@ -1408,7 +1367,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_the_auditors_read_the_log(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(nickname="Eve", password="pass word")
@@ -1440,7 +1399,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         request.since.FromDatetime(NOW)
         request.until.FromDatetime(NOW + HOUR)
         (activity,) = (
-            await client.auth_activities_temp.ListActivities(request, metadata=bearer)
+            await client.auth_activities.ListActivities(request, metadata=bearer)
         ).activities
         self.assertEqual(
             (activity.who, activity.session_uid, activity.action, activity.run_uid),
@@ -1450,7 +1409,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             dict(activity.context),
             {"price": "1.50", "at": NOW.isoformat(), "ids": [1.0], "m": {}},
         )
-        everything = await client.auth_activities_temp.ListActivities(
+        everything = await client.auth_activities.ListActivities(
             activities_pb2.ListActivitiesRequest(session_uid="s1"), metadata=bearer
         )
         self.assertEqual([a.entity_uid for a in everything.activities], ["2"])
@@ -1477,7 +1436,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 )
 
     async def test_the_values_of_the_attributes_go_with_the_flows(self) -> None:
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname_temp
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         attrs = self.project.auth.storage.sessions.attrs
         for attr_uid, attr_type in enumerate(AuthAttrType, start=1):
             await attrs.create(
@@ -1530,7 +1489,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_ip_of_the_peer_goes_with_the_flows(self) -> None:
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname_temp
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         await self.create_ip_attr()
         signed_up = (
             await nickname.SignUp(
@@ -1551,7 +1510,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_an_application_binds_the_ip_to_the_header_of_its_proxy(
         self,
     ) -> None:
-        nickname = (await self.connect(TstForwardedProject)).auth_methods_nickname_temp
+        nickname = (await self.connect(TstForwardedProject)).auth_methods_nickname
         await self.create_ip_attr()
         signed_up = (
             await nickname.SignUp(
@@ -1572,7 +1531,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(session.attr_values, {})
 
     async def test_the_flows_of_a_nickname_tell_their_errors(self) -> None:
-        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname_temp
+        nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         await nickname.SignUp(
             nickname_pb2.SignUpRequest(nickname="alice", password="x")
         )
@@ -1636,7 +1595,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_an_email_signs_up_and_in_by_its_code(self) -> None:
         client = await self.connect(TstEmailCodeProject)
-        email_code = client.auth_methods_email_code_temp
+        email_code = client.auth_methods_email_code
         challenge = (
             await email_code.StartSignUp(
                 email_code_pb2.StartSignUpRequest(email="al@b.c")
@@ -1646,9 +1605,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         answer = sign_up_pb2.AnswerSignUpRequest(
             attempt_uid=challenge.attempt_uid, code=await self.get_code()
         )
-        signed_up = (
-            await client.auth_sign_up_temp.AnswerSignUp(answer)
-        ).result.signed_up
+        signed_up = (await client.auth_sign_up.AnswerSignUp(answer)).result.signed_up
         challenge = (
             await email_code.StartSignIn(
                 email_code_pb2.StartSignInRequest(email="AL@b.c")
@@ -1657,9 +1614,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         answer_in = sign_in_pb2.AnswerSignInRequest(
             attempt_uid=challenge.attempt_uid, code=await self.get_code()
         )
-        signed_in = (
-            await client.auth_sign_in_temp.AnswerSignIn(answer_in)
-        ).result.signed_in
+        signed_in = (await client.auth_sign_in.AnswerSignIn(answer_in)).result.signed_in
         caller = await self.project.auth.sessions.authenticate(signed_in.token)
         self.assertEqual(
             (caller.uid, caller.session_uid), (signed_up.uid, signed_in.session_uid)
@@ -1669,7 +1624,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         client = await self.connect(TstEmailCodeProject)
         start = email_code_pb2.StartSignUpRequest(email="al@b.c")
         challenge = (
-            await client.auth_methods_email_code_temp.StartSignUp(start)
+            await client.auth_methods_email_code.StartSignUp(start)
         ).result.challenge
         code = await self.get_code()
         wrong = f"{(int(code) + 1) % 10**6:06d}"
@@ -1677,7 +1632,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         # flow, taking the attempt, comes last
         for call, code_of_status, reason in (
             (
-                lambda: client.auth_sign_up_temp.AnswerSignUp(
+                lambda: client.auth_sign_up.AnswerSignUp(
                     sign_up_pb2.AnswerSignUpRequest(
                         attempt_uid=challenge.attempt_uid, code=wrong
                     )
@@ -1686,7 +1641,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 "METHOD_REFUSED",
             ),
             (
-                lambda: client.auth_sign_up_temp.AnswerSignUp(
+                lambda: client.auth_sign_up.AnswerSignUp(
                     sign_up_pb2.AnswerSignUpRequest(attempt_uid="gone", code=code)
                 ),
                 grpc.StatusCode.NOT_FOUND,
@@ -1694,7 +1649,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             (
                 # an attempt of another flow
-                lambda: client.auth_sign_in_temp.AnswerSignIn(
+                lambda: client.auth_sign_in.AnswerSignIn(
                     sign_in_pb2.AnswerSignInRequest(
                         attempt_uid=challenge.attempt_uid, code=code
                     )
@@ -1713,7 +1668,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_a_flow_its_toggle_closes_is_refused(self) -> None:
         nickname = (
             await self.connect(TstNicknameProject, AUTH_SIGN_UP_NICKNAME_ENABLED="off")
-        ).auth_methods_nickname_temp
+        ).auth_methods_nickname
         with self.assertRaises(GrpcError) as error:
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(nickname="a", password="x")
@@ -1725,7 +1680,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         nickname = (
             await self.connect(TstNicknameProject, AUTH_SIGN_UP_ENABLED="off")
-        ).auth_methods_nickname_temp
+        ).auth_methods_nickname
         for call, code_of_status in (
             (
                 nickname.SignUp(nickname_pb2.SignUpRequest(nickname="a", password="x")),
@@ -1742,7 +1697,7 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_user_signs_up_and_in_then_calls_by_its_token(self) -> None:
         client = await self.connect(TstNicknameProject)
-        nickname = client.auth_methods_nickname_temp
+        nickname = client.auth_methods_nickname
         sign_in = nickname_pb2.SignInRequest(nickname="alice", password="x")
         signed_up = (
             await nickname.SignUp(
@@ -1754,12 +1709,12 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         )
         token = (await nickname.SignIn(sign_in)).result.signed_in.token
         bearer = [("authorization", f"Bearer {token}")]
-        members = client.auth_access_members_temp
+        members = client.auth_access_members
         request = members_pb2.ListMembersRequest(group="app.grp_admins")
         reply = await members.ListMembers(request, metadata=bearer)
         self.assertEqual(list(reply.profile_uids), [signed_up.uid])
         # open to anyone, signed in or not
-        await client.auth_metadata_temp.GetMetadata(
+        await client.auth_metadata.GetMetadata(
             metadata_pb2.GetMetadataRequest(), metadata=bearer
         )
         await nickname.SignIn(sign_in, metadata=bearer)
