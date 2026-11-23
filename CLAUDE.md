@@ -8,12 +8,12 @@ repeat what README or the ADRs say: link to them.
 `ingot-auth`: an addon of [Ingots](https://github.com/ak-ingots/ingots) for
 the sign-up, the sign-in and the sessions of the users of an application.
 `AuthProject` (`project.py`), the `MailProject` of ingot-mail, whose
-mailer sends the mail of the methods, takes the addon's `AuthSettingsUnit` (`settings/`)
-with its `AuthConfigs` (`settings/configs.py`, named `AUTH_*`), its
-`AuthLoggingUnit` (`logging/`, the logger `ingot_auth`), its
+mailer sends the mail of the methods, takes the addon's `AuthSettingsUnit` (`settings.py`)
+with its `AuthConfigs` (named `AUTH_*`) beside it, its
+`AuthLoggingUnit` (`logging.py`, the logger `ingot_auth`), its
 `AuthOperationsUnit` (`operations/`, whose `AuthCallersProvider` gives the
 anonymous caller what the group `auth.grp_anonymous` grants) and `AuthUnit`
-(`auth/`, the auth of the project: the units `profiles/`, with the registries `tags/`
+(`auth.py`, the auth of the project: the units `profiles/`, with the registries `tags/`
 and `attrs/` and the values of a profile an operator sets, the whole set each time, and `sessions/`, with the registries `attrs/`, each attribute of
 a session with its source, and `presets/`, bound to the attributes many to
 many, all on the shared `registry/`, the sessions themselves kept by the hash
@@ -75,13 +75,15 @@ no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
 with the transactions of a backend over all its storages; and the caches
 `caches/`, the same for what lives minutes, the attempts, the sessions and
 their callers, `AuthCache` the facade, depending on the storages alone, for
-the records they keep too; the dispatcher `dispatchers/`, operations run
+the records they keep too; the dispatcher `dispatchers.py`, operations run
 in the background, `BaseAuthDispatcher` the facade, the mail of the email code built by the
 method as a `Mail` of ingot-mail, sent by an operation of it by the mailer
 of the project); a
 method of the catalogue is whole, a plain default for what it sends, so
 that an application plugs only the backends; a unit lives in the
-`__init__.py` of its package, as in `ingots.defaults`, and a class takes the
+`__init__.py` of its package, as in `ingots.defaults`, or in a module of
+its name when it has nothing beside it (`settings.py`, `logging.py`,
+`auth.py`), and a class takes the
 prefix `Auth`, so that an application imports it under its own name. A unit
 names its operations `op_*` and its commands `cmd_*`, the commands taking
 their CLI names from `cli_name`, and its groups `grp_*`, named by their

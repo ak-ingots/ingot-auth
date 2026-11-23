@@ -25,7 +25,7 @@ from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.methods import AuthMethodsUnit
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 from ingot_auth.storages import AuthSessionCloseReason
 from ingot_auth.testing.contracts import (
     AuthAttemptsCacheContract,

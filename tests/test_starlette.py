@@ -52,7 +52,7 @@ from ingot_auth.methods.email_code import AuthEmailCodeConfigs, AuthEmailCodeMet
 from ingot_auth.methods.nickname import AuthNicknameConfigs, AuthNicknameMethod
 from ingot_auth.methods.password import AuthPassword, AuthScryptPasswordHasher
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator

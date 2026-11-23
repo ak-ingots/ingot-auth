@@ -7,7 +7,7 @@ import typing as t
 from ingot_mail.logging import MailLoggingUnit
 
 if t.TYPE_CHECKING:
-    from ..project import AuthProject
+    from .project import AuthProject
 
 
 class AuthLoggingUnit(MailLoggingUnit):

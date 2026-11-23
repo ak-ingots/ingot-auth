@@ -10,7 +10,7 @@ from ingot_auth.__main__ import main
 from ingot_auth.auth import AuthUnit
 from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 from ingots.defaults import Project
 from ingots.puer.cli import CommandRunner
 

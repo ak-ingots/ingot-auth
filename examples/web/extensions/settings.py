@@ -13,7 +13,7 @@ from ingots.puer import Slot
 
 from ingot_auth.methods.email_code import AuthEmailCodeConfigs
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 
 
 class AppConfigs(

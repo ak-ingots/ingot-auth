@@ -162,7 +162,7 @@ from ingot_auth.sessions.presets import (
     AuthSessionPresetsUnit,
 )
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 from ingot_auth.sessions import (
     AuthSessionExpiredError,
     AuthSessionsLimitError,
