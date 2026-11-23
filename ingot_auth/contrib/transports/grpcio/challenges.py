@@ -5,6 +5,4 @@ What a step of a flow asks for, as a message: that of
 
 __all__ = ("build_challenge",)
 
-from .challenges_temp import (
-    build_challenge,
-)
+from ingot_auth.api.challenges import build_challenge
