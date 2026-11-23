@@ -17,6 +17,15 @@ A service a registry and a method, each in a binding of its own, so that a
 server serves the ones it should: a public server the metadata and the
 methods the application takes, an internal one the administration too.
 
+The contract is the API of the addon, `ingot_auth.api`: its services in
+`ingot_auth.api.<path>.v1`. A binding binds its service under its old name
+too, `ingot_auth.<path>.v1`, deprecated, so that a server serves both while
+its clients move on: the attribute of the old name, `auth_metadata`, and
+that of the API, `auth_metadata_temp`, its servicer `AuthGrpcMetadataServicerTemp`.
+A client moves on to the stubs of the attributes `*_temp` and the messages
+of `ingot_auth.api.<path>.v1`; in a coming release the attributes of the
+old names take the services of the API, and `*_temp` goes.
+
 | Binding | Services |
 |---|---|
 | `AuthGrpcMetadataBinding` | `Metadata` of `ingot_auth.metadata.v1` |

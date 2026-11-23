@@ -96,28 +96,36 @@ implementations are in `contrib/` (`contrib/storages/<backend>/`,
 `contrib/dispatchers/<backend>/`), each under
 its own extra when it needs more than the core. A contrib is laid out by the
 subdomains of the core, `profiles/`, `sessions/`, as the core is.
-The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013: a file per
-service at the path of its package, in the tree of the core next to the
-subdomain it serves, `ingot_auth/profiles/tags/v1/tags.proto` for
-`ingot_auth.profiles.tags.v1`, an RPC a verb then its subject,
+The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013, the API
+of the addon in `api/`: a file per service at the path of its package, the
+tree of `api/` that of the subdomains of the core,
+`ingot_auth/api/profiles/tags/v1/tags.proto` for
+`ingot_auth.api.profiles.tags.v1`, an RPC a verb then its subject,
 `ListTags(ListTagsRequest)`, as `buf.yaml` lints it; `make proto` generates
-the code next to it, committed, imported as `protoc` writes it, by
-the transports alone: the core imports no `v1` module. A method takes its
-annotation `google.api.http` (AIP-127), `buf breaking` keeping the JSON of
-the contract too (`WIRE_JSON`). `contrib/transports/contract/` is the
-business layer of the transports, protobuf alone: the RPCs as mixins
-(`rpc_*`, a call told by `BaseAuthRpcContext`) and the statuses of the
-errors (`errors.py`, `google.rpc.Code`, reason, metadata); `grpcio/` mixes
-them into its servicers, `starlette/`, the extra `starlette`, into the
-endpoints ingot-starlette transcodes to JSON, no grpcio. A method
-of the core has its service in its package, `ingot_auth/methods/nickname/v1/`,
-its servicer in `contrib/transports/grpcio/methods/`, extending
-`BaseAuthGrpcMethodServicer`, which gives the values of the attributes of
-the transport by their names, each bound to its reader (`ip`, the peer), what a step asks for,
-`Challenge` by the kind of its answer, in `ingot_auth/methods/v1/`, the
-results and the answers of the flows in `ingot_auth/sign_up/v1/` and
-`ingot_auth/sign_in/v1/`, the values of the
-attributes, of a session or a profile, `AttrValue`, in `ingot_auth/attrs/v1/`. A set of
+the code next to it, committed, imported as `protoc` writes it, by `api/`
+and the transports alone: the core imports no `v1` module. A method takes
+its annotation `google.api.http` (AIP-127), `buf breaking` keeping the JSON
+of the contract too (`WIRE_JSON`). Beside a contract, `api/` is the business
+layer of the transports, protobuf alone: the RPCs of a service as mixins in
+the `rpcs.py` next to its `v1/` (`rpc_*`, a call told by
+`BaseAuthRpcContext`), all exported by `ingot_auth.api`, and the statuses
+of the errors (`api/errors.py`, `google.rpc.Code`, reason, metadata);
+`contrib/transports/grpcio/` mixes them into its servicers `*Temp`, and
+`starlette/`, the extra `starlette`, those of `contract/` into the endpoints
+ingot-starlette transcodes to JSON, no grpcio, till the old API goes. What a step of a method asks for, `Challenge` by the kind
+of its answer, is in `api/methods/v1/`, the results and the answers of the
+flows in `api/sign_up/v1/` and `api/sign_in/v1/`, the values of the
+attributes, of a session or a profile, `AttrValue`, in `api/attrs/v1/`; a
+servicer of a method extends `BaseAuthGrpcMethodServicer`, which gives the
+values of the attributes of the transport by their names, each bound to
+its reader (`ip`, the peer). The move to `api/` is rehearsed as a release
+would take it, a step a pull request: now the contract under its old names,
+`ingot_auth/<path>/v1/`, and `contrib/transports/contract/`, the old place
+of `api`, stay, deprecated, every binding binding the service of `api`
+beside, as `<attribute>_temp`, its servicer `<Servicer>Temp` in a
+`*_temp.py` next to the old one; then the examples move on, then the old
+names go, the attributes of the old names aliasing those of `_temp`, then
+the examples move back, then the `_temp` go. A set of
 operations has its flags in its unit, a `PermissionFlags` nested as `Flags`,
 bound by the slot `permissions` (`PermissionsSlot`) of the unit, an `OperationsOwner`, their
 domain the full name of the unit; an operation builds its permissions by its

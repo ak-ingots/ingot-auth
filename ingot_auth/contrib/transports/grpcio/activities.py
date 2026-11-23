@@ -14,6 +14,8 @@ from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
 
 from .base import BaseAuthGrpcServicer, Context
 from ingot_auth.activities.v1 import activities_pb2, activities_pb2_grpc
+from ingot_auth.api.activities.v1 import activities_pb2_grpc as activities_pb2_grpc_temp
+from .activities_temp import AuthGrpcActivitiesServicerTemp
 
 #: The action of an activity as the contract names it, each of the domain.
 ACTIONS: t.Final[dict[AuthActivityAction, activities_pb2.Action.ValueType]] = {
@@ -61,6 +63,9 @@ class AuthGrpcActivitiesServicer(
 class AuthGrpcActivitiesBinding:
     auth_activities = GrpcService(
         activities_pb2_grpc.ActivitiesStub, AuthGrpcActivitiesServicer
+    )
+    auth_activities_temp = GrpcService(
+        activities_pb2_grpc_temp.ActivitiesStub, AuthGrpcActivitiesServicerTemp
     )
 
 

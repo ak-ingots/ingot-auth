@@ -9,6 +9,8 @@ from ingot_grpcio.grpc.services import GrpcService
 from ..contract import AuthSignOutRpcMixin
 from .base import BaseAuthGrpcServicer, Context, GrpcAuthRpcContext
 from ingot_auth.sign_out.v1 import sign_out_pb2, sign_out_pb2_grpc
+from ingot_auth.api.sign_out.v1 import sign_out_pb2_grpc as sign_out_pb2_grpc_temp
+from .sign_out_temp import AuthGrpcSignOutServicerTemp
 
 
 class AuthGrpcSignOutServicer(
@@ -28,3 +30,6 @@ class AuthGrpcSignOutServicer(
 
 class AuthGrpcSignOutBinding:
     auth_sign_out = GrpcService(sign_out_pb2_grpc.SignOutStub, AuthGrpcSignOutServicer)
+    auth_sign_out_temp = GrpcService(
+        sign_out_pb2_grpc_temp.SignOutStub, AuthGrpcSignOutServicerTemp
+    )

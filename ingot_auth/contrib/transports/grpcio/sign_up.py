@@ -10,6 +10,8 @@ from ..contract import AuthSignUpRpcMixin
 from ..contract.results import build_sign_up_result
 from .base import Context, GrpcAuthRpcContext
 from ingot_auth.sign_up.v1 import sign_up_pb2, sign_up_pb2_grpc
+from ingot_auth.api.sign_up.v1 import sign_up_pb2_grpc as sign_up_pb2_grpc_temp
+from .sign_up_temp import AuthGrpcSignUpServicerTemp
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -34,3 +36,6 @@ class AuthGrpcSignUpServicer(
 
 class AuthGrpcSignUpBinding:
     auth_sign_up = GrpcService(sign_up_pb2_grpc.SignUpStub, AuthGrpcSignUpServicer)
+    auth_sign_up_temp = GrpcService(
+        sign_up_pb2_grpc_temp.SignUpStub, AuthGrpcSignUpServicerTemp
+    )
