@@ -35,7 +35,7 @@ from ingot_auth.sign_in import (
     AuthSignInUnit,
     AuthStartSignInParameters,
 )
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 from ingot_auth.sign_up import (
     AuthAnswerSignUpParameters,
     AuthSignedUp,

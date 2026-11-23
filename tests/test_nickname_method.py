@@ -41,7 +41,7 @@ from ingot_auth.policies import (
     AuthPolicyViolationError,
 )
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 from ingot_auth.sign_in import (
     AuthSignedIn,
     AuthSignInUnit,

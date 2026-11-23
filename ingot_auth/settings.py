@@ -1,16 +1,21 @@
-"""The configs of the addon, named ``AUTH_*``."""
+"""
+The settings of the addon: its configs, named ``AUTH_*``, and the settings
+unit of the defaults with them.
+"""
 
-__all__ = ("AuthConfigs",)
+__all__ = ("AuthConfigs", "AuthSettingsUnit")
 
 import logging
 
+from ingot_mail.settings import MailSettingsUnit
+from ingot_mail.settings.configs import MailConfigs
 from ingots.defaults.settings.configs import (
     BoolConfig,
     FloatConfig,
     IntConfig,
     LogLevelConfig,
 )
-from ingot_mail.settings.configs import MailConfigs
+from ingots.puer import Slot
 
 
 class AuthConfigs(MailConfigs):
@@ -26,3 +31,9 @@ class AuthConfigs(MailConfigs):
     AUTH_SESSIONS_MAX = IntConfig(10)  # open sessions of a profile, at least 1
     AUTH_SIGN_UP_ENABLED = BoolConfig(True)  # the sign-up by every method open
     AUTH_SIGN_IN_MIN_DURATION = FloatConfig(0.3)  # seconds of the floor timing
+
+
+class AuthSettingsUnit(MailSettingsUnit):
+    """The settings unit of the mail, with the addon's :class:`AuthConfigs`."""
+
+    configs = Slot(AuthConfigs)

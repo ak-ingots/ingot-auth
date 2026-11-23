@@ -17,7 +17,7 @@ from ingot_auth.methods.nickname import (
     AuthNicknameMethod,
 )
 from ingot_auth.settings import AuthSettingsUnit
-from ingot_auth.settings.configs import AuthConfigs
+from ingot_auth.settings import AuthConfigs
 
 from tests import ROOT, masks
 
