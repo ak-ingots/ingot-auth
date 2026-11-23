@@ -44,7 +44,7 @@ $ python -m app auth activities list --entity auth.profiles.tags:1 --limit 20
 ```
 
 Over gRPC, `ListActivities` of the service `Activities` of
-`ingot_auth.activities.v1`, in `AuthGrpcActivitiesBinding`, which
+`ingot_auth.api.activities.v1`, in `AuthGrpcActivitiesBinding`, which
 `AuthGrpcAdminBinding` takes; its context a struct, a decimal and a time in
 it as texts.
 

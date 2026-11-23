@@ -15,7 +15,11 @@ lint:
   except:
     - SERVICE_SUFFIX
 # The contract is the JSON of HTTP too: renaming a field breaks it, as
-# WIRE_JSON tells, beside the wire of gRPC.
+# WIRE_JSON tells, beside the wire of gRPC; and the names of gRPC, which
+# WIRE_JSON leaves out: a package, a service or an RPC no longer served.
 breaking:
   use:
     - WIRE_JSON
+    - PACKAGE_NO_DELETE
+    - PACKAGE_SERVICE_NO_DELETE
+    - RPC_NO_DELETE

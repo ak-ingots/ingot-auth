@@ -50,6 +50,8 @@ from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
 from ingot_auth.contrib.transports.grpcio import (
+    AuthGrpcMetadataServicer,
+    AuthGrpcMetadataServicerTemp,
     AuthGrpcAdminBinding,
     AuthGrpcAttrsServicerTemp,
     AuthGrpcEmailCodeBinding,
@@ -551,6 +553,30 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         self.project = await fixture.create(self)
         await self.project.grpc.servers.default
         return await self.project.grpc.clients.default
+
+    async def test_the_old_names_alias_those_of_the_api(self) -> None:
+        client = await self.connect(TstAnonymousProject)
+        self.assertIs(client.auth_metadata, client.auth_metadata_temp)
+        server = t.cast(TstAnonymousServer, await self.project.grpc.servers.default)
+        self.assertIs(server.auth_metadata, server.auth_metadata_temp)
+        self.assertIs(
+            AuthGrpcMetadataBinding.auth_metadata,
+            AuthGrpcMetadataBinding.auth_metadata_temp,
+        )
+        self.assertIs(AuthGrpcMetadataServicer, AuthGrpcMetadataServicerTemp)
+        # each service bound once, under the name of the API
+        names = [service.name for service in TstAnonymousServer.grpc_services_iter()]
+        self.assertIn("auth_metadata_temp", names)
+        self.assertNotIn("auth_metadata", names)
+
+    def test_the_old_modules_give_the_names_of_the_api(self) -> None:
+        from ingot_auth.contrib.transports.grpcio import attrs as old_attrs
+        from ingot_auth.contrib.transports.grpcio import attrs_temp
+        from ingot_auth.contrib.transports.grpcio import challenges as old_challenges
+        from ingot_auth.contrib.transports.grpcio import challenges_temp
+
+        self.assertIs(old_attrs.build_attr_values, attrs_temp.build_attr_values)
+        self.assertIs(old_challenges.build_challenge, challenges_temp.build_challenge)
 
     async def test_the_metadata_is_public_by_default(self) -> None:
         client = await self.connect(TstAnonymousProject)

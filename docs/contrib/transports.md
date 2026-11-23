@@ -18,26 +18,23 @@ server serves the ones it should: a public server the metadata and the
 methods the application takes, an internal one the administration too.
 
 The contract is the API of the addon, `ingot_auth.api`: its services in
-`ingot_auth.api.<path>.v1`. A binding binds its service under its old name
-too, `ingot_auth.<path>.v1`, deprecated, so that a server serves both while
-its clients move on: the attribute of the old name, `auth_metadata`, and
-that of the API, `auth_metadata_temp`, its servicer `AuthGrpcMetadataServicerTemp`.
-A client moves on to the stubs of the attributes `*_temp` and the messages
-of `ingot_auth.api.<path>.v1`; in a coming release the attributes of the
-old names take the services of the API, and `*_temp` goes.
+`ingot_auth.api.<path>.v1`, the only ones a server serves. A binding binds
+its service as `<attribute>_temp`, its servicer `<Servicer>Temp`, the old
+names, `auth_metadata` and `AuthGrpcMetadataServicer`, aliases of them; in
+a coming release the old names take them and `*_temp` goes.
 
 | Binding | Services |
 |---|---|
-| `AuthGrpcMetadataBinding` | `Metadata` of `ingot_auth.metadata.v1` |
-| `AuthGrpcNicknameBinding` | `Nickname` of `ingot_auth.methods.nickname.v1`: `SignUp`, `SignIn` |
-| `AuthGrpcEmailCodeBinding` | `EmailCode` of `ingot_auth.methods.email_code.v1`: `StartSignUp`, `StartSignIn` |
-| `AuthGrpcFlowsBinding` | `SignUp` of `ingot_auth.sign_up.v1` and `SignIn` of `ingot_auth.sign_in.v1`: `AnswerSignUp`, `AnswerSignIn`, the answers of a method of more steps; `SignOut` of `ingot_auth.sign_out.v1`, the sign-out of the caller of the token, open to any; `AuthGrpcSignUpBinding`, `AuthGrpcSignInBinding`, `AuthGrpcSignOutBinding` apart |
-| `AuthGrpcProfilesBinding` | `Profiles` of `ingot_auth.profiles.v1`: `GetOwnProfile`, the profile of the caller; `SetProfileTags`, `SetProfileAttrValues`, the values of a profile |
-| `AuthGrpcProfileRegistriesBinding` | `Tags` and `Attrs` of `ingot_auth.profiles.*.v1`; `AuthGrpcTagsBinding`, `AuthGrpcAttrsBinding` apart |
-| `AuthGrpcSessionsBinding` | `Sessions` of `ingot_auth.sessions.v1`: `ListOwnSessions`, `RevokeOwnSession`, `RevokeOtherSessions`, the sessions of the caller's own; `ListSessions`, those of a profile, the record of its sign-ins; `RevokeSessions`, every open one of a profile; `SweepSessions`, the expired ones |
-| `AuthGrpcSessionRegistriesBinding` | `Attrs` and `Presets` of `ingot_auth.sessions.*.v1`; `AuthGrpcSessionAttrsBinding`, `AuthGrpcSessionPresetsBinding` apart |
-| `AuthGrpcAccessBinding` | `Groups` and `Members` of `ingot_auth.access.*.v1`; `AuthGrpcGroupsBinding`, `AuthGrpcMembersBinding` apart |
-| `AuthGrpcActivitiesBinding` | `Activities` of `ingot_auth.activities.v1`: `ListActivities`, the activity log, for the auditors |
+| `AuthGrpcMetadataBinding` | `Metadata` of `ingot_auth.api.metadata.v1` |
+| `AuthGrpcNicknameBinding` | `Nickname` of `ingot_auth.api.methods.nickname.v1`: `SignUp`, `SignIn` |
+| `AuthGrpcEmailCodeBinding` | `EmailCode` of `ingot_auth.api.methods.email_code.v1`: `StartSignUp`, `StartSignIn` |
+| `AuthGrpcFlowsBinding` | `SignUp` of `ingot_auth.api.sign_up.v1` and `SignIn` of `ingot_auth.api.sign_in.v1`: `AnswerSignUp`, `AnswerSignIn`, the answers of a method of more steps; `SignOut` of `ingot_auth.api.sign_out.v1`, the sign-out of the caller of the token, open to any; `AuthGrpcSignUpBinding`, `AuthGrpcSignInBinding`, `AuthGrpcSignOutBinding` apart |
+| `AuthGrpcProfilesBinding` | `Profiles` of `ingot_auth.api.profiles.v1`: `GetOwnProfile`, the profile of the caller; `SetProfileTags`, `SetProfileAttrValues`, the values of a profile |
+| `AuthGrpcProfileRegistriesBinding` | `Tags` and `Attrs` of `ingot_auth.api.profiles.*.v1`; `AuthGrpcTagsBinding`, `AuthGrpcAttrsBinding` apart |
+| `AuthGrpcSessionsBinding` | `Sessions` of `ingot_auth.api.sessions.v1`: `ListOwnSessions`, `RevokeOwnSession`, `RevokeOtherSessions`, the sessions of the caller's own; `ListSessions`, those of a profile, the record of its sign-ins; `RevokeSessions`, every open one of a profile; `SweepSessions`, the expired ones |
+| `AuthGrpcSessionRegistriesBinding` | `Attrs` and `Presets` of `ingot_auth.api.sessions.*.v1`; `AuthGrpcSessionAttrsBinding`, `AuthGrpcSessionPresetsBinding` apart |
+| `AuthGrpcAccessBinding` | `Groups` and `Members` of `ingot_auth.api.access.*.v1`; `AuthGrpcGroupsBinding`, `AuthGrpcMembersBinding` apart |
+| `AuthGrpcActivitiesBinding` | `Activities` of `ingot_auth.api.activities.v1`: `ListActivities`, the activity log, for the auditors |
 | `AuthGrpcAdminBinding` | those of the profiles and of the sessions, their registries and their services, the access and the activity log |
 
 The errors unit of the gRPC takes `AuthGrpcErrorsUnit` as a base, the statuses of the errors of the
@@ -90,9 +87,9 @@ A method of the sign-up and the sign-in runs for the anonymous caller,
 given the flags of the flows and of the methods open by their toggles,
 `AUTH_SIGN_UP_ENABLED` closing the sign-up of every method, with
 the values of the attributes of the session the client gives, `AttrValue`
-of `ingot_auth.attrs.v1`. Its start gives the result of the flow:
+of `ingot_auth.api.attrs.v1`. Its start gives the result of the flow:
 its end, the profile signed up or the session signed in, or what it asks
-for, `Challenge` of `ingot_auth.methods.v1`, the attempt to answer to and
+for, `Challenge` of `ingot_auth.api.methods.v1`, the attempt to answer to and
 the kind of the answer, `code` of its `length` for a code sent by mail. The
 client answers by the service of the flow, whatever the method, as the
 attempt knows whose challenge it is:

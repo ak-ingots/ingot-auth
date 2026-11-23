@@ -28,7 +28,7 @@ import grpc
 from ingot_grpcio.grpc.errors import BaseStaticGrpcErrorPolicy, GrpcErrorsUnit
 from ingots.puer import Slot
 
-from ..contract.errors import (
+from ingot_auth.api.errors import (
     AuthAttemptNotFoundErrorMixin,
     AuthGroupNotFoundErrorMixin,
     AuthIdentityConflictErrorMixin,

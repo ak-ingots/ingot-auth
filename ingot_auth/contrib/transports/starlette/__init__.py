@@ -1,6 +1,6 @@
 """
 The auth over HTTP, with the extra ``starlette``: the RPCs of the contract,
-of :mod:`~ingot_auth.contrib.transports.contract`, transcoded to JSON by the annotations
+of :mod:`~ingot_auth.api`, transcoded to JSON by the annotations
 ``google.api.http`` of their methods, by ingot-starlette, no grpcio. An
 endpoint a service, so that an application mounts those it serves in the
 subtree of its API, the method it binds, with the policies of the auth and

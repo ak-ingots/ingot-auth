@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ingot_auth.contrib.transports.contract import AuthEmailCodeRpcMixin
+from ingot_auth.api import AuthEmailCodeRpcMixin
 from ..base import BaseAuthStarletteEndpoint
-from ingot_auth.methods.email_code.v1 import email_code_pb2
+from ingot_auth.api.methods.email_code.v1 import email_code_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = email_code_pb2.DESCRIPTOR.services_by_name["EmailCode"]
 class AuthStarletteEmailCodeEndpoint(AuthEmailCodeRpcMixin, BaseAuthStarletteEndpoint):
     """
     The starts of the method of an email and a code, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthEmailCodeRpcMixin`: ``POST
+    :class:`~ingot_auth.api.AuthEmailCodeRpcMixin`: ``POST
     /v1/methods/emailCode:startSignUp`` and ``:startSignIn``, each asking for
     the code the client answers by the endpoint of its flow.
     """

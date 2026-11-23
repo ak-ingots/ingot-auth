@@ -1,17 +1,17 @@
-"""The auth as the messages of its contract, of no transport."""
+"""The API of the auth, its contract and its RPCs, of no transport."""
 
 import subprocess
 import sys
 import unittest
 
-from ingot_auth.contrib.transports.contract import parse_bearer_token
+from ingot_auth.api import parse_bearer_token
 
 
 class ProtobufTestCase(unittest.TestCase):
     def test_it_needs_no_grpcio(self) -> None:
         # a process of its own: this one has imported grpc already
         code = (
-            "import sys, ingot_auth.contrib.transports.contract; "
+            "import sys, ingot_auth.api; "
             "print(sorted({'grpc', 'ingot_grpcio'} & set(sys.modules)))"
         )
         done = subprocess.run(

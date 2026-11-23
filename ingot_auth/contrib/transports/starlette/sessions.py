@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ..contract import AuthSessionsRpcMixin
+from ingot_auth.api import AuthSessionsRpcMixin
 from .base import BaseAuthStarletteEndpoint
-from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.api.sessions.v1 import sessions_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = sessions_pb2.DESCRIPTOR.services_by_name["Sessions"]
 class AuthStarletteOwnSessionsEndpoint(AuthSessionsRpcMixin, BaseAuthStarletteEndpoint):
     """
     The sessions of the caller of the token, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthSessionsRpcMixin`, its
+    :class:`~ingot_auth.api.AuthSessionsRpcMixin`, its
     own alone: ``GET /v1/ownSessions``, ``POST
     /v1/ownSessions/{session_uid}:revoke``, ``POST
     /v1/ownSessions:revokeOthers``. Those of a profile, for an operator, are not

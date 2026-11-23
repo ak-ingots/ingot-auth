@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ..contract import AuthMetadataRpcMixin
+from ingot_auth.api import AuthMetadataRpcMixin
 from .base import BaseAuthStarletteEndpoint
-from ingot_auth.metadata.v1 import metadata_pb2
+from ingot_auth.api.metadata.v1 import metadata_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = metadata_pb2.DESCRIPTOR.services_by_name["Metadata"]
 class AuthStarletteMetadataEndpoint(AuthMetadataRpcMixin, BaseAuthStarletteEndpoint):
     """
     The metadata, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthMetadataRpcMixin`, open
+    :class:`~ingot_auth.api.AuthMetadataRpcMixin`, open
     to anyone: ``GET /v1/metadata``.
     """
 

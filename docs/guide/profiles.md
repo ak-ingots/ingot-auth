@@ -27,7 +27,7 @@ $ python -m app auth profiles attrs values set 0f6c… --value 1=Ann --value 2=2
 On the command line a value is read by the type of its attribute: `true` or
 `false`, a number, a decimal, a time of ISO 8601 with its offset, a text.
 Over gRPC, `SetProfileTags` and `SetProfileAttrValues` of the service
-`Profiles` of `ingot_auth.profiles.v1`, in `AuthGrpcProfilesBinding`, which
+`Profiles` of `ingot_auth.api.profiles.v1`, in `AuthGrpcProfilesBinding`, which
 `AuthGrpcAdminBinding` takes. `auth.profiles.grp_managers` grants the flag,
 `CAN_UPDATE` of `auth.profiles`. A change forgets the callers of the
 profile, as a change of its memberships does.

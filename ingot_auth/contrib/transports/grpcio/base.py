@@ -17,7 +17,7 @@ from grpc import aio
 from ingot_grpcio.grpc.services import GrpcServicer
 from ingots.defaults.operations import Caller
 
-from ..contract import (
+from ingot_auth.api import (
     PROFILE_HASH_KEY,
     AuthSessionRpcMixin,
     BaseAuthRpcContext,
@@ -68,7 +68,7 @@ class BaseAuthGrpcServicer(AuthSessionRpcMixin, GrpcServicer):
     """
     A servicer of the auth: an RPC turns its request into the parameters of an
     operation and the result into its reply, nothing else, the RPCs of
-    :mod:`~ingot_auth.contrib.transports.contract` mixed in where they are
+    :mod:`~ingot_auth.api` mixed in where they are
     shared with HTTP. The operation runs for the caller of the session of the
     token of a call, ``Bearer <token>`` in the header ``authorization``, or with
     no token the anonymous one of the project,

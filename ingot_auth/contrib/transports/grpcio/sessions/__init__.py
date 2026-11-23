@@ -15,9 +15,8 @@ __all__ = (
 
 from ingot_grpcio.grpc.services import GrpcService
 
-from ingot_auth.sessions.attrs.v1 import attrs_pb2_grpc
-from ingot_auth.sessions.presets.v1 import presets_pb2_grpc
-from ingot_auth.sessions.v1 import sessions_pb2_grpc
+from ..aliases import AuthGrpcServiceAlias
+
 from .attrs import AuthGrpcSessionAttrsServicer
 from .presets import AuthGrpcSessionPresetsServicer
 from .sessions import AuthGrpcSessionsServicer
@@ -30,30 +29,24 @@ from .sessions_temp import AuthGrpcSessionsServicerTemp
 
 
 class AuthGrpcSessionsBinding:
-    auth_sessions = GrpcService(
-        sessions_pb2_grpc.SessionsStub, AuthGrpcSessionsServicer
-    )
     auth_sessions_temp = GrpcService(
         sessions_pb2_grpc_temp.SessionsStub, AuthGrpcSessionsServicerTemp
     )
+    auth_sessions = AuthGrpcServiceAlias(auth_sessions_temp)
 
 
 class AuthGrpcSessionAttrsBinding:
-    auth_sessions_attrs = GrpcService(
-        attrs_pb2_grpc.AttrsStub, AuthGrpcSessionAttrsServicer
-    )
     auth_sessions_attrs_temp = GrpcService(
         attrs_pb2_grpc_temp.AttrsStub, AuthGrpcSessionAttrsServicerTemp
     )
+    auth_sessions_attrs = AuthGrpcServiceAlias(auth_sessions_attrs_temp)
 
 
 class AuthGrpcSessionPresetsBinding:
-    auth_sessions_presets = GrpcService(
-        presets_pb2_grpc.PresetsStub, AuthGrpcSessionPresetsServicer
-    )
     auth_sessions_presets_temp = GrpcService(
         presets_pb2_grpc_temp.PresetsStub, AuthGrpcSessionPresetsServicerTemp
     )
+    auth_sessions_presets = AuthGrpcServiceAlias(auth_sessions_presets_temp)
 
 
 class AuthGrpcSessionRegistriesBinding(

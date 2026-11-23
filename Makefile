@@ -65,8 +65,10 @@ proto-lint:  ## The gRPC contract by Buf STANDARD (ADR 0013)
 		echo "PATH the version ingots-libs pins in"; \
 		echo ".github/actions/setup-buf/version, or give its path as BUF"; exit 1; }
 	$(BUF) lint
-	# the contract of main kept, its JSON too (WIRE_JSON of buf.yaml)
-	$(BUF) breaking --against '.git#ref=$(AGAINST)'
+	# the contract of main kept, its JSON too (WIRE_JSON of buf.yaml), but
+	# where a change breaks it on purpose: BREAKING=skip, told by its CI
+	@if [ "$(BREAKING)" = skip ]; then echo "buf breaking skipped: BREAKING=skip"; \
+	else $(BUF) breaking --against '.git#ref=$(AGAINST)'; fi
 
 .PHONY: test
 test:  ## unittest on the working tree

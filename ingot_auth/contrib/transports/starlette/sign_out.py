@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ..contract import AuthSignOutRpcMixin
+from ingot_auth.api import AuthSignOutRpcMixin
 from .base import BaseAuthStarletteEndpoint
-from ingot_auth.sign_out.v1 import sign_out_pb2
+from ingot_auth.api.sign_out.v1 import sign_out_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = sign_out_pb2.DESCRIPTOR.services_by_name["SignOut"]
 class AuthStarletteSignOutEndpoint(AuthSignOutRpcMixin, BaseAuthStarletteEndpoint):
     """
     The sign-out, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthSignOutRpcMixin`, of the
+    :class:`~ingot_auth.api.AuthSignOutRpcMixin`, of the
     caller of the token, ``Authorization: Bearer <token>``: ``POST
     /v1/session:signOut``.
     """
