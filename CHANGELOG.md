@@ -2,6 +2,66 @@
 
 <!-- towncrier release notes start -->
 
+## [0.11.0] - 2026-11-23
+### Added
+- The extra `web`, the stack of a site, ingot-auth on MongoDB, Redis and
+  HTTP with the mail of SMTP and uvicorn, and `examples/web`, a site of the
+  auth over HTTP run by its scenarios as `examples/game` is: the sign-up and
+  the sign-in by the code of an email alone, the sessions sliding a month and
+  lasting a quarter, the oldest evicted; `make example-test` runs both.
+- The API of the addon, `ingot_auth.api`: the contract of gRPC under
+  `ingot_auth.api.<path>.v1`, its files in `ingot_auth/api/<path>/v1/`, and
+  beside each service its RPCs as mixins of no transport, needing protobuf
+  alone, `AuthMetadataRpcMixin`, `AuthNicknameRpcMixin` and the rest, over
+  `AuthRpcMixin` and `AuthSessionRpcMixin`, a call told by a
+  `BaseAuthRpcContext`, all exported by `ingot_auth.api`; the statuses of
+  the errors in `ingot_auth.api.errors`. The servicers of gRPC mix them in,
+  `GrpcAuthRpcContext` adapting the context of grpcio, and answer as before.
+- The transport of HTTP and JSON, `contrib/transports/starlette/`, by the
+  extra `starlette` on ingot-starlette, no grpcio, the RPCs of the API
+  transcoded by the annotations `google.api.http` their methods take, the
+  canonical JSON of proto3 of their messages: `GET /v1/metadata`; `POST
+  /v1/methods/nickname:signUp` and `:signIn`; `POST
+  /v1/methods/emailCode:startSignUp` and `:startSignIn`; `POST
+  /v1/signUp:answer` and `/v1/signIn:answer`; `POST /v1/session:signOut`;
+  `GET /v1/ownSessions`, `POST /v1/ownSessions/{session_uid}:revoke`, `POST
+  /v1/ownSessions:revokeOthers`; `GET /v1/ownProfile`. The token of the
+  caller in `Authorization: Bearer`, the hash of its profile in the header
+  `ingot-auth-user-profile-hash` by `AuthStarletteProfileHashMiddleware`; the
+  errors problems of RFC 9457 by `AuthStarletteErrorsUnit`, the statuses of
+  HTTP of their codes of gRPC, the reason, the domain and the metadata as the
+  extensions.
+- The policies of a password of OWASP: `AuthPasswordLengthPolicy`, 15
+  characters at least, 128 at most, a longer one refused, never cut;
+  `AuthPwnedPolicy` of `ingot_auth.contrib.policies`, a leaked password
+  refused by the range of Pwned Passwords, k-anonymity, its service, its
+  timeout and what it does when the service does not answer told by its
+  `AuthPwnedConfig`, the standard library alone.
+
+### Changed
+- Breaking: the contract of gRPC is the API's, `ingot_auth.api.<path>.v1`,
+  no longer `ingot_auth.<path>.v1`: the names of its services on the wire
+  change, `ingot_auth.api.metadata.v1.Metadata`, and a client imports its
+  stubs and messages from `ingot_auth.api.<path>.v1`. The bindings, their
+  attributes and the servicers keep their names; the paths of HTTP are new.
+- Breaking: `policies_set` of `AuthPassword` holds `AuthPasswordLengthPolicy`
+  by default: a new password of fewer than 15 characters, or more than 128,
+  is refused unless the application gives its own policies.
+- Breaking: the packages holding a module alone are modules:
+  `ingot_auth.settings`, its `AuthConfigs` imported from it, no longer from
+  `ingot_auth.settings.configs`; `ingot_auth.logging`, `ingot_auth.auth`,
+  `ingot_auth.dispatchers`, `ingot_auth.contrib.dispatchers.memory`, imported
+  as before.
+- `buf breaking` checks the JSON of the contract, and the packages, the
+  services and the RPCs of gRPC no longer served.
+- `examples/game` and `examples/web` are laid out as an application is: at
+  their root `project.py`, collecting `extensions/`, a module each for what
+  they extend, run as `python .` and `uvicorn asgi:app` from it.
+
+### Removed
+- The modules of the contract under its old names, `ingot_auth.<path>.v1`,
+  and the package `ingot_auth.attrs` that held one alone.
+
 ## [0.10.0] - 2026-11-20
 ### Changed
 - A password is hashed by the strategy of the slot `hasher_default` of `AuthPassword`, none by default, as every strategy: `AuthScryptPasswordHasher`, scrypt with the parameters of OWASP, or `AuthPbkdf2PasswordHasher`, PBKDF2-HMAC-SHA256, for where FIPS is required, both entities of `BaseAuthPasswordHasher`, another cost by a subclass. `AuthPassword` verifies a hash by the hasher of its slots `hasher_*` of the algorithm the hash names, so that the passwords set before another default or another cost still verify, and a sign-in hashes such a password again by the default. `AuthPassword.SCRYPT_LOG_N`, `SCRYPT_R` and `SCRYPT_P` moved to `AuthScryptPasswordHasher`; an application declares `hasher_default`.

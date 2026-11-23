@@ -1,1 +1,0 @@
-The packages holding a module alone are modules: `ingot_auth.settings`, its `AuthConfigs` imported from it, no longer from `ingot_auth.settings.configs`; `ingot_auth.logging`, `ingot_auth.auth`, `ingot_auth.dispatchers`, `ingot_auth.contrib.dispatchers.memory`, imported as before.
