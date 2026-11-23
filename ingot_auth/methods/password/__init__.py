@@ -2,8 +2,8 @@
 The password of a profile, one whatever identifier it signs in by, its hash
 the secret of the profile: what the methods of a password share, in the slot
 ``password`` of the methods. A new password is checked by the group of the
-policies ``policies_set``, empty unless an application gives policies to it
-in a subclass, by whatever method it is set. It is hashed by the hasher of
+policies ``policies_set``, the length of OWASP alone unless an application
+gives its own in a subclass, by whatever method it is set. It is hashed by the hasher of
 its slot ``hasher_default`` and verified by the one of its slots
 ``hasher_*`` whose algorithm the hash names.
 """
@@ -11,6 +11,7 @@ its slot ``hasher_default`` and verified by the one of its slots
 __all__ = (
     "AuthHasIdentifiers",
     "AuthPassword",
+    "AuthPasswordLengthPolicy",
     "AuthPasswordSetParameters",
     "AuthPasswordSetPolicies",
     "AuthPbkdf2PasswordHasher",
@@ -28,6 +29,7 @@ from ingot_auth.storages import AuthSecretNotFoundError
 
 from .policies import (
     AuthHasIdentifiers,
+    AuthPasswordLengthPolicy,
     AuthPasswordSetParameters,
     AuthPasswordSetPolicies,
 )
@@ -64,7 +66,7 @@ class AuthPassword(Unit):
     hasher_scrypt = Slot(AuthScryptPasswordHasher)
     hasher_pbkdf2 = Slot(AuthPbkdf2PasswordHasher)
 
-    policies_set = AuthPasswordSetPolicies()
+    policies_set = AuthPasswordSetPolicies(AuthPasswordLengthPolicy)
 
     _dummy_secret: str
     _hashers: dict[str, BaseAuthPasswordHasher]

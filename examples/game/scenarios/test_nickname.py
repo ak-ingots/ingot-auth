@@ -25,6 +25,15 @@ class NicknameScenario(GameMixin, ProjectTestCase):
             "METHOD_REFUSED",
         )
 
+    async def test_a_password_too_short_is_refused_on_the_sign_up(self) -> None:
+        # the length of OWASP, 15 at least, the default of the password
+        error = await self.assert_refused(
+            self.sign_up_by_nickname(new_nickname(), "short-password"),
+            grpc.StatusCode.INVALID_ARGUMENT,
+            "METHOD_INVALID",
+        )
+        self.assertEqual(error.metadata, {"field": "password", "policies": "length"})
+
     async def test_a_call_with_a_token_of_no_session_is_refused(self) -> None:
         await self.assert_refused(
             self.get_own_profile("no-such-token"),

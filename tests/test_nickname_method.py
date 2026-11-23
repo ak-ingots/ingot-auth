@@ -203,24 +203,27 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.method.get_name(), "nickname")
 
     async def test_a_signed_up_nickname_signs_in_with_its_password(self) -> None:
-        result = await self.sign_up("alice", "correct horse")
+        result = await self.sign_up("alice", "correct horse battery staple")
         storage = self.project.auth.storage
         self.assertEqual(
             await storage.profiles.identities.find_uid("nickname", "alice"),
             result.uid,
         )
         self.assertEqual(
-            await self.sign_in("alice", "correct horse"), AuthVerified(subject="alice")
+            await self.sign_in("alice", "correct horse battery staple"),
+            AuthVerified(subject="alice"),
         )
 
     async def test_a_nickname_signs_in_by_the_flow_and_gets_a_token(self) -> None:
-        uid = (await self.sign_up("alice", "correct horse")).uid
+        uid = (await self.sign_up("alice", "correct horse battery staple")).uid
         runner = self.project.operations.runner
         metadata = self.project.operations.create_metadata(SIGNING_IN)
         sign_in = self.project.auth.sign_in.op_start
         start = AuthStartSignInParameters(
             method="nickname",
-            parameters=AuthNicknameStart(nickname="Alice", password="correct horse"),
+            parameters=AuthNicknameStart(
+                nickname="Alice", password="correct horse battery staple"
+            ),
         )
         result = await runner.run(sign_in, start, metadata)
         assert isinstance(result, AuthSignedIn)
@@ -228,45 +231,47 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((caller.uid, caller.session_uid), (uid, result.session_uid))
         wrong = AuthStartSignInParameters(
             method="nickname",
-            parameters=AuthNicknameStart(nickname="alice", password="wrong horse"),
+            parameters=AuthNicknameStart(
+                nickname="alice", password="wrong horse battery staple"
+            ),
         )
         with self.assertRaises(AuthMethodRefusedError):
             await runner.run(sign_in, wrong, metadata)
 
     async def test_the_password_is_kept_as_its_hash(self) -> None:
-        result = await self.sign_up("alice", "correct horse")
+        result = await self.sign_up("alice", "correct horse battery staple")
         secret = await self.project.auth.storage.profiles.secrets.get(result.uid)
         self.assertTrue(secret.startswith("$scrypt$ln=4,r=8,p=1$"), secret)
-        self.assertNotIn("correct horse", secret)
+        self.assertNotIn("correct horse battery staple", secret)
 
     async def test_the_password_is_of_the_profile(self) -> None:
-        result = await self.sign_up("alice", "correct horse")
+        result = await self.sign_up("alice", "correct horse battery staple")
         await self.project.auth.storage.profiles.identities.create(
             AuthIdentity(kind="nickname", value="wonder", profile_uid=result.uid)
         )
         self.assertEqual(
-            await self.sign_in("wonder", "correct horse"),
+            await self.sign_in("wonder", "correct horse battery staple"),
             AuthVerified(subject="wonder"),
         )
 
     async def test_the_nickname_is_normalized(self) -> None:
-        await self.sign_up("Ａlice", "correct horse")
+        await self.sign_up("Ａlice", "correct horse battery staple")
         for nickname in ("alice", "ALICE", "Ａｌｉｃｅ"):
             self.assertEqual(
-                await self.sign_in(nickname, "correct horse"),
+                await self.sign_in(nickname, "correct horse battery staple"),
                 AuthVerified(subject="alice"),
             )
 
     async def test_the_password_is_normalized(self) -> None:
-        await self.sign_up("alice", "ｃｏｒｒｅｃｔ horse")
+        await self.sign_up("alice", "ｃｏｒｒｅｃｔ horse battery staple")
         self.assertIsInstance(
-            await self.sign_in("alice", "correct horse"), AuthVerified
+            await self.sign_in("alice", "correct horse battery staple"), AuthVerified
         )
 
     async def test_a_wrong_password_and_an_unknown_nickname_are_refused(
         self,
     ) -> None:
-        await self.sign_up("alice", "correct horse")
+        await self.sign_up("alice", "correct horse battery staple")
         for nickname, password in (("alice", "Correct horse"), ("bob", "x")):
             with self.assertRaises(AuthMethodRefusedError):
                 await self.sign_in(nickname, password)
@@ -282,17 +287,34 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         secrets = {call.args[2] for call in verify.call_args_list}
         self.assertEqual(len(secrets), 1)
 
-    async def test_the_policies_of_the_core_take_any_nickname_and_password(
-        self,
-    ) -> None:
-        for nickname, password in (("a", ""), ("al ice", "x" * 1000)):
-            with self.subTest(nickname=nickname, password=password):
-                await self.sign_up(nickname, password)
+    async def test_the_policies_of_the_core_take_any_nickname(self) -> None:
+        for nickname in ("a", "al ice", "x" * 1000):
+            with self.subTest(nickname=nickname):
+                await self.sign_up(nickname, "correct horse battery staple")
+
+    async def test_a_password_keeps_the_length_of_owasp_by_default(self) -> None:
+        for password, policies in (
+            ("", ("length",)),
+            ("x" * 14, ("length",)),
+            ("x" * 15, None),
+            ("ｘ" * 15, None),  # characters of its NFKC, not bytes
+            ("x" * 128, None),
+            ("x" * 129, ("length",)),
+        ):
+            with self.subTest(length=len(password)):
+                nickname = f"user{len(password)}-{ord(password[:1] or "_")}"
+                if policies is None:
+                    await self.sign_up(nickname, password)
+                    continue
+                with self.assertRaises(AuthMethodInvalidError) as error:
+                    await self.sign_up(nickname, password)
+                self.assertEqual(error.exception.field, "password")
+                self.assertEqual(error.exception.policies, policies)
 
     async def test_a_sign_up_keeps_the_policies_of_the_application(self) -> None:
         self.project = TstPoliciesProject()
         for nickname, password, field, policies in (
-            ("al ice", "correct horse", "nickname", ("chars",)),
+            ("al ice", "correct horse battery staple", "nickname", ("chars",)),
             ("alice", "short", "password", ("length",)),
             ("alice", "alice-in-wonderland", "password", ("identifier",)),
             ("alice", "alice", "password", ("length", "identifier")),
@@ -302,7 +324,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
                     await self.sign_up(nickname, password)
                 self.assertEqual(error.exception.field, field)
                 self.assertEqual(error.exception.policies, policies)
-        await self.sign_up("Ａlice", "correct horse")
+        await self.sign_up("Ａlice", "correct horse battery staple")
 
     async def test_the_violations_a_policy_nests_are_told_in_their_order(
         self,
@@ -329,10 +351,10 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
             PasswordLength, "_get_permissions", return_value=guarded
         ):
             with self.assertRaises(OperationPermissionsError):
-                await self.sign_up("alice", "correct horse")
+                await self.sign_up("alice", "correct horse battery staple")
         with mock.patch.object(PasswordLength, "_run", side_effect=OSError("down")):
             with self.assertRaises(ExceptionGroup) as error:
-                await self.sign_up("alice", "correct horse")
+                await self.sign_up("alice", "correct horse battery staple")
         self.assertIsInstance(error.exception.exceptions[0], OSError)
 
     async def test_a_value_is_checked_normalized(self) -> None:
@@ -341,7 +363,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         await self.sign_up("alice", "\ufb01ve-six")
 
     async def test_a_hash_of_other_parameters_is_verified(self) -> None:
-        result = await self.sign_up("alice", "correct horse")
+        result = await self.sign_up("alice", "correct horse battery staple")
         costlier = TstCostlierProject()
         secret = await self.project.auth.storage.profiles.secrets.get(result.uid)
         profiles = costlier.auth.storage.profiles
@@ -350,7 +372,9 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
         )
         await profiles.secrets.put(result.uid, secret)
         method = costlier.auth.methods.get("nickname")
-        start = AuthNicknameStart(nickname="alice", password="correct horse")
+        start = AuthNicknameStart(
+            nickname="alice", password="correct horse battery staple"
+        )
         metadata = costlier.operations.create_metadata(SIGNING_IN)
         self.assertEqual(
             await method.start_sign_in(start, metadata), AuthVerified(subject="alice")
@@ -358,11 +382,13 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     def test_the_parameters_of_the_policies_show_none_of_their_parts(self) -> None:
         parameters = AuthPasswordSetParameters(
-            value="correct horse", identifiers=("alice",)
+            value="correct horse battery staple", identifiers=("alice",)
         )
-        self.assertNotIn("correct horse", repr(parameters))
+        self.assertNotIn("correct horse battery staple", repr(parameters))
         self.assertNotIn("alice", repr(parameters))
 
     def test_the_password_is_not_in_the_repr(self) -> None:
-        start = AuthNicknameStart(nickname="alice", password="correct horse")
-        self.assertNotIn("correct horse", repr(start))
+        start = AuthNicknameStart(
+            nickname="alice", password="correct horse battery staple"
+        )
+        self.assertNotIn("correct horse battery staple", repr(start))

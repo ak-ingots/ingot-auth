@@ -61,7 +61,10 @@ ingots typed by its parameters, made by the method, which runs the group
 together (`run_group`); the password of the
 profile in `methods/password/`, the slot `password` of the methods, not a
 method, its hash the secret of the uid in `storages/profiles/secrets.py`, its group
-`policies_set` of a new one by any method; the `policies/`, rules a value is checked
+`policies_set` of a new one by any method, the length of OWASP by default,
+`AuthPasswordLengthPolicy`, a leaked password refused by `AuthPwnedPolicy` of
+`contrib/policies/`, a call to Pwned Passwords the application takes itself;
+the `policies/`, rules a value is checked
 against, each an operation taking a part of its parameters by a protocol,
 raising `AuthPolicyViolationError` with its name, configured by the `CONFIG`
 of its class; the `sign_up/` and `sign_in/` flows, over the base
