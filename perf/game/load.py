@@ -33,6 +33,7 @@ class GamePerfSettingsUnit(ScenariosSettingsUnit):
 class GamePerfProject(ScenariosProject):
     """The project of a scenario of the load, which adds its unit ``perf``."""
 
+    env_configs_prefix = "PERF_TEST"
     settings = Slot(GamePerfSettingsUnit)
 
 
