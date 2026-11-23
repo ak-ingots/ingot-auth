@@ -9,6 +9,8 @@ from ingot_grpcio.grpc.services import GrpcService, GrpcServicer
 from ..contract import AuthMetadataRpcMixin
 from .base import Context, GrpcAuthRpcContext
 from ingot_auth.metadata.v1 import metadata_pb2, metadata_pb2_grpc
+from ingot_auth.api.metadata.v1 import metadata_pb2_grpc as metadata_pb2_grpc_temp
+from .metadata_temp import AuthGrpcMetadataServicerTemp
 
 if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
@@ -34,4 +36,7 @@ class AuthGrpcMetadataServicer(
 class AuthGrpcMetadataBinding:
     auth_metadata = GrpcService(
         metadata_pb2_grpc.MetadataStub, AuthGrpcMetadataServicer
+    )
+    auth_metadata_temp = GrpcService(
+        metadata_pb2_grpc_temp.MetadataStub, AuthGrpcMetadataServicerTemp
     )

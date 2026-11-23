@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package ingot_auth.api.activities.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// The activity log of the auth: every change of state of an entity, read by
+// the auditors.
+service Activities {
+  // Requires PERMISSION_CAN_READ.
+  rpc ListActivities(ListActivitiesRequest) returns (ListActivitiesResponse);
+}
+
+// The bits of the domain `auth.activities` its operations require: an aid for
+// a client building its interface, the server checks them anyway.
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+  PERMISSION_CAN_READ = 1;
+}
+
+// What a change of state was.
+enum Action {
+  ACTION_UNSPECIFIED = 0;
+  ACTION_CREATE = 1;
+  ACTION_UPDATE = 2;
+  ACTION_DELETE = 3;
+  ACTION_BIND = 4;
+  ACTION_UNBIND = 5;
+  ACTION_SIGN_IN = 6;
+  ACTION_SIGN_OUT = 7;
+  ACTION_REVOKE = 8;
+  ACTION_EXPIRE = 9;
+  ACTION_EVICT = 10;
+}
+
+// A change of state, a fact as it was written. The actor, `who` with
+// `session_uid`, empty of a caller of none.
+message Activity {
+  string who = 1;
+  string session_uid = 2;
+  Action action = 3;
+  // the full name of the unit of the entity: auth.profiles
+  string entity_type = 4;
+  string entity_uid = 5;
+  // the attributes the code of its time wrote, a decimal and a time as
+  // texts; a client assumes none of a type of entity
+  google.protobuf.Struct context = 6;
+  // of the request or of a job of the server
+  string run_uid = 7;
+  google.protobuf.Timestamp when = 8;
+}
+
+message ListActivitiesRequest {
+  // each filter optional
+  optional string entity_type = 1;
+  optional string entity_uid = 2;
+  optional string who = 3;
+  optional string session_uid = 4;
+  Action action = 5;
+  // since included, until not
+  google.protobuf.Timestamp since = 6;
+  google.protobuf.Timestamp until = 7;
+  // 100 by default
+  uint32 limit = 8;
+}
+
+message ListActivitiesResponse {
+  // the newest first
+  repeated Activity activities = 1;
+}
