@@ -66,10 +66,10 @@ class PlayersSeed(CsvSeed[SeededPlayer]):
             nickname = new_nickname()
             client = await get_client(self.project, is_second)
             async with semaphore:
-                await client.auth_methods_nickname_temp.SignUp(
+                await client.auth_methods_nickname.SignUp(
                     nickname_pb2.SignUpRequest(nickname=nickname, password=PASSWORD)
                 )
-                response = await client.auth_methods_nickname_temp.SignIn(
+                response = await client.auth_methods_nickname.SignIn(
                     nickname_pb2.SignInRequest(nickname=nickname, password=PASSWORD)
                 )
             return SeededPlayer(nickname, response.result.signed_in.token, is_second)

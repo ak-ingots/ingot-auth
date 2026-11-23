@@ -158,14 +158,14 @@ class GameMixin(TestCase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
         game = await self.project.grpc.clients.default
-        self.nickname = game.auth_methods_nickname_temp
-        self.email_code = game.auth_methods_email_code_temp
-        self.sign_up = game.auth_sign_up_temp
-        self.sign_in = game.auth_sign_in_temp
-        self.sign_out = game.auth_sign_out_temp
-        self.profiles = game.auth_profiles_temp
-        self.sessions = game.auth_sessions_temp
-        self.metadata = game.auth_metadata_temp
+        self.nickname = game.auth_methods_nickname
+        self.email_code = game.auth_methods_email_code
+        self.sign_up = game.auth_sign_up
+        self.sign_in = game.auth_sign_in
+        self.sign_out = game.auth_sign_out
+        self.profiles = game.auth_profiles
+        self.sessions = game.auth_sessions
+        self.metadata = game.auth_metadata
         configs = self.project.settings.configs
         self.mailpit = Mailpit(configs.MAILPIT_PORT)
         self.operator = Operator(configs.GAME_COMPOSE_FILE)
@@ -227,14 +227,12 @@ class GameMixin(TestCase):
         """The profile of the player, asked of the second process of the game."""
         second = await self.project.grpc.clients.second
         request = profiles_pb2.GetOwnProfileRequest()
-        return await second.auth_profiles_temp.GetOwnProfile(
-            request, metadata=bear(token)
-        )
+        return await second.auth_profiles.GetOwnProfile(request, metadata=bear(token))
 
     async def sign_out_on_second(self, token: str) -> None:
         second = await self.project.grpc.clients.second
         request = sign_out_pb2.SignOutRequest()
-        await second.auth_sign_out_temp.SignOut(request, metadata=bear(token))
+        await second.auth_sign_out.SignOut(request, metadata=bear(token))
 
     async def list_own_sessions(self, token: str) -> list[sessions_pb2.Session]:
         request = sessions_pb2.ListOwnSessionsRequest()

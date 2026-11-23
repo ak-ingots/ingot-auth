@@ -28,7 +28,7 @@ class SigningUp(LoadClient["PerfProject", "SigningUpGroup"]):
     @t.override
     async def asyncSetUp(self) -> None:
         game = await get_client(self.project, self.group.seeded.is_second)
-        self.nickname = game.auth_methods_nickname_temp
+        self.nickname = game.auth_methods_nickname
 
     @t.override
     async def run(self) -> None:

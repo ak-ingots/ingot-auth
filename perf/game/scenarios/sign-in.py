@@ -15,7 +15,7 @@ class SigningIn(LoadClient["PerfProject", "SigningInGroup"]):
     async def asyncSetUp(self) -> None:
         seeded = self.group.seeded
         game = await get_client(self.project, seeded.is_second)
-        self.nickname = game.auth_methods_nickname_temp
+        self.nickname = game.auth_methods_nickname
         self.request = nickname_pb2.SignInRequest(
             nickname=seeded.nickname, password=PASSWORD
         )

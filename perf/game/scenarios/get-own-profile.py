@@ -15,7 +15,7 @@ class Player(LoadClient["PerfProject", "PlayerGroup"]):
     async def asyncSetUp(self) -> None:
         seeded = self.group.seeded
         game = await get_client(self.project, seeded.is_second)
-        self.profiles = game.auth_profiles_temp
+        self.profiles = game.auth_profiles
         self.metadata = bear(seeded.token)
 
     @t.override
