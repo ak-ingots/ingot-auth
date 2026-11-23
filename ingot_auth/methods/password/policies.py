@@ -4,13 +4,20 @@ flow, with all the parts there are at it, so that a policy taking any of
 them joins the group, and the type of the group.
 """
 
-__all__ = ("AuthHasIdentifiers", "AuthPasswordSetParameters", "AuthPasswordSetPolicies")
+__all__ = (
+    "AuthHasIdentifiers",
+    "AuthPasswordLengthPolicy",
+    "AuthPasswordSetParameters",
+    "AuthPasswordSetPolicies",
+)
 
 import typing as t
 from dataclasses import dataclass, field
 
 from ingots.defaults.operations import BaseOperation
 from ingots.puer import Factories
+
+from ingot_auth.policies import AuthLengthConfig, AuthLengthPolicy
 
 
 class AuthHasIdentifiers(t.Protocol):
@@ -39,3 +46,14 @@ AuthPasswordSetPolicies: t.TypeAlias = Factories[
 The group of the policies of a new password, by whatever method: the slot of
 the password is declared by it, ``AuthPasswordSetPolicies(AppPasswordLength)``.
 """
+
+
+class AuthPasswordLengthPolicy(AuthLengthPolicy):
+    """
+    The length of a password of OWASP and NIST, in characters of its NFKC: 15
+    at least, for a password alone; 128 at most, so that a passphrase fits and
+    a hash is not flooded, a longer one refused, never cut. With a second
+    factor, 8 at least will do: a subclass replaces :attr:`CONFIG`.
+    """
+
+    CONFIG = AuthLengthConfig(min=15, max=128)

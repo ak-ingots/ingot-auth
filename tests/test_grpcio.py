@@ -1068,12 +1068,16 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+                nickname_pb2.SignUpRequest(
+                    nickname="Alice", password="correct horse battery staple"
+                )
             )
         ).result.signed_up
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+                nickname_pb2.SignInRequest(
+                    nickname="alice", password="correct horse battery staple"
+                )
             )
         ).result.signed_in
         caller = await self.project.auth.sessions.authenticate(signed_in.token)
@@ -1085,11 +1089,15 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         client = await self.connect(TstNicknameProject)
         nickname = client.auth_methods_nickname
         await nickname.SignUp(
-            nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+            nickname_pb2.SignUpRequest(
+                nickname="Alice", password="correct horse battery staple"
+            )
         )
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+                nickname_pb2.SignInRequest(
+                    nickname="alice", password="correct horse battery staple"
+                )
             )
         ).result.signed_in
         bearer = [("authorization", f"Bearer {signed_in.token}")]
@@ -1108,9 +1116,13 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         client = await self.connect(TstNicknameProject)
         nickname = client.auth_methods_nickname
         await nickname.SignUp(
-            nickname_pb2.SignUpRequest(nickname="Alice", password="correct horse")
+            nickname_pb2.SignUpRequest(
+                nickname="Alice", password="correct horse battery staple"
+            )
         )
-        sign_in = nickname_pb2.SignInRequest(nickname="alice", password="correct horse")
+        sign_in = nickname_pb2.SignInRequest(
+            nickname="alice", password="correct horse battery staple"
+        )
         phone, laptop = [
             (await nickname.SignIn(sign_in)).result.signed_in for _ in range(2)
         ]
@@ -1151,14 +1163,18 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             uids.append(
                 (
                     await nickname.SignUp(
-                        nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                        nickname_pb2.SignUpRequest(
+                            nickname=name, password="pass word pass word"
+                        )
                     )
                 ).result.signed_up.uid
             )
             tokens.append(
                 (
                     await nickname.SignIn(
-                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                        nickname_pb2.SignInRequest(
+                            nickname=name, password="pass word pass word"
+                        )
                     )
                 ).result.signed_in.token
             )
@@ -1200,7 +1216,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         alice, eve = [
             (
                 await nickname.SignUp(
-                    nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                    nickname_pb2.SignUpRequest(
+                        nickname=name, password="pass word pass word"
+                    )
                 )
             ).result.signed_up.uid
             for name in ("Alice", "Eve")
@@ -1210,7 +1228,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             tokens.append(
                 (
                     await nickname.SignIn(
-                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                        nickname_pb2.SignInRequest(
+                            nickname=name, password="pass word pass word"
+                        )
                     )
                 ).result.signed_in.token
             )
@@ -1235,7 +1255,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         _, eve = [
             (
                 await nickname.SignUp(
-                    nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                    nickname_pb2.SignUpRequest(
+                        nickname=name, password="pass word pass word"
+                    )
                 )
             ).result.signed_up.uid
             for name in ("Alice", "Eve")
@@ -1244,13 +1266,15 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             AuthMembership(group="auth.sessions.grp_admins", profile_uid=eve)
         )
         await nickname.SignIn(
-            nickname_pb2.SignInRequest(nickname="Alice", password="pass word")
+            nickname_pb2.SignInRequest(nickname="Alice", password="pass word pass word")
         )
         later = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=31)
         with mock.patch.object(AuthSessionsUnit, "_get_now", return_value=later):
             token = (
                 await nickname.SignIn(
-                    nickname_pb2.SignInRequest(nickname="Eve", password="pass word")
+                    nickname_pb2.SignInRequest(
+                        nickname="Eve", password="pass word pass word"
+                    )
                 )
             ).result.signed_in.token
             swept = await client.auth_sessions.SweepSessions(
@@ -1267,14 +1291,18 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             uids.append(
                 (
                     await nickname.SignUp(
-                        nickname_pb2.SignUpRequest(nickname=name, password="pass word")
+                        nickname_pb2.SignUpRequest(
+                            nickname=name, password="pass word pass word"
+                        )
                     )
                 ).result.signed_up.uid
             )
             tokens.append(
                 (
                     await nickname.SignIn(
-                        nickname_pb2.SignInRequest(nickname=name, password="pass word")
+                        nickname_pb2.SignInRequest(
+                            nickname=name, password="pass word pass word"
+                        )
                     )
                 ).result.signed_in.token
             )
@@ -1318,12 +1346,16 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         nickname = client.auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="Alice", password="pass word")
+                nickname_pb2.SignUpRequest(
+                    nickname="Alice", password="pass word pass word"
+                )
             )
         ).result.signed_up
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="alice", password="pass word")
+                nickname_pb2.SignInRequest(
+                    nickname="alice", password="pass word pass word"
+                )
             )
         ).result.signed_in
         bearer = [("authorization", f"Bearer {signed_in.token}")]
@@ -1370,12 +1402,16 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         nickname = client.auth_methods_nickname
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="Eve", password="pass word")
+                nickname_pb2.SignUpRequest(
+                    nickname="Eve", password="pass word pass word"
+                )
             )
         ).result.signed_up
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="eve", password="pass word")
+                nickname_pb2.SignInRequest(
+                    nickname="eve", password="pass word pass word"
+                )
             )
         ).result.signed_in
         storage = self.project.auth.storage
@@ -1461,7 +1497,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         signed_up = (
             await nickname.SignUp(
                 nickname_pb2.SignUpRequest(
-                    nickname="alice", password="x", attr_values=attr_values
+                    nickname="alice",
+                    password="correct horse battery staple",
+                    attr_values=attr_values,
                 )
             )
         ).result.signed_up
@@ -1470,7 +1508,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         signed_in = (
             await nickname.SignIn(
                 nickname_pb2.SignInRequest(
-                    nickname="alice", password="x", attr_values=attr_values
+                    nickname="alice",
+                    password="correct horse battery staple",
+                    attr_values=attr_values,
                 )
             )
         ).result.signed_in
@@ -1493,14 +1533,18 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await self.create_ip_attr()
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="a", password="x")
+                nickname_pb2.SignUpRequest(
+                    nickname="a", password="correct horse battery staple"
+                )
             )
         ).result.signed_up
         record = await self.project.auth.storage.sign_up.records.get(signed_up.uid)
         self.assertEqual(record.attr_values, {1: "127.0.0.1"})
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="a", password="x")
+                nickname_pb2.SignInRequest(
+                    nickname="a", password="correct horse battery staple"
+                )
             )
         ).result.signed_in
         token_hash = hashlib.sha256(signed_in.token.encode()).hexdigest()
@@ -1514,7 +1558,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         await self.create_ip_attr()
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="a", password="x"),
+                nickname_pb2.SignUpRequest(
+                    nickname="a", password="correct horse battery staple"
+                ),
                 metadata=(("x-forwarded-for", "203.0.113.7"),),
             )
         ).result.signed_up
@@ -1523,7 +1569,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         # no header, no value: nothing kept
         signed_in = (
             await nickname.SignIn(
-                nickname_pb2.SignInRequest(nickname="a", password="x")
+                nickname_pb2.SignInRequest(
+                    nickname="a", password="correct horse battery staple"
+                )
             )
         ).result.signed_in
         token_hash = hashlib.sha256(signed_in.token.encode()).hexdigest()
@@ -1533,13 +1581,17 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_the_flows_of_a_nickname_tell_their_errors(self) -> None:
         nickname = (await self.connect(TstNicknameProject)).auth_methods_nickname
         await nickname.SignUp(
-            nickname_pb2.SignUpRequest(nickname="alice", password="x")
+            nickname_pb2.SignUpRequest(
+                nickname="alice", password="correct horse battery staple"
+            )
         )
         no_value = attrs_pb2.AttrValue(attr_uid=1)
         for call, code, reason, metadata in (
             (
                 nickname.SignUp(
-                    nickname_pb2.SignUpRequest(nickname="Alice", password="y")
+                    nickname_pb2.SignUpRequest(
+                        nickname="Alice", password="another horse battery staple"
+                    )
                 ),
                 grpc.StatusCode.ALREADY_EXISTS,
                 "IDENTITY_CONFLICT",
@@ -1555,7 +1607,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             ),
             (
                 nickname.SignIn(
-                    nickname_pb2.SignInRequest(nickname="bob", password="x")
+                    nickname_pb2.SignInRequest(
+                        nickname="bob", password="correct horse battery staple"
+                    )
                 ),
                 grpc.StatusCode.UNAUTHENTICATED,
                 "METHOD_REFUSED",
@@ -1564,7 +1618,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             (
                 nickname.SignIn(
                     nickname_pb2.SignInRequest(
-                        nickname="alice", password="x", attr_values=[no_value]
+                        nickname="alice",
+                        password="correct horse battery staple",
+                        attr_values=[no_value],
                     )
                 ),
                 grpc.StatusCode.INVALID_ARGUMENT,
@@ -1671,7 +1727,9 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         ).auth_methods_nickname
         with self.assertRaises(GrpcError) as error:
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="a", password="x")
+                nickname_pb2.SignUpRequest(
+                    nickname="a", password="correct horse battery staple"
+                )
             )
         self.assertEqual(error.exception.code, grpc.StatusCode.PERMISSION_DENIED)
 
@@ -1683,11 +1741,19 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
         ).auth_methods_nickname
         for call, code_of_status in (
             (
-                nickname.SignUp(nickname_pb2.SignUpRequest(nickname="a", password="x")),
+                nickname.SignUp(
+                    nickname_pb2.SignUpRequest(
+                        nickname="a", password="correct horse battery staple"
+                    )
+                ),
                 grpc.StatusCode.PERMISSION_DENIED,
             ),
             (
-                nickname.SignIn(nickname_pb2.SignInRequest(nickname="a", password="x")),
+                nickname.SignIn(
+                    nickname_pb2.SignInRequest(
+                        nickname="a", password="correct horse battery staple"
+                    )
+                ),
                 grpc.StatusCode.UNAUTHENTICATED,
             ),
         ):
@@ -1698,10 +1764,14 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_a_user_signs_up_and_in_then_calls_by_its_token(self) -> None:
         client = await self.connect(TstNicknameProject)
         nickname = client.auth_methods_nickname
-        sign_in = nickname_pb2.SignInRequest(nickname="alice", password="x")
+        sign_in = nickname_pb2.SignInRequest(
+            nickname="alice", password="correct horse battery staple"
+        )
         signed_up = (
             await nickname.SignUp(
-                nickname_pb2.SignUpRequest(nickname="alice", password="x")
+                nickname_pb2.SignUpRequest(
+                    nickname="alice", password="correct horse battery staple"
+                )
             )
         ).result.signed_up
         await self.project.auth.storage.access.members.add(

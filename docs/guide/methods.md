@@ -17,20 +17,25 @@ class AppMethods(AuthMethodsUnit):
 The nickname of a sign-up is checked by the group of the policies of the
 method, its slot `policies_sign_up_nickname`, the password by that of the
 password, which is of the profile, one whatever identifier it signs in by:
-`policies_set` of `AuthPassword`, the slot `password` of the methods. Both
-are empty unless the application gives policies to them in a subclass, each
-an operation, run together, so that a client learns every policy broken at
-once; how the password is hashed is the strategy of its slot
+`policies_set` of `AuthPassword`, the slot `password` of the methods. The
+first is empty unless the application gives policies to it in a subclass;
+the second holds the length of [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html),
+`AuthPasswordLengthPolicy`, 15 characters at least, 128 at most, a longer
+password refused, never cut, unless the application gives its own. Each
+policy is an operation, run together, so that a client learns every policy
+broken at once; no rule of composition, digits, cases, symbols, as OWASP and
+NIST advise. How the password is hashed is the strategy of its slot
 `hasher_default`, none by default, as every strategy:
 
 ```python
-class AppPasswordLength(AuthLengthPolicy):
-    CONFIG = AuthLengthConfig(min=12)
+class AppPasswordLength(AuthPasswordLengthPolicy):
+    # 8 at least will do with a second factor
+    CONFIG = AuthLengthConfig(min=8, max=128)
 
 
 class AppPassword(AuthPassword):
-    # a new password, by any method
-    policies_set = AuthPasswordSetPolicies(AppPasswordLength)
+    # a new password, by any method: of the length, and not leaked
+    policies_set = AuthPasswordSetPolicies(AppPasswordLength, AuthPwnedPolicy)
     hasher_default = Slot(AuthScryptPasswordHasher)
 
 
@@ -38,6 +43,16 @@ class AppMethods(AuthMethodsUnit):
     nickname = Slot(AuthNicknameMethod)
     password = Slot(AppPassword)
 ```
+
+`AuthPwnedPolicy`, of `ingot_auth.contrib.policies`, refuses a password
+leaked, by the range of [Pwned Passwords](https://haveibeenpwned.com/API/v3#PwnedPasswords):
+the first five characters of its SHA-1 alone go over the network, padded,
+the rest compared here. It needs nothing beyond the standard library, but a
+call to a service of others, so the application takes it itself. Its
+`CONFIG`, `AuthPwnedConfig`, tells the service, its timeout, how many leaks
+refuse a password, and what to do when the service does not answer: let the
+password through, a warning logged, by default, as OWASP has it, or refuse
+it by the policy `pwned_unchecked`.
 
 The hashers are those of the standard library, entities extending
 `BaseAuthPasswordHasher`, each of one algorithm. `AuthScryptPasswordHasher`
