@@ -8,7 +8,7 @@ from ingots.puer import Slot
 from load import GamePerfProject, get_client
 from scenarios.steps import PASSWORD, new_nickname
 
-from ingot_auth.methods.nickname.v1 import nickname_pb2
+from ingot_auth.api.methods.nickname.v1 import nickname_pb2
 
 
 @dataclasses.dataclass
@@ -28,7 +28,7 @@ class SigningUp(LoadClient["PerfProject", "SigningUpGroup"]):
     @t.override
     async def asyncSetUp(self) -> None:
         game = await get_client(self.project, self.group.seeded.is_second)
-        self.nickname = game.auth_methods_nickname
+        self.nickname = game.auth_methods_nickname_temp
 
     @t.override
     async def run(self) -> None:

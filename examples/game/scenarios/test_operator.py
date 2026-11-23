@@ -3,9 +3,9 @@ import secrets
 import grpc
 from ingots.testing import ProjectTestCase
 
-from ingot_auth.attrs.v1 import attrs_pb2
-from ingot_auth.metadata.v1 import metadata_pb2
-from ingot_auth.sessions.v1 import sessions_pb2
+from ingot_auth.api.attrs.v1 import attrs_pb2
+from ingot_auth.api.metadata.v1 import metadata_pb2
+from ingot_auth.api.sessions.v1 import sessions_pb2
 
 from .steps import GameMixin, bear, read_lines
 
