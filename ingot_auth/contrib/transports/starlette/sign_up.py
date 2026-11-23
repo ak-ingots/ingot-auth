@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ..contract import AuthSignUpRpcMixin
+from ingot_auth.api import AuthSignUpRpcMixin
 from .base import BaseAuthStarletteEndpoint
-from ingot_auth.sign_up.v1 import sign_up_pb2
+from ingot_auth.api.sign_up.v1 import sign_up_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = sign_up_pb2.DESCRIPTOR.services_by_name["SignUp"]
 class AuthStarletteSignUpEndpoint(AuthSignUpRpcMixin, BaseAuthStarletteEndpoint):
     """
     The answers of a sign-up, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthSignUpRpcMixin`, by any
+    :class:`~ingot_auth.api.AuthSignUpRpcMixin`, by any
     method of more steps: ``POST /v1/signUp:answer``.
     """
 

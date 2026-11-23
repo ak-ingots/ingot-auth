@@ -129,7 +129,7 @@ unknown, is not found, `AuthOwnSessionNotFoundError`, the caller signed in
 still. `auth.grp_signed_in` grants the flags, `CAN_LIST_OWN` and
 `CAN_REVOKE_OWN` of `auth.sessions`; an application takes them off by its
 class of the group, a kiosk. Over gRPC, the service `Sessions` of
-`ingot_auth.sessions.v1`, in `AuthGrpcSessionsBinding`.
+`ingot_auth.api.sessions.v1`, in `AuthGrpcSessionsBinding`.
 
 ## Callers
 
@@ -145,7 +145,7 @@ the operations, by hand in the database, shows past
 ## Sign-out
 
 The caller signs out by `auth.sign_out.op_sign_out`, over gRPC
-`SignOut.SignOut` of `ingot_auth.sign_out.v1`: its session closes,
+`SignOut.SignOut` of `ingot_auth.api.sign_out.v1`: its session closes,
 `SIGNED_OUT`, kept, and its token works no more from the very next
 request, the cache forgetting it once the storage keeps it closed. Any
 caller may: one of no session, the anonymous one of a token closed,

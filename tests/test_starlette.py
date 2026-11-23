@@ -30,7 +30,7 @@ from ingot_auth.auth import AuthUnit
 from ingot_auth.contrib.caches.memory import AuthMemoryCache
 from ingot_auth.contrib.dispatchers.memory import AuthMemoryDispatcher
 from ingot_auth.contrib.storages.memory import AuthMemoryStorage
-from ingot_auth.contrib.transports.contract import PROFILE_HASH_KEY
+from ingot_auth.api import PROFILE_HASH_KEY
 from ingot_auth.contrib.transports.grpcio import AuthGrpcErrorsUnit
 from ingot_auth.contrib.transports.grpcio.errors import BaseAuthGrpcErrorPolicy
 from ingot_auth.contrib.transports.starlette import (

@@ -110,22 +110,19 @@ layer of the transports, protobuf alone: the RPCs of a service as mixins in
 the `rpcs.py` next to its `v1/` (`rpc_*`, a call told by
 `BaseAuthRpcContext`), all exported by `ingot_auth.api`, and the statuses
 of the errors (`api/errors.py`, `google.rpc.Code`, reason, metadata);
-`contrib/transports/grpcio/` mixes them into its servicers `*Temp`, and
-`starlette/`, the extra `starlette`, those of `contract/` into the endpoints
-ingot-starlette transcodes to JSON, no grpcio, till the old API goes. What a step of a method asks for, `Challenge` by the kind
+`contrib/transports/grpcio/` mixes them into its servicers, `starlette/`,
+the extra `starlette`, into the endpoints ingot-starlette transcodes to
+JSON, no grpcio. What a step of a method asks for, `Challenge` by the kind
 of its answer, is in `api/methods/v1/`, the results and the answers of the
 flows in `api/sign_up/v1/` and `api/sign_in/v1/`, the values of the
 attributes, of a session or a profile, `AttrValue`, in `api/attrs/v1/`; a
 servicer of a method extends `BaseAuthGrpcMethodServicer`, which gives the
 values of the attributes of the transport by their names, each bound to
 its reader (`ip`, the peer). The move to `api/` is rehearsed as a release
-would take it, a step a pull request: now the contract under its old names,
-`ingot_auth/<path>/v1/`, and `contrib/transports/contract/`, the old place
-of `api`, stay, deprecated, every binding binding the service of `api`
-beside, as `<attribute>_temp`, its servicer `<Servicer>Temp` in a
-`*_temp.py` next to the old one; then the examples move on, then the old
-names go, the attributes of the old names aliasing those of `_temp`, then
-the examples move back, then the `_temp` go. A set of
+would take it, a step a pull request: the servicers of gRPC are those of
+the `*_temp.py`, named `*Temp`, bound as `<attribute>_temp`, the old names
+their aliases (`aliases.py`, `AuthGrpcServiceAlias`), till the examples
+move back to the old names and the `_temp` go. A set of
 operations has its flags in its unit, a `PermissionFlags` nested as `Flags`,
 bound by the slot `permissions` (`PermissionsSlot`) of the unit, an `OperationsOwner`, their
 domain the full name of the unit; an operation builds its permissions by its

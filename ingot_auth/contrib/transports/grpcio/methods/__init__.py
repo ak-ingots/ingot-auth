@@ -14,11 +14,11 @@ __all__ = (
 
 from ingot_grpcio.grpc.services import GrpcService
 
+from ..aliases import AuthGrpcServiceAlias
+
 from .base import BaseAuthGrpcMethodServicer
 from .email_code import AuthGrpcEmailCodeServicer
 from .nickname import AuthGrpcNicknameServicer
-from ingot_auth.methods.email_code.v1 import email_code_pb2_grpc
-from ingot_auth.methods.nickname.v1 import nickname_pb2_grpc
 from ingot_auth.api.methods.email_code.v1 import (
     email_code_pb2_grpc as email_code_pb2_grpc_temp,
 )
@@ -30,18 +30,14 @@ from .nickname_temp import AuthGrpcNicknameServicerTemp
 
 
 class AuthGrpcNicknameBinding:
-    auth_methods_nickname = GrpcService(
-        nickname_pb2_grpc.NicknameStub, AuthGrpcNicknameServicer
-    )
     auth_methods_nickname_temp = GrpcService(
         nickname_pb2_grpc_temp.NicknameStub, AuthGrpcNicknameServicerTemp
     )
+    auth_methods_nickname = AuthGrpcServiceAlias(auth_methods_nickname_temp)
 
 
 class AuthGrpcEmailCodeBinding:
-    auth_methods_email_code = GrpcService(
-        email_code_pb2_grpc.EmailCodeStub, AuthGrpcEmailCodeServicer
-    )
     auth_methods_email_code_temp = GrpcService(
         email_code_pb2_grpc_temp.EmailCodeStub, AuthGrpcEmailCodeServicerTemp
     )
+    auth_methods_email_code = AuthGrpcServiceAlias(auth_methods_email_code_temp)

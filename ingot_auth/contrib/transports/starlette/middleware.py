@@ -4,7 +4,7 @@ __all__ = ("AuthStarletteProfileHashMiddleware",)
 
 import typing as t
 
-from ..contract import PROFILE_HASH_KEY
+from ingot_auth.api import PROFILE_HASH_KEY
 from .base import PROFILE_HASH_STATE
 
 if t.TYPE_CHECKING:

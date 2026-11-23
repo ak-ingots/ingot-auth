@@ -34,7 +34,7 @@ from ingot_starlette.starlette.errors import (
 )
 from ingots.puer import Slot
 
-from ..contract.errors import (
+from ingot_auth.api.errors import (
     AuthAttemptNotFoundErrorMixin,
     AuthGroupNotFoundErrorMixin,
     AuthIdentityConflictErrorMixin,

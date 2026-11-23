@@ -7,9 +7,9 @@ import typing as t
 from ingot_starlette.contrib.protobuf import StarletteProtobufRpc
 from starlette.requests import Request
 
-from ..contract import AuthProfilesRpcMixin
+from ingot_auth.api import AuthProfilesRpcMixin
 from .base import BaseAuthStarletteEndpoint
-from ingot_auth.profiles.v1 import profiles_pb2
+from ingot_auth.api.profiles.v1 import profiles_pb2
 
 if t.TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,7 +22,7 @@ SERVICE: t.Final = profiles_pb2.DESCRIPTOR.services_by_name["Profiles"]
 class AuthStarletteOwnProfileEndpoint(AuthProfilesRpcMixin, BaseAuthStarletteEndpoint):
     """
     The profile of the caller of the token, of
-    :class:`~ingot_auth.contrib.transports.contract.AuthProfilesRpcMixin`, its
+    :class:`~ingot_auth.api.AuthProfilesRpcMixin`, its
     values, its permissions and its hash: ``GET /v1/ownProfile``. Setting the
     values of the profiles, for an operator, is not served over HTTP yet.
     """

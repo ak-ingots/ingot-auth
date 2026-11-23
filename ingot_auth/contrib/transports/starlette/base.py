@@ -10,7 +10,7 @@ import typing as t
 
 from ingot_starlette.contrib.protobuf import BaseStarletteProtobufEndpoint
 
-from ..contract import BaseAuthRpcContext
+from ingot_auth.api import BaseAuthRpcContext
 
 if t.TYPE_CHECKING:
     from collections.abc import Callable
