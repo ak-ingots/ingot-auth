@@ -208,7 +208,9 @@ class BaseAuthMethod[StartType, AnswerType, StateType](OperationsOwner, Unit):
             named in the order of the group.
         """
         try:
-            await self.project.operations.run_group(policies, parameters, metadata)
+            await self.project.operations.run_all_in_group(
+                policies, parameters, metadata
+            )
         except* AuthPolicyViolationError as violations:
             names = tuple(_iter_policies(violations))
             raise AuthMethodInvalidError.for_field(field, names) from violations

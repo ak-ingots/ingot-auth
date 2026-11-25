@@ -126,6 +126,8 @@ from .sign_up import (
 if t.TYPE_CHECKING:
     from collections.abc import AsyncIterator, Mapping
 
+    from ingots.defaults import Project
+
 
 # the transactions of the current context, by their storages: one variable
 # of the module, as the context keeps its variables for good; a new mapping
@@ -149,6 +151,10 @@ class AuthStorage(Unit):
     current context, so of a task of asyncio: the storages of the backend
     reach it with :meth:`get_transaction`.
     """
+
+    # the project of the defaults of ingots: its events, which a transaction
+    # holds; the storage depends on no other part of the auth
+    project: "Project"
 
     # mypy refuses an abstract class where a type is expected: a slot of
     # one is an open question of ingots
@@ -203,18 +209,27 @@ class AuthStorage(Unit):
     async def transaction(self) -> "AsyncIterator[None]":
         """
         A transaction around a block: committed when the block ends, rolled
-        back when it raises. Inside another, it is that one.
+        back when it raises. Inside another, it is that one. It holds the
+        events published in its block, ``project.events`` of ingots: they go
+        once it commits, when the outermost hold ends, and are dropped when
+        it rolls back or fails to commit.
         """
         if self.get_transaction() is not None:
             yield
             return
-        await self.begin()
-        try:
-            yield
-        except BaseException:
-            await self.rollback()
-            raise
-        await self.commit()
+        async with self.project.events.hold() as held:
+            await self.begin()
+            try:
+                yield
+            except BaseException:
+                held.discard()
+                await self.rollback()
+                raise
+            try:
+                await self.commit()
+            except BaseException:
+                held.discard()
+                raise
 
     @abc.abstractmethod
     async def _begin(self) -> object:

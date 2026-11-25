@@ -43,6 +43,15 @@ class BaseAuthDispatcher(Entity):
         """
         await self._dispatch(factory, parameters, metadata)
 
+    @t.final
+    async def join(self) -> None:
+        """
+        Waits for the operations dispatched so far to end in the process, and
+        for those they dispatch: for a shutdown, a test. The project of the
+        auth waits for them when it shuts down.
+        """
+        await self._join()
+
     @abc.abstractmethod
     async def _dispatch[ParametersType](
         self,
@@ -51,3 +60,9 @@ class BaseAuthDispatcher(Entity):
         metadata: "OperationMetadata",
     ) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._dispatch")
+
+    async def _join(self) -> None:
+        """
+        Waits for what runs in the process: nothing here, as a dispatcher on
+        a queue leaves the operations to its workers.
+        """

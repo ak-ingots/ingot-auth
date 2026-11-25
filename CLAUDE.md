@@ -58,7 +58,7 @@ the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
 `(kind, value)` bound to a profile once whatever method, their groups of
 the policies their slots `policies_<flow>_<field>`, each a `Factories` of
 ingots typed by its parameters, made by the method, which runs the group
-together (`run_group`); the password of the
+together (`run_all_in_group`); the password of the
 profile in `methods/password/`, the slot `password` of the methods, not a
 method, its hash the secret of the uid in `storages/profiles/secrets.py`, its group
 `policies_set` of a new one by any method, the length of OWASP by default,

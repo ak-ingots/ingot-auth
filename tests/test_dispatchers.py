@@ -86,6 +86,12 @@ class MemoryDispatcherTestCase(unittest.IsolatedAsyncioTestCase):
         await self.dispatcher.join()
         self.assertEqual(self.done, ["a", "b", "c"])
 
+    async def test_the_shutdown_waits_for_the_operations_dispatched(self) -> None:
+        last = Record(name="b", done=self.done)
+        await self.dispatch(Record(name="a", done=self.done, then=(last,)))
+        await self.project._do_shut_down()
+        self.assertEqual(self.done, ["a", "b"])
+
     async def test_an_operation_failing_is_logged_and_fails_nothing_else(
         self,
     ) -> None:
