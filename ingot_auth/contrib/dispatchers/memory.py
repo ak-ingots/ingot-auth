@@ -27,12 +27,8 @@ class AuthMemoryDispatcher(BaseAuthDispatcher):
         super().__init__()
         self._tasks: set[asyncio.Task[None]] = set()
 
-    @t.final
-    async def join(self) -> None:
-        """
-        Waits for the operations dispatched so far to end, and for those they
-        dispatch: for a shutdown, a test.
-        """
+    @t.override
+    async def _join(self) -> None:
         # a task done leaves the set by a callback yet to run: awaiting done
         # tasks alone may not yield to it
         while pending := [task for task in self._tasks if not task.done()]:

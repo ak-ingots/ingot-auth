@@ -178,7 +178,7 @@ class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         group = self.policies.policies_change
         operations = self.project.operations
-        results = await operations.run_group(
+        results = await operations.run_all_in_group(
             group, ChangeParameters(value="al", current="bob"), self.metadata
         )
         self.assertIsNone(results.get(ChangedPolicy))
@@ -189,7 +189,7 @@ class PoliciesTestCase(unittest.IsolatedAsyncioTestCase):
         ):
             with self.subTest(broken=broken):
                 with self.assertRaises(ExceptionGroup) as error:
-                    await operations.run_group(group, parameters, self.metadata)
+                    await operations.run_all_in_group(group, parameters, self.metadata)
                 self.assertEqual(
                     [
                         t.cast(AuthPolicyViolationError, violation).policy
