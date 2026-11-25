@@ -7,7 +7,20 @@ requires-python = ">=3.14"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{name = "Aliaksandr Karotki", email = "abkarotki@gmail.com"}]
-keywords = ["ingots", "auth", "authentication", "sign-in", "sign-up"]
+keywords = [
+    "ingots",
+    "auth",
+    "authentication",
+    "sign-in",
+    "sign-up",
+    "login",
+    "sessions",
+    "password",
+    "authorization",
+    "permissions",
+    "owasp",
+    "security",
+]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Framework :: AsyncIO",
