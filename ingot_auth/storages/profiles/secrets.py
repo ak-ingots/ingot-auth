@@ -25,6 +25,18 @@ class BaseAuthSecretsStorage(Entity):
         await self._put(uid, secret)
 
     @t.final
+    async def replace(self, uid: str, old: str, new: str) -> None:
+        """
+        Keeps ``new`` as the secret of a profile on the condition that it is
+        still ``old``, the one read: a change of a password does not undo
+        another made meanwhile.
+
+        :raises AuthSecretChangedError: it is not ``old`` any more, or the
+            profile has none.
+        """
+        await self._replace(uid, old, new)
+
+    @t.final
     async def get(self, uid: str) -> str:
         """
         The secret of a profile.
@@ -36,6 +48,10 @@ class BaseAuthSecretsStorage(Entity):
     @abc.abstractmethod
     async def _put(self, uid: str, secret: str) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._put")
+
+    @abc.abstractmethod
+    async def _replace(self, uid: str, old: str, new: str) -> None:
+        raise NotImplementedError(f"{type(self).__qualname__}._replace")
 
     @abc.abstractmethod
     async def _get(self, uid: str) -> str:

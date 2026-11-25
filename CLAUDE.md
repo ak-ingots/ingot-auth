@@ -63,7 +63,12 @@ profile in `methods/password/`, the slot `password` of the methods, not a
 method, its hash the secret of the uid in `storages/profiles/secrets.py`, its group
 `policies_set` of a new one by any method, the length of OWASP by default,
 `AuthPasswordLengthPolicy`, a leaked password refused by `AuthPwnedPolicy` of
-`contrib/policies/`, a call to Pwned Passwords the application takes itself;
+`contrib/policies/`, a call to Pwned Passwords the application takes itself,
+its change by its user, `op_change`, the old one given, the other sessions
+closed, then its event `ev_changed`, a `Factories` of subscribers, the mail
+of the core the default; the events of a domain, `ev_*`, published by
+`project.events` of ingots after the change, the transaction of the storage
+holding them till it commits, dropping them on a rollback;
 the `policies/`, rules a value is checked
 against, each an operation taking a part of its parameters by a protocol,
 raising `AuthPolicyViolationError` with its name, configured by the `CONFIG`

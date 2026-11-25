@@ -17,6 +17,7 @@ __all__ = (
     "AuthStarletteMethodRefusedPolicy",
     "AuthStarletteMethodUnsupportedPolicy",
     "AuthStarletteOwnSessionNotFoundPolicy",
+    "AuthStarlettePasswordRefusedPolicy",
     "AuthStarlettePermissionsPolicy",
     "AuthStarletteProfileNotFoundPolicy",
     "AuthStarletteSessionExpiredPolicy",
@@ -47,6 +48,7 @@ from ingot_auth.api.errors import (
     AuthMethodRefusedErrorMixin,
     AuthMethodUnsupportedErrorMixin,
     AuthOwnSessionNotFoundErrorMixin,
+    AuthPasswordRefusedErrorMixin,
     AuthPermissionsErrorMixin,
     AuthProfileNotFoundErrorMixin,
     AuthSessionExpiredErrorMixin,
@@ -178,6 +180,12 @@ class AuthStarletteOwnSessionNotFoundPolicy(
     pass
 
 
+class AuthStarlettePasswordRefusedPolicy(
+    AuthPasswordRefusedErrorMixin, BaseAuthStarletteErrorPolicy
+):
+    pass
+
+
 class AuthStarletteSessionsLimitPolicy(
     AuthSessionsLimitErrorMixin, BaseAuthStarletteErrorPolicy
 ):
@@ -206,4 +214,5 @@ class AuthStarletteErrorsUnit(StarletteErrorsUnit):
     auth_session_not_found = Slot(AuthStarletteSessionNotFoundPolicy)
     auth_session_expired = Slot(AuthStarletteSessionExpiredPolicy)
     auth_own_session_not_found = Slot(AuthStarletteOwnSessionNotFoundPolicy)
+    auth_password_refused = Slot(AuthStarlettePasswordRefusedPolicy)
     auth_sessions_limit = Slot(AuthStarletteSessionsLimitPolicy)

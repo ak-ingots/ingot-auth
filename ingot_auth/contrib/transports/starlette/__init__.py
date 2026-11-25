@@ -35,9 +35,10 @@ the middleware telling the hash of the profile of the caller::
 
 A request bears the token of its session, ``Authorization: Bearer <token>``,
 and runs for its caller; the metadata and the methods run for the anonymous
-one, whatever it bears; the sign-out for the caller of the token, the
-anonymous one of a token closed, expired or unknown, which signs out of
-nothing: as over gRPC, the RPCs being the same.
+one, whatever it bears; the change of the password for the caller of the
+token, :class:`AuthStarlettePasswordEndpoint`; the sign-out for the caller of
+the token, the anonymous one of a token closed, expired or unknown, which
+signs out of nothing: as over gRPC, the RPCs being the same.
 """
 
 __all__ = (
@@ -46,6 +47,7 @@ __all__ = (
     "AuthStarletteErrorsUnit",
     "AuthStarletteMetadataEndpoint",
     "AuthStarletteNicknameEndpoint",
+    "AuthStarlettePasswordEndpoint",
     "AuthStarletteOwnProfileEndpoint",
     "AuthStarletteOwnSessionsEndpoint",
     "AuthStarletteProfileHashMiddleware",
@@ -60,7 +62,11 @@ __all__ = (
 from .base import PROFILE_HASH_STATE, BaseAuthStarletteEndpoint, StarletteAuthRpcContext
 from .errors import AuthStarletteErrorsUnit, BaseAuthStarletteErrorPolicy
 from .metadata import AuthStarletteMetadataEndpoint
-from .methods import AuthStarletteEmailCodeEndpoint, AuthStarletteNicknameEndpoint
+from .methods import (
+    AuthStarletteEmailCodeEndpoint,
+    AuthStarletteNicknameEndpoint,
+    AuthStarlettePasswordEndpoint,
+)
 from .middleware import AuthStarletteProfileHashMiddleware
 from .profiles import AuthStarletteOwnProfileEndpoint
 from .sessions import AuthStarletteOwnSessionsEndpoint

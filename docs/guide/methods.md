@@ -108,6 +108,51 @@ cheap hash pays for itself the day the storage leaks, the passwords of its
 users, used elsewhere too, found the sooner. And a dear one makes every
 sign-in a second of a core: a sign-in is to be limited either way.
 
+## The change of a password
+
+A signed-in user changes its password in its session, the old one given,
+`Password.ChangePassword` of `ingot_auth.api.methods.password.v1`, `POST
+/v1/methods/password:change` over HTTP, whose binding and endpoint are
+`AuthGrpcPasswordBinding` and `AuthStarlettePasswordEndpoint`;
+`auth.grp_signed_in` grants it, `CAN_CHANGE` of `auth.methods.password`.
+
+- The old password is verified at the change itself: a wrong one, or a
+  profile of none, is `PERMISSION_DENIED` of the reason `PASSWORD_REFUSED`,
+  not a session gone, so that a client does not sign its user out.
+- The new one is checked by `policies_change`, the classes of
+  `policies_set` by default: a subclass changing one changes the other.
+- The new hash is written on the condition that the hash read is still
+  there: of two changes at once, one wins, the other is refused.
+- The other sessions of the profile are closed, this one kept, as after a
+  stolen password the thief's are the others; the change and the closes
+  are recorded in the activity log, by the user.
+
+Once done, the change is the event `AuthPasswordChanged`, of the slot
+`ev_changed` of the password, published by the
+[events of ingots](https://ingots.readthedocs.io/en/latest/defaults/events.html)
+after the commit: its subscribers react to it in the background, and none
+fails the change. The core declares one, `AuthMailPasswordChangedOperation`,
+a mail to every email of the profile telling when, from which device and
+place, by the attributes of its session, and what to do if it was not the
+user; a profile with no email gets none. The application words the mail by
+`_build_changed_mail()`, adds its own subscribers, or drops the mail, by
+declaring the slot again:
+
+```python
+class AppPasswordChangedAudit(BaseOperation[AuthPasswordChanged, None]):
+    ...
+
+
+class AppPassword(AuthPassword):
+    ev_changed = Factories[BaseOperation[AuthPasswordChanged, None]](
+        *AuthPassword.ev_changed.classes, AppPasswordChangedAudit
+    )
+
+    @t.override
+    def _build_changed_mail(self, event: AuthPasswordChanged, to: str) -> Mail:
+        return Mail(to=(to,), subject="The Game: your password was changed", ...)
+```
+
 ## Identifiers
 
 An identifier is bound to a profile once, whatever method verifies it: a

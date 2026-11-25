@@ -34,3 +34,11 @@ class AuthMemoryIdentitiesStorage(AuthMemoryStateMixin, BaseAuthIdentitiesStorag
             return self._uids[kind, value]
         except KeyError:
             raise AuthIdentityNotFoundError.for_kind(kind) from None
+
+    @t.override
+    async def _get_of(self, profile_uid: str) -> tuple[AuthIdentity, ...]:
+        return tuple(
+            AuthIdentity(kind=kind, value=value, profile_uid=uid)
+            for (kind, value), uid in sorted(self._uids.items())
+            if uid == profile_uid
+        )

@@ -4,7 +4,11 @@ __all__ = ("AuthMongoDbSecretsStorage",)
 
 import typing as t
 
-from ingot_auth.storages import AuthSecretNotFoundError, BaseAuthSecretsStorage
+from ingot_auth.storages import (
+    AuthSecretChangedError,
+    AuthSecretNotFoundError,
+    BaseAuthSecretsStorage,
+)
 
 from ..collection import AuthMongoDbCollectionMixin
 
@@ -26,6 +30,17 @@ class AuthMongoDbSecretsStorage(AuthMongoDbCollectionMixin, BaseAuthSecretsStora
             upsert=True,
             session=self._mongodb_get_session(),
         )
+
+    @t.override
+    async def _replace(self, uid: str, old: str, new: str) -> None:
+        collection = await self._mongodb_get_collection()
+        result = await collection.update_one(
+            {"_id": uid, "secret": old},
+            {"$set": {"secret": new}},
+            session=self._mongodb_get_session(),
+        )
+        if result.matched_count == 0:
+            raise AuthSecretChangedError.for_uid(uid)
 
     @t.override
     async def _get(self, uid: str) -> str:

@@ -26,6 +26,7 @@ from ingot_auth.metadata import (
 from ingot_auth.methods.email_code import (
     AuthEmailCodeMethod,
 )
+from ingot_auth.methods.password import AuthPassword
 from ingot_auth.methods.nickname import (
     AuthNicknameMethod,
 )
@@ -74,6 +75,7 @@ DOMAINS: t.Final[dict[type[PermissionFlags], str]] = {
     AuthMembersUnit.Flags: "auth.access.members",
     AuthMetadataUnit.Flags: "auth.metadata",
     AuthNicknameMethod.Flags: "auth.methods.nickname",
+    AuthPassword.Flags: "auth.methods.password",
     AuthProfilesUnit.Flags: "auth.profiles",
     AuthSessionAttrsUnit.Flags: "auth.sessions.attrs",
     AuthSessionPresetsUnit.Flags: "auth.sessions.presets",
@@ -96,9 +98,10 @@ def masks(*items: PermissionFlags | Mapping[str, int]) -> Permissions:
 
 
 # what auth.grp_signed_in grants every signed-in user of its own: its sessions,
-# its profile
+# its profile, its password
 OWN: t.Final = masks(
     AuthSessionsUnit.Flags.CAN_LIST_OWN,
     AuthSessionsUnit.Flags.CAN_REVOKE_OWN,
     AuthProfilesUnit.Flags.CAN_READ_OWN,
+    AuthPassword.Flags.CAN_CHANGE,
 )

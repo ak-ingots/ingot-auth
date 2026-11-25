@@ -12,6 +12,7 @@ __all__ = (
     "AuthProfileNotFoundError",
     "AuthProfileValues",
     "AuthProfilesStorage",
+    "AuthSecretChangedError",
     "AuthSecretNotFoundError",
     "AuthTag",
     "BaseAuthAttrsStorage",
@@ -34,6 +35,7 @@ from .errors import (
     AuthProfileConflictError,
     AuthProfileError,
     AuthProfileNotFoundError,
+    AuthSecretChangedError,
     AuthSecretNotFoundError,
 )
 from .identities import BaseAuthIdentitiesStorage

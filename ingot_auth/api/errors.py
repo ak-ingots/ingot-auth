@@ -20,6 +20,7 @@ __all__ = (
     "AuthMethodRefusedErrorMixin",
     "AuthMethodUnsupportedErrorMixin",
     "AuthOwnSessionNotFoundErrorMixin",
+    "AuthPasswordRefusedErrorMixin",
     "AuthPermissionsErrorMixin",
     "AuthProfileNotFoundErrorMixin",
     "AuthSessionExpiredErrorMixin",
@@ -41,6 +42,7 @@ from ingot_auth.methods import (
     AuthMethodRefusedError,
     AuthMethodUnsupportedError,
 )
+from ingot_auth.methods.password import AuthPasswordRefusedError
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.sessions import (
     AuthOwnSessionNotFoundError,
@@ -258,6 +260,17 @@ class AuthOwnSessionNotFoundErrorMixin(BaseAuthErrorMixin):
     @t.override
     def _get_error_metadata(self, error: Exception) -> dict[str, str]:
         return {"session_uid": t.cast(AuthOwnSessionNotFoundError, error).session_uid}
+
+
+class AuthPasswordRefusedErrorMixin(BaseAuthErrorMixin):
+    """
+    A change of the password refused, the old one wrong: not a session gone,
+    so that a client does not sign its user out. Tells nothing more.
+    """
+
+    EXCEPTION: t.ClassVar[type[Exception]] = AuthPasswordRefusedError
+    RPC_CODE = code_pb2.PERMISSION_DENIED
+    REASON = "PASSWORD_REFUSED"
 
 
 class AuthSessionsLimitErrorMixin(BaseAuthErrorMixin):

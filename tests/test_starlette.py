@@ -38,6 +38,7 @@ from ingot_auth.contrib.transports.starlette import (
     AuthStarletteErrorsUnit,
     AuthStarletteMetadataEndpoint,
     AuthStarletteNicknameEndpoint,
+    AuthStarlettePasswordEndpoint,
     AuthStarletteOwnProfileEndpoint,
     AuthStarletteOwnSessionsEndpoint,
     AuthStarletteProfileHashMiddleware,
@@ -103,6 +104,7 @@ class TstAuthUnit(AuthUnit):
 class TstAuthEndpoint(StarletteEndpoint, Unit):
     metadata = Slot(AuthStarletteMetadataEndpoint)
     nickname = Slot(AuthStarletteNicknameEndpoint)
+    password = Slot(AuthStarlettePasswordEndpoint)
     email_code = Slot(AuthStarletteEmailCodeEndpoint)
     sign_up = Slot(AuthStarletteSignUpEndpoint)
     sign_in = Slot(AuthStarletteSignInEndpoint)
@@ -115,6 +117,7 @@ class TstAuthEndpoint(StarletteEndpoint, Unit):
         for endpoint in (
             self.metadata,
             self.nickname,
+            self.password,
             self.email_code,
             self.sign_up,
             self.sign_in,
@@ -274,6 +277,28 @@ class StarletteTestCase(unittest.TestCase):
             (problem["domain"], problem["reason"], problem["metadata"]),
             ("ingot-auth", "METHOD_REFUSED", {}),
         )
+
+    def test_a_user_changes_its_password_by_its_token(self) -> None:
+        token = self.sign_up_and_in()
+        new = "another passphrase long enough"
+        refused = self.post(
+            "methods/password:change",
+            {"old_password": "wrong one!", "new_password": new},
+            token,
+        )
+        self.assertEqual(refused.status_code, 403)
+        self.assertEqual(refused.json()["reason"], "PASSWORD_REFUSED")
+        changed = self.post(
+            "methods/password:change",
+            {"old_password": PASSWORD, "new_password": new},
+            token,
+        )
+        self.assertEqual(changed.status_code, 200, changed.text)
+        self.assertEqual(changed.json(), {"revoked_count": 0})  # no other session
+        signed_in = self.post(
+            "methods/nickname:signIn", {"nickname": "al", "password": new}
+        )
+        self.assertEqual(signed_in.status_code, 200, signed_in.text)
 
     def test_a_nickname_taken_is_a_conflict(self) -> None:
         self.sign_up_and_in()
