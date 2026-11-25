@@ -52,8 +52,6 @@ class AuthProfilesStorage(Unit):
     the secrets of these and their values, each abstract.
     """
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     tags = Slot(BaseAuthTagsStorage)  # type: ignore[type-abstract]
     attrs = Slot(BaseAuthAttrsStorage)  # type: ignore[type-abstract]
     identities = Slot(BaseAuthIdentitiesStorage)  # type: ignore[type-abstract]

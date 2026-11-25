@@ -158,8 +158,6 @@ class AuthStorage(Unit):
     # holds; the storage depends on no other part of the auth
     project: "Project"
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     profiles = Slot(AuthProfilesStorage)  # type: ignore[type-abstract]
     sessions = Slot(AuthSessionsStorage)  # type: ignore[type-abstract]
     sign_up = Slot(AuthSignUpStorage)

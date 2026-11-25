@@ -2,8 +2,6 @@
 # port, the scenarios calling it. Only that port and the API of Mailpit
 # reach the host, for the scenarios.
 
-# The application, as its services run it: the image and the environment,
-# APP_*, the servers by their names in the network.
 x-app: &app
   build:
     context: ../..
@@ -28,7 +26,6 @@ x-app: &app
       condition: service_healthy
 
 services:
-  # The site, the application itself, under uvicorn.
   web:
     <<: *app
     ports:

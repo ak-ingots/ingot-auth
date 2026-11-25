@@ -82,8 +82,6 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
     permissions = PermissionsSlot(Flags)
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     failure = Slot(BaseAuthActivityFailure)  # type: ignore[type-abstract]
 
     op_list = Factory(AuthListActivitiesOperation)

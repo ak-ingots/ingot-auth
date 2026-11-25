@@ -187,8 +187,6 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     lifetime = Slot(BaseAuthSessionLifetime)  # type: ignore[type-abstract]
     deriver = Slot(BaseAuthSessionAttrsDeriver)  # type: ignore[type-abstract]
     limit = Slot(BaseAuthSessionsLimit)  # type: ignore[type-abstract]

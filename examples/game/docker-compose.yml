@@ -2,8 +2,6 @@
 # their ports, the scenarios calling each. Only those ports and the API of
 # Mailpit reach the host, for the scenarios.
 
-# The application, as both its services run it: the image and the
-# environment, APP_*, the servers by their names in the network.
 x-app: &app
   build:
     context: ../..
@@ -32,7 +30,6 @@ x-app: &app
       condition: service_healthy
 
 services:
-  # The server of the players, the application itself.
   app:
     <<: *app
     ports:

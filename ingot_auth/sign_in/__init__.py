@@ -60,8 +60,6 @@ class AuthSignInUnit(OperationsOwner, Unit):
     op_start = Factory(AuthStartSignInOperation)
     op_answer = Factory(AuthAnswerSignInOperation)
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     timing = Slot(BaseAuthTiming)  # type: ignore[type-abstract]
 
     @t.final
