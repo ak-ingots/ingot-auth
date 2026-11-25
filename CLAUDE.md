@@ -1,149 +1,39 @@
 # CLAUDE.md
 
 Guidance for Claude Code in this repository. Keep it under 200 lines and do not
-repeat what README or the ADRs say: link to them.
+repeat what README, `docs/` or the ADRs say: link to them.
 
 ## What this is
 
 `ingot-auth`: an addon of [Ingots](https://github.com/ak-ingots/ingots) for
-the sign-up, the sign-in and the sessions of the users of an application.
-`AuthProject` (`project.py`), the `MailProject` of ingot-mail, whose
-mailer sends the mail of the methods, takes the addon's `AuthSettingsUnit` (`settings.py`)
-with its `AuthConfigs` (named `AUTH_*`) beside it, its
-`AuthLoggingUnit` (`logging.py`, the logger `ingot_auth`), its
-`AuthOperationsUnit` (`operations/`, whose `AuthCallersProvider` gives the
-anonymous caller what the group `auth.grp_anonymous` grants) and `AuthUnit`
-(`auth.py`, the auth of the project: the units `profiles/`, with the registries `tags/`
-and `attrs/` and the values of a profile an operator sets, the whole set each time, and `sessions/`, with the registries `attrs/`, each attribute of
-a session with its source, and `presets/`, bound to the attributes many to
-many, all on the shared `registry/`, the sessions themselves kept by the hash
-of their token, their lifetime a strategy in the slot `lifetime`, none by
-default, sliding, fixed or both, the time seen written once an interval,
-the values of their attributes of the source `derived` given by the
-strategy in the slot `deriver`, none by default, over `AUTH_SESSIONS_MAX`
-a sign-in evicting or refused by the strategy in the slot `limit`, none by
-default, a user listing and
-revoking its own by the flags `auth.grp_signed_in` grants, a closed one
-kept, the record of the sign-ins an operator reads, who closed it in the
-activity log,
-and `authenticate()` turning a token into an `AuthCaller`, the session and
-the caller cached apart, the caller by the digest of the groups
-too, its callers forgotten by `forget_callers()` on a change of the
-memberships or of the values of the profile, each carrying the hash of its
-profile, `profile_hash`, which `BaseAuthGrpcServicer` tells in the trailing
-metadata of every reply; the `access/`, its `groups/` entities
-in slots `grp_*` of the units of their domains, `AuthGroupsOwner`, found by a
-walk from the project down the owners alone by `AuthGroupsUnit`, declared in
-the code, each named by its full name (`auth.profiles.grp_managers`, as the
-domain of the permissions is that of its unit), granting by a hook, its
-`members/` the memberships in the storage, `auth.grp_signed_in` of the core, of
-every signed-in user, none stored, granting the sign-in of each method open,
-`auth.grp_anonymous` of the core, of every caller that tells no one, none stored,
-granting what anyone may of the auth as its units tell it, both in the
-auth, the profiles and the sessions with groups of the work of their
-registries, and
-`AuthGroupsGrants`, the permissions of a user from its groups; the `activities/`, the
-activity log of ADR 0015, a record a change of state written by its
-operation in its transaction by `record()`, the strategy of a failure in the
-slot `failure`, strict or swallow, none by default, read by
-`auth.activities.grp_auditors`; the `metadata/` for the consumers, by the subdomains, of the sessions what is the client's; the
-methods of signing up and in `methods/`, units in slots of `AuthMethodsUnit`, a
-catalogue in the core, a subpackage a method (`nickname/`, `email_code/`),
-none bound until an application declares its slot, in
-steps kept by attempts, the state of a step as plain values by
-`_dump_state()`/`_load_state()` for a cache out of the process, a hook to start each flow they take, their flows
-their permissions too, a domain a method, its flag a flow by a hook
-(`_get_<flow>_permissions`), given by the toggles, each naming
-the kind of the identifier it verifies (`IDENTIFIER_KIND`), an identity
-`(kind, value)` bound to a profile once whatever method, their groups of
-the policies their slots `policies_<flow>_<field>`, each a `Factories` of
-ingots typed by its parameters, made by the method, which runs the group
-together (`run_all_in_group`); the password of the
-profile in `methods/password/`, the slot `password` of the methods, not a
-method, its hash the secret of the uid in `storages/profiles/secrets.py`, its group
-`policies_set` of a new one by any method, the length of OWASP by default,
-`AuthPasswordLengthPolicy`, a leaked password refused by `AuthPwnedPolicy` of
-`contrib/policies/`, a call to Pwned Passwords the application takes itself,
-its change by its user, `op_change`, the old one given, the other sessions
-closed, then its event `ev_changed`, a `Factories` of subscribers, the mail
-of the core the default; the events of a domain, `ev_*`, published by
-`project.events` of ingots after the change, the transaction of the storage
-holding them till it commits, dropping them on a rollback;
-the `policies/`, rules a value is checked
-against, each an operation taking a part of its parameters by a protocol,
-raising `AuthPolicyViolationError` with its name, configured by the `CONFIG`
-of its class; the `sign_up/` and `sign_in/` flows, over the base
-of the flows of the methods, `methods/operations.py`, the sign-up open by
-its toggle, `AUTH_SIGN_UP_ENABLED`, of every method, the sign-in opening a
-session, its replies held by the strategy in its slot `timing`, none by
-default; the `sign_out/`, closing the session of the caller, open to any
-caller, the anonymous one signing out of nothing; the storages `storages/`, the
-interfaces a backend implements with what they keep and raise, depending on
-no other part of the auth, laid out as a contrib of storages is, `AuthStorage`
-with the transactions of a backend over all its storages; and the caches
-`caches/`, the same for what lives minutes, the attempts, the sessions and
-their callers, `AuthCache` the facade, depending on the storages alone, for
-the records they keep too; the dispatcher `dispatchers.py`, operations run
-in the background, `BaseAuthDispatcher` the facade, the mail of the email code built by the
-method as a `Mail` of ingot-mail, sent by an operation of it by the mailer
-of the project); a
-method of the catalogue is whole, a plain default for what it sends, so
-that an application plugs only the backends; a unit lives in the
-`__init__.py` of its package, as in `ingots.defaults`, or in a module of
-its name when it has nothing beside it (`settings.py`, `logging.py`,
-`auth.py`), and a class takes the
-prefix `Auth`, so that an application imports it under its own name. A unit
-names its operations `op_*` and its commands `cmd_*`, the commands taking
-their CLI names from `cli_name`, and its groups `grp_*`, named by their
-full names. The goal of the core: assume no details, as
-far as it goes; the methods of sign-in are bound by the application, the
-storage and the transport plug in. The core holds the facades; their
-implementations are in `contrib/` (`contrib/storages/<backend>/`,
-`contrib/transports/<addon>/`, `contrib/caches/<backend>/` (`memory`,
-`redis` on ingot-redis),
-`contrib/dispatchers/<backend>/`), each under
-its own extra when it needs more than the core. A contrib is laid out by the
-subdomains of the core, `profiles/`, `sessions/`, as the core is.
-The gRPC contract is named and shaped by ADRs 0009, 0011 and 0013, the API
-of the addon in `api/`: a file per service at the path of its package, the
-tree of `api/` that of the subdomains of the core,
-`ingot_auth/api/profiles/tags/v1/tags.proto` for
-`ingot_auth.api.profiles.tags.v1`, an RPC a verb then its subject,
-`ListTags(ListTagsRequest)`, as `buf.yaml` lints it; `make proto` generates
-the code next to it, committed, imported as `protoc` writes it, by `api/`
-and the transports alone: the core imports no `v1` module. A method takes
-its annotation `google.api.http` (AIP-127), `buf breaking` keeping the JSON
-of the contract too (`WIRE_JSON`). Beside a contract, `api/` is the business
-layer of the transports, protobuf alone: the RPCs of a service as mixins in
-the `rpcs.py` next to its `v1/` (`rpc_*`, a call told by
-`BaseAuthRpcContext`), all exported by `ingot_auth.api`, and the statuses
-of the errors (`api/errors.py`, `google.rpc.Code`, reason, metadata);
-`contrib/transports/grpcio/` mixes them into its servicers, `starlette/`,
-the extra `starlette`, into the endpoints ingot-starlette transcodes to
-JSON, no grpcio. What a step of a method asks for, `Challenge` by the kind
-of its answer, is in `api/methods/v1/`, the results and the answers of the
-flows in `api/sign_up/v1/` and `api/sign_in/v1/`, the values of the
-attributes, of a session or a profile, `AttrValue`, in `api/attrs/v1/`; a
-servicer of a method extends `BaseAuthGrpcMethodServicer`, which gives the
-values of the attributes of the transport by their names, each bound to
-its reader (`ip`, the peer). The move to `api/` is rehearsed as a release
-would take it, a step a pull request: the servicers of gRPC are those of
-the `*_temp.py`, named `*Temp`, bound as `<attribute>_temp`, the old names
-their aliases (`aliases.py`, `AuthGrpcServiceAlias`), till the examples
-move back to the old names and the `_temp` go. A set of
-operations has its flags in its unit, a `PermissionFlags` nested as `Flags`,
-bound by the slot `permissions` (`PermissionsSlot`) of the unit, an `OperationsOwner`, their
-domain the full name of the unit; an operation builds its permissions by its
-hook `_get_permissions()` through its parent; the enum `Permission` of its
-contract repeating them. A contrib gives the class of the slot it fills
-(`AuthMemoryStorage` for `AuthUnit.storage`), no unit or project: the
-application composes. What a backend chooses is changed by subclassing, not a config: a client by a
-hook, the names of its collections by a `ClassVar`; the
-configs of the environment belong to the infrastructure addon. `testing/contracts/` holds the guarantees of the addon as tests a consumer runs (ADR 0005),
-`python -m ingot_auth` runs the addon on its own
-(prefix `INGOT`) with the storage in memory. A library (ADR 0003), Python >= 3.14, part of the
+the sign-up, the sign-in and the sessions of the users of an application. The
+goal of the core: assume no details, as far as it goes; the application binds
+the methods of sign-in, plugs the storage, the cache and the transport. A
+library (ADR 0003), Python >= 3.14, part of the
 [ak-ingots](https://github.com/ak-ingots) ecosystem; the meta repository
 `ingots-libs` holds the ecosystem-wide decisions in `docs/adr/`.
+
+## Layout
+
+The map of the package, part by part, is
+[docs/contributing/architecture.md](docs/contributing/architecture.md); read
+it before a change that crosses parts. `api/` and `contrib/` have a
+`CLAUDE.md` of their own.
+
+- `project.py`, `settings.py`, `logging.py`, `operations/`: `AuthProject` on
+  the `MailProject` of ingot-mail, its units, the configs `AUTH_*`.
+- `auth.py`: `AuthUnit`, the units of the domains: `profiles/`,
+  `sessions/`, `access/`, `activities/`, `metadata/`, on `registry/`.
+- `methods/`, `policies/`, `sign_up/`, `sign_in/`, `sign_out/`: the methods
+  and their flows; `methods/password/` the password of the profile.
+- `storages/`, `caches/`, `dispatchers.py`: the facades of the backends.
+- `api/`: the contract of gRPC and the RPCs the transports share.
+- `contrib/`: the backends, the transports, `policies/` that call out.
+- `testing/contracts/`: the guarantees a consumer runs (ADR 0005).
+- `examples/game`, `examples/web`: the stacks of the extras, run by their
+  scenarios; `perf/game` their load.
+- `python -m ingot_auth` runs the addon on its own (prefix `INGOT`), the
+  storage in memory.
 
 ## Commands
 
@@ -158,6 +48,7 @@ make coverage     # the same under coverage, with MongoDB and Redis; fails below
 make integration  # the storage in MongoDB, a replica set, and the cache in Redis
 make wheel-test   # unittest on the built wheel, PYTHONS="3.14 3.15"
 make format       # black
+make proto        # the code of the contract, next to its .proto
 make doc          # apidoc, then Sphinx; warnings are errors
 make doc-serve    # doc, then serve docs/build/ [DOC_HOST=0.0.0.0 DOC_PORT=8000]
 ```
@@ -186,17 +77,12 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
 - A release: a pull request sets the version (`uv version X.Y.Z`) and
   collates the changelog (`make cl-build VERSION=X.Y.Z`); after the merge,
   the tag `vX.Y.Z` on its commit starts the `release` workflow, which
-  publishes to TestPyPI, tests the package installed from it
-  (the shared workflow `index-test`), then publishes to PyPI once the user approves the
+  publishes to TestPyPI, tests the package installed from it (the shared
+  workflow `index-test`), then publishes to PyPI once the user approves the
   `pypi` environment. Run by hand, the workflow rehearses on TestPyPI only.
 
 ## Rules
 
-- The guide of the consumers is in `docs/guide/`, published on Read the Docs
-  as a subproject of `ingots`, `https://ingots.readthedocs.io/projects/ingot-auth/`;
-  a change of what a consumer writes updates it. The README stays short,
-  the status, the install and the link, its links absolute, as PyPI renders
-  it; its status and that of `docs/index.md` go together.
 - Every change users should know about adds a fragment to `changelog.d/`
   (`<issue>.<type>.md` or `+<slug>.<type>.md`, see `changelog.d/README.md`);
   `cl-check` fails CI without one.
@@ -217,10 +103,37 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
   `.github/workflows/ci.yml`. Change them together.
 - CI runs exactly the `make` targets; a new check goes into `make check` and
   `ci.yml` together.
+- A comment tells what the code cannot: why it is so, a constraint from
+  outside (a bug of a library, a standard, a measure), a trap for the next
+  change. None repeats the code, a name, a docstring or what a key of a
+  config says, nor tells the history of a change: that is the commit's.
 - Code layout and naming follow ADR 0007; the PUER rules of `ingots` apply to
   an addon too: hooks start with an underscore and are overridden, not
   called; a protected member is touched only by its class, its subclasses
   and its own package.
+
+Of this package:
+
+- The guide of the consumers is in `docs/guide/`, published on Read the Docs
+  as a subproject of `ingots`, `https://ingots.readthedocs.io/projects/ingot-auth/`;
+  a change of what a consumer writes updates it, a change of the map
+  `docs/contributing/architecture.md`. The README stays short, the status,
+  the install and the link, its links absolute, as PyPI renders it; its
+  status and that of `docs/index.md` go together.
+- A unit lives in the `__init__.py` of its package, as in `ingots.defaults`,
+  or in a module of its name when it has nothing beside it (`settings.py`,
+  `logging.py`, `auth.py`). A class takes the prefix `Auth`, so that an
+  application imports it under its own name. A unit names its operations
+  `op_*`, its commands `cmd_*` (their CLI names by `cli_name`), its groups
+  `grp_*` (named by their full names), its events `ev_*`.
+- A set of operations has its flags in its unit, a `PermissionFlags` nested
+  as `Flags`, bound by the slot `permissions` (`PermissionsSlot`) of the
+  unit, an `OperationsOwner`, their domain the full name of the unit; an
+  operation builds its permissions by its hook `_get_permissions()`; the
+  enum `Permission` of its contract repeats them.
+- A method of the catalogue is whole, a plain default for what it sends, so
+  that an application plugs only the backends. A variation of behaviour is a
+  strategy in a slot, none by default, or a policy in a group.
 - The errors of a package live in its `errors.py`, apart from the entity
   they are of, and the package exports them as before.
 - The parameters of an operation, `*Parameters`, and a result of its own,
@@ -239,4 +152,5 @@ One test: `uv run python -m unittest tests.test_canary.CanaryTestCase`.
 An addon extends the framework through slots and subclassing (ADR 0004) and
 ships contract tests that its consumers run (ADR 0005); design principles in
 ADR 0006. The settings it extends are documented in `ingots`:
-`docs/defaults/settings.md` and `docs/defaults/addon.md`.
+`docs/defaults/settings.md` and `docs/defaults/addon.md`. The design of the
+auth, its stories and slices, is `docs/design/auth/` of the meta repository.
