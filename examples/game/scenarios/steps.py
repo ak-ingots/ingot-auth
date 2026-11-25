@@ -17,6 +17,7 @@ from ingot_auth.api import PROFILE_HASH_KEY
 from ingot_auth.api.metadata.v1 import metadata_pb2
 from ingot_auth.api.methods.email_code.v1 import email_code_pb2
 from ingot_auth.api.methods.nickname.v1 import nickname_pb2
+from ingot_auth.api.methods.password.v1 import password_pb2
 from ingot_auth.api.profiles.v1 import profiles_pb2
 from ingot_auth.api.sessions.v1 import sessions_pb2
 from ingot_auth.api.sign_in.v1 import sign_in_pb2
@@ -159,6 +160,7 @@ class GameMixin(TestCase):
         await super().asyncSetUp()
         game = await self.project.grpc.clients.default
         self.nickname = game.auth_methods_nickname
+        self.password = game.auth_methods_password
         self.email_code = game.auth_methods_email_code
         self.sign_up = game.auth_sign_up
         self.sign_in = game.auth_sign_in
@@ -242,6 +244,12 @@ class GameMixin(TestCase):
     async def revoke_own_session(self, token: str, session_uid: str) -> None:
         request = sessions_pb2.RevokeOwnSessionRequest(session_uid=session_uid)
         await self.sessions.RevokeOwnSession(request, metadata=bear(token))
+
+    async def change_password(self, token: str, old: str, new: str) -> int:
+        """Changes the password of the player: how many sessions it closed."""
+        request = password_pb2.ChangePasswordRequest(old_password=old, new_password=new)
+        response = await self.password.ChangePassword(request, metadata=bear(token))
+        return response.revoked_count
 
     async def revoke_other_sessions(self, token: str) -> int:
         request = sessions_pb2.RevokeOtherSessionsRequest()

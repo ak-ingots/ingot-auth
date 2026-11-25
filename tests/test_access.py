@@ -524,7 +524,8 @@ class CommandsTestCase(unittest.TestCase):
                 0,
                 "auth.grp_anonymous\tauth.metadata=1\tauth.sign_in=1"
                 "\tauth.sign_up=1\n"
-                "auth.grp_signed_in\tauth.profiles=2\tauth.sessions=3\n"
+                "auth.grp_signed_in\tauth.methods.password=1"
+                "\tauth.profiles=2\tauth.sessions=3\n"
                 "auth.grp_system\tauth.sessions=16\n"
                 "auth.profiles.grp_consumers\tauth.profiles.attrs=2"
                 "\tauth.profiles.tags=2\n"

@@ -36,6 +36,14 @@ class BaseAuthIdentitiesStorage(Entity):
         """
         return await self._find_uid(kind, value)
 
+    @t.final
+    async def get_of(self, profile_uid: str) -> tuple[AuthIdentity, ...]:
+        """
+        The identities bound to a profile, by their kinds then their values;
+        none for a profile of none.
+        """
+        return await self._get_of(profile_uid)
+
     @abc.abstractmethod
     async def _create(self, identity: AuthIdentity) -> None:
         raise NotImplementedError(f"{type(self).__qualname__}._create")
@@ -43,3 +51,7 @@ class BaseAuthIdentitiesStorage(Entity):
     @abc.abstractmethod
     async def _find_uid(self, kind: str, value: str) -> str:
         raise NotImplementedError(f"{type(self).__qualname__}._find_uid")
+
+    @abc.abstractmethod
+    async def _get_of(self, profile_uid: str) -> tuple[AuthIdentity, ...]:
+        raise NotImplementedError(f"{type(self).__qualname__}._get_of")

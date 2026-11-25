@@ -4,7 +4,11 @@ __all__ = ("AuthMemorySecretsStorage",)
 
 import typing as t
 
-from ingot_auth.storages import AuthSecretNotFoundError, BaseAuthSecretsStorage
+from ingot_auth.storages import (
+    AuthSecretChangedError,
+    AuthSecretNotFoundError,
+    BaseAuthSecretsStorage,
+)
 
 from ..state import AuthMemoryStateMixin
 
@@ -19,6 +23,12 @@ class AuthMemorySecretsStorage(AuthMemoryStateMixin, BaseAuthSecretsStorage):
     @t.override
     async def _put(self, uid: str, secret: str) -> None:
         self._secrets[uid] = secret
+
+    @t.override
+    async def _replace(self, uid: str, old: str, new: str) -> None:
+        if self._secrets.get(uid) != old:
+            raise AuthSecretChangedError.for_uid(uid)
+        self._secrets[uid] = new
 
     @t.override
     async def _get(self, uid: str) -> str:

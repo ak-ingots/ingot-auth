@@ -55,6 +55,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
     AuthGrpcNicknameServicer,
+    AuthGrpcPasswordBinding,
     AuthGrpcSessionAttrsServicer,
     AuthGrpcSessionPresetsServicer,
     AuthGrpcSessionsBinding,
@@ -84,6 +85,7 @@ from ingot_auth.contrib.transports.grpcio.attrs import (
 )
 from ingot_auth.api.metadata.v1 import metadata_pb2
 from ingot_auth.api.methods.nickname.v1 import nickname_pb2, nickname_pb2_grpc
+from ingot_auth.api.methods.password.v1 import password_pb2
 from ingot_auth.api.profiles.attrs.v1 import (
     attrs_pb2 as profile_attrs_pb2,
 )
@@ -262,6 +264,7 @@ class TstClient(
     AuthGrpcMetadataBinding,
     AuthGrpcAdminBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcEmailCodeBinding,
     AuthGrpcFlowsBinding,
     AuthGrpcSessionsBinding,
@@ -412,6 +415,7 @@ class TstNicknameServer(
     AuthGrpcMetadataBinding,
     AuthGrpcAdminBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcSessionsBinding,
     AuthGrpcSignOutBinding,
     DefaultGrpcServer,
@@ -687,7 +691,11 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
                 ),
                 groups_pb2.Group(
                     name="auth.grp_signed_in",
-                    permissions={"auth.profiles": 2, "auth.sessions": 3},
+                    permissions={
+                        "auth.methods.password": 1,
+                        "auth.profiles": 2,
+                        "auth.sessions": 3,
+                    },
                 ),
                 groups_pb2.Group(
                     name="auth.grp_system",
@@ -1209,6 +1217,54 @@ class GrpcTestCase(unittest.IsolatedAsyncioTestCase):
             [sessions_pb2.CLOSE_REASON_UNSPECIFIED],
         )
         self.assertFalse(open_only[0].HasField("closed_at"))
+
+    async def test_a_user_changes_its_password_by_its_token(self) -> None:
+        client = await self.connect(TstNicknameProject)
+        nickname = client.auth_methods_nickname
+        old, new = "correct horse battery staple", "another horse battery staple"
+        await nickname.SignUp(
+            nickname_pb2.SignUpRequest(nickname="alice", password=old)
+        )
+        phone, laptop = [
+            [
+                (
+                    "authorization",
+                    "Bearer "
+                    + (
+                        await nickname.SignIn(
+                            nickname_pb2.SignInRequest(nickname="alice", password=old)
+                        )
+                    ).result.signed_in.token,
+                )
+            ]
+            for _ in range(2)
+        ]
+        password = client.auth_methods_password
+        with self.assertRaises(GrpcError) as error:
+            await password.ChangePassword(
+                password_pb2.ChangePasswordRequest(
+                    old_password="wrong", new_password=new
+                ),
+                metadata=laptop,
+            )
+        self.assertEqual(
+            (error.exception.code, error.exception.reason),
+            (grpc.StatusCode.PERMISSION_DENIED, "PASSWORD_REFUSED"),
+        )
+        changed = await password.ChangePassword(
+            password_pb2.ChangePasswordRequest(old_password=old, new_password=new),
+            metadata=laptop,
+        )
+        self.assertEqual(changed.revoked_count, 1)
+        with self.assertRaises(GrpcError) as error:
+            await client.auth_sessions.ListOwnSessions(
+                sessions_pb2.ListOwnSessionsRequest(), metadata=phone
+            )
+        self.assertEqual(error.exception.code, grpc.StatusCode.UNAUTHENTICATED)
+        signed_in = await nickname.SignIn(
+            nickname_pb2.SignInRequest(nickname="alice", password=new)
+        )
+        self.assertTrue(signed_in.result.signed_in.token)
 
     async def test_an_operator_revokes_every_session_of_a_profile(self) -> None:
         client = await self.connect(TstNicknameProject)

@@ -24,6 +24,7 @@ from ingot_auth.storages import (
     AuthProfileConflictError,
     AuthProfileNotFoundError,
     AuthProfileValues,
+    AuthSecretChangedError,
     AuthSecretNotFoundError,
 )
 
@@ -89,6 +90,19 @@ class AuthIdentitiesStorageContract(BaseAuthContract):
                 await identities.find_uid(kind, value)
             self.assertEqual(error.exception.kind, kind)
 
+    async def test_a_profile_gives_its_identities_in_order(self) -> None:
+        identities = self.project.auth.storage.profiles.identities
+        bound = [
+            AuthIdentity(kind="nickname", value="alice", profile_uid="a1"),
+            AuthIdentity(kind="email", value="b@b.c", profile_uid="a1"),
+            AuthIdentity(kind="email", value="a@b.c", profile_uid="a1"),
+            AuthIdentity(kind="email", value="c@b.c", profile_uid="b2"),
+        ]
+        for identity in bound:
+            await identities.create(identity)
+        self.assertEqual(await identities.get_of("a1"), (bound[2], bound[1], bound[0]))
+        self.assertEqual(await identities.get_of("c3"), ())
+
     async def test_of_concurrent_bindings_of_an_identifier_one_wins(self) -> None:
         identities = self.project.auth.storage.profiles.identities
         results = await asyncio.gather(
@@ -126,6 +140,34 @@ class AuthSecretsStorageContract(BaseAuthContract):
         with self.assertRaises(AuthSecretNotFoundError) as error:
             await secrets.get("b2")
         self.assertEqual(error.exception.uid, "b2")
+
+    async def test_a_secret_is_replaced_if_it_is_the_one_read(self) -> None:
+        secrets = self.project.auth.storage.profiles.secrets
+        await secrets.put("a1", "hash-1")
+        await secrets.replace("a1", "hash-1", "hash-2")
+        self.assertEqual(await secrets.get("a1"), "hash-2")
+
+    async def test_a_secret_changed_meanwhile_is_not_replaced(self) -> None:
+        secrets = self.project.auth.storage.profiles.secrets
+        await secrets.put("a1", "hash-2")
+        for uid in ("a1", "b2"):  # changed, or none
+            with self.assertRaises(AuthSecretChangedError) as error:
+                await secrets.replace(uid, "hash-1", "hash-3")
+            self.assertEqual(error.exception.uid, uid)
+            self.assertIn("changed meanwhile", str(error.exception))
+        self.assertEqual(await secrets.get("a1"), "hash-2")
+        with self.assertRaises(AuthSecretNotFoundError):
+            await secrets.get("b2")
+
+    async def test_of_concurrent_replaces_of_a_secret_one_wins(self) -> None:
+        secrets = self.project.auth.storage.profiles.secrets
+        await secrets.put("a1", "hash-1")
+        results = await asyncio.gather(
+            *(secrets.replace("a1", "hash-1", new) for new in ("hash-2", "hash-3")),
+            return_exceptions=True,
+        )
+        changed = [r for r in results if isinstance(r, AuthSecretChangedError)]
+        self.assertEqual(len(changed), 1, results)
 
 
 class AuthProfileValuesStorageContract(BaseAuthContract):

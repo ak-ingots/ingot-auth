@@ -46,7 +46,9 @@ __all__ = (
     "AuthGrpcMetadataBinding",
     "AuthGrpcMetadataServicer",
     "AuthGrpcNicknameBinding",
+    "AuthGrpcPasswordBinding",
     "AuthGrpcNicknameServicer",
+    "AuthGrpcPasswordServicer",
     "AuthGrpcProfileRegistriesBinding",
     "AuthGrpcProfilesBinding",
     "AuthGrpcProfilesServicer",
@@ -85,6 +87,8 @@ from .methods import (
     AuthGrpcEmailCodeServicer,
     AuthGrpcNicknameBinding,
     AuthGrpcNicknameServicer,
+    AuthGrpcPasswordBinding,
+    AuthGrpcPasswordServicer,
     BaseAuthGrpcMethodServicer,
 )
 from .profiles import (

@@ -16,6 +16,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcFlowsBinding,
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcProfilesBinding,
     AuthGrpcSessionsBinding,
 )
@@ -37,6 +38,7 @@ class ScenariosSettingsUnit(GrpcSettingsUnit):
 class GameClient(
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcEmailCodeBinding,
     AuthGrpcFlowsBinding,
     AuthGrpcProfilesBinding,

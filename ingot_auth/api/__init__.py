@@ -12,6 +12,7 @@ __all__ = (
     "AuthEmailCodeRpcMixin",
     "AuthMetadataRpcMixin",
     "AuthNicknameRpcMixin",
+    "AuthPasswordRpcMixin",
     "AuthProfilesRpcMixin",
     "AuthRpcMixin",
     "AuthSessionRpcMixin",
@@ -35,6 +36,7 @@ from .metadata.rpcs import AuthMetadataRpcMixin
 from .methods.base import BaseAuthMethodRpcMixin
 from .methods.email_code.rpcs import AuthEmailCodeRpcMixin
 from .methods.nickname.rpcs import AuthNicknameRpcMixin
+from .methods.password.rpcs import AuthPasswordRpcMixin
 from .profiles.rpcs import AuthProfilesRpcMixin
 from .sessions.rpcs import AuthSessionsRpcMixin
 from .sign_in.rpcs import AuthSignInRpcMixin

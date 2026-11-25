@@ -57,7 +57,25 @@ class AuthMongoDbIdentitiesStorage(
         return t.cast(str, document["profile_uid"])
 
     @t.override
+    async def _get_of(self, profile_uid: str) -> tuple[AuthIdentity, ...]:
+        collection = await self._mongodb_get_collection()
+        documents = collection.find(
+            {"profile_uid": profile_uid}, session=self._mongodb_get_session()
+        ).sort([("kind", 1), ("value", 1)])
+        return tuple(
+            [
+                AuthIdentity(
+                    kind=document["kind"],
+                    value=document["value"],
+                    profile_uid=document["profile_uid"],
+                )
+                async for document in documents
+            ]
+        )
+
+    @t.override
     async def _mongodb_create_indexes(
         self, collection: "AsyncCollection[Document]"
     ) -> None:
         await collection.create_index([("kind", 1), ("value", 1)], unique=True)
+        await collection.create_index([("profile_uid", 1)])

@@ -14,6 +14,7 @@ __all__ = (
     "AuthGrpcMethodRefusedPolicy",
     "AuthGrpcMethodUnsupportedPolicy",
     "AuthGrpcOwnSessionNotFoundPolicy",
+    "AuthGrpcPasswordRefusedPolicy",
     "AuthGrpcPermissionsPolicy",
     "AuthGrpcProfileNotFoundPolicy",
     "AuthGrpcSessionExpiredPolicy",
@@ -41,6 +42,7 @@ from ingot_auth.api.errors import (
     AuthMethodRefusedErrorMixin,
     AuthMethodUnsupportedErrorMixin,
     AuthOwnSessionNotFoundErrorMixin,
+    AuthPasswordRefusedErrorMixin,
     AuthPermissionsErrorMixin,
     AuthProfileNotFoundErrorMixin,
     AuthSessionExpiredErrorMixin,
@@ -152,6 +154,12 @@ class AuthGrpcOwnSessionNotFoundPolicy(
     pass
 
 
+class AuthGrpcPasswordRefusedPolicy(
+    AuthPasswordRefusedErrorMixin, BaseAuthGrpcErrorPolicy
+):
+    pass
+
+
 class AuthGrpcSessionsLimitPolicy(AuthSessionsLimitErrorMixin, BaseAuthGrpcErrorPolicy):
     pass
 
@@ -175,4 +183,5 @@ class AuthGrpcErrorsUnit(GrpcErrorsUnit):
     auth_session_not_found = Slot(AuthGrpcSessionNotFoundPolicy)
     auth_session_expired = Slot(AuthGrpcSessionExpiredPolicy)
     auth_own_session_not_found = Slot(AuthGrpcOwnSessionNotFoundPolicy)
+    auth_password_refused = Slot(AuthGrpcPasswordRefusedPolicy)
     auth_sessions_limit = Slot(AuthGrpcSessionsLimitPolicy)

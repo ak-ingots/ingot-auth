@@ -13,6 +13,7 @@ from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcFlowsBinding,
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcProfilesBinding,
     AuthGrpcSessionsBinding,
 )
@@ -21,6 +22,7 @@ from ingot_auth.contrib.transports.grpcio import (
 class AppGrpcServer(
     AuthGrpcMetadataBinding,
     AuthGrpcNicknameBinding,
+    AuthGrpcPasswordBinding,
     AuthGrpcEmailCodeBinding,
     AuthGrpcFlowsBinding,
     AuthGrpcProfilesBinding,
