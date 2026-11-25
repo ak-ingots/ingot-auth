@@ -44,6 +44,8 @@ uv add 'ingot-auth[game]'   # or 'ingot-auth[web]'
   how an application plugs them in.
 - {doc}`reference/index`: the Python API.
 - {doc}`changelog`.
+- {doc}`contributing/architecture`: the map of the package, for its
+  contributors.
 
 ```{toctree}
 :hidden:
@@ -65,4 +67,11 @@ contrib/index
 
 reference/index
 changelog
+```
+
+```{toctree}
+:hidden:
+:caption: Contributing
+
+contributing/architecture
 ```
