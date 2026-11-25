@@ -10,6 +10,7 @@ authors = [{name = "Aliaksandr Karotki", email = "abkarotki@gmail.com"}]
 keywords = ["ingots", "auth", "authentication", "sign-in", "sign-up"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
+    "Framework :: AsyncIO",
     "Intended Audience :: Developers",
     "Operating System :: MacOS",
     "Operating System :: POSIX :: Linux",
@@ -17,6 +18,8 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
+    "Topic :: Internet :: WWW/HTTP :: Session",
+    "Topic :: Security",
     "Typing :: Typed",
 ]
 dependencies = [
@@ -40,8 +43,10 @@ web = [
 
 [project.urls]
 repository = "https://github.com/ak-ingots/ingot-auth"
+issues = "https://github.com/ak-ingots/ingot-auth/issues"
 changelog = "https://github.com/ak-ingots/ingot-auth/blob/main/CHANGELOG.md"
 documentation = "https://ingots.readthedocs.io/projects/ingot-auth/"
+ecosystem = "https://github.com/ak-ingots/ingots-libs"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14"]
