@@ -1,8 +1,10 @@
 # ingot-auth
 
+[![PyPI](https://img.shields.io/pypi/v/ingot-auth.svg)](https://pypi.org/project/ingot-auth/)
+[![Python](https://img.shields.io/pypi/pyversions/ingot-auth.svg)](https://pypi.org/project/ingot-auth/)
 [![ci](https://github.com/ak-ingots/ingot-auth/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ak-ingots/ingot-auth/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/ak-ingots/ingot-auth/blob/main/LICENSE)
-[![Documentation Status](https://app.readthedocs.org/projects/ingot-auth/badge/?version=latest)](https://ingots.readthedocs.io/projects/ingot-auth/en/latest/)
+[![Documentation Status](https://app.readthedocs.org/projects/ingot-auth/badge/?version=stable)](https://ingots.readthedocs.io/projects/ingot-auth/en/stable/)
 
 <!-- Links must be absolute: this README also renders on PyPI. -->
 
@@ -44,7 +46,7 @@ composes them; each run by its scenarios on each change.
 uv add 'ingot-auth[game]'   # or 'ingot-auth[web]'
 ```
 
-The [documentation](https://ingots.readthedocs.io/projects/ingot-auth/en/latest/)
+The [documentation](https://ingots.readthedocs.io/projects/ingot-auth/en/stable/)
 has the guide, the contrib, the caches, the storages and the transports an
 application plugs in, and the Python API.
 
