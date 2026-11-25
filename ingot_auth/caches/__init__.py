@@ -30,8 +30,6 @@ class AuthCache(Unit):
     with its own, and the project declares it in the slot of the auth.
     """
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     attempts = Slot(BaseAuthAttemptsCache)  # type: ignore[type-abstract]
     sessions = Slot(BaseAuthSessionsCache)  # type: ignore[type-abstract]
     callers = Slot(BaseAuthCallersCache)  # type: ignore[type-abstract]

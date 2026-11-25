@@ -1,9 +1,7 @@
-# The MongoDB of the tests of the storage and the Redis of those of the cache:
-# `make integration`, `coverage` and `installed-test` start them, run the tests
-# against them and stop them. MongoDB is a replica set of one node, as MongoDB
-# takes transactions on a replica set only; the node listens on the port the
-# tests reach it by, which is the host it is known by in the set. No
-# authentication: a replica set with it needs a key file.
+# MongoDB is a replica set of one node, as it takes transactions on a replica
+# set only; the node listens on the port the tests reach it by, which is the
+# host it is known by in the set. No authentication: a replica set with it
+# needs a key file.
 services:
   mongodb:
     image: mongo:9
@@ -38,7 +36,6 @@ services:
       timeout: 5s
       retries: 30
 
-  # The Redis of the tests of the cache, with no authentication either.
   redis:
     image: redis:8.8-alpine
     ports:

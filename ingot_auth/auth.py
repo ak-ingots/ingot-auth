@@ -46,8 +46,6 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
     grp_signed_in = Slot(AuthSignedInGroup)
     grp_system = Slot(AuthSystemGroup)
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     storage = Slot(AuthStorage)  # type: ignore[type-abstract]
     cache = Slot(AuthCache)
     dispatcher = Slot(BaseAuthDispatcher)  # type: ignore[type-abstract]

@@ -1,9 +1,3 @@
-# Development entrypoint (uv):
-#
-#   make              show the target list
-#   make check        everything the `ci` workflow runs
-#   make all          build the distributions into dist/
-
 SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 .DEFAULT_GOAL := help
@@ -12,14 +6,10 @@ SHELL := /bin/bash
 SRC := ingot_auth tests docs/conf.py examples perf
 DOC_OUT := docs/build
 
-# Supported interpreters: keep in step with the classifiers and the `wheel`
-# matrix in .github/workflows/ci.yml.
 PYTHONS ?= 3.14 3.15
 
-# The extras the wheel is tested with: every integration.
 EXTRAS ?= grpcio,pymongo,redis,starlette
 
-# What `cl-check` compares the branch with.
 AGAINST ?= origin/main
 
 # Where `doc-serve` listens. The default is every interface, so the docs built
@@ -31,7 +21,6 @@ DOC_PORT ?= 8000
 
 ##@ Checks
 
-# The `ci` workflow runs exactly these targets, one per job.
 .PHONY: check
 check: lint test coverage wheel-test example-test doc cl-check  ## Every check: lint, test, coverage, wheel-test, example-test, doc, cl-check
 
@@ -92,9 +81,6 @@ integration:  ## The storage in MongoDB and the cache in Redis against docker-co
 	@$(WITH_SERVERS) \
 	uv run python -m unittest -v tests.test_mongodb_storage tests.test_redis_cache
 
-# ADR 0003: the tests run against the built wheel, installed into a fresh
-# virtualenv, from a copy of tests/ outside the repository, so the package can
-# be imported only from the wheel.
 .PHONY: wheel-test
 wheel-test: all  ## unittest on the built wheel, once per interpreter in PYTHONS
 	@$(MAKE) --no-print-directory installed-test WHEEL="$$(echo dist/*.whl)"
@@ -204,16 +190,11 @@ all:  ## Build the sdist and the wheel into dist/
 
 ##@ Load
 
-# What a stand builds a role by, its tree the candidate's or a worktree of
-# the baseline: the distributions the example installs. The load itself
-# runs from ingots-libs, perf/README.md telling how.
 .PHONY: perf-build
 perf-build: all  ## The distributions of the example, what a stand builds a role by
 	uv export --quiet --no-dev --extra game --no-emit-project --no-hashes \
 		--output-file dist/game-requirements.txt
 
-# The scenarios of the stands, dry, against the game in Docker: they run,
-# no number measured.
 PERF_PYTHON ?= uv run python
 
 .PHONY: perf-smoke

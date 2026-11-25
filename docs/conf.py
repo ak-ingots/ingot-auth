@@ -1,21 +1,12 @@
-# Configuration file for the Sphinx documentation builder.
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
 import os
 from importlib.metadata import version as _dist_version
-
-# -- Project information ----------------------------------------------------
 
 project = "ingot-auth"
 author = "Aliaksandr Karotki"
 copyright = f"2026, {author}"
 
-# From the installed distribution: the static version in pyproject.toml.
-# `release` is the full version, `version` the short X.Y.
 release = _dist_version("ingot-auth")
 version = ".".join(release.split(".")[:2])
-
-# -- General configuration --------------------------------------------------
 
 extensions: list[str] = [
     "sphinx.ext.autodoc",
@@ -29,7 +20,6 @@ extensions: list[str] = [
 templates_path: list[str] = ["_templates"]
 exclude_patterns: list[str] = ["build", "Thumbs.db", ".DS_Store"]
 
-# Markdown (MyST) sources alongside reStructuredText.
 myst_enable_extensions = ["colon_fence", "deflist"]
 myst_heading_anchors = 3
 
@@ -43,13 +33,10 @@ autodoc_default_options = {"ignore-module-all": True}
 # is not a warning.
 suppress_warnings = ["ref.python"]
 
-# The framework's API, for the addon's references to it.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "ingots": ("https://ingots.readthedocs.io/en/latest/", None),
 }
-
-# -- HTML output ------------------------------------------------------------
 
 html_theme = "sphinx_rtd_theme"
 # The canonical URL Read the Docs gives a build, that of the subproject under

@@ -14,6 +14,4 @@ class AuthAccessStorage(Unit):
     groups are of the code.
     """
 
-    # mypy refuses an abstract class where a type is expected: a slot of
-    # one is an open question of ingots
     members = Slot(BaseAuthMembersStorage)  # type: ignore[type-abstract]
