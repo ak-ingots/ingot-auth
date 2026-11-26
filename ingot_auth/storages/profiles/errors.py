@@ -19,9 +19,11 @@ from ingots.puer import UserError
 class AuthProfileError(UserError):
     """An error of a profile. ``args`` are the message and the uid."""
 
+    args: tuple[str, str]
+
     @property
     def uid(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:
@@ -50,9 +52,11 @@ class AuthIdentityError(UserError):
     identifier, an email or a phone that has no place in the logs.
     """
 
+    args: tuple[str, str]
+
     @property
     def kind(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:
@@ -78,13 +82,15 @@ class AuthIdentityNotFoundError(AuthIdentityError):
 class AuthSecretNotFoundError(Exception):
     """The profile has no secret. ``args`` are the message and the uid."""
 
+    args: tuple[str, str]
+
     @classmethod
     def for_uid(cls, uid: str) -> t.Self:
         return cls(f"the profile {uid!r} has no secret", uid)
 
     @property
     def uid(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:
@@ -97,13 +103,15 @@ class AuthSecretChangedError(Exception):
     it meanwhile. ``args`` are the message and the uid.
     """
 
+    args: tuple[str, str]
+
     @classmethod
     def for_uid(cls, uid: str) -> t.Self:
         return cls(f"the secret of the profile {uid!r} changed meanwhile", uid)
 
     @property
     def uid(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:

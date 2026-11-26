@@ -19,13 +19,15 @@ from ingot_auth.storages import AuthSessionCloseReason, AuthSessionError
 class AuthSessionExpiredError(AuthSessionError):
     """The session of the token expired: it is closed for the reason."""
 
+    args: tuple[str, AuthSessionCloseReason]
+
     @classmethod
     def for_reason(cls, reason: AuthSessionCloseReason) -> t.Self:
         return cls(f"the session expired: {reason}", reason)
 
     @property
     def reason(self) -> AuthSessionCloseReason:
-        return t.cast(AuthSessionCloseReason, self.args[1])
+        return self.args[1]
 
 
 class AuthOwnSessionNotFoundError(UserError):
@@ -35,13 +37,15 @@ class AuthOwnSessionNotFoundError(UserError):
     uid.
     """
 
+    args: tuple[str, str]
+
     @classmethod
     def for_uid(cls, session_uid: str) -> t.Self:
         return cls(f"no open session {session_uid!r} of the caller", session_uid)
 
     @property
     def session_uid(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:
@@ -55,13 +59,15 @@ class AuthSessionsLimitError(UserError):
     user signs out of another first; ``args`` are the message, then how many.
     """
 
+    args: tuple[str, int]
+
     @classmethod
     def for_count(cls, count: int) -> t.Self:
         return cls(f"as many open sessions as allowed: {count}", count)
 
     @property
     def count(self) -> int:
-        return t.cast(int, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:

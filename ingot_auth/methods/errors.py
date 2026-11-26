@@ -29,13 +29,15 @@ class AuthMethodError(UserError):
 class AuthMethodNotFoundError(AuthMethodError):
     """No method has the name."""
 
+    args: tuple[str, str]
+
     @classmethod
     def for_name(cls, name: str) -> t.Self:
         return cls(f"no method {name!r}", name)
 
     @property
     def name(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
 
 class AuthMethodRefusedError(AuthMethodError):
@@ -56,13 +58,15 @@ class AuthMethodDeniedError(AuthMethodError):
     by then, so that the support tells the two apart.
     """
 
+    args: tuple[str, str]
+
     @classmethod
     def for_name(cls, name: str) -> t.Self:
         return cls(f"the method {name!r} is closed to the profile", name)
 
     @property
     def name(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
 
 class AuthMethodInvalidError(AuthMethodError):
@@ -72,6 +76,8 @@ class AuthMethodInvalidError(AuthMethodError):
     the order of their group, the value is not.
     """
 
+    args: tuple[str, str, tuple[str, ...]]
+
     @classmethod
     def for_field(cls, field: str, policies: tuple[str, ...]) -> t.Self:
         names = ", ".join(map(repr, policies))
@@ -79,15 +85,17 @@ class AuthMethodInvalidError(AuthMethodError):
 
     @property
     def field(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @property
     def policies(self) -> tuple[str, ...]:
-        return t.cast(tuple[str, ...], self.args[2])
+        return self.args[2]
 
 
 class AuthMethodUnsupportedError(AuthMethodError):
     """The method takes no part in the flow: a password signs no one out."""
+
+    args: tuple[str, str]
 
     @classmethod
     def for_flow(cls, flow: str) -> t.Self:
@@ -95,4 +103,4 @@ class AuthMethodUnsupportedError(AuthMethodError):
 
     @property
     def flow(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]

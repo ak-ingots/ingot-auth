@@ -38,19 +38,21 @@ class AuthRegistryError(UserError):
     with the class methods of its subclasses.
     """
 
+    args: tuple[str, str, int | str]
+
     @property
     def registry(self) -> str:
         """The registry: ``profiles.tags``, ``sessions.attrs``."""
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @property
     def key(self) -> int | str:
         """The id or the name in question."""
-        return t.cast(int | str, self.args[2])
+        return self.args[2]
 
     @t.override
     def __str__(self) -> str:
-        return t.cast(str, self.args[0])
+        return self.args[0]
 
 
 class AuthItemConflictError(AuthRegistryError):

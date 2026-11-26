@@ -13,13 +13,15 @@ class AuthPolicyViolationError(UserError):
     policy, not the value, a password, say.
     """
 
+    args: tuple[str, str]
+
     @classmethod
     def for_policy(cls, policy: str) -> t.Self:
         return cls(f"the value breaks the policy {policy!r}", policy)
 
     @property
     def policy(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:

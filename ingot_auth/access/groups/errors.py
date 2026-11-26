@@ -14,9 +14,11 @@ class AuthGroupError(UserError):
     of its subclasses.
     """
 
+    args: tuple[str, str]
+
     @property
     def name(self) -> str:
-        return t.cast(str, self.args[1])
+        return self.args[1]
 
     @t.override
     def __str__(self) -> str:
