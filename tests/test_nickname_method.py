@@ -174,7 +174,7 @@ class NicknameMethodTestCase(unittest.IsolatedAsyncioTestCase):
 
     @property
     def method(self) -> AuthNicknameMethod:
-        return t.cast(AuthNicknameMethod, self.project.auth.methods.get("nickname"))
+        return self.project.auth.methods.nickname
 
     @t.override
     async def asyncSetUp(self) -> None:
