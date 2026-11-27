@@ -1,7 +1,8 @@
 On ingots 0.38: the command line a domain of the defaults. The units of the
-auth hold no command: the commands of a package are in a group of its
-`commands.py`, `AuthTagsCommandsUnit`, `AuthSessionsCommandsUnit` and the
-others, put together by `ingot_auth.cli` under `AuthCliUnit`, the unit
+auth hold no command: the commands are in `ingot_auth.cli`, the domain of
+the commands, its packages as the tree goes, `ingot_auth.cli.profiles.tags`
+with `AuthTagsCommandsUnit`, `ingot_auth.cli.sessions` with
+`AuthSessionsCommandsUnit` and the others, under `AuthCliUnit`, the unit
 `cli` of `AuthProject`; the command lines stay as they were. An
 application with commands of other addons joins `AuthCliUnit` with theirs,
 `AppCliUnit(AuthCliUnit, GrpcCliUnit)`. `AuthProfileAttrValuesUnit` is

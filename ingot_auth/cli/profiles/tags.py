@@ -1,4 +1,4 @@
-"""The commands of the tags."""
+"""The commands of the tags of the profiles, ``auth profiles tags``."""
 
 __all__ = (
     "AuthCreateTagCommand",
@@ -15,24 +15,22 @@ import typing as t
 from ingots.defaults.cli import CommandsUnit
 from ingots.puer import Slot
 
-from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
-
-from ingot_auth.registry.commands import (
-    BaseAuthCreateItemCommand,
-    BaseAuthDeleteItemCommand,
-    BaseAuthListItemsCommand,
-    BaseAuthRenameItemCommand,
-)
-from ingot_auth.storages import AuthTag
-
-from .operations import (
+from ingot_auth.profiles.operations import AuthSetProfileTagsParameters
+from ingot_auth.profiles.tags.operations import (
     AuthCreateTagOperation,
     AuthDeleteTagOperation,
     AuthListTagsOperation,
     AuthRenameTagOperation,
 )
+from ingot_auth.storages import AuthTag
 
-from ingot_auth.profiles.operations import AuthSetProfileTagsParameters
+from ..registry import (
+    BaseAuthCreateItemCommand,
+    BaseAuthDeleteItemCommand,
+    BaseAuthListItemsCommand,
+    BaseAuthRenameItemCommand,
+)
+from .base import BaseAuthProfileValuesCommand
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

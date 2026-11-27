@@ -14,24 +14,24 @@ import typing as t
 from ingots.defaults.cli import CommandsUnit
 from ingots.puer import Slot
 
-from ingot_auth.registry.commands import (
+from ingot_auth.registry.operations import (
+    AuthDeleteItemParameters,
+    AuthRenameItemParameters,
+)
+from ingot_auth.sessions.attrs.operations import (
+    AuthCreateSessionAttrOperation,
+    AuthDeleteSessionAttrOperation,
+    AuthListSessionAttrsOperation,
+    AuthRenameSessionAttrOperation,
+)
+from ingot_auth.storages import AuthAttrType, AuthSessionAttr, AuthSessionAttrSource
+
+from ..registry import (
     BaseAuthCreateItemCommand,
     BaseAuthDeleteItemCommand,
     BaseAuthListItemsCommand,
     BaseAuthRegistryCommand,
     BaseAuthRenameItemCommand,
-)
-from ingot_auth.registry.operations import (
-    AuthDeleteItemParameters,
-    AuthRenameItemParameters,
-)
-from ingot_auth.storages import AuthAttrType, AuthSessionAttr, AuthSessionAttrSource
-
-from .operations import (
-    AuthCreateSessionAttrOperation,
-    AuthDeleteSessionAttrOperation,
-    AuthListSessionAttrsOperation,
-    AuthRenameSessionAttrOperation,
 )
 
 if t.TYPE_CHECKING:

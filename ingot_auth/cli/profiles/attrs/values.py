@@ -15,12 +15,11 @@ from dataclasses import dataclass
 from ingots.defaults.cli import CommandsUnit
 from ingots.puer import Slot
 
-from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
-
+from ingot_auth.profiles.operations import AuthSetProfileAttrValuesParameters
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import AuthAttrType, AuthAttrValue
 
-from ingot_auth.profiles.operations import AuthSetProfileAttrValuesParameters
+from ..base import BaseAuthProfileValuesCommand
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

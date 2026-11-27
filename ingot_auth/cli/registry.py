@@ -16,9 +16,11 @@ from dataclasses import dataclass
 
 from ingots.defaults.operations import BaseOperationCommand
 
+from ingot_auth.registry.operations import (
+    AuthDeleteItemParameters,
+    AuthRenameItemParameters,
+)
 from ingot_auth.storages import AuthItem
-
-from .operations import AuthDeleteItemParameters, AuthRenameItemParameters
 
 
 @dataclass(frozen=True, slots=True)

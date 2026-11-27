@@ -8,8 +8,8 @@ from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
 from ingots.puer import Slot
 
-from .data import AuthGroupInfo
-from .operations import AuthListGroupsOperation
+from ingot_auth.access.groups.data import AuthGroupInfo
+from ingot_auth.access.groups.operations import AuthListGroupsOperation
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

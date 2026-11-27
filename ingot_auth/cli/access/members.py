@@ -15,14 +15,13 @@ from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
 from ingots.puer import Slot
 
-from ingot_auth.storages import AuthMembership
-
-from .operations import (
+from ingot_auth.access.members.operations import (
     AuthAddMemberOperation,
     AuthListMemberGroupsOperation,
     AuthListMembersOperation,
     AuthRemoveMemberOperation,
 )
+from ingot_auth.storages import AuthMembership
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory

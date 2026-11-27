@@ -14,9 +14,8 @@ from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
 from ingots.puer import Slot
 
-from .attrs.commands import AuthSessionAttrsCommandsUnit
-from .data import AuthSessionInfo
-from .operations import (
+from ingot_auth.sessions.data import AuthSessionInfo
+from ingot_auth.sessions.operations import (
     AuthListSessionsOperation,
     AuthListSessionsParameters,
     AuthRevokeAllSessionsOperation,
@@ -24,7 +23,9 @@ from .operations import (
     AuthSweepSessionsOperation,
     AuthSweepSessionsParameters,
 )
-from .presets.commands import AuthSessionPresetsCommandsUnit
+
+from .attrs import AuthSessionAttrsCommandsUnit
+from .presets import AuthSessionPresetsCommandsUnit
 
 if t.TYPE_CHECKING:
     from ingots.defaults.operations import Caller

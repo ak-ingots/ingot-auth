@@ -11,17 +11,15 @@ from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
 from ingots.puer import Slot
 
+from ingot_auth.activities.operations import AuthListActivitiesParameters
 from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
-
-
-from .operations import AuthListActivitiesParameters
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
 
     from ingot_auth.project import AuthProject
 
-    from .operations import AuthListActivitiesOperation
+    from ingot_auth.activities.operations import AuthListActivitiesOperation
 
 
 class AuthListActivitiesCommand(
