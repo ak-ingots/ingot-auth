@@ -10,7 +10,8 @@ from unittest import mock
 import grpc
 from grpc import aio
 from ingot_grpcio import GrpcProject
-from ingot_grpcio.grpc import GrpcCliUnit, GrpcUnit
+from ingot_grpcio.cli import GrpcCliUnit
+from ingot_grpcio.grpc import GrpcUnit
 from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClientsUnit
 from ingot_grpcio.grpc.errors import GrpcError
 from ingot_grpcio.grpc.servers import DefaultGrpcServer, GrpcServersUnit
