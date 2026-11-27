@@ -593,7 +593,7 @@ doc = [
 requires-dist = [
     { name = "ingot-auth", extras = ["grpcio", "pymongo", "redis"], marker = "extra == 'game'" },
     { name = "ingot-auth", extras = ["pymongo", "redis", "starlette"], marker = "extra == 'web'" },
-    { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.17.0,<0.18" },
+    { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.18.0,<0.19" },
     { name = "ingot-mail", specifier = ">=0.6.0,<0.7" },
     { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'game'", specifier = ">=0.6.0,<0.7" },
     { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'web'", specifier = ">=0.6.0,<0.7" },
@@ -615,7 +615,7 @@ dev = [
     { name = "flake8-pyproject" },
     { name = "grpcio-tools", specifier = ">=1.84.1" },
     { name = "httpx" },
-    { name = "ingot-grpcio", specifier = ">=0.17.0,<0.18" },
+    { name = "ingot-grpcio", specifier = ">=0.18.0,<0.19" },
     { name = "ingot-mail", extras = ["aiosmtplib"], specifier = ">=0.6.0,<0.7" },
     { name = "ingot-pymongo", specifier = ">=0.18.0,<0.19" },
     { name = "ingot-redis", specifier = ">=0.6.0,<0.7" },
@@ -634,7 +634,7 @@ doc = [
 
 [[package]]
 name = "ingot-grpcio"
-version = "0.17.0"
+version = "0.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "googleapis-common-protos" },
@@ -643,9 +643,9 @@ dependencies = [
     { name = "ingots" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/2f/a0e7bd13da32592e0b21b087e0f43b9fb9daeca75ec07e8c75b5353170e1/ingot_grpcio-0.17.0.tar.gz", hash = "sha256:1237f153144e9c1f99984e436f739376d6b36a6839ab1b4409c8846605c6c971", size = 35819, upload-time = "2026-11-27T07:28:53.799Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/cc/f968faca4ee287dc79de64258fb5010606e2606d31629cd2e9a5a0c57cdd/ingot_grpcio-0.18.0.tar.gz", hash = "sha256:089d8f0bc8754ffc4074393bf7a9c039622247dedb9ccb98f16532082a5bbe2b", size = 36046, upload-time = "2026-11-27T08:31:21.338Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/4f/39d0bd70ae6faad03d9d17d613d2c1f7b46971e366a90d3484b8b491ef09/ingot_grpcio-0.17.0-py3-none-any.whl", hash = "sha256:e08c4f3c88b9e6885010f7321d698ee2eb42f155225e5f36d9c99c6b41cf978a", size = 41652, upload-time = "2026-11-27T07:28:52.528Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/ba/9a0ba773774a6912183535c06afd26efb60ffd30328d92b9aff2a771657c/ingot_grpcio-0.18.0-py3-none-any.whl", hash = "sha256:68b5912475e14d94876c44cf7125851fa4d241b81fac34c5f324bfd2b14b8c26", size = 42086, upload-time = "2026-11-27T08:31:20.03Z" },
 ]
 
 [[package]]

@@ -3,7 +3,8 @@
 import typing as t
 
 from ingot_grpcio import GrpcProject
-from ingot_grpcio.grpc import GrpcCliUnit, GrpcUnit
+from ingot_grpcio.cli import GrpcCliUnit
+from ingot_grpcio.grpc import GrpcUnit
 from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClientsUnit
 from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
