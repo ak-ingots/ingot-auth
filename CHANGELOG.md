@@ -2,6 +2,11 @@
 
 <!-- towncrier release notes start -->
 
+## [0.12.1] - 2026-11-27
+### Changed
+- On ingot-grpcio 0.18, its commands in `ingot_grpcio.cli`: the extra
+  `grpcio` and the examples import `GrpcCliUnit` from there.
+
 ## [0.12.0] - 2026-11-27
 ### Added
 - A signed-in user changes its password, the old one given:
