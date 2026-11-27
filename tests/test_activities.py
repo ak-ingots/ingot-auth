@@ -8,7 +8,7 @@ from unittest import mock
 
 from ingots.defaults.operations import Caller, OperationPermissionsError
 from ingots.puer import Slot
-from ingots.puer.cli import CommandRunner
+from ingots.defaults.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemorySessionsUnit
 from ingot_auth.activities import (

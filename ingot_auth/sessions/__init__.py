@@ -57,8 +57,7 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Slot, Unit
 
 from ingot_auth.access.groups import AuthGroupsOwner
 from ingot_auth.caches import AuthCaller
@@ -71,11 +70,6 @@ from ingot_auth.storages import (
 )
 
 from .attrs import AuthSessionAttrsUnit
-from .commands import (
-    AuthListSessionsCommand,
-    AuthRevokeAllSessionsCommand,
-    AuthSweepSessionsCommand,
-)
 from .derivers import AuthNoSessionAttrsDeriver, BaseAuthSessionAttrsDeriver
 from .errors import (
     AuthOwnSessionNotFoundError,
@@ -127,7 +121,7 @@ if t.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
+class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, Unit):
     """
     The sessions: the registries of their attributes and of the presets, the
     strategy of their lifetime in the slot ``lifetime``, the one deriving
@@ -163,9 +157,6 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
         CAN_REVOKE = 1 << 3
         CAN_SWEEP = 1 << 4
 
-    cli_name = "sessions"
-    cli_description = "The sessions of the users."
-
     project: "AuthProject"
 
     grp_consumers = Slot(AuthSessionsConsumersGroup)
@@ -180,10 +171,6 @@ class AuthSessionsUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     op_list = Factory(AuthListSessionsOperation)
     op_revoke_all = Factory(AuthRevokeAllSessionsOperation)
     op_sweep = Factory(AuthSweepSessionsOperation)
-
-    cmd_list = Slot(AuthListSessionsCommand)
-    cmd_revoke_all = Slot(AuthRevokeAllSessionsCommand)
-    cmd_sweep = Slot(AuthSweepSessionsCommand)
 
     attrs = Slot(AuthSessionAttrsUnit)
     presets = Slot(AuthSessionPresetsUnit)

@@ -1,6 +1,7 @@
 """The commands of the attributes."""
 
 __all__ = (
+    "AuthAttrsCommandsUnit",
     "AuthCreateAttrCommand",
     "AuthDeleteAttrCommand",
     "AuthListAttrsCommand",
@@ -9,6 +10,9 @@ __all__ = (
 
 import argparse
 import typing as t
+
+from ingots.defaults.cli import CommandsUnit
+from ingots.puer import Slot
 
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
@@ -29,6 +33,7 @@ from .operations import (
     AuthListAttrsOperation,
     AuthRenameAttrOperation,
 )
+from .values.commands import AuthProfileAttrValuesCommandsUnit
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
@@ -110,3 +115,12 @@ class AuthDeleteAttrCommand(
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthDeleteAttrOperation]":
         return self.project.auth.profiles.attrs.op_delete
+
+
+class AuthAttrsCommandsUnit(CommandsUnit):
+    cli_description = "The attributes of the profiles."
+    create = Slot(AuthCreateAttrCommand)
+    list = Slot(AuthListAttrsCommand)
+    rename = Slot(AuthRenameAttrCommand)
+    delete = Slot(AuthDeleteAttrCommand)
+    values = Slot(AuthProfileAttrValuesCommandsUnit)

@@ -46,10 +46,8 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import AuthListGroupsCommand
 from .entities import (
     AuthAnonymousGroup,
     AuthGroup,
@@ -65,7 +63,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthGroupsUnit(OperationsOwner, CliUnit):
+class AuthGroupsUnit(OperationsOwner, Unit):
     """
     The groups of the project, whatever their source, by :meth:`get` and
     :meth:`get_all`: those of the code in the slots of the units of their
@@ -79,16 +77,11 @@ class AuthGroupsUnit(OperationsOwner, CliUnit):
 
         CAN_READ = 1 << 0
 
-    cli_name = "groups"
-    cli_description = "The groups of the users."
-
     project: "AuthProject"
 
     permissions = PermissionsSlot(Flags)
 
     op_list = Factory(AuthListGroupsOperation)
-
-    cmd_list = Slot(AuthListGroupsCommand)
 
     _names: tuple[str, ...]
     _digest: str

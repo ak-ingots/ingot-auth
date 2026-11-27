@@ -14,15 +14,8 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import (
-    AuthCreateSessionAttrCommand,
-    AuthDeleteSessionAttrCommand,
-    AuthListSessionAttrsCommand,
-    AuthRenameSessionAttrCommand,
-)
 from .operations import (
     AuthCreateSessionAttrOperation,
     AuthDeleteSessionAttrOperation,
@@ -32,11 +25,11 @@ from .operations import (
 from .values import build_attr_values, check_client_attr_values
 
 
-class AuthSessionAttrsUnit(OperationsOwner, CliUnit):
+class AuthSessionAttrsUnit(OperationsOwner, Unit):
     """
     The registry of the attributes of the sessions: its operations, ``op_*``,
-    and the commands running them, ``cmd_*``; the attributes themselves are in
-    the storage of the auth.
+    which the commands of ``cli.auth.sessions.attrs`` run; the attributes
+    themselves are in the storage of the auth.
     """
 
     class Flags(PermissionFlags):
@@ -47,17 +40,9 @@ class AuthSessionAttrsUnit(OperationsOwner, CliUnit):
         CAN_RENAME = 1 << 2
         CAN_DELETE = 1 << 3
 
-    cli_name = "attrs"
-    cli_description = "The attributes of the sessions."
-
     permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateSessionAttrOperation)
     op_list = Factory(AuthListSessionAttrsOperation)
     op_rename = Factory(AuthRenameSessionAttrOperation)
     op_delete = Factory(AuthDeleteSessionAttrOperation)
-
-    cmd_create = Slot(AuthCreateSessionAttrCommand)
-    cmd_list = Slot(AuthListSessionAttrsCommand)
-    cmd_rename = Slot(AuthRenameSessionAttrCommand)
-    cmd_delete = Slot(AuthDeleteSessionAttrCommand)

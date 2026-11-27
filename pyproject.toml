@@ -36,21 +36,21 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "ingot-mail>=0.5.0,<0.6",
-    "ingots>=0.37.0,<0.38",
+    "ingot-mail>=0.6.0,<0.7",
+    "ingots>=0.38.0,<0.39",
 ]
 
 [project.optional-dependencies]
-grpcio = ["ingot-grpcio>=0.16.0,<0.17"]
-pymongo = ["ingot-pymongo>=0.17.0,<0.18"]
-redis = ["ingot-redis>=0.5.0,<0.6"]
+grpcio = ["ingot-grpcio>=0.17.0,<0.18"]
+pymongo = ["ingot-pymongo>=0.18.0,<0.19"]
+redis = ["ingot-redis>=0.6.0,<0.7"]
 # The transport of HTTP and JSON, transcoding the contract: no grpcio.
-starlette = ["ingot-starlette[protobuf]>=0.4.0,<0.5"]
+starlette = ["ingot-starlette[protobuf]>=0.5.0,<0.6"]
 # The stacks of the kinds of applications, run by examples/<kind>/.
-game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.5.0,<0.6"]
+game = ["ingot-auth[grpcio,pymongo,redis]", "ingot-mail[aiosmtplib]>=0.6.0,<0.7"]
 web = [
     "ingot-auth[pymongo,redis,starlette]",
-    "ingot-mail[aiosmtplib]>=0.5.0,<0.6",
+    "ingot-mail[aiosmtplib]>=0.6.0,<0.7",
     "uvicorn[standard]>=0.54,<1",
 ]
 
@@ -82,11 +82,11 @@ dev = [
     "flake8-class-attributes-order",
     "flake8-pyproject",
     "grpcio-tools>=1.84.1",
-    "ingot-mail[aiosmtplib]>=0.5.0,<0.6",
-    "ingot-grpcio>=0.16.0,<0.17",
-    "ingot-pymongo>=0.17.0,<0.18",
-    "ingot-redis>=0.5.0,<0.6",
-    "ingot-starlette[protobuf]>=0.4.0,<0.5",
+    "ingot-mail[aiosmtplib]>=0.6.0,<0.7",
+    "ingot-grpcio>=0.17.0,<0.18",
+    "ingot-pymongo>=0.18.0,<0.19",
+    "ingot-redis>=0.6.0,<0.7",
+    "ingot-starlette[protobuf]>=0.5.0,<0.6",
     "httpx",
     "mypy",
     "mypy-protobuf>=5.1.0",

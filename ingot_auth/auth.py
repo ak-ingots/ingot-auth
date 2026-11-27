@@ -2,8 +2,7 @@
 
 __all__ = ("AuthUnit",)
 
-from ingots.puer import Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Slot, Unit
 
 from ingot_auth.access import AuthAccessUnit
 from ingot_auth.activities import AuthActivitiesUnit
@@ -25,7 +24,7 @@ from ingot_auth.sign_up import AuthSignUpUnit
 from ingot_auth.storages import AuthStorage
 
 
-class AuthUnit(AuthGroupsOwner, CliUnit):
+class AuthUnit(AuthGroupsOwner, Unit):
     """
     The auth of the project: the profiles and the sessions, each with its
     registries, the access, the groups of the users and their members, the
@@ -38,9 +37,6 @@ class AuthUnit(AuthGroupsOwner, CliUnit):
     signed-in user, and ``auth.grp_system``, of the server itself, none
     keeping members.
     """
-
-    cli_name = "auth"
-    cli_description = "The auth of the users."
 
     grp_anonymous = Slot(AuthAnonymousGroup)
     grp_signed_in = Slot(AuthSignedInGroup)

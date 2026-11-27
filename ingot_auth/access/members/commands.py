@@ -4,13 +4,16 @@ __all__ = (
     "AuthAddMemberCommand",
     "AuthListMemberGroupsCommand",
     "AuthListMembersCommand",
+    "AuthMembersCommandsUnit",
     "AuthRemoveMemberCommand",
 )
 
 import argparse
 import typing as t
 
+from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
+from ingots.puer import Slot
 
 from ingot_auth.storages import AuthMembership
 
@@ -53,7 +56,6 @@ class BaseAuthMembershipCommand(BaseOperationCommand[AuthMembership, None]):
 
 
 class AuthAddMemberCommand(BaseAuthMembershipCommand):
-    cli_name = "add"
     cli_description = "Adds a user to a group; a member already stays one."
 
     @t.override
@@ -62,7 +64,6 @@ class AuthAddMemberCommand(BaseAuthMembershipCommand):
 
 
 class AuthRemoveMemberCommand(BaseAuthMembershipCommand):
-    cli_name = "remove"
     cli_description = "Removes a user from a group."
 
     @t.override
@@ -73,7 +74,6 @@ class AuthRemoveMemberCommand(BaseAuthMembershipCommand):
 class AuthListMembersCommand(BaseOperationCommand[str, tuple[str, ...]]):
     project: "AuthProject"
 
-    cli_name = "list"
     cli_description = "Prints the uids of the members of a group, one a line."
     cli_args: str
 
@@ -100,7 +100,6 @@ class AuthListMembersCommand(BaseOperationCommand[str, tuple[str, ...]]):
 class AuthListMemberGroupsCommand(BaseOperationCommand[str, tuple[str, ...]]):
     project: "AuthProject"
 
-    cli_name = "list-groups"
     cli_description = "Prints the groups a user is added to, one a line."
     cli_args: str
 
@@ -122,3 +121,11 @@ class AuthListMemberGroupsCommand(BaseOperationCommand[str, tuple[str, ...]]):
     async def _run(self) -> None:
         for group in await self.run_operation(self.cli_args):
             print(group)
+
+
+class AuthMembersCommandsUnit(CommandsUnit):
+    cli_description = "The members of the groups."
+    add = Slot(AuthAddMemberCommand)
+    remove = Slot(AuthRemoveMemberCommand)
+    list = Slot(AuthListMembersCommand)
+    list_groups = Slot(AuthListMemberGroupsCommand)

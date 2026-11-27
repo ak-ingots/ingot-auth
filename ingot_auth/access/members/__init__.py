@@ -17,15 +17,8 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import (
-    AuthAddMemberCommand,
-    AuthListMemberGroupsCommand,
-    AuthListMembersCommand,
-    AuthRemoveMemberCommand,
-)
 
 from .operations import (
     AuthAddMemberOperation,
@@ -35,11 +28,11 @@ from .operations import (
 )
 
 
-class AuthMembersUnit(OperationsOwner, CliUnit):
+class AuthMembersUnit(OperationsOwner, Unit):
     """
-    The operations of the memberships, ``op_*``, and the commands running
-    them, ``cmd_*``; the memberships themselves are in the storage of the
-    auth.
+    The operations of the memberships, ``op_*``, which the commands of
+    ``cli.auth.access.members`` run; the memberships themselves are in the
+    storage of the auth.
     """
 
     class Flags(PermissionFlags):
@@ -49,17 +42,9 @@ class AuthMembersUnit(OperationsOwner, CliUnit):
         CAN_REMOVE = 1 << 1
         CAN_READ = 1 << 2
 
-    cli_name = "members"
-    cli_description = "The members of the groups."
-
     permissions = PermissionsSlot(Flags)
 
     op_add = Factory(AuthAddMemberOperation)
     op_remove = Factory(AuthRemoveMemberOperation)
     op_list = Factory(AuthListMembersOperation)
     op_list_groups = Factory(AuthListMemberGroupsOperation)
-
-    cmd_add = Slot(AuthAddMemberCommand)
-    cmd_remove = Slot(AuthRemoveMemberCommand)
-    cmd_list = Slot(AuthListMembersCommand)
-    cmd_list_groups = Slot(AuthListMemberGroupsCommand)

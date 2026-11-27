@@ -7,11 +7,15 @@ __all__ = (
     "AuthListSessionPresetBindingsCommand",
     "AuthListSessionPresetsCommand",
     "AuthRenameSessionPresetCommand",
+    "AuthSessionPresetsCommandsUnit",
     "AuthUnbindSessionAttrCommand",
 )
 
 import argparse
 import typing as t
+
+from ingots.defaults.cli import CommandsUnit
+from ingots.puer import Slot
 
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
@@ -108,7 +112,6 @@ class AuthBindSessionAttrCommand(
         AuthSessionPresetBinding, AuthSessionPresetBinding
     ]
 ):
-    cli_name = "bind"
     cli_description = (
         "Binds an attribute of the sessions to a preset, optional unless told "
         "--required; binding it again tells that anew."
@@ -143,7 +146,6 @@ class AuthBindSessionAttrCommand(
 class AuthUnbindSessionAttrCommand(
     BaseAuthSessionPresetBindingsCommand[AuthUnbindSessionAttrParameters, None]
 ):
-    cli_name = "unbind"
     cli_description = "Unbinds an attribute of the sessions from a preset."
     cli_args: AuthUnbindSessionAttrParameters
 
@@ -174,7 +176,6 @@ class AuthUnbindSessionAttrCommand(
 class AuthListSessionPresetBindingsCommand(
     BaseAuthSessionPresetBindingsCommand[None, tuple[AuthSessionPresetBinding, ...]]
 ):
-    cli_name = "bindings"
     cli_description = "Prints the bindings of the presets of the sessions."
 
     @t.override
@@ -184,3 +185,14 @@ class AuthListSessionPresetBindingsCommand(
     @t.override
     async def _run(self) -> None:
         self.print_bindings(*await self.run_operation(None))
+
+
+class AuthSessionPresetsCommandsUnit(CommandsUnit):
+    cli_description = "The presets of the sessions."
+    create = Slot(AuthCreateSessionPresetCommand)
+    list = Slot(AuthListSessionPresetsCommand)
+    rename = Slot(AuthRenameSessionPresetCommand)
+    delete = Slot(AuthDeleteSessionPresetCommand)
+    bind = Slot(AuthBindSessionAttrCommand)
+    unbind = Slot(AuthUnbindSessionAttrCommand)
+    bindings = Slot(AuthListSessionPresetBindingsCommand)

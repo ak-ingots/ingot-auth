@@ -5,10 +5,14 @@ __all__ = (
     "AuthDeleteSessionAttrCommand",
     "AuthListSessionAttrsCommand",
     "AuthRenameSessionAttrCommand",
+    "AuthSessionAttrsCommandsUnit",
 )
 
 import argparse
 import typing as t
+
+from ingots.defaults.cli import CommandsUnit
+from ingots.puer import Slot
 
 from ingot_auth.registry.commands import (
     BaseAuthCreateItemCommand,
@@ -126,3 +130,11 @@ class AuthDeleteSessionAttrCommand(
     @t.override
     def _get_operation(self) -> "BoundFactory[AuthDeleteSessionAttrOperation]":
         return self.project.auth.sessions.attrs.op_delete
+
+
+class AuthSessionAttrsCommandsUnit(CommandsUnit):
+    cli_description = "The attributes of the sessions."
+    create = Slot(AuthCreateSessionAttrCommand)
+    list = Slot(AuthListSessionAttrsCommand)
+    rename = Slot(AuthRenameSessionAttrCommand)
+    delete = Slot(AuthDeleteSessionAttrCommand)

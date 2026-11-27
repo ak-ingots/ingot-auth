@@ -35,14 +35,12 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Entity, Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Entity, Factory, Slot, Unit
 
 from ingot_auth.access.groups import AuthGroupsOwner
 from ingot_auth.caches import AuthCaller
 from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
 
-from .commands import AuthListActivitiesCommand
 from .failures import (
     AuthStrictActivityFailure,
     AuthSwallowActivityFailure,
@@ -56,7 +54,7 @@ if t.TYPE_CHECKING:
     from ingot_auth.project import AuthProject
 
 
-class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
+class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, Unit):
     """
     The activity log: :meth:`record`, which the operations of the auth call,
     the strategy of a failure to write it in the slot ``failure``, none by
@@ -73,9 +71,6 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
         CAN_READ = 1 << 0
 
-    cli_name = "activities"
-    cli_description = "The activity log: every change of state of the auth."
-
     project: "AuthProject"
 
     grp_auditors = Slot(AuthActivitiesAuditorsGroup)
@@ -85,8 +80,6 @@ class AuthActivitiesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
     failure = Slot(BaseAuthActivityFailure)  # type: ignore[type-abstract]
 
     op_list = Factory(AuthListActivitiesOperation)
-
-    cmd_list = Slot(AuthListActivitiesCommand)
 
     @t.final
     async def record(

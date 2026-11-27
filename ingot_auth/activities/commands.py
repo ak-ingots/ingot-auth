@@ -1,13 +1,15 @@
 """The command of the read of the activity log."""
 
-__all__ = ("AuthListActivitiesCommand",)
+__all__ = ("AuthActivitiesCommandsUnit", "AuthListActivitiesCommand")
 
 import argparse
 import datetime
 import json
 import typing as t
 
+from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
+from ingots.puer import Slot
 
 from ingot_auth.storages import AuthActivityAction, AuthActivityRecord
 
@@ -33,7 +35,6 @@ class AuthListActivitiesCommand(
 
     project: "AuthProject"
 
-    cli_name = "list"
     cli_description = (
         "Prints the activities, the newest first, of an entity, --entity "
         "TYPE[:ID], of a caller, --who, of a session, --session, of an action, "
@@ -108,3 +109,8 @@ def _parse_moment(text: str) -> datetime.datetime:
     if moment.tzinfo is None:
         raise argparse.ArgumentTypeError(f"{text!r} has no offset")
     return moment
+
+
+class AuthActivitiesCommandsUnit(CommandsUnit):
+    cli_description = "The activity log: every change of state of the auth."
+    list = Slot(AuthListActivitiesCommand)

@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 
 from ingots.defaults.operations import Caller, OperationPermissionsError
-from ingots.puer.cli import CommandRunner
+from ingots.defaults.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject
 from ingot_auth.activities import AuthListActivitiesParameters

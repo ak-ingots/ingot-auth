@@ -60,7 +60,6 @@ class BaseAuthCreateItemCommand[ItemType: AuthItem](
     them from the namespace as its CLI arguments.
     """
 
-    cli_name = "create"
     cli_description = "Creates an item."
     cli_args: ItemType
 
@@ -80,7 +79,6 @@ class BaseAuthListItemsCommand[ItemType: AuthItem](
 ):
     """Prints the items, by id."""
 
-    cli_name = "list"
     cli_description = "Prints the items."
 
     @t.override
@@ -93,7 +91,6 @@ class BaseAuthRenameItemCommand[ItemType: AuthItem](
 ):
     """Gives an item a new name."""
 
-    cli_name = "rename"
     cli_description = "Gives an item a new name."
     cli_args: AuthRenameItemCliArgs
 
@@ -121,7 +118,6 @@ class BaseAuthDeleteItemCommand[ItemType: AuthItem](
 ):
     """Deletes an item; its id is never given again."""
 
-    cli_name = "delete"
     cli_description = "Deletes an item; its id is never given again."
     cli_args: AuthItemUidCliArgs
 

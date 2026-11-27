@@ -24,6 +24,8 @@ it before a change that crosses parts. `api/` and `contrib/` have a
   the `MailProject` of ingot-mail, its units, the configs `AUTH_*`.
 - `auth.py`: `AuthUnit`, the units of the domains: `profiles/`,
   `sessions/`, `access/`, `activities/`, `metadata/`, on `registry/`.
+- `cli.py`: `AuthCliUnit`, the command line, `auth ...`, the groups of the
+  commands of the domains put together.
 - `methods/`, `policies/`, `sign_up/`, `sign_in/`, `sign_out/`: the methods
   and their flows; `methods/password/` the password of the profile.
 - `storages/`, `caches/`, `dispatchers.py`: the facades of the backends.
@@ -135,8 +137,11 @@ Of this package:
   or in a module of its name when it has nothing beside it (`settings.py`,
   `logging.py`, `auth.py`). A class takes the prefix `Auth`, so that an
   application imports it under its own name. A unit names its operations
-  `op_*`, its commands `cmd_*` (their CLI names by `cli_name`), its groups
-  `grp_*` (named by their full names), its events `ev_*`.
+  `op_*`, its groups `grp_*` (named by their full names), its events `ev_*`;
+  it holds no command: the commands of a package go in its `commands.py`
+  with their group, `Auth*CommandsUnit`, the slot its sub-command, and
+  `cli.py` puts the groups together under `AuthCliUnit`, the unit `cli` of
+  `AuthProject`.
 - A set of operations has its flags in its unit, a `PermissionFlags` nested
   as `Flags`, bound by the slot `permissions` (`PermissionsSlot`) of the
   unit, an `OperationsOwner`, their domain the full name of the unit; an

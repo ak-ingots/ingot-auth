@@ -6,10 +6,14 @@ __all__ = (
     "AuthListTagsCommand",
     "AuthRenameTagCommand",
     "AuthSetProfileTagsCommand",
+    "AuthTagsCommandsUnit",
 )
 
 import argparse
 import typing as t
+
+from ingots.defaults.cli import CommandsUnit
+from ingots.puer import Slot
 
 from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
 
@@ -83,7 +87,6 @@ class AuthSetProfileTagsCommand(
 ):
     """Sets the tags of a profile by their ids, then prints its values."""
 
-    cli_name = "set"
     cli_description = (
         "Sets the tags of a profile, all of them, by their ids: none takes them "
         "all off."
@@ -112,3 +115,12 @@ class AuthSetProfileTagsCommand(
     @t.override
     async def _run(self) -> None:
         self.print_values(await self.run_operation(self.cli_args))
+
+
+class AuthTagsCommandsUnit(CommandsUnit):
+    cli_description = "The tags of the profiles."
+    create = Slot(AuthCreateTagCommand)
+    list = Slot(AuthListTagsCommand)
+    rename = Slot(AuthRenameTagCommand)
+    delete = Slot(AuthDeleteTagCommand)
+    set = Slot(AuthSetProfileTagsCommand)
