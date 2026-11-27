@@ -2,6 +2,44 @@
 
 <!-- towncrier release notes start -->
 
+## [0.12.0] - 2026-11-27
+### Added
+- A signed-in user changes its password, the old one given:
+  `Password.ChangePassword` of `ingot_auth.api.methods.password.v1`, `POST
+  /v1/methods/password:change`, `AuthGrpcPasswordBinding` and
+  `AuthStarlettePasswordEndpoint`, `CAN_CHANGE` of `auth.methods.password`
+  granted by `auth.grp_signed_in`. A wrong old password is refused by
+  `PASSWORD_REFUSED`, `PERMISSION_DENIED`; the new one is checked by
+  `policies_change` and written on the condition that the hash read is still
+  there; the other sessions are closed, the change and the closes recorded.
+  Its event, `AuthPasswordChanged` of the slot `ev_changed`, mails every email
+  of the profile by default, `_build_changed_mail()` building the mail. The
+  storages give the identities of a profile, `identities.get_of()`, and
+  replace a secret on a condition, `secrets.replace()`, which a backend
+  implements.
+
+### Changed
+- On ingots 0.38: the command line a domain of the defaults. The units of the
+  auth hold no command: the commands are in `ingot_auth.cli`, the domain of
+  the commands, its packages as the tree goes, `ingot_auth.cli.profiles.tags`
+  with `AuthTagsCommandsUnit`, `ingot_auth.cli.sessions` with
+  `AuthSessionsCommandsUnit` and the others, under `AuthCliUnit`, the unit
+  `cli` of `AuthProject`; the command lines stay as they were. An
+  application with commands of other addons joins `AuthCliUnit` with theirs,
+  `AppCliUnit(AuthCliUnit, GrpcCliUnit)`. `AuthProfileAttrValuesUnit` is
+  gone, its command in `AuthProfileAttrValuesCommandsUnit`. The addons on
+  their releases for ingots 0.38: ingot-mail 0.6, ingot-grpcio 0.17,
+  ingot-pymongo 0.18, ingot-redis 0.6, ingot-starlette 0.5.
+- The auth moves onto ingots 0.37: a transaction of the storage holds the
+  events published in its block, `project.events` of ingots, sent once it
+  commits and dropped when it rolls back or fails to commit; the policies of
+  a method run by `run_all_in_group()`, the `run_group()` of ingots renamed.
+
+  The project of the auth waits for the operations its dispatcher runs in the
+  process when it shuts down, the mail of a code for one, then for the
+  subscribers of the events: `join()` of the dispatcher is of its base now,
+  `_join()` the hook a backend implements, nothing for one on a queue.
+
 ## [0.11.0] - 2026-11-23
 ### Added
 - The extra `web`, the stack of a site, ingot-auth on MongoDB, Redis and
