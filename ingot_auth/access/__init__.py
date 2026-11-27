@@ -8,19 +8,15 @@ units of their domains, :class:`~.groups.AuthGroupsOwner`, found by
 
 __all__ = ("AuthAccessUnit", "AuthGroupsGrants")
 
-from ingots.puer import Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Slot, Unit
 
 from .groups import AuthGroupsUnit
 from .members import AuthMembersUnit
 from .strategies import AuthGroupsGrants
 
 
-class AuthAccessUnit(CliUnit):
+class AuthAccessUnit(Unit):
     """The access: the groups, their members and the permissions of a user."""
-
-    cli_name = "access"
-    cli_description = "The groups of the users and their members."
 
     groups = Slot(AuthGroupsUnit)
     members = Slot(AuthMembersUnit)

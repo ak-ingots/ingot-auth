@@ -12,18 +12,8 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import (
-    AuthBindSessionAttrCommand,
-    AuthCreateSessionPresetCommand,
-    AuthDeleteSessionPresetCommand,
-    AuthListSessionPresetBindingsCommand,
-    AuthListSessionPresetsCommand,
-    AuthRenameSessionPresetCommand,
-    AuthUnbindSessionAttrCommand,
-)
 from .operations import (
     AuthBindSessionAttrOperation,
     AuthCreateSessionPresetOperation,
@@ -35,11 +25,11 @@ from .operations import (
 )
 
 
-class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
+class AuthSessionPresetsUnit(OperationsOwner, Unit):
     """
     The registry of the presets of the sessions with their bindings: its
-    operations, ``op_*``, and the commands running them, ``cmd_*``; the
-    presets themselves are in the storage of the auth.
+    operations, ``op_*``, which the commands of ``cli.auth.sessions.presets``
+    run; the presets themselves are in the storage of the auth.
     """
 
     class Flags(PermissionFlags):
@@ -52,9 +42,6 @@ class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
         CAN_BIND = 1 << 4
         CAN_UNBIND = 1 << 5
 
-    cli_name = "presets"
-    cli_description = "The presets of the sessions."
-
     permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateSessionPresetOperation)
@@ -64,11 +51,3 @@ class AuthSessionPresetsUnit(OperationsOwner, CliUnit):
     op_bind = Factory(AuthBindSessionAttrOperation)
     op_unbind = Factory(AuthUnbindSessionAttrOperation)
     op_list_bindings = Factory(AuthListSessionPresetBindingsOperation)
-
-    cmd_create = Slot(AuthCreateSessionPresetCommand)
-    cmd_list = Slot(AuthListSessionPresetsCommand)
-    cmd_rename = Slot(AuthRenameSessionPresetCommand)
-    cmd_delete = Slot(AuthDeleteSessionPresetCommand)
-    cmd_bind = Slot(AuthBindSessionAttrCommand)
-    cmd_unbind = Slot(AuthUnbindSessionAttrCommand)
-    cmd_list_bindings = Slot(AuthListSessionPresetBindingsCommand)

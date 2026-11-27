@@ -12,7 +12,7 @@ from ingot_auth.logging import AuthLoggingUnit
 from ingot_auth.settings import AuthSettingsUnit
 from ingot_auth.settings import AuthConfigs
 from ingots.defaults import Project
-from ingots.puer.cli import CommandRunner
+from ingots.defaults.cli import CommandRunner
 
 from tests import QUIET
 

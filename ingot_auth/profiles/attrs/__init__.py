@@ -7,29 +7,21 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import (
-    AuthCreateAttrCommand,
-    AuthDeleteAttrCommand,
-    AuthListAttrsCommand,
-    AuthRenameAttrCommand,
-)
 from .operations import (
     AuthCreateAttrOperation,
     AuthDeleteAttrOperation,
     AuthListAttrsOperation,
     AuthRenameAttrOperation,
 )
-from .values import AuthProfileAttrValuesUnit
 
 
-class AuthAttrsUnit(OperationsOwner, CliUnit):
+class AuthAttrsUnit(OperationsOwner, Unit):
     """
-    The registry of the attributes: its operations, ``op_*``, and the
-    commands running them, ``cmd_*``; the attributes themselves are in the
-    storage of the auth.
+    The registry of the attributes: its operations, ``op_*``, which the
+    commands of ``cli.auth.profiles.attrs`` run; the attributes themselves
+    are in the storage of the auth.
     """
 
     class Flags(PermissionFlags):
@@ -40,19 +32,9 @@ class AuthAttrsUnit(OperationsOwner, CliUnit):
         CAN_UPDATE = 1 << 2
         CAN_DELETE = 1 << 3
 
-    cli_name = "attrs"
-    cli_description = "The attributes of the profiles."
-
     permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateAttrOperation)
     op_list = Factory(AuthListAttrsOperation)
     op_rename = Factory(AuthRenameAttrOperation)
     op_delete = Factory(AuthDeleteAttrOperation)
-
-    cmd_create = Slot(AuthCreateAttrCommand)
-    cmd_list = Slot(AuthListAttrsCommand)
-    cmd_rename = Slot(AuthRenameAttrCommand)
-    cmd_delete = Slot(AuthDeleteAttrCommand)
-
-    values = Slot(AuthProfileAttrValuesUnit)

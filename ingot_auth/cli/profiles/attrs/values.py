@@ -1,6 +1,10 @@
 """The command of the values of the attributes of the profiles."""
 
-__all__ = ("AuthProfileAttrValuesArgs", "AuthSetProfileAttrValuesCommand")
+__all__ = (
+    "AuthProfileAttrValuesArgs",
+    "AuthProfileAttrValuesCommandsUnit",
+    "AuthSetProfileAttrValuesCommand",
+)
 
 import argparse
 import datetime
@@ -8,12 +12,14 @@ import decimal
 import typing as t
 from dataclasses import dataclass
 
-from ingot_auth.profiles.commands import BaseAuthProfileValuesCommand
+from ingots.defaults.cli import CommandsUnit
+from ingots.puer import Slot
 
+from ingot_auth.profiles.operations import AuthSetProfileAttrValuesParameters
 from ingot_auth.registry import AuthItemInvalidError
 from ingot_auth.storages import AuthAttrType, AuthAttrValue
 
-from ingot_auth.profiles.operations import AuthSetProfileAttrValuesParameters
+from ..base import BaseAuthProfileValuesCommand
 
 if t.TYPE_CHECKING:
     from ingots.puer import BoundFactory
@@ -37,7 +43,6 @@ class AuthSetProfileAttrValuesCommand(
     +00:00``, each read by the type of its attribute, then prints its values.
     """
 
-    cli_name = "set"
     cli_description = (
         "Sets the values of the attributes of a profile, all of them, each "
         "--value ID=VALUE: true or false, a number, a decimal, a time of ISO 8601 "
@@ -128,3 +133,8 @@ def _parse_assignment(text: str) -> tuple[int, str]:
         return int(attr_uid), value
     except ValueError:
         raise argparse.ArgumentTypeError(f"{attr_uid!r} is not an id") from None
+
+
+class AuthProfileAttrValuesCommandsUnit(CommandsUnit):
+    cli_description = "The values of the attributes of the profiles."
+    set = Slot(AuthSetProfileAttrValuesCommand)

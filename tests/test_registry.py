@@ -10,7 +10,7 @@ from ingots.defaults.operations import (
     OperationPermissionsError,
 )
 from ingots.puer import Slot
-from ingots.puer.cli import CommandRunner
+from ingots.defaults.cli import CommandRunner
 
 from ingot_auth.__main__ import AuthMemoryProject, AuthMemoryUnit
 from ingot_auth.contrib.storages.memory import (

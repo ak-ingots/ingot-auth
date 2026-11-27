@@ -12,7 +12,10 @@ it leans on. What a consumer writes is in the {doc}`guide <../guide/index>`.
   - `AuthLoggingUnit` (`logging.py`), the logger `ingot_auth`;
   - `AuthOperationsUnit` (`operations/`), whose `AuthCallersProvider` gives
     the anonymous caller what `auth.grp_anonymous` grants;
-  - `AuthUnit` (`auth.py`), the auth of the project, holding the units below.
+  - `AuthUnit` (`auth.py`), the auth of the project, holding the units below;
+  - `AuthCliUnit` (`cli/`), its command line, `auth ...`: the commands of
+    the domains, in folders as the tree goes, `cli/sessions/presets.py`
+    those of `auth sessions presets`.
 - `python -m ingot_auth` runs the addon on its own, the prefix `INGOT`, the
   storage in memory.
 

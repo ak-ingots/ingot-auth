@@ -3,16 +3,19 @@
 __all__ = (
     "AuthListSessionsCommand",
     "AuthRevokeAllSessionsCommand",
+    "AuthSessionsCommandsUnit",
     "AuthSweepSessionsCommand",
 )
 
 import argparse
 import typing as t
 
+from ingots.defaults.cli import CommandsUnit
 from ingots.defaults.operations import BaseOperationCommand
+from ingots.puer import Slot
 
-from .data import AuthSessionInfo
-from .operations import (
+from ingot_auth.sessions.data import AuthSessionInfo
+from ingot_auth.sessions.operations import (
     AuthListSessionsOperation,
     AuthListSessionsParameters,
     AuthRevokeAllSessionsOperation,
@@ -20,6 +23,9 @@ from .operations import (
     AuthSweepSessionsOperation,
     AuthSweepSessionsParameters,
 )
+
+from .attrs import AuthSessionAttrsCommandsUnit
+from .presets import AuthSessionPresetsCommandsUnit
 
 if t.TYPE_CHECKING:
     from ingots.defaults.operations import Caller
@@ -39,7 +45,6 @@ class AuthListSessionsCommand(
 
     project: "AuthProject"
 
-    cli_name = "list"
     cli_description = (
         "Prints the open sessions of a profile, the closed ones too if told "
         "--closed: the record of its sign-ins."
@@ -100,7 +105,6 @@ class AuthRevokeAllSessionsCommand(
 
     project: "AuthProject"
 
-    cli_name = "revoke-all"
     cli_description = "Revokes every open session of a profile: a stolen account."
     cli_args: AuthRevokeAllSessionsParameters
 
@@ -135,7 +139,6 @@ class AuthSweepSessionsCommand(BaseOperationCommand[AuthSweepSessionsParameters,
 
     project: "AuthProject"
 
-    cli_name = "sweep"
     cli_description = "Closes the expired sessions: a job of a schedule."
     cli_args: AuthSweepSessionsParameters
 
@@ -157,3 +160,12 @@ class AuthSweepSessionsCommand(BaseOperationCommand[AuthSweepSessionsParameters,
     @t.override
     async def _run(self) -> None:
         print(await self.run_operation(self.cli_args))
+
+
+class AuthSessionsCommandsUnit(CommandsUnit):
+    cli_description = "The sessions of the users."
+    list = Slot(AuthListSessionsCommand)
+    revoke_all = Slot(AuthRevokeAllSessionsCommand)
+    sweep = Slot(AuthSweepSessionsCommand)
+    attrs = Slot(AuthSessionAttrsCommandsUnit)
+    presets = Slot(AuthSessionPresetsCommandsUnit)

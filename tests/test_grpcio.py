@@ -10,7 +10,7 @@ from unittest import mock
 import grpc
 from grpc import aio
 from ingot_grpcio import GrpcProject
-from ingot_grpcio.grpc import GrpcUnit
+from ingot_grpcio.grpc import GrpcCliUnit, GrpcUnit
 from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClientsUnit
 from ingot_grpcio.grpc.errors import GrpcError
 from ingot_grpcio.grpc.servers import DefaultGrpcServer, GrpcServersUnit
@@ -26,6 +26,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from ingots.puer import Slot
 from ingots.testing import ProjectFixture
 
+from ingot_auth.cli import AuthCliUnit
 from ingot_auth import AuthProject
 from ingot_auth.__main__ import (
     AuthMemoryMailUnit,
@@ -324,7 +325,12 @@ class TstAnonymousGrpcUnit(TstGrpcUnit):
     servers = Slot(TstAnonymousServersUnit)
 
 
+class TstCliUnit(AuthCliUnit, GrpcCliUnit):
+    pass
+
+
 class TstProject(AuthProject, GrpcProject):
+    cli = Slot(TstCliUnit)
     settings = Slot(TstSettingsUnit)
     logging = Slot(TstLoggingUnit)
     auth = Slot(TstAuthUnit)

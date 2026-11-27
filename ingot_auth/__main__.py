@@ -10,7 +10,7 @@ from ingot_mail.contrib.memory import MemoryMailer
 from ingot_mail.mail import MailUnit
 from ingots.defaults.logging import configure_startup_logging
 from ingots.puer import Slot
-from ingots.puer.cli import CommandRunner
+from ingots.defaults.cli import CommandRunner
 
 from .activities import AuthActivitiesUnit, AuthStrictActivityFailure
 from .auth import AuthUnit

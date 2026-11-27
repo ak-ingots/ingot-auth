@@ -14,6 +14,7 @@ from ingots.puer import Slot
 from ingot_auth import AuthProject
 
 from extensions.auth import AppAuthUnit
+from extensions.cli import AppCliUnit
 from extensions.grpcio import AppGrpcUnit
 from extensions.logging import AppLoggingUnit
 from extensions.mail import AppMailUnit
@@ -27,3 +28,4 @@ class AppProject(AuthProject, GrpcProject, MongoDbProject, RedisProject):
     mail = Slot(AppMailUnit)
     grpc = Slot(AppGrpcUnit)
     auth = Slot(AppAuthUnit)
+    cli = Slot(AppCliUnit)

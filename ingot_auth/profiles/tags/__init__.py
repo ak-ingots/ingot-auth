@@ -7,16 +7,8 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Unit
 
-from .commands import (
-    AuthCreateTagCommand,
-    AuthDeleteTagCommand,
-    AuthListTagsCommand,
-    AuthRenameTagCommand,
-    AuthSetProfileTagsCommand,
-)
 from .operations import (
     AuthCreateTagOperation,
     AuthDeleteTagOperation,
@@ -25,11 +17,11 @@ from .operations import (
 )
 
 
-class AuthTagsUnit(OperationsOwner, CliUnit):
+class AuthTagsUnit(OperationsOwner, Unit):
     """
-    The registry of the tags: its operations, ``op_*``, and the commands
-    running them, ``cmd_*``; the tags themselves are in the storage of the
-    auth.
+    The registry of the tags: its operations, ``op_*``, which the commands
+    of ``cli.auth.profiles.tags`` run; the tags themselves are in the
+    storage of the auth.
     """
 
     class Flags(PermissionFlags):
@@ -40,18 +32,9 @@ class AuthTagsUnit(OperationsOwner, CliUnit):
         CAN_UPDATE = 1 << 2
         CAN_DELETE = 1 << 3
 
-    cli_name = "tags"
-    cli_description = "The tags of the profiles."
-
     permissions = PermissionsSlot(Flags)
 
     op_create = Factory(AuthCreateTagOperation)
     op_list = Factory(AuthListTagsOperation)
     op_rename = Factory(AuthRenameTagOperation)
     op_delete = Factory(AuthDeleteTagOperation)
-
-    cmd_create = Slot(AuthCreateTagCommand)
-    cmd_list = Slot(AuthListTagsCommand)
-    cmd_rename = Slot(AuthRenameTagCommand)
-    cmd_delete = Slot(AuthDeleteTagCommand)
-    cmd_set = Slot(AuthSetProfileTagsCommand)

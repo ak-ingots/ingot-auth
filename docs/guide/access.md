@@ -20,11 +20,9 @@ expired sessions; an application gives its jobs more by its own
 ## Groups
 
 The groups are declared in the code, each in a slot of a unit of its
-domain, prefixed `grp_`, as the operations take `op_` and the commands
-`cmd_`. A unit owning groups extends `AuthGroupsOwner`; the groups of a
-project are found from it down the owners alone, as its commands are down
-its units of the command line, a plain unit and everything in it staying
-out. The name of a group is its full name, where it is, `shop.grp_buyers`,
+domain, prefixed `grp_`, as the operations take `op_`. A unit owning
+groups extends `AuthGroupsOwner`; the groups of a project are found from it
+down the owners alone, a plain unit and everything in it staying out. The name of a group is its full name, where it is, `shop.grp_buyers`,
 as the domain of the permissions of a unit is its full name: the scripts
 and the memberships name it, and a group moved is renamed. A group grants
 by its hook, each class adding to `super()`, building the masks of a unit by

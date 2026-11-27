@@ -593,14 +593,14 @@ doc = [
 requires-dist = [
     { name = "ingot-auth", extras = ["grpcio", "pymongo", "redis"], marker = "extra == 'game'" },
     { name = "ingot-auth", extras = ["pymongo", "redis", "starlette"], marker = "extra == 'web'" },
-    { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.16.0,<0.17" },
-    { name = "ingot-mail", specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'game'", specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'web'", specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.17.0,<0.18" },
-    { name = "ingot-redis", marker = "extra == 'redis'", specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-starlette", extras = ["protobuf"], marker = "extra == 'starlette'", specifier = ">=0.4.0,<0.5" },
-    { name = "ingots", specifier = ">=0.37.0,<0.38" },
+    { name = "ingot-grpcio", marker = "extra == 'grpcio'", specifier = ">=0.17.0,<0.18" },
+    { name = "ingot-mail", specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'game'", specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-mail", extras = ["aiosmtplib"], marker = "extra == 'web'", specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-pymongo", marker = "extra == 'pymongo'", specifier = ">=0.18.0,<0.19" },
+    { name = "ingot-redis", marker = "extra == 'redis'", specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-starlette", extras = ["protobuf"], marker = "extra == 'starlette'", specifier = ">=0.5.0,<0.6" },
+    { name = "ingots", specifier = ">=0.38.0,<0.39" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'web'", specifier = ">=0.54,<1" },
 ]
 provides-extras = ["grpcio", "pymongo", "redis", "starlette", "game", "web"]
@@ -615,11 +615,11 @@ dev = [
     { name = "flake8-pyproject" },
     { name = "grpcio-tools", specifier = ">=1.84.1" },
     { name = "httpx" },
-    { name = "ingot-grpcio", specifier = ">=0.16.0,<0.17" },
-    { name = "ingot-mail", extras = ["aiosmtplib"], specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-pymongo", specifier = ">=0.17.0,<0.18" },
-    { name = "ingot-redis", specifier = ">=0.5.0,<0.6" },
-    { name = "ingot-starlette", extras = ["protobuf"], specifier = ">=0.4.0,<0.5" },
+    { name = "ingot-grpcio", specifier = ">=0.17.0,<0.18" },
+    { name = "ingot-mail", extras = ["aiosmtplib"], specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-pymongo", specifier = ">=0.18.0,<0.19" },
+    { name = "ingot-redis", specifier = ">=0.6.0,<0.7" },
+    { name = "ingot-starlette", extras = ["protobuf"], specifier = ">=0.5.0,<0.6" },
     { name = "mypy" },
     { name = "mypy-protobuf", specifier = ">=5.1.0" },
     { name = "types-grpcio", specifier = ">=1.84.0.20261021" },
@@ -634,7 +634,7 @@ doc = [
 
 [[package]]
 name = "ingot-grpcio"
-version = "0.16.0"
+version = "0.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "googleapis-common-protos" },
@@ -643,21 +643,21 @@ dependencies = [
     { name = "ingots" },
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/96/9b/5a9fa0970bf6ee310a751e9fe2825ed6c8b8fa0a1f221ce6e60845ed69cb/ingot_grpcio-0.16.0.tar.gz", hash = "sha256:5d2476b211d8f4986431ed3c1ddae8cfc8b44b4e30b09af1c9b281be4bdcad60", size = 35585, upload-time = "2026-11-24T23:57:26.133Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/2f/a0e7bd13da32592e0b21b087e0f43b9fb9daeca75ec07e8c75b5353170e1/ingot_grpcio-0.17.0.tar.gz", hash = "sha256:1237f153144e9c1f99984e436f739376d6b36a6839ab1b4409c8846605c6c971", size = 35819, upload-time = "2026-11-27T07:28:53.799Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e4/f2/9bf200c551121ae1a2e36d53f95920de703d43eb6914ca3a7ee151591723/ingot_grpcio-0.16.0-py3-none-any.whl", hash = "sha256:914743228ab4e64284090553c70aaa2a5733fa0e167d7a8e54b2a72f6fbf627c", size = 41320, upload-time = "2026-11-24T23:57:24.803Z" },
+    { url = "https://files.pythonhosted.org/packages/76/4f/39d0bd70ae6faad03d9d17d613d2c1f7b46971e366a90d3484b8b491ef09/ingot_grpcio-0.17.0-py3-none-any.whl", hash = "sha256:e08c4f3c88b9e6885010f7321d698ee2eb42f155225e5f36d9c99c6b41cf978a", size = 41652, upload-time = "2026-11-27T07:28:52.528Z" },
 ]
 
 [[package]]
 name = "ingot-mail"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ingots" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/81/08/3d93ec836d74bbcd4577734ba0aebdbb5946d7f9e9b5732d0d47a3f3764b/ingot_mail-0.5.0.tar.gz", hash = "sha256:5ac3c73d0323180e145659e11c38dbbd2057ecebba0e5b927305344a375c8298", size = 18834, upload-time = "2026-11-24T23:58:41.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/d7/890afec98bc16783d1fe371ae38d415b6d018e19c3f456890d0c2551a2fc/ingot_mail-0.6.0.tar.gz", hash = "sha256:52e6f16f2431e66e7d55fd12628cf4c5cb2f0e902879bc68e7b841789db88787", size = 18810, upload-time = "2026-11-27T07:28:21.586Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/b7/86fc21e08887f40666969b4cb2caae4a372adf6f417b0b850cee298f9444/ingot_mail-0.5.0-py3-none-any.whl", hash = "sha256:cd4b18077e7c2e765db1aca5f8857bab9aac21d7ecc0c7e55a166bc7b1d0598a", size = 21385, upload-time = "2026-11-24T23:58:40.313Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/11/1b442a73b251c5130ef020c9a5bf02b8ccff0e37a87a76889a5c9232f064/ingot_mail-0.6.0-py3-none-any.whl", hash = "sha256:ebbb0c323fa4c638554bba6314a31e7e58cae404dde7da0e7115d327496e97af", size = 21479, upload-time = "2026-11-27T07:28:20.365Z" },
 ]
 
 [package.optional-dependencies]
@@ -667,41 +667,41 @@ aiosmtplib = [
 
 [[package]]
 name = "ingot-pymongo"
-version = "0.17.0"
+version = "0.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ingots" },
     { name = "pymongo" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/3a/aa6dfd5a5ddb5d9c0358751778c6d52e631e41ab8397122a294a3198c7d4/ingot_pymongo-0.17.0.tar.gz", hash = "sha256:bd96a9d3161944e4e648acd4abd82f837e8a05c63189b6a5d1af5186b2762060", size = 12053, upload-time = "2026-11-24T23:58:29.211Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/34/a896be1326eb33a60ee9d630be3fe69794e94b73c86466306ed46eb6620e/ingot_pymongo-0.18.0.tar.gz", hash = "sha256:dbc2d25cbc88231e757d87bd4e39d7576a55b56ef62532b03ccc56fbc86378ed", size = 13465, upload-time = "2026-11-27T07:27:59.482Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/8c/b2ed94ecb606ea670c9e5f59b94576480a264e5100ea7c9f045a9ceb4494/ingot_pymongo-0.17.0-py3-none-any.whl", hash = "sha256:70677a3b5da977a160b707cd1c52a1988b45c42d19d4793f10371533f3b7ae11", size = 14420, upload-time = "2026-11-24T23:58:28.132Z" },
+    { url = "https://files.pythonhosted.org/packages/54/92/3ba2d02f0ee5ef29d3f5d7667f7322c9c0ebad4f2807c16e231e7e430fad/ingot_pymongo-0.18.0-py3-none-any.whl", hash = "sha256:e3f38435777411ace861c3b45dafff75f34bc9199facb36fa8ae50a77fd17f0d", size = 14517, upload-time = "2026-11-27T07:27:58.25Z" },
 ]
 
 [[package]]
 name = "ingot-redis"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ingots" },
     { name = "redis" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/6b/d4745f81ae081c5e7c1432d3c7e5df1cfef24e433bb7f6dd3bcc41fad8e9/ingot_redis-0.5.0.tar.gz", hash = "sha256:7e409bf2f7ea247251274365e91a8d2390daae233996ab0c3c1f020da1e3d16e", size = 11951, upload-time = "2026-11-24T23:58:32.258Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/d5/1632ed2ce553738a986f05a525dff168e3e1464a17c00e922cb3d0af742a/ingot_redis-0.6.0.tar.gz", hash = "sha256:4e194274bd0cc42853623576a7faaf74a9315e6d9f0d0956dd2fb002ba6af3ac", size = 11885, upload-time = "2026-11-27T07:29:25.054Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/ce/be7d51c18ebeb49c82d20f84bfa197459c45e4b223d64f64624e1e8061c7/ingot_redis-0.5.0-py3-none-any.whl", hash = "sha256:228f0c1809b44e99a692b0254c1b5aa9c831f61c578de7297eb269eded65e6d9", size = 14127, upload-time = "2026-11-24T23:58:31.3Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/03/09c740805d81f3a078a046532a4f7c1c35a75f7b99ed529b472a6c536250/ingot_redis-0.6.0-py3-none-any.whl", hash = "sha256:2a0a5c3be05e2052dbd9ebd38b9c7bd3557cc22eb4996ff6af20de290b441b15", size = 14223, upload-time = "2026-11-27T07:29:23.85Z" },
 ]
 
 [[package]]
 name = "ingot-starlette"
-version = "0.4.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ingots" },
     { name = "starlette" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a0/e8/96a29535391eb4b1db73dcef0e3ff3bf9b9c02234bf89cb529e60aef74c8/ingot_starlette-0.4.0.tar.gz", hash = "sha256:7f0a188a1178682f1402bf2c91ea487ae87dc02156dc22789abfa7857aeb4f8f", size = 28210, upload-time = "2026-11-24T23:58:50.485Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/67/ea8b43d639f35f18f1ea4795bf9bd17bd3fcf7a7c0d1bc4cf3bdcb8b5358/ingot_starlette-0.5.0.tar.gz", hash = "sha256:936692735b236dc51531f3345a61e7334916280300e1640ab1563be449d8e293", size = 28209, upload-time = "2026-11-27T07:28:31.86Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/c9/7f8836f1feeb57a6d3a6176c7602398cfa20057ccc20393eef21ce8b4716/ingot_starlette-0.4.0-py3-none-any.whl", hash = "sha256:55c990855b73fd239cce7a47e6de15cc347d0566eb486fb5eba1b54337fe504a", size = 37295, upload-time = "2026-11-24T23:58:49.198Z" },
+    { url = "https://files.pythonhosted.org/packages/86/0f/8bb07bd4eeec3d6d5009dfaea1d0caf25921d99abfbb5725297fb5a86137/ingot_starlette-0.5.0-py3-none-any.whl", hash = "sha256:21e87f4c4863499b1b27638cf6377a9d54aaab6d7a6e9cec3b54caf3b8c2227d", size = 37421, upload-time = "2026-11-27T07:28:30.535Z" },
 ]
 
 [package.optional-dependencies]
@@ -712,11 +712,11 @@ protobuf = [
 
 [[package]]
 name = "ingots"
-version = "0.37.0"
+version = "0.38.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f5/ff/180c1d0f51300d4fc97469b2cf6c141744d7498aaace615a5289356c3981/ingots-0.37.0.tar.gz", hash = "sha256:2f50a84b6ceabb9a964237dd8c425c91a2f59f7ead6b44827894ceedd48b300d", size = 66828, upload-time = "2026-11-24T23:38:28.747Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f7/db/de2b5c0fafaa5a2e42407c881b4f33542ff70d8a80fe8f1a0afdc4fa63e1/ingots-0.38.0.tar.gz", hash = "sha256:b8ce7f55c515697181ba6c28170395b525c0ebd03f4e37f0bca877d881514ed1", size = 72457, upload-time = "2026-11-26T23:38:23.552Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/86/2288f9d8390f00daf78569a557d56446297b7d0aeb59309cca322d5ef16e/ingots-0.37.0-py3-none-any.whl", hash = "sha256:47cd24ef5a0c38f4a5223a107e0e42e2cbc01cbc68d51659907c9b9435f2a930", size = 94625, upload-time = "2026-11-24T23:38:27.587Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/f0/7e30afc30261d55a3cd796ee9c65f755c836cc5658394e0e086c7ad68270/ingots-0.38.0-py3-none-any.whl", hash = "sha256:d912fba730d647b927a441e778f408a1dff55c64925ae448d587e42b9b5e7df6", size = 102608, upload-time = "2026-11-26T23:38:22.16Z" },
 ]
 
 [[package]]

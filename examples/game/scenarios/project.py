@@ -3,13 +3,13 @@
 import typing as t
 
 from ingot_grpcio import GrpcProject
-from ingot_grpcio.grpc import GrpcUnit
+from ingot_grpcio.grpc import GrpcCliUnit, GrpcUnit
 from ingot_grpcio.grpc.clients import DefaultGrpcClient, GrpcClientsUnit
 from ingot_grpcio.settings import GrpcSettingsUnit
 from ingot_grpcio.settings.configs import GrpcConfigs
 from ingots.defaults.settings.configs import IntConfig, StrConfig
 from ingots.puer import Slot
-from ingots.testing import TestingProject
+from ingots.testing import TestingCliUnit, TestingProject
 
 from ingot_auth.contrib.transports.grpcio import (
     AuthGrpcEmailCodeBinding,
@@ -68,7 +68,12 @@ class ScenariosGrpcUnit(GrpcUnit):
     clients = Slot(ScenariosClientsUnit)
 
 
+class ScenariosCliUnit(TestingCliUnit, GrpcCliUnit):
+    pass
+
+
 class ScenariosProject(TestingProject, GrpcProject):
     env_configs_prefix = "GAME_TEST"
     settings = Slot(ScenariosSettingsUnit)
     grpc = Slot(ScenariosGrpcUnit)
+    cli = Slot(ScenariosCliUnit)

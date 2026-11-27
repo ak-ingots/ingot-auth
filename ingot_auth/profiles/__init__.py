@@ -22,8 +22,7 @@ from ingots.defaults.operations import (
     PermissionFlags,
     PermissionsSlot,
 )
-from ingots.puer import Factory, Slot
-from ingots.puer.cli import CliUnit
+from ingots.puer import Factory, Slot, Unit
 
 from ingot_auth.access.groups import AuthGroupsOwner
 
@@ -40,7 +39,7 @@ from .operations import (
 from .tags import AuthTagsUnit
 
 
-class AuthProfilesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
+class AuthProfilesUnit(AuthGroupsOwner, OperationsOwner, Unit):
     """
     The profiles: the registries of the tags and of the attributes, the
     values each profile has of them, set by an operator, the whole set each
@@ -59,9 +58,6 @@ class AuthProfilesUnit(AuthGroupsOwner, OperationsOwner, CliUnit):
 
         CAN_UPDATE = 1 << 0
         CAN_READ_OWN = 1 << 1
-
-    cli_name = "profiles"
-    cli_description = "The profiles of the users."
 
     grp_consumers = Slot(AuthProfilesConsumersGroup)
     grp_managers = Slot(AuthProfilesManagersGroup)

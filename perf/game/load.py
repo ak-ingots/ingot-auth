@@ -9,12 +9,13 @@ import asyncio
 import dataclasses
 import typing as t
 
-from ingots.perf import CsvSeed, PerfConfigs
+from ingots.perf import CsvSeed, PerfCliUnit, PerfConfigs, PerfStandProject
 from ingots.puer import Slot
 
 from ingot_auth.api.methods.nickname.v1 import nickname_pb2
 
-from scenarios.project import GameClient, ScenariosConfigs, ScenariosProject
+from scenarios.project import GameClient, ScenariosCliUnit, ScenariosConfigs
+from scenarios.project import ScenariosProject
 from scenarios.project import ScenariosSettingsUnit
 from scenarios.steps import PASSWORD, new_nickname
 
@@ -30,11 +31,16 @@ class GamePerfSettingsUnit(ScenariosSettingsUnit):
     configs = Slot(GamePerfConfigs)
 
 
-class GamePerfProject(ScenariosProject):
+class GamePerfCliUnit(PerfCliUnit, ScenariosCliUnit):
+    pass
+
+
+class GamePerfProject(PerfStandProject, ScenariosProject):
     """The project of a scenario of the load, which adds its unit ``perf``."""
 
     env_configs_prefix = "PERF_TEST"
     settings = Slot(GamePerfSettingsUnit)
+    cli = Slot(GamePerfCliUnit)
 
 
 @dataclasses.dataclass
